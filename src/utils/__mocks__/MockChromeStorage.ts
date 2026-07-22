@@ -2,7 +2,7 @@
  * Type guard to check if a value is a string key
  */
 function isStringKey(value: unknown): value is string {
-  return typeof value === "string";
+  return typeof value === 'string';
 }
 
 /**
@@ -16,14 +16,14 @@ function isStringArray(value: unknown): value is string[] {
  * Type guard to check if a value is a record
  */
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /**
  * Type guard to check if a value is a function
  */
 function isFunction(value: unknown): value is Function {
-  return typeof value === "function";
+  return typeof value === 'function';
 }
 
 /**

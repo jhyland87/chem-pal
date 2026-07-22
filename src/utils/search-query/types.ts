@@ -15,7 +15,7 @@
  * @group Search
  */
 export interface TermNode {
-  type: "term";
+  type: 'term';
   /** The phrase to match against a product title. */
   value: string;
   /** True when the value came from (or was normalized to) a multi-word phrase. */
@@ -28,7 +28,7 @@ export interface TermNode {
  * @group Search
  */
 export interface AndNode {
-  type: "and";
+  type: 'and';
   left: SearchAst;
   right: SearchAst;
 }
@@ -39,7 +39,7 @@ export interface AndNode {
  * @group Search
  */
 export interface OrNode {
-  type: "or";
+  type: 'or';
   left: SearchAst;
   right: SearchAst;
 }
@@ -50,7 +50,7 @@ export interface OrNode {
  * @group Search
  */
 export interface NotNode {
-  type: "not";
+  type: 'not';
   operand: SearchAst;
 }
 

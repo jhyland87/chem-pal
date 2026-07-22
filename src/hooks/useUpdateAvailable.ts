@@ -1,14 +1,14 @@
-import { CACHE } from "@/constants/common";
-import type { InstallSource, ReleaseSection, UpdateInfo } from "@/helpers/updates";
+import { CACHE } from '@/constants/common';
+import type { InstallSource, ReleaseSection, UpdateInfo } from '@/helpers/updates';
 import {
   UPDATE_CHECK_INTERVAL_MS,
   getAvailableUpdate,
   getInstallSource,
   getReleaseNotes,
-} from "@/helpers/updates";
-import { cstorage } from "@/utils/storage";
-import { useCallback, useEffect, useRef, useState } from "react";
-import semver from "semver";
+} from '@/helpers/updates';
+import { cstorage } from '@/utils/storage';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import semver from 'semver';
 
 /**
  * UI-owned bookkeeping persisted under {@link CACHE.UPDATE_CHECK}.
@@ -81,7 +81,7 @@ let notesPromise: Promise<{ releaseUrl: string; notes: ReleaseSection[] } | unde
  * @source
  */
 function isUpdateCheckState(value: unknown): value is UpdateCheckState {
-  return typeof value === "object" && value !== null;
+  return typeof value === 'object' && value !== null;
 }
 
 /**
@@ -92,10 +92,10 @@ function isUpdateCheckState(value: unknown): value is UpdateCheckState {
  */
 function isUpdatePendingState(value: unknown): value is UpdatePendingState {
   return (
-    typeof value === "object" &&
+    typeof value === 'object' &&
     value !== null &&
-    "version" in value &&
-    typeof value.version === "string"
+    'version' in value &&
+    typeof value.version === 'string'
   );
 }
 
@@ -243,7 +243,7 @@ export function useUpdateAvailable(): UseUpdateAvailable {
         // Web Store: the browser already staged an update, so there's nothing to
         // discover — but onUpdateAvailable reports only a version, so the notes
         // still have to be looked up (once per staged version).
-        if (getInstallSource() === "webstore") {
+        if (getInstallSource() === 'webstore') {
           const pending = stored[CACHE.UPDATE_PENDING];
           if (!isUpdatePendingState(pending) || pending.version === state.dismissedVersion) return;
 
@@ -253,7 +253,7 @@ export function useUpdateAvailable(): UseUpdateAvailable {
           if (!cancelled) {
             setNotice({
               version: pending.version,
-              source: "webstore",
+              source: 'webstore',
               releaseUrl: cached?.releaseUrl,
               notes: cached?.notes ?? [],
             });
@@ -262,7 +262,7 @@ export function useUpdateAvailable(): UseUpdateAvailable {
 
           const fetched = await fetchNotesOnce(state, pending.version);
           if (!cancelled && fetched) {
-            setNotice({ version: pending.version, source: "webstore", ...fetched });
+            setNotice({ version: pending.version, source: 'webstore', ...fetched });
           }
           return;
         }
@@ -274,7 +274,7 @@ export function useUpdateAvailable(): UseUpdateAvailable {
           if (!cancelled && cachedVersion && shouldPrompt(cachedVersion, state.dismissedVersion)) {
             setNotice({
               version: cachedVersion,
-              source: "manual",
+              source: 'manual',
               releaseUrl: state.releaseUrl,
               notes: readCachedNotes(state, cachedVersion)?.notes ?? [],
             });
@@ -284,10 +284,10 @@ export function useUpdateAvailable(): UseUpdateAvailable {
 
         const update = await pollOnce(state);
         if (!cancelled && update && update.version !== state.dismissedVersion) {
-          setNotice({ ...update, source: "manual" });
+          setNotice({ ...update, source: 'manual' });
         }
       } catch (error) {
-        console.error("Failed to check for updates:", { error });
+        console.error('Failed to check for updates:', { error });
       }
     };
 
@@ -299,15 +299,15 @@ export function useUpdateAvailable(): UseUpdateAvailable {
 
   // Catch a Web Store update staged while the popup is already open.
   useEffect(() => {
-    if (getInstallSource() !== "webstore") return;
+    if (getInstallSource() !== 'webstore') return;
     const listener = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
-      if (area !== "local") return;
+      if (area !== 'local') return;
       const change = changes[CACHE.UPDATE_PENDING];
       if (!change || !isUpdatePendingState(change.newValue)) return;
       if (change.newValue.version === dismissedRef.current) return;
       // Notes are looked up by the mount effect on the next open; showing the
       // prompt without them is better than delaying it behind a fetch.
-      setNotice({ version: change.newValue.version, source: "webstore", notes: [] });
+      setNotice({ version: change.newValue.version, source: 'webstore', notes: [] });
     };
     cstorage.onChanged.addListener(listener);
     return () => cstorage.onChanged.removeListener(listener);
@@ -329,7 +329,7 @@ export function useUpdateAvailable(): UseUpdateAvailable {
           [CACHE.UPDATE_CHECK]: { ...state, dismissedVersion: dismissed },
         });
       } catch (error) {
-        console.error("Failed to record update dismissal:", { error });
+        console.error('Failed to record update dismissal:', { error });
       }
     })();
   }, [notice]);
@@ -337,7 +337,7 @@ export function useUpdateAvailable(): UseUpdateAvailable {
   const applyUpdate = useCallback(() => {
     if (!notice) return;
     // Reloading tears down this popup along with the extension.
-    if (notice.source === "webstore") {
+    if (notice.source === 'webstore') {
       chrome.runtime.reload();
       return;
     }

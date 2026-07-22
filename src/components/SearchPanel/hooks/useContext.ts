@@ -1,6 +1,6 @@
-import { AppContext } from "@/context";
-import { cstorage } from "@/utils/storage";
-import { use } from "react";
+import { AppContext } from '@/context';
+import { cstorage } from '@/utils/storage';
+import { use } from 'react';
 
 /**
  * React v19's use() hook can work with Context directly
@@ -57,14 +57,14 @@ export function useChromeStorageEnhanced<T>(
   key: string,
   defaultValue: T,
   options?: {
-    storage?: "session" | "local";
+    storage?: 'session' | 'local';
     serializer?: {
       serialize: (value: T) => string;
       deserialize: (value: string) => T;
     };
   },
 ) {
-  const storage = options?.storage === "local" ? cstorage.local : cstorage.session;
+  const storage = options?.storage === 'local' ? cstorage.local : cstorage.session;
   const { serializer } = options || {};
 
   const storedValue = use(

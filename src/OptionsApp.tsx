@@ -1,15 +1,15 @@
-import { AppContext } from "@/context";
-import { i18n, useLocale } from "@/helpers/i18n";
-import { playAdvancedModeSound } from "@/helpers/advancedMode";
-import { useHotkeys } from "@/hotkeys";
-import { useDebugApi } from "@/hooks/useDebugApi";
-import { useUserSettings } from "@/hooks/useUserSettings";
-import Box from "@mui/material/Box";
-import CssBaseline from "@mui/material/CssBaseline";
-import { useMemo, useState } from "react";
-import ErrorBoundary from "./components/ErrorBoundary";
-import SettingsPanel from "./components/SettingsPanel";
-import { ThemeProvider } from "./components/ThemeProvider";
+import { AppContext } from '@/context';
+import { i18n, useLocale } from '@/helpers/i18n';
+import { playAdvancedModeSound } from '@/helpers/advancedMode';
+import { useHotkeys } from '@/hotkeys';
+import { useDebugApi } from '@/hooks/useDebugApi';
+import { useUserSettings } from '@/hooks/useUserSettings';
+import Box from '@mui/material/Box';
+import CssBaseline from '@mui/material/CssBaseline';
+import { useMemo, useState } from 'react';
+import ErrorBoundary from './components/ErrorBoundary';
+import SettingsPanel from './components/SettingsPanel';
+import { ThemeProvider } from './components/ThemeProvider';
 
 // SettingsPanel and ThemeProvider are the only consumers on this page; both read
 // solely userSettings/setUserSettings from context. The remaining AppContextProps
@@ -70,17 +70,17 @@ export function OptionsApp() {
     setSelectedSuppliers: NOOP,
     pendingSearchQuery: null,
     setPendingSearchQuery: NOOP,
-    searchFilters: { titleQuery: "", availability: [], country: [], shippingType: [] },
+    searchFilters: { titleQuery: '', availability: [], country: [], shippingType: [] },
     setSearchFilters: NOOP,
     setBookmarksFolderId: NOOP,
   };
 
   return (
-    <ErrorBoundary fallback={<p>{i18n("app_error_generic")}</p>}>
+    <ErrorBoundary fallback={<p>{i18n('app_error_generic')}</p>}>
       <AppContext.Provider value={contextValue}>
         <ThemeProvider>
           <CssBaseline />
-          <Box sx={{ width: "100%", maxWidth: 720, mx: "auto", p: 2, boxSizing: "border-box" }}>
+          <Box sx={{ width: '100%', maxWidth: 720, mx: 'auto', p: 2, boxSizing: 'border-box' }}>
             <SettingsPanel />
           </Box>
         </ThemeProvider>

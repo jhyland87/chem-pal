@@ -1,4 +1,4 @@
-import { getSearchHistory, addSearchHistoryEntry } from "@/utils/idbCache";
+import { getSearchHistory, addSearchHistoryEntry } from '@/utils/idbCache';
 
 /**
  * Get the history of products that were clicked on.
@@ -23,7 +23,7 @@ export async function addHistory(history: HistoryEntry): Promise<void> {
     return;
   }
   history.timestamp = Date.now();
-  if (history.type === "search") {
+  if (history.type === 'search') {
     await addSearchHistoryEntry(history);
   }
 }

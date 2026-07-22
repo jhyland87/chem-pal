@@ -1,5 +1,5 @@
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { SupplierBaseWoocommerce } from "./SupplierBaseWoocommerce";
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { SupplierBaseWoocommerce } from './SupplierBaseWoocommerce';
 
 // Matches a molecular/formula weight label and its value in a description, e.g. "F.W. 122.55",
 // "M.W.: 98.1", "Molecular Weight 140.22". The numeric value is captured in group 1.
@@ -30,19 +30,19 @@ const MOLE_WEIGHT_REGEX =
  */
 export class SupplierLibertySci extends SupplierBaseWoocommerce implements ISupplier {
   // The display name of the supplier.
-  public readonly supplierName: string = "LibertySci";
+  public readonly supplierName: string = 'LibertySci';
 
   // Shipping scope for LibertySci
-  public readonly shipping: ShippingRange = "worldwide";
+  public readonly shipping: ShippingRange = 'worldwide';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "US";
+  public readonly country: CountryCode = 'US';
 
   // The base URL for the supplier's website.
-  public readonly baseURL: string = "https://libertysci.com";
+  public readonly baseURL: string = 'https://libertysci.com';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   /**
    * Builds the base WooCommerce product builders, then enriches each with the chemical formula and
@@ -67,7 +67,7 @@ export class SupplierLibertySci extends SupplierBaseWoocommerce implements ISupp
 
     builders.forEach((builder, index) => {
       const description = results[index]?.description;
-      if (typeof description !== "string" || description.length === 0) {
+      if (typeof description !== 'string' || description.length === 0) {
         return;
       }
 
@@ -92,7 +92,7 @@ export class SupplierLibertySci extends SupplierBaseWoocommerce implements ISupp
         .map((segment) => segment.trim())
         .filter(Boolean)
         .pop()
-        ?.replace(/[\s,;:·]+$/, "");
+        ?.replace(/[\s,;:·]+$/, '');
       if (formulaSegment) {
         builder.setFormula(formulaSegment);
       }

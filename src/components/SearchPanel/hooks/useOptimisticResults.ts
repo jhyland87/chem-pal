@@ -1,4 +1,4 @@
-import { useOptimistic } from "react";
+import { useOptimistic } from 'react';
 
 /**
  * React v19 `useOptimistic` wrapper for streaming search results.
@@ -87,19 +87,19 @@ export function useOptimisticResultsWithPending(confirmedResults: Product[]) {
     confirmedResults,
     (
       state: Product[],
-      action: { type: "add" | "confirm" | "error"; product: Product; tempId?: string },
+      action: { type: 'add' | 'confirm' | 'error'; product: Product; tempId?: string },
     ) => {
       switch (action.type) {
-        case "add":
+        case 'add':
           // `_id` positions the row; confirm/error match on that same positional key.
           return [...state, { ...action.product, _id: state.length, isPending: true }];
 
-        case "confirm":
+        case 'confirm':
           return state.map((item) =>
             item._id === action.product._id ? { ...action.product, isPending: false } : item,
           );
 
-        case "error":
+        case 'error':
           return state.filter((item) => item._id !== action.product._id);
 
         default:
@@ -114,7 +114,7 @@ export function useOptimisticResultsWithPending(confirmedResults: Product[]) {
    * @source
    */
   const addPendingResult = (product: Product) => {
-    addOptimisticResult({ type: "add", product });
+    addOptimisticResult({ type: 'add', product });
   };
 
   /**
@@ -123,7 +123,7 @@ export function useOptimisticResultsWithPending(confirmedResults: Product[]) {
    * @source
    */
   const confirmResult = (product: Product) => {
-    addOptimisticResult({ type: "confirm", product });
+    addOptimisticResult({ type: 'confirm', product });
   };
 
   /**
@@ -132,7 +132,7 @@ export function useOptimisticResultsWithPending(confirmedResults: Product[]) {
    * @source
    */
   const removeFailedResult = (product: Product) => {
-    addOptimisticResult({ type: "error", product });
+    addOptimisticResult({ type: 'error', product });
   };
 
   return {

@@ -1,5 +1,5 @@
-import { getCachableResponse } from "@/helpers/request";
-import JSZip from "jszip";
+import { getCachableResponse } from '@/helpers/request';
+import JSZip from 'jszip';
 
 interface CapturedEntry {
   contentType: string;
@@ -16,16 +16,16 @@ interface CapturedEntry {
  * @source
  */
 const DYNAMIC_PARAMS = [
-  "timestampe", // Macklin API (their typo for "timestamp")
-  "timestamp",
-  "_t",
-  "_",
-  "t",
-  "nocache",
-  "cachebust",
-  "nonce",
-  "rnd",
-  "rand",
+  'timestampe', // Macklin API (their typo for "timestamp")
+  'timestamp',
+  '_t',
+  '_',
+  't',
+  'nocache',
+  'cachebust',
+  'nonce',
+  'rnd',
+  'rand',
 ];
 
 /**
@@ -67,8 +67,8 @@ export async function addCapturedResponse(request: Request, response: Response):
     const filePath = cacheResponse.hash.file; // e.g. "www.carolina.com/6dbb7f0d.json"
 
     captured.set(filePath, {
-      contentType: cacheResponse.data.contentType ?? "unknown",
-      content: cacheResponse.data.content ?? "",
+      contentType: cacheResponse.data.contentType ?? 'unknown',
+      content: cacheResponse.data.content ?? '',
       url: request.url,
       method: request.method,
       timestamp: Date.now(),
@@ -80,8 +80,8 @@ export async function addCapturedResponse(request: Request, response: Response):
     );
     console.log(`[ResponseAggregate]   normalized: ${request.method}:${normalized}`);
   } catch (err) {
-    console.error("[ResponseAggregate] FAILED to capture:", request.method, request.url);
-    console.error("[ResponseAggregate]   error:", err);
+    console.error('[ResponseAggregate] FAILED to capture:', request.method, request.url);
+    console.error('[ResponseAggregate]   error:', err);
   }
 }
 
@@ -93,7 +93,7 @@ export async function addCapturedResponse(request: Request, response: Response):
  */
 export async function downloadAsZip(): Promise<void> {
   if (captured.size === 0) {
-    console.warn("[ResponseAggregate] No responses captured yet.");
+    console.warn('[ResponseAggregate] No responses captured yet.');
     return;
   }
 
@@ -117,11 +117,11 @@ export async function downloadAsZip(): Promise<void> {
     zip.file(filePath, fileContent);
   }
 
-  const blob = await zip.generateAsync({ type: "blob" });
+  const blob = await zip.generateAsync({ type: 'blob' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   a.href = url;
-  a.download = `response-aggregate-${new Date().toISOString().slice(0, 19).replace(/:/g, "-")}.zip`;
+  a.download = `response-aggregate-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.zip`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -174,7 +174,7 @@ export function count(): number {
  * @source
  */
 export function initConsoleApi(): void {
-  if (typeof __RESPONSE_AGGREGATE__ !== "undefined" && __RESPONSE_AGGREGATE__) {
+  if (typeof __RESPONSE_AGGREGATE__ !== 'undefined' && __RESPONSE_AGGREGATE__) {
     const api = {
       download: downloadAsZip,
       list,
@@ -188,13 +188,13 @@ export function initConsoleApi(): void {
     (window as unknown as Record<string, unknown>).__responseAggregate = api;
 
     console.log(
-      "%c[ResponseAggregate] Capture mode enabled!",
-      "color: #4CAF50; font-weight: bold; font-size: 14px;",
+      '%c[ResponseAggregate] Capture mode enabled!',
+      'color: #4CAF50; font-weight: bold; font-size: 14px;',
     );
-    console.log("Available commands:");
-    console.log("  window.__responseAggregate.download() - Download captured responses as zip");
-    console.log("  window.__responseAggregate.list()     - List all captured responses");
-    console.log("  window.__responseAggregate.clear()    - Clear captured responses");
-    console.log("  window.__responseAggregate.count      - Number of captured responses");
+    console.log('Available commands:');
+    console.log('  window.__responseAggregate.download() - Download captured responses as zip');
+    console.log('  window.__responseAggregate.list()     - List all captured responses');
+    console.log('  window.__responseAggregate.clear()    - Clear captured responses');
+    console.log('  window.__responseAggregate.count      - Number of captured responses');
   }
 }

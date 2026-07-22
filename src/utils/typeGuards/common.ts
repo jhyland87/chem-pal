@@ -1,11 +1,11 @@
-import { CAS_REGEX, SPIN_SPEED, UOM, type Uom } from "@/constants/common";
-import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
-import { findCountryByIso2 } from "@/helpers/country";
-import { looksLikeSmiles } from "@/helpers/smiles";
-import { zodAddActualValueToIssues } from "@/helpers/utils";
-import { SUPPLIER_CLASS_NAMES } from "@/constants/suppliers";
+import { CAS_REGEX, SPIN_SPEED, UOM, type Uom } from '@/constants/common';
+import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
+import { findCountryByIso2 } from '@/helpers/country';
+import { looksLikeSmiles } from '@/helpers/smiles';
+import { zodAddActualValueToIssues } from '@/helpers/utils';
+import { SUPPLIER_CLASS_NAMES } from '@/constants/suppliers';
 //import { currencies } from "price-parser";
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * @categoryDescription Typeguards
@@ -18,8 +18,8 @@ const httpResponseSchema = z.object({
   ok: z.boolean(),
   status: z.number(),
   statusText: z.string(),
-  json: z.custom<(...args: unknown[]) => unknown>((val) => typeof val === "function"),
-  text: z.custom<(...args: unknown[]) => unknown>((val) => typeof val === "function"),
+  json: z.custom<(...args: unknown[]) => unknown>((val) => typeof val === 'function'),
+  text: z.custom<(...args: unknown[]) => unknown>((val) => typeof val === 'function'),
 });
 
 /**
@@ -77,7 +77,7 @@ export function isHttpResponse(value: unknown): value is Response {
  */
 export function isUOM(uom: unknown): uom is Uom {
   // Widen the enum-value array to string[] so includes() accepts an arbitrary string.
-  return typeof uom === "string" && (Object.values(UOM) as string[]).includes(uom);
+  return typeof uom === 'string' && (Object.values(UOM) as string[]).includes(uom);
 }
 
 /**
@@ -113,9 +113,9 @@ export function isJsonResponse(response: unknown): response is Response {
   if (!isHttpResponse(response)) {
     return false;
   }
-  const contentType = response.headers.get("Content-Type");
+  const contentType = response.headers.get('Content-Type');
   return (
-    contentType !== null && (contentType.includes("/json") || contentType.includes("/javascript"))
+    contentType !== null && (contentType.includes('/json') || contentType.includes('/javascript'))
   );
 }
 
@@ -139,7 +139,7 @@ export function isJsonResponse(response: unknown): response is Response {
  */
 export function assertJsonResponse(response: unknown): asserts response is Response {
   if (!isJsonResponse(response)) {
-    throw new TypeError("assertJsonResponse| Invalid JSON response", { cause: response });
+    throw new TypeError('assertJsonResponse| Invalid JSON response', { cause: response });
   }
 }
 
@@ -174,12 +174,12 @@ export function assertJsonResponse(response: unknown): asserts response is Respo
  */
 export function isHtmlResponse(response: unknown): response is Response {
   if (!isHttpResponse(response)) return false;
-  const contentType = response.headers.get("Content-Type");
+  const contentType = response.headers.get('Content-Type');
   return (
     contentType !== null &&
-    (contentType.includes("text/") ||
-      contentType.includes("application/xhtml+xml") ||
-      contentType.includes("json-amazonui-streaming"))
+    (contentType.includes('text/') ||
+      contentType.includes('application/xhtml+xml') ||
+      contentType.includes('json-amazonui-streaming'))
   );
 }
 
@@ -201,7 +201,7 @@ export function isHtmlResponse(response: unknown): response is Response {
  */
 export function assertHtmlResponse(response: unknown): asserts response is Response {
   if (!isHtmlResponse(response)) {
-    throw new TypeError("assertHtmlResponse| Invalid HTML response", { cause: response });
+    throw new TypeError('assertHtmlResponse| Invalid HTML response', { cause: response });
   }
 }
 
@@ -275,19 +275,19 @@ export function isValidResult(value: unknown): value is RequiredProductFields {
  * @source
  */
 export function checkMissingMinimalProductFields(product: unknown): string[] {
-  if (!product || typeof product !== "object") {
-    throw new TypeError("checkMissingMinimalProductFields| Invalid product", { cause: product });
+  if (!product || typeof product !== 'object') {
+    throw new TypeError('checkMissingMinimalProductFields| Invalid product', { cause: product });
   }
 
   const requiredProps: Record<keyof RequiredProductFields, string> = {
-    title: "string",
-    price: "number",
-    quantity: "number",
-    uom: "string",
-    supplier: "string",
-    url: "string",
-    currencyCode: "string",
-    currencySymbol: "string",
+    title: 'string',
+    price: 'number',
+    quantity: 'number',
+    uom: 'string',
+    supplier: 'string',
+    url: 'string',
+    currencyCode: 'string',
+    currencySymbol: 'string',
   };
 
   // Safe: the guard above already verified product is a non-null object.
@@ -295,7 +295,7 @@ export function checkMissingMinimalProductFields(product: unknown): string[] {
   const result = Object.entries(requiredProps).reduce(
     (acc: string[], [key, expectedType]: [string, string]) => {
       if (key in record === false) {
-        console.debug("checkMissingMinimalProductFields| No value found in product", {
+        console.debug('checkMissingMinimalProductFields| No value found in product', {
           product,
           key,
         });
@@ -303,7 +303,7 @@ export function checkMissingMinimalProductFields(product: unknown): string[] {
       }
 
       if (typeof record[key] !== expectedType) {
-        console.debug("checkMissingMinimalProductFields| Property not the correct type", {
+        console.debug('checkMissingMinimalProductFields| Property not the correct type', {
           product,
           key,
           expectedType,
@@ -317,7 +317,7 @@ export function checkMissingMinimalProductFields(product: unknown): string[] {
     [],
   );
   if (result.length > 0) {
-    console.warn("checkMissingMinimalProductFields| Results for product is", { product, result });
+    console.warn('checkMissingMinimalProductFields| Results for product is', { product, result });
   }
   return result;
 }
@@ -367,7 +367,7 @@ export function isMinimalProduct(product: unknown): product is RequiredProductFi
   try {
     const missingFields = checkMissingMinimalProductFields(product);
     if (missingFields.length > 0) {
-      console.debug("isMinimalProduct| Product is missing minimal fields", {
+      console.debug('isMinimalProduct| Product is missing minimal fields', {
         product,
         missingFields,
       });
@@ -375,7 +375,7 @@ export function isMinimalProduct(product: unknown): product is RequiredProductFi
     }
     return true;
   } catch (error) {
-    console.warn("isMinimalProduct| The product is invalid", { product, error });
+    console.warn('isMinimalProduct| The product is invalid', { product, error });
     return false;
   }
 }
@@ -397,19 +397,19 @@ export function isMinimalProduct(product: unknown): product is RequiredProductFi
  * @source
  */
 export function checkCompleteProductFields(product: unknown): string[] {
-  if (!product || typeof product !== "object") {
-    throw new TypeError("checkCompleteProductFields| Invalid product", { cause: product });
+  if (!product || typeof product !== 'object') {
+    throw new TypeError('checkCompleteProductFields| Invalid product', { cause: product });
   }
 
   const requiredProps: Record<keyof RequiredProductFields, string> = {
-    title: "string",
-    price: "number",
-    quantity: "number",
-    uom: "string",
-    supplier: "string",
-    url: "string",
-    currencyCode: "string",
-    currencySymbol: "string",
+    title: 'string',
+    price: 'number',
+    quantity: 'number',
+    uom: 'string',
+    supplier: 'string',
+    url: 'string',
+    currencyCode: 'string',
+    currencySymbol: 'string',
   };
 
   // Safe: the guard above already verified product is a non-null object.
@@ -417,12 +417,12 @@ export function checkCompleteProductFields(product: unknown): string[] {
   const result = Object.entries(requiredProps).reduce(
     (acc: string[], [key, expectedType]: [string, string]) => {
       if (key in record === false) {
-        console.debug("checkCompleteProductFields| No value found in product", { product, key });
+        console.debug('checkCompleteProductFields| No value found in product', { product, key });
         return [...acc, key];
       }
 
       if (typeof record[key] !== expectedType) {
-        console.debug("checkCompleteProductFields| Property not the correct type", {
+        console.debug('checkCompleteProductFields| Property not the correct type', {
           product,
           key,
           expectedType,
@@ -436,7 +436,7 @@ export function checkCompleteProductFields(product: unknown): string[] {
     [],
   );
   if (result.length > 0) {
-    console.warn("checkCompleteProductFields| Results for product is", { product, result });
+    console.warn('checkCompleteProductFields| Results for product is', { product, result });
   }
   return result;
 }
@@ -465,7 +465,7 @@ export function assertCompleteProductFields(
   const missingFields = checkCompleteProductFields(product);
   if (missingFields.length > 0) {
     throw new TypeError(
-      `Product does not contain or has invalid data for the following required fields: ${missingFields.join(", ")} `,
+      `Product does not contain or has invalid data for the following required fields: ${missingFields.join(', ')} `,
     );
   }
 }
@@ -517,7 +517,7 @@ export function isProduct(product: unknown): product is Product {
     assertCompleteProductFields(product);
     return true;
   } catch (error) {
-    console.warn("isProduct| The product is invalid", { product, error });
+    console.warn('isProduct| The product is invalid', { product, error });
     return false;
   }
 }
@@ -543,7 +543,7 @@ export function isProduct(product: unknown): product is Product {
  */
 export function isCurrencySymbol(symbol: unknown): symbol is CurrencySymbol {
   // CURRENCY_SYMBOL_MAP maps code -> symbol, so its values are the valid symbols (e.g. "$").
-  return typeof symbol === "string" && Object.values(CURRENCY_SYMBOL_MAP).includes(symbol);
+  return typeof symbol === 'string' && Object.values(CURRENCY_SYMBOL_MAP).includes(symbol);
 }
 
 /**
@@ -567,7 +567,7 @@ export function isCurrencySymbol(symbol: unknown): symbol is CurrencySymbol {
  */
 export function isCurrencyCode(code: unknown): code is CurrencyCode {
   // CURRENCY_SYMBOL_MAP maps code -> symbol, so its keys are the valid codes (e.g. "USD").
-  return typeof code === "string" && code in CURRENCY_SYMBOL_MAP;
+  return typeof code === 'string' && code in CURRENCY_SYMBOL_MAP;
 }
 
 /**
@@ -586,11 +586,11 @@ export function isCurrencyCode(code: unknown): code is CurrencyCode {
  * @source
  */
 export function isCountryCode(country: unknown): country is CountryCode {
-  return typeof country === "string" && findCountryByIso2(country) !== undefined;
+  return typeof country === 'string' && findCountryByIso2(country) !== undefined;
 }
 
 /** The valid {@link ShippingRange} values, mirrored at runtime for {@link isShippingRange}. */
-const SHIPPING_RANGES: readonly string[] = ["worldwide", "domestic", "international", "local"];
+const SHIPPING_RANGES: readonly string[] = ['worldwide', 'domestic', 'international', 'local'];
 
 /**
  * Type guard to validate if a value is a valid shipping range.
@@ -606,26 +606,26 @@ const SHIPPING_RANGES: readonly string[] = ["worldwide", "domestic", "internatio
  * @source
  */
 export function isShippingRange(shipping: unknown): shipping is ShippingRange {
-  return typeof shipping === "string" && SHIPPING_RANGES.includes(shipping);
+  return typeof shipping === 'string' && SHIPPING_RANGES.includes(shipping);
 }
 
 // The valid PaymentMethod values, mirrored at runtime for isPaymentMethod. The `satisfies`
 // makes a value removed from the union a compile error here; an *addition* to the union can
 // only be caught by the exhaustiveness test in typeGuards/__tests__/common.test.ts.
 const PAYMENT_METHODS: readonly string[] = [
-  "mastercard",
-  "visa",
-  "paypal",
-  "ach",
-  "cash",
-  "check",
-  "crypto",
-  "moneyorder",
-  "ebay",
-  "amazon",
-  "ebayonly",
-  "amazononly",
-  "other",
+  'mastercard',
+  'visa',
+  'paypal',
+  'ach',
+  'cash',
+  'check',
+  'crypto',
+  'moneyorder',
+  'ebay',
+  'amazon',
+  'ebayonly',
+  'amazononly',
+  'other',
 ] satisfies readonly PaymentMethod[];
 
 /**
@@ -642,7 +642,7 @@ const PAYMENT_METHODS: readonly string[] = [
  * @source
  */
 export function isPaymentMethod(method: unknown): method is PaymentMethod {
-  return typeof method === "string" && PAYMENT_METHODS.includes(method);
+  return typeof method === 'string' && PAYMENT_METHODS.includes(method);
 }
 
 /**
@@ -667,7 +667,7 @@ export function isPaymentMethod(method: unknown): method is PaymentMethod {
  */
 export function isPopulatedObject(obj: unknown): obj is Record<string, unknown> {
   return (
-    typeof obj === "object" &&
+    typeof obj === 'object' &&
     obj !== null &&
     Array.isArray(obj) === false &&
     Object.entries(obj).length > 0
@@ -762,7 +762,7 @@ export function isQuantityObject(value: unknown): value is QuantityObject {
  * @source
  */
 export function isCAS(cas: unknown): cas is CAS<string> {
-  if (typeof cas !== "string") return false;
+  if (typeof cas !== 'string') return false;
   const regex = RegExp(`^${CAS_REGEX.source}$`);
   const match = cas.match(regex);
   if (!match || !match.groups?.seg_a || !match.groups?.seg_b || !match.groups?.seg_checksum)
@@ -882,15 +882,15 @@ function buildUserSettingsSchema() {
     currencyRate: z.number().optional(),
     currency: z
       .string()
-      .refine((value) => isCurrencyCode(value), { message: "Invalid currency code" })
+      .refine((value) => isCurrencyCode(value), { message: 'Invalid currency code' })
       .optional(),
     // Allow an empty string for the "None" location option.
     location: z
       .string()
-      .refine((value) => value === "" || isCountryCode(value), { message: "Invalid country code" })
+      .refine((value) => value === '' || isCountryCode(value), { message: 'Invalid country code' })
       .optional(),
-    theme: z.enum(["light", "dark"]).optional(),
-    fontSize: z.enum(["small", "medium", "large"]).optional(),
+    theme: z.enum(['light', 'dark']).optional(),
+    fontSize: z.enum(['small', 'medium', 'large']).optional(),
     suppliers: z.array(z.enum(SUPPLIER_CLASS_NAMES)).optional(),
     excludeNonShippingSuppliers: z.boolean().optional(),
     hideRestrictedProducts: z.boolean().optional(),
@@ -922,7 +922,7 @@ function getUserSettingsSchema() {
 export function isValidUserSettings(settings: unknown): settings is UserSettings {
   const check = getUserSettingsSchema().safeParse(settings);
   if (!check.success) {
-    console.warn("isValidUserSettings| The user settings are invalid", {
+    console.warn('isValidUserSettings| The user settings are invalid', {
       settings,
       issues: zodAddActualValueToIssues(check.error.issues, settings),
     });
@@ -948,7 +948,7 @@ export function isValidUserSettings(settings: unknown): settings is UserSettings
  * @source
  */
 export function isPlainContainer(v: unknown): v is object {
-  if (v == null || typeof v !== "object") return false;
+  if (v == null || typeof v !== 'object') return false;
   if (Array.isArray(v)) return true;
   const proto = Object.getPrototypeOf(v);
   return proto === Object.prototype || proto === null;
@@ -981,7 +981,7 @@ export function isSmiles(smiles: unknown): smiles is Smiles<string> {
  * @source
  */
 export function isIupacName(value: unknown): value is IupacName<string> {
-  return typeof value === "string" && value.trim().length > 0;
+  return typeof value === 'string' && value.trim().length > 0;
 }
 
 /**
@@ -1001,8 +1001,8 @@ export function isIupacName(value: unknown): value is IupacName<string> {
  * @source
  */
 export function isPubChemCID(value: unknown): value is PubChemCID {
-  if (typeof value !== "number" && typeof value !== "string") return false;
-  const num = typeof value === "string" ? Number(value) : value;
+  if (typeof value !== 'number' && typeof value !== 'string') return false;
+  const num = typeof value === 'string' ? Number(value) : value;
   return Number.isInteger(num) && num > 0;
 }
 
@@ -1040,7 +1040,7 @@ export function toPubChemCID(value: number | string): PubChemCID {
  * @source
  */
 export function isInChIKey(value: unknown): value is InChIKey<string> {
-  return typeof value === "string" && /^[A-Z]{14}-[A-Z]{10}-[A-Z]$/.test(value);
+  return typeof value === 'string' && /^[A-Z]{14}-[A-Z]{10}-[A-Z]$/.test(value);
 }
 
 /**
@@ -1059,5 +1059,5 @@ export function isInChIKey(value: unknown): value is InChIKey<string> {
  * @source
  */
 export function isInChI(value: unknown): value is InChI<string> {
-  return typeof value === "string" && /^(InChI=)?1S?\/.+/.test(value);
+  return typeof value === 'string' && /^(InChI=)?1S?\/.+/.test(value);
 }

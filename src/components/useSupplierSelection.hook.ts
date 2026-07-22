@@ -1,6 +1,6 @@
-import { useAppContext } from "@/context";
-import { SupplierFactory } from "@/suppliers/SupplierFactory";
-import { ChangeEvent, useCallback } from "react";
+import { useAppContext } from '@/context';
+import { SupplierFactory } from '@/suppliers/SupplierFactory';
+import { ChangeEvent, useCallback } from 'react';
 
 /**
  * Hook to manage supplier selection state and handlers.
@@ -31,7 +31,7 @@ export function useSupplierSelection() {
   const appContext = useAppContext();
 
   if (!appContext) {
-    throw new Error("useSupplierSelection must be used within AppContext");
+    throw new Error('useSupplierSelection must be used within AppContext');
   }
 
   // `suppliers` is optional on UserSettings — coalesce so the hook's toggle

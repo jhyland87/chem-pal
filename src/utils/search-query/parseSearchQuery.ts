@@ -1,16 +1,16 @@
-import { parse as parseLiqe } from "liqe";
-import type { ParsedSearchQuery, SearchAst } from "./types";
+import { parse as parseLiqe } from 'liqe';
+import type { ParsedSearchQuery, SearchAst } from './types';
 
 /**
  * Bare words that act as boolean operators (case-insensitive).
  * @category Utils
  * @group Search
  */
-export const OPERATOR_WORDS = new Set(["AND", "OR", "NOT"]);
+export const OPERATOR_WORDS = new Set(['AND', 'OR', 'NOT']);
 
 /** A token produced by {@link tokenize}. */
 interface Token {
-  kind: "word" | "quoted" | "paren";
+  kind: 'word' | 'quoted' | 'paren';
   value: string;
 }
 
@@ -31,30 +31,30 @@ interface Token {
  */
 function tokenize(input: string): Token[] {
   const tokens: Token[] = [];
-  let buffer = "";
+  let buffer = '';
   const flush = (): void => {
     if (buffer.length > 0) {
-      tokens.push({ kind: "word", value: buffer });
-      buffer = "";
+      tokens.push({ kind: 'word', value: buffer });
+      buffer = '';
     }
   };
 
   for (let i = 0; i < input.length; i++) {
     const char = input[i];
-    if (char === " " || char === "\t" || char === "\n") {
+    if (char === ' ' || char === '\t' || char === '\n') {
       flush();
-    } else if (char === "(" || char === ")") {
+    } else if (char === '(' || char === ')') {
       flush();
-      tokens.push({ kind: "paren", value: char });
+      tokens.push({ kind: 'paren', value: char });
     } else if (char === '"') {
       flush();
-      let content = "";
+      let content = '';
       i++;
       while (i < input.length && input[i] !== '"') {
         content += input[i];
         i++;
       }
-      tokens.push({ kind: "quoted", value: content });
+      tokens.push({ kind: 'quoted', value: content });
     } else {
       buffer += char;
     }
@@ -71,7 +71,7 @@ function tokenize(input: string): Token[] {
  * @source
  */
 function isOperatorToken(token: Token): boolean {
-  return token.kind === "word" && OPERATOR_WORDS.has(token.value.toUpperCase());
+  return token.kind === 'word' && OPERATOR_WORDS.has(token.value.toUpperCase());
 }
 
 /**
@@ -101,25 +101,25 @@ function quotePhrases(input: string): string {
   const flushRun = (): void => {
     if (run.length > 0) {
       // Strip any stray quotes so they can't break the wrapper we add.
-      out.push(`"${run.join(" ").replace(/"/g, "")}"`);
+      out.push(`"${run.join(' ').replace(/"/g, '')}"`);
       run = [];
     }
   };
 
   for (const token of tokens) {
-    if (token.kind === "word" && !isOperatorToken(token)) {
+    if (token.kind === 'word' && !isOperatorToken(token)) {
       run.push(token.value);
       continue;
     }
     flushRun();
-    if (token.kind === "quoted") {
-      out.push(`"${token.value.replace(/"/g, "")}"`);
+    if (token.kind === 'quoted') {
+      out.push(`"${token.value.replace(/"/g, '')}"`);
     } else {
       out.push(token.value);
     }
   }
   flushRun();
-  return out.join(" ");
+  return out.join(' ');
 }
 
 /**
@@ -132,30 +132,30 @@ function quotePhrases(input: string): string {
  * @source
  */
 function normalizeLiqeNode(node: unknown): SearchAst {
-  if (typeof node !== "object" || node === null || !("type" in node)) {
-    throw new Error("Unrecognized liqe node");
+  if (typeof node !== 'object' || node === null || !('type' in node)) {
+    throw new Error('Unrecognized liqe node');
   }
   const typed = node as { type: string; [key: string]: unknown };
 
   switch (typed.type) {
-    case "Tag": {
+    case 'Tag': {
       const expression = typed.expression as { value?: unknown } | undefined;
       const value = expression?.value;
-      const text = value == null ? "" : String(value);
-      return { type: "term", value: text, phrase: text.includes(" ") };
+      const text = value == null ? '' : String(value);
+      return { type: 'term', value: text, phrase: text.includes(' ') };
     }
-    case "LogicalExpression": {
+    case 'LogicalExpression': {
       const operator = (typed.operator as { operator?: string } | undefined)?.operator;
       const left = normalizeLiqeNode(typed.left);
       const right = normalizeLiqeNode(typed.right);
-      return operator === "OR" ? { type: "or", left, right } : { type: "and", left, right };
+      return operator === 'OR' ? { type: 'or', left, right } : { type: 'and', left, right };
     }
-    case "UnaryOperator":
-      return { type: "not", operand: normalizeLiqeNode(typed.operand) };
-    case "ParenthesizedExpression":
+    case 'UnaryOperator':
+      return { type: 'not', operand: normalizeLiqeNode(typed.operand) };
+    case 'ParenthesizedExpression':
       return normalizeLiqeNode(typed.expression);
-    case "EmptyExpression":
-      return { type: "term", value: "", phrase: false };
+    case 'EmptyExpression':
+      return { type: 'term', value: '', phrase: false };
     default:
       throw new Error(`Unsupported liqe node type: ${typed.type}`);
   }
@@ -172,7 +172,7 @@ function normalizeLiqeNode(node: unknown): SearchAst {
  * @source
  */
 export function hasAdvancedSyntax(input: string): boolean {
-  return tokenize(input).some((token) => token.kind === "paren" || isOperatorToken(token));
+  return tokenize(input).some((token) => token.kind === 'paren' || isOperatorToken(token));
 }
 
 /**
@@ -201,14 +201,14 @@ export function hasAdvancedSyntax(input: string): boolean {
 export function parseSearchQuery(input: string): ParsedSearchQuery {
   const trimmed = input.trim();
 
-  if (trimmed === "") {
-    return { raw: input, ast: { type: "term", value: "", phrase: false }, isAdvanced: false };
+  if (trimmed === '') {
+    return { raw: input, ast: { type: 'term', value: '', phrase: false }, isAdvanced: false };
   }
 
   if (!hasAdvancedSyntax(trimmed)) {
     return {
       raw: input,
-      ast: { type: "term", value: trimmed, phrase: trimmed.includes(" ") },
+      ast: { type: 'term', value: trimmed, phrase: trimmed.includes(' ') },
       isAdvanced: false,
     };
   }
@@ -220,7 +220,7 @@ export function parseSearchQuery(input: string): ParsedSearchQuery {
     // Malformed advanced syntax — fall back to a plain search over the raw text.
     return {
       raw: input,
-      ast: { type: "term", value: trimmed, phrase: trimmed.includes(" ") },
+      ast: { type: 'term', value: trimmed, phrase: trimmed.includes(' ') },
       isAdvanced: false,
     };
   }

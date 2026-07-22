@@ -1,6 +1,6 @@
-import { detectTermType } from "./detectTermType";
-import { extractAllPositiveTerms } from "./extractPositiveTerms";
-import { hasAdvancedSyntax, OPERATOR_WORDS, parseSearchQuery } from "./parseSearchQuery";
+import { detectTermType } from './detectTermType';
+import { extractAllPositiveTerms } from './extractPositiveTerms';
+import { hasAdvancedSyntax, OPERATOR_WORDS, parseSearchQuery } from './parseSearchQuery';
 
 /** Number of rainbow colors cycled for nested parentheses (matched pairs share a depth). */
 const PAREN_PALETTE_SIZE = 5;
@@ -10,14 +10,14 @@ const PAREN_PALETTE_SIZE = 5;
  * @category Utils
  * @group Search
  */
-export type HighlightState = "plain" | "advanced" | "error";
+export type HighlightState = 'plain' | 'advanced' | 'error';
 
 /**
  * The token classes the highlighter colorizes.
  * @category Utils
  * @group Search
  */
-export type HighlightTokenKind = "keyword" | "paren" | "quoted" | "term" | "whitespace";
+export type HighlightTokenKind = 'keyword' | 'paren' | 'quoted' | 'term' | 'whitespace';
 
 /**
  * A single highlightable span over the raw query string.
@@ -54,11 +54,11 @@ export interface HighlightResult {
 
 /** HTML entities escaped before injecting query text into the highlight backdrop. */
 const HTML_ESCAPES: Record<string, string> = {
-  "&": "&amp;",
-  "<": "&lt;",
-  ">": "&gt;",
-  '"': "&quot;",
-  "'": "&#39;",
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
 };
 
 /**
@@ -83,7 +83,7 @@ function escapeHtml(value: string): string {
  * @source
  */
 function isWhitespace(char: string): boolean {
-  return char === " " || char === "\t" || char === "\n";
+  return char === ' ' || char === '\t' || char === '\n';
 }
 
 /**
@@ -115,14 +115,14 @@ export function tokenizeWithSpans(input: string): HighlightToken[] {
     if (isWhitespace(char)) {
       const start = i;
       while (i < input.length && isWhitespace(input[i])) i++;
-      tokens.push({ kind: "whitespace", text: input.slice(start, i), start, end: i });
+      tokens.push({ kind: 'whitespace', text: input.slice(start, i), start, end: i });
       continue;
     }
 
-    if (char === "(") {
+    if (char === '(') {
       tokens.push({
-        kind: "paren",
-        text: "(",
+        kind: 'paren',
+        text: '(',
         start: i,
         end: i + 1,
         depth: depth % PAREN_PALETTE_SIZE,
@@ -133,19 +133,19 @@ export function tokenizeWithSpans(input: string): HighlightToken[] {
       continue;
     }
 
-    if (char === ")") {
+    if (char === ')') {
       if (openParenTokens.length > 0) {
         openParenTokens.pop();
         depth--;
         tokens.push({
-          kind: "paren",
-          text: ")",
+          kind: 'paren',
+          text: ')',
           start: i,
           end: i + 1,
           depth: depth % PAREN_PALETTE_SIZE,
         });
       } else {
-        tokens.push({ kind: "paren", text: ")", start: i, end: i + 1, error: true });
+        tokens.push({ kind: 'paren', text: ')', start: i, end: i + 1, error: true });
       }
       i++;
       continue;
@@ -158,7 +158,7 @@ export function tokenizeWithSpans(input: string): HighlightToken[] {
       const terminated = i < input.length;
       if (terminated) i++; // consume the closing quote
       tokens.push({
-        kind: "quoted",
+        kind: 'quoted',
         text: input.slice(start, i),
         start,
         end: i,
@@ -172,14 +172,14 @@ export function tokenizeWithSpans(input: string): HighlightToken[] {
     while (
       i < input.length &&
       !isWhitespace(input[i]) &&
-      input[i] !== "(" &&
-      input[i] !== ")" &&
+      input[i] !== '(' &&
+      input[i] !== ')' &&
       input[i] !== '"'
     ) {
       i++;
     }
     const text = input.slice(start, i);
-    const kind: HighlightTokenKind = OPERATOR_WORDS.has(text.toUpperCase()) ? "keyword" : "term";
+    const kind: HighlightTokenKind = OPERATOR_WORDS.has(text.toUpperCase()) ? 'keyword' : 'term';
     tokens.push({ kind, text, start, end: i });
   }
 
@@ -205,31 +205,31 @@ export function tokenizeWithSpans(input: string): HighlightToken[] {
  */
 function renderToken(token: HighlightToken, advanced: boolean): string {
   const text = escapeHtml(token.text);
-  if (token.kind === "whitespace") return text;
+  if (token.kind === 'whitespace') return text;
 
   // A quoted phrase is colored exactly like the equivalent bare term — the
   // quotes only affect parsing, not the term's type — so both use `hl-term`.
-  const isTermLike = token.kind === "term" || token.kind === "quoted";
-  const classes = [isTermLike ? "hl-term" : `hl-${token.kind}`];
-  if (token.kind === "paren" && token.depth !== undefined) {
+  const isTermLike = token.kind === 'term' || token.kind === 'quoted';
+  const classes = [isTermLike ? 'hl-term' : `hl-${token.kind}`];
+  if (token.kind === 'paren' && token.depth !== undefined) {
     classes.push(`hl-paren-${token.depth}`);
   }
   // Tint a term by what it looks like — CAS, SMILES, or formula. Detection runs
   // on the inner text of a quoted token.
   if (isTermLike) {
-    const inner = token.kind === "quoted" ? token.text.replace(/^"|"$/g, "") : token.text;
+    const inner = token.kind === 'quoted' ? token.text.replace(/^"|"$/g, '') : token.text;
     const termType = detectTermType(inner);
-    if (termType !== "string") {
+    if (termType !== 'string') {
       classes.push(`hl-term-${termType}`);
     } else if (advanced) {
       // A plain-string term gets its own color, but only inside an advanced
       // query (a lone plain search stays uncolored).
-      classes.push("hl-term-string");
+      classes.push('hl-term-string');
     }
   }
-  if (token.error) classes.push("hl-error");
+  if (token.error) classes.push('hl-error');
 
-  return `<span class="${classes.join(" ")}">${text}</span>`;
+  return `<span class="${classes.join(' ')}">${text}</span>`;
 }
 
 /**
@@ -255,31 +255,31 @@ function renderToken(token: HighlightToken, advanced: boolean): string {
 export function highlightSearchQuery(input: string): HighlightResult {
   const tokens = tokenizeWithSpans(input);
   const advanced = hasAdvancedSyntax(input);
-  const html = tokens.map((token) => renderToken(token, advanced)).join("");
+  const html = tokens.map((token) => renderToken(token, advanced)).join('');
 
   if (!advanced) {
-    return { html, state: "plain" };
+    return { html, state: 'plain' };
   }
 
   const parsed = parseSearchQuery(input);
 
   // Advanced syntax present but the parser fell back to a plain term ⇒ malformed.
   if (!parsed.isAdvanced) {
-    const hasUnbalancedParens = tokens.some((token) => token.kind === "paren" && token.error);
+    const hasUnbalancedParens = tokens.some((token) => token.kind === 'paren' && token.error);
     return {
       html,
-      state: "error",
-      message: hasUnbalancedParens ? "Unbalanced parentheses." : "Invalid advanced query syntax.",
+      state: 'error',
+      message: hasUnbalancedParens ? 'Unbalanced parentheses.' : 'Invalid advanced query syntax.',
     };
   }
 
   if (extractAllPositiveTerms(parsed.ast).length === 0) {
     return {
       html,
-      state: "error",
-      message: "Add at least one term to include — a query of only exclusions matches everything.",
+      state: 'error',
+      message: 'Add at least one term to include — a query of only exclusions matches everything.',
     };
   }
 
-  return { html, state: "advanced" };
+  return { html, state: 'advanced' };
 }

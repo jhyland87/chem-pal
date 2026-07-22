@@ -14,11 +14,11 @@ const storageMock = {
               ? JSON.parse(String(localStorage.getItem(key)))
               : null;
           });
-        } else if (typeof keys === "string") {
+        } else if (typeof keys === 'string') {
           result[keys] = localStorage.getItem(keys)
             ? JSON.parse(String(localStorage.getItem(keys)))
             : null;
-        } else if (typeof keys === "object" && keys !== null) {
+        } else if (typeof keys === 'object' && keys !== null) {
           Object.keys(keys).forEach((key) => {
             result[key] = localStorage.getItem(key)
               ? JSON.parse(String(localStorage.getItem(key)))
@@ -57,11 +57,11 @@ const storageMock = {
               ? JSON.parse(String(localStorage.getItem(key)))
               : null;
           });
-        } else if (typeof keys === "string") {
+        } else if (typeof keys === 'string') {
           result[keys] = localStorage.getItem(keys)
             ? JSON.parse(String(localStorage.getItem(keys)))
             : null;
-        } else if (typeof keys === "object" && keys !== null) {
+        } else if (typeof keys === 'object' && keys !== null) {
           Object.keys(keys).forEach((key) => {
             result[key] = localStorage.getItem(key)
               ? JSON.parse(String(localStorage.getItem(key)))
@@ -93,7 +93,7 @@ const storageMock = {
 };
 
 if (!chrome.storage) {
-  console.debug("!!! chrome.storage not found, using mock - may result in unexpected behavior !!!");
+  console.debug('!!! chrome.storage not found, using mock - may result in unexpected behavior !!!');
   window.chrome = {
     storage: storageMock as unknown as typeof chrome.storage,
   } as unknown as typeof chrome;

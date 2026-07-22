@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 const ambeedProductListResponseSchema = z.object({
   source: z.number(),
@@ -53,7 +53,7 @@ export function assertIsAmbeedProductListResponse(
   data: unknown,
 ): asserts data is AmbeedProductListResponse {
   if (!isAmbeedProductListResponse(data)) {
-    throw new Error("assertIsAmbeedProductListResponse failed");
+    throw new Error('assertIsAmbeedProductListResponse failed');
   }
 }
 
@@ -62,8 +62,8 @@ const ambeedProductListResponseValueSchema = z.object({
   pagenum: z.number(),
   pageindex: z.number(),
   pagesize: z.number(),
-  result: z.custom<object>((val) => typeof val === "object" && val !== null),
-  menu_res: z.custom<object>((val) => typeof val === "object" && val !== null),
+  result: z.custom<object>((val) => typeof val === 'object' && val !== null),
+  menu_res: z.custom<object>((val) => typeof val === 'object' && val !== null),
 });
 
 /**
@@ -90,7 +90,7 @@ export function isAmbeedProductListResponseValue(
 
 const ambeedProductListResponseResultItemSchema = z.object({
   p_id: z.string(),
-  priceList: z.custom<object>((val) => typeof val === "object" && val !== null),
+  priceList: z.custom<object>((val) => typeof val === 'object' && val !== null),
   p_proper_name3: z.string(),
   p_am: z.string(),
   s_url: z.string(),
@@ -185,7 +185,7 @@ const ambeedProductPriceResponseSchema = z.object({
   lang: z.string(),
   time: z.string(),
   value: z.object({
-    proInfo: z.custom<object>((val) => typeof val === "object" && val !== null),
+    proInfo: z.custom<object>((val) => typeof val === 'object' && val !== null),
   }),
 });
 
@@ -228,7 +228,7 @@ export function assertIsAmbeedProductPriceResponse(
   data: unknown,
 ): asserts data is AmbeedProductPriceResponse {
   if (!isAmbeedProductPriceResponse(data)) {
-    throw new Error("assertIsAmbeedProductPriceResponse failed");
+    throw new Error('assertIsAmbeedProductPriceResponse failed');
   }
 }
 
@@ -238,7 +238,7 @@ const ambeedGetSearchProductAndRecommendedProductsByCASResponseSchema = z.object
   lang: z.string(),
   time: z.string(),
   value: z.object({
-    search_pro_dict: z.custom<object>((val) => typeof val === "object" && val !== null),
+    search_pro_dict: z.custom<object>((val) => typeof val === 'object' && val !== null),
     r_pro_list: z.array(z.unknown()),
   }),
 });
@@ -287,7 +287,7 @@ export function assertIsAmbeedGetSearchProductAndRecommendedProductsByCASRespons
   data: unknown,
 ): asserts data is AmbeedGetSearchProductAndRecommendedProductsByCASResponse {
   if (!isAmbeedGetSearchProductAndRecommendedProductsByCASResponse(data)) {
-    throw new Error("assertIsAmbeedGetSearchProductAndRecommendedProductsByCASResponse failed");
+    throw new Error('assertIsAmbeedGetSearchProductAndRecommendedProductsByCASResponse failed');
   }
 }
 
@@ -338,7 +338,7 @@ export function assertIsAmbeedProductStockResponse(
   data: unknown,
 ): asserts data is AmbeedProductStockResponse {
   if (!isAmbeedProductStockResponse(data)) {
-    throw new Error("assertIsAmbeedProductStockResponse failed");
+    throw new Error('assertIsAmbeedProductStockResponse failed');
   }
 }
 
@@ -393,6 +393,6 @@ export function assertIsAmbeedGetPmsSdsByAmsResponse(
   data: unknown,
 ): asserts data is AmbeedGetPmsSdsByAmsResponse {
   if (!isAmbeedGetPmsSdsByAmsResponse(data)) {
-    throw new Error("assertIsAmbeedGetPmsSdsByAmsResponse failed");
+    throw new Error('assertIsAmbeedGetPmsSdsByAmsResponse failed');
   }
 }

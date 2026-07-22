@@ -1,6 +1,6 @@
 /** @internal */
-import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
-import { FC } from "react";
+import SvgIcon, { type SvgIconProps } from '@mui/material/SvgIcon';
+import { FC } from 'react';
 
 /** Props for {@link CustomFileIcon}: a colored document with a labeled band and optional language badge. */
 export interface CustomFileIconProps extends SvgIconProps {
@@ -26,8 +26,8 @@ export interface CustomFileIconProps extends SvgIconProps {
 
 /** Closed outline of the document body, a rounded sheet with a folded top-right corner. */
 const DOCUMENT_PATH =
-  "M7.24,6.42 C7.24,5.55,7.95,4.85,8.83,4.85 H30.06 L41.46,16.25 V43.58 " +
-  "C41.46,44.45,40.7,45.15,39.76,45.15 H8.94 C8,45.15,7.24,44.45,7.24,43.58 Z";
+  'M7.24,6.42 C7.24,5.55,7.95,4.85,8.83,4.85 H30.06 L41.46,16.25 V43.58 ' +
+  'C41.46,44.45,40.7,45.15,39.76,45.15 H8.94 C8,45.15,7.24,44.45,7.24,43.58 Z';
 
 /**
  * Picks a readable text color (black or white) for a given background color.
@@ -42,22 +42,22 @@ const DOCUMENT_PATH =
  * @source
  */
 const getContrastTextColor = (background: string): string => {
-  const hex = background.replace("#", "");
+  const hex = background.replace('#', '');
   const normalized =
     hex.length === 3
       ? hex
-          .split("")
+          .split('')
           .map((char) => char + char)
-          .join("")
+          .join('')
       : hex;
   if (!/^[0-9a-fA-F]{6}$/.test(normalized)) {
-    return "#000000";
+    return '#000000';
   }
   const r = Number.parseInt(normalized.slice(0, 2), 16);
   const g = Number.parseInt(normalized.slice(2, 4), 16);
   const b = Number.parseInt(normalized.slice(4, 6), 16);
   const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return yiq >= 128 ? "#000000" : "#ffffff";
+  return yiq >= 128 ? '#000000' : '#ffffff';
 };
 
 /**
@@ -77,13 +77,13 @@ const getContrastTextColor = (background: string): string => {
 const CustomFileIcon: FC<CustomFileIconProps> = ({
   label,
   labelFontSize = 15,
-  labelLetterSpacing = ".04em",
-  documentColor = "#ffffff",
-  labelColor = "#000000",
+  labelLetterSpacing = '.04em',
+  documentColor = '#ffffff',
+  labelColor = '#000000',
   textColor,
-  outlineColor = "currentColor",
+  outlineColor = 'currentColor',
   language,
-  languageColor = "#000000",
+  languageColor = '#000000',
   ...props
 }) => {
   const labelTextColor = textColor ?? getContrastTextColor(labelColor);

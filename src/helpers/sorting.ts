@@ -1,5 +1,5 @@
-import { sortablePurityGrade } from "@/helpers/science";
-import type { Row } from "@tanstack/react-table";
+import { sortablePurityGrade } from '@/helpers/science';
+import type { Row } from '@tanstack/react-table';
 
 /**
  * @category Tanstack Sorting Functions
@@ -87,7 +87,7 @@ export function priceSortingFn(rowA: Row<Product>, rowB: Row<Product>) {
  * @source
  */
 export function puritySortingFn(rowA: Row<Product>, rowB: Row<Product>) {
-  const a = sortablePurityGrade(rowA.original.grade ?? rowA.original.purity ?? "");
-  const b = sortablePurityGrade(rowB.original.grade ?? rowB.original.purity ?? "");
+  const a = sortablePurityGrade(rowA.original.grade ?? rowA.original.purity ?? '');
+  const b = sortablePurityGrade(rowB.original.grade ?? rowB.original.purity ?? '');
   return a > b ? 1 : a < b ? -1 : 0;
 }

@@ -1,41 +1,41 @@
-import { describe, expect, it } from "vitest";
-import { isValidSearchResponse, isValidSearchResponseItem } from "../chemsavers";
+import { describe, expect, it } from 'vitest';
+import { isValidSearchResponse, isValidSearchResponseItem } from '../chemsavers';
 
-describe("Chemsavers TypeGuards", () => {
-  describe("isValidSearchResponseItem", () => {
+describe('Chemsavers TypeGuards', () => {
+  describe('isValidSearchResponseItem', () => {
     const validProduct = {
       document: {
-        CAS: "7647-14-5",
-        id: "prod_123",
+        CAS: '7647-14-5',
+        id: 'prod_123',
         inventoryLevel: 100,
-        name: "Sodium Chloride",
+        name: 'Sodium Chloride',
         product_id: 12345,
         retailPrice: 29.99,
         salePrice: 24.99,
         price: 24.99,
-        sku: "SC-500G",
-        upc: "123456789012",
-        url: "/products/sodium-chloride",
+        sku: 'SC-500G',
+        upc: '123456789012',
+        url: '/products/sodium-chloride',
       },
     };
 
-    it("should return true for a valid product object", () => {
+    it('should return true for a valid product object', () => {
       expect(isValidSearchResponseItem(validProduct)).toBe(true);
     });
 
-    it("should return false for null", () => {
+    it('should return false for null', () => {
       expect(isValidSearchResponseItem(null)).toBe(false);
     });
 
-    it("should return false for non-object values", () => {
+    it('should return false for non-object values', () => {
       const nonObjectValues = [
-        "not an object",
+        'not an object',
         123,
         true,
         false,
         undefined,
         () => {},
-        Symbol("product"),
+        Symbol('product'),
         [],
       ];
 
@@ -44,25 +44,25 @@ describe("Chemsavers TypeGuards", () => {
       });
     });
 
-    it("should return false for objects missing document property", () => {
+    it('should return false for objects missing document property', () => {
       const noDocument = {
         // Missing document property
-        CAS: "7647-14-5",
-        name: "Sodium Chloride",
+        CAS: '7647-14-5',
+        name: 'Sodium Chloride',
       };
 
       expect(isValidSearchResponseItem(noDocument)).toBe(false);
     });
 
-    it("should return false for objects with non-object document property", () => {
+    it('should return false for objects with non-object document property', () => {
       const nonObjectDocument = {
-        document: "not an object",
+        document: 'not an object',
       };
 
       expect(isValidSearchResponseItem(nonObjectDocument)).toBe(false);
     });
 
-    it("should return false for objects with undefined document property", () => {
+    it('should return false for objects with undefined document property', () => {
       const undefinedDocument = {
         document: undefined,
       };
@@ -70,35 +70,35 @@ describe("Chemsavers TypeGuards", () => {
       expect(isValidSearchResponseItem(undefinedDocument)).toBe(false);
     });
 
-    it("should return false for objects missing required document properties", () => {
+    it('should return false for objects missing required document properties', () => {
       const missingProps = [
         {
           document: {
-            id: "prod_123",
+            id: 'prod_123',
             inventoryLevel: 100,
-            name: "Sodium Chloride",
+            name: 'Sodium Chloride',
             product_id: 12345,
             retailPrice: 29.99,
             salePrice: 24.99,
             price: 24.99,
-            sku: "SC-500G",
-            upc: "123456789012",
+            sku: 'SC-500G',
+            upc: '123456789012',
             //url: "/products/sodium-chloride",
           },
         },
         {
           document: {
-            CAS: "7647-14-5",
+            CAS: '7647-14-5',
             // Missing id
             inventoryLevel: 100,
-            name: "Sodium Chloride",
+            name: 'Sodium Chloride',
             product_id: 12345,
             retailPrice: 29.99,
             salePrice: 24.99,
             //price: 24.99,
-            sku: "SC-500G",
-            upc: "123456789012",
-            url: "/products/sodium-chloride",
+            sku: 'SC-500G',
+            upc: '123456789012',
+            url: '/products/sodium-chloride',
           },
         },
         // ... and so on for each required property
@@ -109,7 +109,7 @@ describe("Chemsavers TypeGuards", () => {
       });
     });
 
-    it("should return false for objects with wrong property types", () => {
+    it('should return false for objects with wrong property types', () => {
       const wrongTypes = [
         {
           document: {
@@ -127,7 +127,7 @@ describe("Chemsavers TypeGuards", () => {
         {
           document: {
             ...validProduct.document,
-            inventoryLevel: "100", // Should be number
+            inventoryLevel: '100', // Should be number
           },
         },
         {
@@ -139,25 +139,25 @@ describe("Chemsavers TypeGuards", () => {
         {
           document: {
             ...validProduct.document,
-            product_id: "12345", // Should be number
+            product_id: '12345', // Should be number
           },
         },
         {
           document: {
             ...validProduct.document,
-            retailPrice: "29.99", // Should be number
+            retailPrice: '29.99', // Should be number
           },
         },
         {
           document: {
             ...validProduct.document,
-            salePrice: "24.99", // Should be number
+            salePrice: '24.99', // Should be number
           },
         },
         {
           document: {
             ...validProduct.document,
-            price: "24.99", // Should be number
+            price: '24.99', // Should be number
           },
         },
         {
@@ -186,24 +186,24 @@ describe("Chemsavers TypeGuards", () => {
     });
   });
 
-  describe("isValidSearchResponse", () => {
+  describe('isValidSearchResponse', () => {
     const validResponse = {
       results: [
         {
           hits: [
             {
               document: {
-                CAS: "7647-14-5",
-                id: "prod_123",
+                CAS: '7647-14-5',
+                id: 'prod_123',
                 inventoryLevel: 100,
-                name: "Sodium Chloride",
+                name: 'Sodium Chloride',
                 product_id: 12345,
                 retailPrice: 29.99,
                 salePrice: 24.99,
                 price: 24.99,
-                sku: "SC-500G",
-                upc: "123456789012",
-                url: "/products/sodium-chloride",
+                sku: 'SC-500G',
+                upc: '123456789012',
+                url: '/products/sodium-chloride',
               },
             },
           ],
@@ -211,23 +211,23 @@ describe("Chemsavers TypeGuards", () => {
       ],
     };
 
-    it("should return true for a valid search response", () => {
+    it('should return true for a valid search response', () => {
       expect(isValidSearchResponse(validResponse)).toBe(true);
     });
 
-    it("should return false for null", () => {
+    it('should return false for null', () => {
       expect(isValidSearchResponse(null)).toBe(false);
     });
 
-    it("should return false for non-object values", () => {
+    it('should return false for non-object values', () => {
       const nonObjectValues = [
-        "not an object",
+        'not an object',
         123,
         true,
         false,
         undefined,
         () => {},
-        Symbol("response"),
+        Symbol('response'),
         [],
       ];
 
@@ -236,7 +236,7 @@ describe("Chemsavers TypeGuards", () => {
       });
     });
 
-    it("should return false for objects missing results property", () => {
+    it('should return false for objects missing results property', () => {
       const noResults = {
         // Missing results property
       };
@@ -244,15 +244,15 @@ describe("Chemsavers TypeGuards", () => {
       expect(isValidSearchResponse(noResults)).toBe(false);
     });
 
-    it("should return false for objects with non-array results", () => {
+    it('should return false for objects with non-array results', () => {
       const nonArrayResults = {
-        results: "not an array",
+        results: 'not an array',
       };
 
       expect(isValidSearchResponse(nonArrayResults)).toBe(false);
     });
 
-    it("should return false for objects with empty results array", () => {
+    it('should return false for objects with empty results array', () => {
       const emptyResults = {
         results: [],
       };
@@ -260,7 +260,7 @@ describe("Chemsavers TypeGuards", () => {
       expect(isValidSearchResponse(emptyResults)).toBe(false);
     });
 
-    it("should return false for objects with missing hits property", () => {
+    it('should return false for objects with missing hits property', () => {
       const noHits = {
         results: [
           {
@@ -272,11 +272,11 @@ describe("Chemsavers TypeGuards", () => {
       expect(isValidSearchResponse(noHits)).toBe(false);
     });
 
-    it("should return false for objects with non-array hits", () => {
+    it('should return false for objects with non-array hits', () => {
       const nonArrayHits = {
         results: [
           {
-            hits: "not an array",
+            hits: 'not an array',
           },
         ],
       };
@@ -284,7 +284,7 @@ describe("Chemsavers TypeGuards", () => {
       expect(isValidSearchResponse(nonArrayHits)).toBe(false);
     });
 
-    it("should return false for objects with invalid hits", () => {
+    it('should return false for objects with invalid hits', () => {
       const invalidHits = [
         {
           results: [
@@ -304,7 +304,7 @@ describe("Chemsavers TypeGuards", () => {
                 {
                   document: {
                     // Invalid document (missing required properties)
-                    name: "Sodium Chloride",
+                    name: 'Sodium Chloride',
                   },
                 },
               ],
@@ -319,16 +319,16 @@ describe("Chemsavers TypeGuards", () => {
                   document: {
                     // Invalid document (wrong property types)
                     CAS: 7647145,
-                    id: "prod_123",
+                    id: 'prod_123',
                     inventoryLevel: 100,
-                    name: "Sodium Chloride",
+                    name: 'Sodium Chloride',
                     productId: 12345,
                     retailPrice: 29.99,
                     salePrice: 24.99,
                     price: 24.99,
-                    sku: "SC-500G",
-                    upc: "123456789012",
-                    url: "/products/sodium-chloride",
+                    sku: 'SC-500G',
+                    upc: '123456789012',
+                    url: '/products/sodium-chloride',
                   },
                 },
               ],
@@ -342,39 +342,39 @@ describe("Chemsavers TypeGuards", () => {
       });
     });
 
-    it("should handle multiple valid hits in the response", () => {
+    it('should handle multiple valid hits in the response', () => {
       const multipleHits = {
         results: [
           {
             hits: [
               {
                 document: {
-                  CAS: "7647-14-5",
-                  id: "prod_123",
+                  CAS: '7647-14-5',
+                  id: 'prod_123',
                   inventoryLevel: 100,
-                  name: "Sodium Chloride",
+                  name: 'Sodium Chloride',
                   product_id: 12345,
                   retailPrice: 29.99,
                   salePrice: 24.99,
                   price: 24.99,
-                  sku: "SC-500G",
-                  upc: "123456789012",
-                  url: "/products/sodium-chloride",
+                  sku: 'SC-500G',
+                  upc: '123456789012',
+                  url: '/products/sodium-chloride',
                 },
               },
               {
                 document: {
-                  CAS: "67-64-1",
-                  id: "prod_456",
+                  CAS: '67-64-1',
+                  id: 'prod_456',
                   inventoryLevel: 50,
-                  name: "Acetone",
+                  name: 'Acetone',
                   product_id: 67890,
                   retailPrice: 19.99,
                   salePrice: 15.99,
                   price: 15.99,
-                  sku: "AC-1L",
-                  upc: "987654321098",
-                  url: "/products/acetone",
+                  sku: 'AC-1L',
+                  upc: '987654321098',
+                  url: '/products/acetone',
                 },
               },
             ],
@@ -385,30 +385,30 @@ describe("Chemsavers TypeGuards", () => {
       expect(isValidSearchResponse(multipleHits)).toBe(true);
     });
 
-    it("should return false if any hit in the response is invalid", () => {
+    it('should return false if any hit in the response is invalid', () => {
       const mixedHits = {
         results: [
           {
             hits: [
               {
                 document: {
-                  CAS: "7647-14-5",
-                  id: "prod_123",
+                  CAS: '7647-14-5',
+                  id: 'prod_123',
                   inventoryLevel: 100,
-                  name: "Sodium Chloride",
+                  name: 'Sodium Chloride',
                   product_id: 12345,
                   retailPrice: 29.99,
                   salePrice: 24.99,
                   price: 24.99,
-                  sku: "SC-500G",
-                  upc: "123456789012",
-                  url: "/products/sodium-chloride",
+                  sku: 'SC-500G',
+                  upc: '123456789012',
+                  url: '/products/sodium-chloride',
                 },
               },
               {
                 document: {
                   // Invalid hit (missing required properties)
-                  name: "Acetone",
+                  name: 'Acetone',
                 },
               },
             ],

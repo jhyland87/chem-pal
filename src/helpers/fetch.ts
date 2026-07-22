@@ -1,5 +1,5 @@
-import { HttpError } from "@/helpers/exceptions";
-import { addCapturedResponse, initConsoleApi } from "@/helpers/responseAggregate";
+import { HttpError } from '@/helpers/exceptions';
+import { addCapturedResponse, initConsoleApi } from '@/helpers/responseAggregate';
 
 /**
  * Response type that extends the standard Response with additional properties
@@ -10,7 +10,7 @@ import { addCapturedResponse, initConsoleApi } from "@/helpers/responseAggregate
 export type FetchDecoratorResponse = Response & { data: unknown; requestHash: string };
 
 // Initialize the console API when in aggregate mode
-if (typeof __RESPONSE_AGGREGATE__ !== "undefined" && __RESPONSE_AGGREGATE__) {
+if (typeof __RESPONSE_AGGREGATE__ !== 'undefined' && __RESPONSE_AGGREGATE__) {
   initConsoleApi();
 }
 
@@ -70,15 +70,15 @@ export async function generateRequestHash(
   options?: RequestInit,
 ): Promise<string> {
   const url = input instanceof Request ? input.url : String(input);
-  const method = input instanceof Request ? input.method : options?.method || "GET";
+  const method = input instanceof Request ? input.method : options?.method || 'GET';
   const headers = input instanceof Request ? input.headers : options?.headers || {};
-  const body = input instanceof Request ? input.body : options?.body || "";
+  const body = input instanceof Request ? input.body : options?.body || '';
   const contentType =
     input instanceof Request
-      ? input.headers.get("content-type") || ""
+      ? input.headers.get('content-type') || ''
       : ((headers instanceof Headers
-          ? headers.get("content-type")
-          : Reflect.get(headers, "content-type")) ?? "");
+          ? headers.get('content-type')
+          : Reflect.get(headers, 'content-type')) ?? '');
 
   const data = {
     url,
@@ -153,7 +153,7 @@ export async function fetchDecorator(
   // For POST requests, fetch() reads the request body, making it impossible
   // to clone afterward.
   let aggregateRequestClone: Request | undefined;
-  if (typeof __RESPONSE_AGGREGATE__ !== "undefined" && __RESPONSE_AGGREGATE__) {
+  if (typeof __RESPONSE_AGGREGATE__ !== 'undefined' && __RESPONSE_AGGREGATE__) {
     aggregateRequestClone =
       input instanceof Request ? input.clone() : new Request(String(input), init);
   }
@@ -166,7 +166,7 @@ export async function fetchDecorator(
   // to enhancedResponse (which makes the original response disturbed).
   // Done before the !response.ok check so error responses (4xx, 5xx) are also captured.
   let aggregateResponseClone: Response | undefined;
-  if (typeof __RESPONSE_AGGREGATE__ !== "undefined" && __RESPONSE_AGGREGATE__) {
+  if (typeof __RESPONSE_AGGREGATE__ !== 'undefined' && __RESPONSE_AGGREGATE__) {
     aggregateResponseClone = response.clone();
   }
 
@@ -178,19 +178,19 @@ export async function fetchDecorator(
     throw new HttpError(clonedResponse.status, clonedResponse.statusText);
   }
 
-  const contentType = clonedResponse.headers.get("content-type") || "";
+  const contentType = clonedResponse.headers.get('content-type') || '';
   let data: unknown;
 
   try {
-    if (contentType.includes("application/json")) {
+    if (contentType.includes('application/json')) {
       data = await clonedResponse.clone().json();
-    } else if (contentType.includes("text/") || contentType.includes("json-amazonui-streaming")) {
+    } else if (contentType.includes('text/') || contentType.includes('json-amazonui-streaming')) {
       data = await clonedResponse.clone().text();
     } else {
       data = await clonedResponse.clone().blob();
     }
   } catch {
-    console.debug("clonedResponse:", clonedResponse);
+    console.debug('clonedResponse:', clonedResponse);
     data = await clonedResponse.clone().text();
   }
 

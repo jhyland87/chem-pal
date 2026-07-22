@@ -2,25 +2,25 @@ import {
   resetChromeStorageMock,
   restoreChromeStorageMock,
   setupChromeStorageMock,
-} from "@/__fixtures__/helpers/chrome/storageMock";
-import { render, screen, waitFor } from "@testing-library/react";
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+} from '@/__fixtures__/helpers/chrome/storageMock';
+import { render, screen, waitFor } from '@testing-library/react';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the context
 const mockSetPanel = vi.fn();
-vi.mock("@/context", () => ({
+vi.mock('@/context', () => ({
   useAppContext: () => ({
     setPanel: mockSetPanel,
   }),
 }));
 
 // Mock @mui/icons-material to avoid ENFILE from barrel import
-vi.mock("@mui/icons-material", () => ({
+vi.mock('@mui/icons-material', () => ({
   Delete: vi.fn((props: any) => <span data-testid="DeleteIcon" {...props} />),
 }));
 
 // Mock MUI X Charts — complex SVG components that don't render well in jsdom
-vi.mock("@mui/x-charts/PieChart", () => ({
+vi.mock('@mui/x-charts/PieChart', () => ({
   PieChart: vi.fn(({ series, children }: any) => (
     <div data-testid="mock-pie-chart">
       <div data-testid="pie-series-count">{series?.length ?? 0}</div>
@@ -29,7 +29,7 @@ vi.mock("@mui/x-charts/PieChart", () => ({
   )),
 }));
 
-vi.mock("@mui/x-charts/LineChart", () => ({
+vi.mock('@mui/x-charts/LineChart', () => ({
   LineChart: vi.fn(({ series }: any) => (
     <div data-testid="mock-line-chart">
       <div data-testid="line-series-count">{series?.length ?? 0}</div>
@@ -37,12 +37,12 @@ vi.mock("@mui/x-charts/LineChart", () => ({
   )),
 }));
 
-vi.mock("@mui/x-charts/hooks", () => ({
+vi.mock('@mui/x-charts/hooks', () => ({
   useDrawingArea: () => ({ width: 400, height: 300, left: 0, top: 0 }),
 }));
 
 // Mock DataGrid
-vi.mock("@mui/x-data-grid", () => ({
+vi.mock('@mui/x-data-grid', () => ({
   DataGrid: vi.fn(({ rows, columns }: any) => (
     <div data-testid="mock-data-grid">
       <div data-testid="grid-row-count">{rows?.length ?? 0}</div>
@@ -52,18 +52,18 @@ vi.mock("@mui/x-data-grid", () => ({
 }));
 
 // Mock the stats store
-vi.mock("@/utils/SupplierStatsStore", () => ({
+vi.mock('@/utils/SupplierStatsStore', () => ({
   getStats: vi.fn(),
   clearStats: vi.fn(),
 }));
 
-import { clearStats, getStats } from "@/utils/SupplierStatsStore";
-import StatsPanel from "../StatsPanel";
+import { clearStats, getStats } from '@/utils/SupplierStatsStore';
+import StatsPanel from '../StatsPanel';
 
 const mockGetStats = getStats as ReturnType<typeof vi.fn>;
 const mockClearStats = clearStats as ReturnType<typeof vi.fn>;
 
-describe("StatsPanel", () => {
+describe('StatsPanel', () => {
   beforeAll(() => {
     setupChromeStorageMock();
   });
@@ -78,29 +78,29 @@ describe("StatsPanel", () => {
     restoreChromeStorageMock();
   });
 
-  it("renders empty state when no stats exist", async () => {
+  it('renders empty state when no stats exist', async () => {
     mockGetStats.mockResolvedValue({});
 
     render(<StatsPanel />);
 
     await waitFor(() => {
-      expect(screen.getByText("No stats yet. Run a search to start tracking.")).toBeInTheDocument();
+      expect(screen.getByText('No stats yet. Run a search to start tracking.')).toBeInTheDocument();
     });
-    expect(screen.getByText("0 calls")).toBeInTheDocument();
+    expect(screen.getByText('0 calls')).toBeInTheDocument();
   });
 
-  it("renders the header with back button and title", async () => {
+  it('renders the header with back button and title', async () => {
     mockGetStats.mockResolvedValue({});
 
     render(<StatsPanel />);
 
-    expect(screen.getByText("Supplier Stats")).toBeInTheDocument();
-    expect(screen.getByLabelText("Back to search home")).toBeInTheDocument();
+    expect(screen.getByText('Supplier Stats')).toBeInTheDocument();
+    expect(screen.getByLabelText('Back to search home')).toBeInTheDocument();
   });
 
-  it("renders tabs when data exists", async () => {
+  it('renders tabs when data exists', async () => {
     mockGetStats.mockResolvedValue({
-      "2026-03-26": {
+      '2026-03-26': {
         Carolina: {
           searchQueryCount: 1,
           successCount: 5,
@@ -114,15 +114,15 @@ describe("StatsPanel", () => {
     render(<StatsPanel />);
 
     await waitFor(() => {
-      expect(screen.getByText("By Supplier")).toBeInTheDocument();
-      expect(screen.getByText("Daily")).toBeInTheDocument();
-      expect(screen.getByText("Totals")).toBeInTheDocument();
+      expect(screen.getByText('By Supplier')).toBeInTheDocument();
+      expect(screen.getByText('Daily')).toBeInTheDocument();
+      expect(screen.getByText('Totals')).toBeInTheDocument();
     });
   });
 
-  it("displays total call count in header", async () => {
+  it('displays total call count in header', async () => {
     mockGetStats.mockResolvedValue({
-      "2026-03-26": {
+      '2026-03-26': {
         Carolina: {
           searchQueryCount: 1,
           successCount: 10,
@@ -143,13 +143,13 @@ describe("StatsPanel", () => {
     render(<StatsPanel />);
 
     await waitFor(() => {
-      expect(screen.getByText("15 calls")).toBeInTheDocument();
+      expect(screen.getByText('15 calls')).toBeInTheDocument();
     });
   });
 
-  it("renders pie chart on By Supplier tab by default", async () => {
+  it('renders pie chart on By Supplier tab by default', async () => {
     mockGetStats.mockResolvedValue({
-      "2026-03-26": {
+      '2026-03-26': {
         Carolina: {
           searchQueryCount: 1,
           successCount: 5,
@@ -163,17 +163,17 @@ describe("StatsPanel", () => {
     render(<StatsPanel />);
 
     await waitFor(() => {
-      expect(screen.getByTestId("mock-pie-chart")).toBeInTheDocument();
+      expect(screen.getByTestId('mock-pie-chart')).toBeInTheDocument();
     });
 
     // Should have HTTP Calls / Parsed Data toggle
-    expect(screen.getByText("HTTP Calls")).toBeInTheDocument();
-    expect(screen.getByText("Parsed Data")).toBeInTheDocument();
+    expect(screen.getByText('HTTP Calls')).toBeInTheDocument();
+    expect(screen.getByText('Parsed Data')).toBeInTheDocument();
   });
 
-  it("renders pie chart with two series (inner + outer ring)", async () => {
+  it('renders pie chart with two series (inner + outer ring)', async () => {
     mockGetStats.mockResolvedValue({
-      "2026-03-26": {
+      '2026-03-26': {
         Carolina: {
           searchQueryCount: 1,
           successCount: 5,
@@ -187,13 +187,13 @@ describe("StatsPanel", () => {
     render(<StatsPanel />);
 
     await waitFor(() => {
-      expect(screen.getByTestId("pie-series-count")).toHaveTextContent("2");
+      expect(screen.getByTestId('pie-series-count')).toHaveTextContent('2');
     });
   });
 
-  it("shows supplier legend on pie chart tab", async () => {
+  it('shows supplier legend on pie chart tab', async () => {
     mockGetStats.mockResolvedValue({
-      "2026-03-26": {
+      '2026-03-26': {
         Carolina: {
           searchQueryCount: 1,
           successCount: 5,
@@ -214,14 +214,14 @@ describe("StatsPanel", () => {
     render(<StatsPanel />);
 
     await waitFor(() => {
-      expect(screen.getByText("Carolina")).toBeInTheDocument();
-      expect(screen.getByText("Ambeed")).toBeInTheDocument();
+      expect(screen.getByText('Carolina')).toBeInTheDocument();
+      expect(screen.getByText('Ambeed')).toBeInTheDocument();
     });
   });
 
-  it("shows clear button when data exists", async () => {
+  it('shows clear button when data exists', async () => {
     mockGetStats.mockResolvedValue({
-      "2026-03-26": {
+      '2026-03-26': {
         Carolina: {
           searchQueryCount: 1,
           successCount: 1,
@@ -235,24 +235,24 @@ describe("StatsPanel", () => {
     render(<StatsPanel />);
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Clear stats")).toBeInTheDocument();
+      expect(screen.getByLabelText('Clear stats')).toBeInTheDocument();
     });
   });
 
-  it("does not show clear button when no data", async () => {
+  it('does not show clear button when no data', async () => {
     mockGetStats.mockResolvedValue({});
 
     render(<StatsPanel />);
 
     await waitFor(() => {
-      expect(screen.getByText("0 calls")).toBeInTheDocument();
+      expect(screen.getByText('0 calls')).toBeInTheDocument();
     });
-    expect(screen.queryByLabelText("Clear stats")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Clear stats')).not.toBeInTheDocument();
   });
 
   it("displays singular 'call' for count of 1", async () => {
     mockGetStats.mockResolvedValue({
-      "2026-03-26": {
+      '2026-03-26': {
         Carolina: {
           searchQueryCount: 1,
           successCount: 1,
@@ -266,7 +266,7 @@ describe("StatsPanel", () => {
     render(<StatsPanel />);
 
     await waitFor(() => {
-      expect(screen.getByText("1 call")).toBeInTheDocument();
+      expect(screen.getByText('1 call')).toBeInTheDocument();
     });
   });
 });

@@ -13,12 +13,12 @@
  * Query-string key that flags the full-tab view.
  * @category Utils
  */
-export const VIEW_PARAM = "view";
+export const VIEW_PARAM = 'view';
 /**
  * Value of {@link VIEW_PARAM} that identifies the full-tab view.
  * @category Utils
  */
-export const TAB_VIEW = "tab";
+export const TAB_VIEW = 'tab';
 
 /**
  * Reports whether the current document is rendered in a full browser tab
@@ -58,8 +58,8 @@ export async function openExtensionTab(): Promise<void> {
   const path = `index.html?${VIEW_PARAM}=${TAB_VIEW}`;
 
   // Outside the extension runtime (e.g. dev preview): fall back to a plain tab.
-  if (typeof chrome?.tabs === "undefined" || typeof chrome?.runtime?.getURL !== "function") {
-    window.open(`/${path}`, "_blank");
+  if (typeof chrome?.tabs === 'undefined' || typeof chrome?.runtime?.getURL !== 'function') {
+    window.open(`/${path}`, '_blank');
     return;
   }
 
@@ -70,12 +70,12 @@ export async function openExtensionTab(): Promise<void> {
       await chrome.tabs.create({ url, active: true });
     } else {
       await chrome.tabs.update(existing.id, { active: true });
-      if (typeof chrome.windows !== "undefined" && existing.windowId != null) {
+      if (typeof chrome.windows !== 'undefined' && existing.windowId != null) {
         await chrome.windows.update(existing.windowId, { focused: true });
       }
     }
   } catch (error) {
-    console.error("Failed to open extension tab:", { error });
+    console.error('Failed to open extension tab:', { error });
   }
   window.close();
 }

@@ -1,5 +1,5 @@
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 /**
  * TabPanel component that renders content for a specific tab.
@@ -30,7 +30,7 @@ export default function TabPanel(props: TabPanelProps) {
     >
       {value === index && (
         <Box sx={{ p: 0 }}>
-          <Typography component={"span"} variant={"body2"}>
+          <Typography component={'span'} variant={'body2'}>
             {children}
           </Typography>
         </Box>

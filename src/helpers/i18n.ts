@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore } from 'react';
 
 /** A single translated message plus its optional positional placeholders. */
 interface MessageEntry {
@@ -13,9 +13,9 @@ type MessageTable = Record<string, MessageEntry>;
 // matched paths (e.g. "/src/_locales/en/messages.json"); values are the parsed
 // tables. This lets us switch locale in-memory without a network fetch or a
 // browser restart — unlike `chrome.i18n`, which is fixed to the browser UI language.
-const rawTables = import.meta.glob<MessageTable>("/src/_locales/*/messages.json", {
+const rawTables = import.meta.glob<MessageTable>('/src/_locales/*/messages.json', {
   eager: true,
-  import: "default",
+  import: 'default',
 });
 
 const messageTables: Record<string, MessageTable> = {};
@@ -25,7 +25,7 @@ for (const [path, table] of Object.entries(rawTables)) {
 }
 
 /** Locale used for the initial render and as the fallback when a key is missing. */
-const DEFAULT_LOCALE = "en";
+const DEFAULT_LOCALE = 'en';
 
 let currentLocale = messageTables[DEFAULT_LOCALE]
   ? DEFAULT_LOCALE
@@ -52,9 +52,9 @@ function applySubstitutions(entry: MessageEntry, substitutions?: string | string
   const subs = Array.isArray(substitutions) ? substitutions : [substitutions];
   let message = entry.message;
   for (const [name, def] of Object.entries(entry.placeholders)) {
-    const match = /^\$(\d+)$/.exec(def.content ?? "");
+    const match = /^\$(\d+)$/.exec(def.content ?? '');
     if (!match) continue;
-    message = message.replaceAll(`$${name}$`, subs[Number(match[1]) - 1] ?? "");
+    message = message.replaceAll(`$${name}$`, subs[Number(match[1]) - 1] ?? '');
   }
   return message;
 }
@@ -75,7 +75,7 @@ function applySubstitutions(entry: MessageEntry, substitutions?: string | string
 function resolveMessage(locale: string, key: string, substitutions?: string | string[]): string {
   const entry = messageTables[locale]?.[key] ?? messageTables[DEFAULT_LOCALE]?.[key];
   if (entry) return applySubstitutions(entry, substitutions);
-  if (typeof chrome !== "undefined" && chrome.i18n?.getMessage) {
+  if (typeof chrome !== 'undefined' && chrome.i18n?.getMessage) {
     return chrome.i18n.getMessage(key, substitutions);
   }
   return key;

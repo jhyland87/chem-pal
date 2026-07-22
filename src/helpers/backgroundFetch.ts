@@ -3,7 +3,7 @@
 // sidesteps the page CORS restrictions that apply to extension pages (e.g. the side
 // panel), as long as the target host is granted in the manifest `host_permissions`.
 
-import { MESSAGE_TYPE } from "@/constants/common";
+import { MESSAGE_TYPE } from '@/constants/common';
 
 /**
  * Serializable subset of `RequestInit` accepted by {@link backgroundFetch}. Only
@@ -26,7 +26,7 @@ export interface BackgroundFetchInit {
 interface BackgroundFetchMessage {
   type: typeof MESSAGE_TYPE.BACKGROUND_FETCH;
   url: string;
-  init?: Omit<BackgroundFetchInit, "headers"> & { headers?: Record<string, string> };
+  init?: Omit<BackgroundFetchInit, 'headers'> & { headers?: Record<string, string> };
 }
 
 /** Successful serialized response returned by the worker. */
@@ -81,11 +81,11 @@ function normalizeHeaders(headers?: HeadersInit): Record<string, string> | undef
  */
 function isBackgroundFetchSuccess(result: unknown): result is BackgroundFetchSuccess {
   return (
-    typeof result === "object" &&
+    typeof result === 'object' &&
     result !== null &&
-    "body" in result &&
-    "status" in result &&
-    "headers" in result
+    'body' in result &&
+    'status' in result &&
+    'headers' in result
   );
 }
 
@@ -139,8 +139,8 @@ export async function backgroundFetch(url: string, init?: BackgroundFetchInit): 
   }
 
   const reason =
-    typeof result === "object" && result !== null && "error" in result
+    typeof result === 'object' && result !== null && 'error' in result
       ? result.error
-      : "Unknown background fetch failure";
+      : 'Unknown background fetch failure';
   throw new Error(`backgroundFetch| ${reason}`);
 }

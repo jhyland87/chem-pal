@@ -1,6 +1,6 @@
-import { useStorageCompression } from "@/../config.json";
-import { Logger } from "@/utils/Logger";
-import { compressToUTF16, decompressFromUTF16 } from "lz-string";
+import { useStorageCompression } from '@/../config.json';
+import { Logger } from '@/utils/Logger';
+import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
 
 /**
  * Transparent lz-string compression layer for chrome.storage.
@@ -21,7 +21,7 @@ import { compressToUTF16, decompressFromUTF16 } from "lz-string";
  * @source
  */
 
-const logger = new Logger("storage");
+const logger = new Logger('storage');
 
 /**
  * Wire-format version. Bumped if the envelope shape ever changes.
@@ -46,11 +46,11 @@ export interface LzEnvelope {
  */
 export function isLzEnvelope(value: unknown): value is LzEnvelope {
   return (
-    typeof value === "object" &&
+    typeof value === 'object' &&
     value !== null &&
     !Array.isArray(value) &&
-    Reflect.get(value, "__lz") === LZ_VERSION &&
-    typeof Reflect.get(value, "d") === "string"
+    Reflect.get(value, '__lz') === LZ_VERSION &&
+    typeof Reflect.get(value, 'd') === 'string'
   );
 }
 
@@ -72,7 +72,7 @@ export function encodeValue(value: unknown): LzEnvelope | unknown {
     }
     return { __lz: LZ_VERSION, d: compressToUTF16(json) };
   } catch (error) {
-    logger.error("Failed to encode value, storing raw", { error });
+    logger.error('Failed to encode value, storing raw', { error });
     return value;
   }
 }
@@ -90,13 +90,13 @@ export function decodeValue(value: unknown): unknown {
   }
   try {
     const json = decompressFromUTF16(value.d);
-    if (json === null || json === "") {
-      logger.error("Failed to decompress envelope, returning raw", { d: value.d });
+    if (json === null || json === '') {
+      logger.error('Failed to decompress envelope, returning raw', { d: value.d });
       return value;
     }
     return JSON.parse(json);
   } catch (error) {
-    logger.error("Failed to decode envelope, returning raw", { error });
+    logger.error('Failed to decode envelope, returning raw', { error });
     return value;
   }
 }
@@ -141,8 +141,8 @@ export function decodeChanges(
   const out: Record<string, chrome.storage.StorageChange> = {};
   for (const [key, change] of Object.entries(changes)) {
     const decoded: chrome.storage.StorageChange = {};
-    if ("oldValue" in change) decoded.oldValue = decodeValue(change.oldValue);
-    if ("newValue" in change) decoded.newValue = decodeValue(change.newValue);
+    if ('oldValue' in change) decoded.oldValue = decodeValue(change.oldValue);
+    if ('newValue' in change) decoded.newValue = decodeValue(change.newValue);
     out[key] = decoded;
   }
   return out;
@@ -160,7 +160,7 @@ type StorageAreaKeys = string | string[] | Record<string, unknown> | null;
  * write and decompresses on read.
  * @param area - "local" or "session".
  */
-function makeArea(area: "local" | "session") {
+function makeArea(area: 'local' | 'session') {
   return {
     // Return type intentionally permissive ({ [key: string]: any }) to mirror
     // the native `chrome.storage.StorageArea.get` shape, so existing call
@@ -214,8 +214,8 @@ const listenerMap = new WeakMap<ChangedListener, InnerChangedListener>();
  * ```
  */
 export const cstorage = {
-  local: makeArea("local"),
-  session: makeArea("session"),
+  local: makeArea('local'),
+  session: makeArea('session'),
   onChanged: {
     /**
      * Registers a listener that receives change events with `oldValue` /
@@ -258,7 +258,7 @@ export const cstorage = {
  * @param area - `'session'` (default) or `'local'`.
  * @returns The decoded value (also logged to the console).
  */
-async function decodeCache(key: string, area: "session" | "local" = "session"): Promise<unknown> {
+async function decodeCache(key: string, area: 'session' | 'local' = 'session'): Promise<unknown> {
   try {
     const data = await cstorage[area].get([key]);
     const value = data[key];
@@ -271,6 +271,6 @@ async function decodeCache(key: string, area: "session" | "local" = "session"): 
 }
 
 // Register the global so it's callable from the browser console.
-if (typeof window !== "undefined") {
-  Reflect.set(window, "_decodeCache", decodeCache);
+if (typeof window !== 'undefined') {
+  Reflect.set(window, '_decodeCache', decodeCache);
 }

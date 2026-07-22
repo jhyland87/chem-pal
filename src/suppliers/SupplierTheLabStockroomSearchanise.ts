@@ -1,4 +1,4 @@
-import { SupplierBaseSearchanise } from "./SupplierBaseSearchanise";
+import { SupplierBaseSearchanise } from './SupplierBaseSearchanise';
 
 /**
  * Legacy Searchanise-based implementation of The Lab Stockroom (formerly HBar Sci).
@@ -19,31 +19,31 @@ export class SupplierTheLabStockroomSearchanise
   implements ISupplier
 {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = "The Lab Stockroom";
+  public readonly supplierName: string = 'The Lab Stockroom';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = "https://www.hbarsci.com";
+  public readonly baseURL: string = 'https://www.hbarsci.com';
 
   // Shipping scope for The Lab Stockroom
-  public readonly shipping: ShippingRange = "international";
+  public readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "US";
+  public readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   // Pure-search supplier: the initial search returns every field and
   // getProductData is a passthrough, so there's no per-product detail to cache.
   protected readonly skipProductDetailCache: boolean = true;
 
   // API key for Typesense search API
-  protected apiKey: string = "2H3i9C5v0m";
+  protected apiKey: string = '2H3i9C5v0m';
 
   // Base search parameters for Typesense search API
   protected baseSearchParams: QueryParams = {
-    tab: "products",
+    tab: 'products',
 
-    "restrictBy[filter_ptag_bf51a4bd1f5efe4002b3d50737306113]": "Chemicals",
+    'restrictBy[filter_ptag_bf51a4bd1f5efe4002b3d50737306113]': 'Chemicals',
   };
 }

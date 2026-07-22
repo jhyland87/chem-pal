@@ -1,9 +1,9 @@
-import { AVAILABILITY } from "@/constants/common";
-import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
-import { parseQuantity } from "@/helpers/quantity";
-import { mapDefined } from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { isMinimalProduct } from "@/utils/typeGuards/common";
+import { AVAILABILITY } from '@/constants/common';
+import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
+import { parseQuantity } from '@/helpers/quantity';
+import { mapDefined } from '@/helpers/utils';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { isMinimalProduct } from '@/utils/typeGuards/common';
 import {
   isAuthCheckEndpoint,
   isAuthRequiredEndpoint,
@@ -13,10 +13,10 @@ import {
   isMacklinProductInfo,
   isMacklinSearchResult,
   isTimestampStorage,
-} from "@/utils/typeGuards/macklin";
-import { Queue } from "async-await-queue";
-import { md5 } from "js-md5";
-import { SupplierBase } from "./SupplierBase";
+} from '@/utils/typeGuards/macklin';
+import { Queue } from 'async-await-queue';
+import { md5 } from 'js-md5';
+import { SupplierBase } from './SupplierBase';
 
 class MacklinApiError extends Error {
   constructor(
@@ -26,14 +26,14 @@ class MacklinApiError extends Error {
     public details?: unknown,
   ) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
   }
 }
 
 class TimeoutError extends Error {
   constructor(ms: number) {
     super(`Request timeout after ${ms}ms`);
-    this.name = "TimeoutError";
+    this.name = 'TimeoutError';
   }
 }
 
@@ -105,22 +105,22 @@ class TimeoutError extends Error {
  */
 export class SupplierMacklin extends SupplierBase<Product, Product> implements ISupplier {
   /** Name of supplier (for display purposes) */
-  public readonly supplierName: string = "Macklin";
+  public readonly supplierName: string = 'Macklin';
 
   /** Base URL for HTTP(s) requests */
-  public readonly baseURL: string = "https://www.macklin.cn";
+  public readonly baseURL: string = 'https://www.macklin.cn';
 
   /** The host of the Macklin API. */
-  public readonly apiURL: string = "api.macklin.cn";
+  public readonly apiURL: string = 'api.macklin.cn';
 
   /** Shipping scope for Macklin */
-  public readonly shipping: ShippingRange = "worldwide";
+  public readonly shipping: ShippingRange = 'worldwide';
 
   /** The country code of the supplier. */
-  public readonly country: CountryCode = "CN";
+  public readonly country: CountryCode = 'CN';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   /** Override the type of queryResults to use our specific type */
   protected queryResults: Array<Product> = [];
@@ -132,7 +132,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
 
   /** The salt used to sign requests. */
 
-  private readonly SALT: string = "ndksyr9834@#$32ndsfu";
+  private readonly SALT: string = 'ndksyr9834@#$32ndsfu';
 
   private readonly DEFAULT_TIMEOUT: number = 30000;
 
@@ -168,11 +168,11 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
 
   /** HTTP headers used as a basis for all queries. */
   protected headers: MacklinRequestHeaders = {
-    "X-Agent": "web",
-    "X-User-Token": "",
-    "X-Device-Id": "",
-    "X-Language": "en",
-    "X-Timestamp": "",
+    'X-Agent': 'web',
+    'X-User-Token': '',
+    'X-Device-Id': '',
+    'X-Language': 'en',
+    'X-Timestamp': '',
   };
 
   /**
@@ -209,16 +209,16 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
     }
 
     if (!this.localStorage.MklUserToken) {
-      this.localStorage.MklUserToken = "";
+      this.localStorage.MklUserToken = '';
     }
 
     // Update headers to match api-client.js exactly, using defensive string conversion
     this.headers = {
-      "X-Agent": "web",
-      "X-User-Token": this.ensureStringHeader(this.localStorage.MklUserToken),
-      "X-Device-Id": this.ensureStringHeader(this.localStorage.soleId),
-      "X-Language": "en",
-      "X-Timestamp": "",
+      'X-Agent': 'web',
+      'X-User-Token': this.ensureStringHeader(this.localStorage.MklUserToken),
+      'X-Device-Id': this.ensureStringHeader(this.localStorage.soleId),
+      'X-Language': 'en',
+      'X-Timestamp': '',
     };
   }
 
@@ -251,7 +251,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
     );
 
     if (!isMacklinSearchResult<MacklinSearchResultProducts>(searchRequest)) {
-      this.logger.warn("Invalid API response format");
+      this.logger.warn('Invalid API response format');
       return;
     }
 
@@ -259,7 +259,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
     const products = Object.values(searchRequest.list).map((item) => item[0]);
 
     const fuzzFiltered = this.fuzzyFilterAst<MacklinProductVariant>(products);
-    this.logger.debug("fuzzFiltered:", { query, searchRequest, products, fuzzFiltered });
+    this.logger.debug('fuzzFiltered:', { query, searchRequest, products, fuzzFiltered });
     const processed = fuzzFiltered.slice(0, limit);
     return this.initProductBuilders(processed);
   }
@@ -289,7 +289,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    const itemCode = product.get("uuid");
+    const itemCode = product.get('uuid');
     return this.getProductDataWithCache(product, async (builder) => {
       // Each endpoint is fetched as its own bounded batch shared across all
       // products (list -> info -> sds), so the requests run in distinct phases
@@ -318,14 +318,14 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
       // broken on every later search. `void` skips the cache write and lets the
       // next search retry.
       if (variants.length === 0) {
-        this.logger.warn("No in-stock product/list variants for product:", itemCode);
+        this.logger.warn('No in-stock product/list variants for product:', itemCode);
         return undefined;
       }
 
       // The cheapest in-stock variant is the product's headline price/size; the
       // rest are attached as selectable variants.
       const [primary] = variants;
-      builder.setPricing(primary.detail.product_price, "CNY", CURRENCY_SYMBOL_MAP.CNY);
+      builder.setPricing(primary.detail.product_price, 'CNY', CURRENCY_SYMBOL_MAP.CNY);
       if (primary.variant.quantity != null && primary.variant.uom != null) {
         builder.setQuantity(primary.variant.quantity, primary.variant.uom);
       }
@@ -379,7 +379,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
       sku: detail.product_code,
       title: quantityLabel,
       price: Number(detail.product_price),
-      currencyCode: "CNY",
+      currencyCode: 'CNY',
       currencySymbol: CURRENCY_SYMBOL_MAP.CNY,
       quantity: quantity.quantity,
       uom: quantity.uom,
@@ -408,14 +408,14 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
     if (!this.productListBatch) {
       this.productListBatch = (async () => {
         const codes = this.products
-          .map((product) => product.get("uuid"))
-          .filter((uuid): uuid is string => typeof uuid === "string");
+          .map((product) => product.get('uuid'))
+          .filter((uuid): uuid is string => typeof uuid === 'string');
         const queue = new Queue(this.maxConcurrentRequests, this.minConcurrentCycle);
         const variantsByCode = new Map<string, MacklinProductDetails[]>();
         await Promise.all(
           codes.map((code) =>
             queue.run(async () => {
-              const response = await this.request<MacklinProductDetails>("/api/product/list", {
+              const response = await this.request<MacklinProductDetails>('/api/product/list', {
                 params: { code },
               });
               if (isMacklinProductDetailsResponse(response) && response.list.length > 0) {
@@ -447,13 +447,13 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
    */
   private async getProductInfo(itemCode: string): Promise<MacklinProductInfo | undefined> {
     try {
-      const data = await this.request<MacklinProductInfo>("/api/product/info", {
-        method: "POST",
+      const data = await this.request<MacklinProductInfo>('/api/product/info', {
+        method: 'POST',
         body: { item_code: itemCode },
       });
       return isMacklinProductInfo(data) ? data : undefined;
     } catch (error: unknown) {
-      this.logger.debug("product/info fetch failed", { itemCode, error });
+      this.logger.debug('product/info fetch failed', { itemCode, error });
       return undefined;
     }
   }
@@ -481,8 +481,8 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
     if (!this.productInfoBatch) {
       this.productInfoBatch = (async () => {
         const codes = this.products
-          .map((product) => product.get("uuid"))
-          .filter((uuid): uuid is string => typeof uuid === "string");
+          .map((product) => product.get('uuid'))
+          .filter((uuid): uuid is string => typeof uuid === 'string');
         const queue = new Queue(this.maxConcurrentRequests, this.minConcurrentCycle);
         const infoByCode = new Map<string, MacklinProductInfo>();
         await Promise.all(
@@ -519,15 +519,15 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
    * @source
    */
   private async sdsSearch(itemCode: string): Promise<string | undefined> {
-    const response = await this.request<unknown>("/api/msds/search", {
-      params: { keyword: itemCode, lang: "en" },
+    const response = await this.request<unknown>('/api/msds/search', {
+      params: { keyword: itemCode, lang: 'en' },
     });
 
     if (isMacklinMsdsSearchResponse(response)) {
       return response.url;
     }
 
-    this.logger.debug("No SDS document for item", { itemCode, response });
+    this.logger.debug('No SDS document for item', { itemCode, response });
     return undefined;
   }
 
@@ -580,17 +580,17 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
    * @source
    */
   private generateString(length?: number, charSetSize?: number): string {
-    const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
     const size = charSetSize || chars.length;
 
     if (length) {
       // Random string mode
-      return Array.from({ length }, () => chars[Math.floor(Math.random() * size)]).join("");
+      return Array.from({ length }, () => chars[Math.floor(Math.random() * size)]).join('');
     }
     // UUID mode
-    const uuid = new Array(36).fill("");
-    uuid[8] = uuid[13] = uuid[18] = uuid[23] = "-";
-    uuid[14] = "4";
+    const uuid = new Array(36).fill('');
+    uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-';
+    uuid[14] = '4';
 
     for (let i = 0; i < 36; i++) {
       if (!uuid[i]) {
@@ -598,7 +598,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
         uuid[i] = chars[19 === i ? (3 & random) | 8 : random];
       }
     }
-    return uuid.join("");
+    return uuid.join('');
   }
 
   /**
@@ -619,36 +619,36 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
       Object.entries(headers)
         .filter(([key, value]) => {
           return (
-            key !== "Content-Type" && value !== "" && value != null && typeof value !== "object"
+            key !== 'Content-Type' && value !== '' && value != null && typeof value !== 'object'
           );
         })
         .sort(([a], [b]) => a.toLowerCase().localeCompare(b.toLowerCase()))
         .map(([key, value]) => `${key.toLowerCase()}=${value}`)
-        .join("&") + `&salt=${this.SALT}`;
+        .join('&') + `&salt=${this.SALT}`;
 
     // Sort and filter params exactly like api-client.js
     const paramString =
       Object.entries(params)
         .filter(([, value]) => {
-          return value !== "" && value != null && typeof value !== "object";
+          return value !== '' && value != null && typeof value !== 'object';
         })
         .sort(([a], [b]) => a.toLowerCase().localeCompare(b.toLowerCase()))
         .map(([key, value]) => `${key}=${String(value).trim()}`)
-        .join("&") + `&salt=${this.SALT}`;
+        .join('&') + `&salt=${this.SALT}`;
 
     // Debug logging to match api-client.js
-    this.logger.debug("Headers for signing:", headers);
-    this.logger.debug("Params for signing:", params);
-    this.logger.debug("Header string:", headerString.toLowerCase());
-    this.logger.debug("Param string:", paramString.toLowerCase());
+    this.logger.debug('Headers for signing:', headers);
+    this.logger.debug('Params for signing:', params);
+    this.logger.debug('Header string:', headerString.toLowerCase());
+    this.logger.debug('Param string:', paramString.toLowerCase());
 
     const headerHash = md5(headerString.toLowerCase());
     const paramHash = md5(paramString.toLowerCase());
     const finalSignature = headerHash + paramHash;
 
-    this.logger.debug("Header hash:", headerHash);
-    this.logger.debug("Param hash:", paramHash);
-    this.logger.debug("Final signature:", finalSignature);
+    this.logger.debug('Header hash:', headerHash);
+    this.logger.debug('Param hash:', paramHash);
+    this.logger.debug('Final signature:', finalSignature);
 
     return finalSignature;
   }
@@ -672,7 +672,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
   private async request<T>(path: string, options: MacklinApiRequestOptions = {}): Promise<T> {
     try {
       if (!isTimestampStorage(this.localStorage.MklTmKey)) {
-        throw new Error("Missing or invalid timestamp in localStorage");
+        throw new Error('Missing or invalid timestamp in localStorage');
       }
       // X-Timestamp must track the *current* server time, not the value synced
       // at setup. The server compares it against its own clock with a tight
@@ -687,21 +687,21 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
 
       // Create a fresh headers object to avoid any potential array concatenation
       const headers: MacklinRequestHeaders = {
-        "X-Agent": "web",
-        "X-User-Token": this.ensureStringHeader(this.localStorage.MklUserToken),
-        "X-Device-Id": this.ensureStringHeader(this.localStorage.soleId),
-        "X-Language": "en",
-        "X-Timestamp": this.ensureStringHeader(timestamp),
+        'X-Agent': 'web',
+        'X-User-Token': this.ensureStringHeader(this.localStorage.MklUserToken),
+        'X-Device-Id': this.ensureStringHeader(this.localStorage.soleId),
+        'X-Language': 'en',
+        'X-Timestamp': this.ensureStringHeader(timestamp),
       };
 
       // Handle auth headers exactly like api-client.js
       if (isAuthRequiredEndpoint(path)) {
-        headers["X-User-Token"] = this.ensureStringHeader(this.localStorage.MklUserToken);
+        headers['X-User-Token'] = this.ensureStringHeader(this.localStorage.MklUserToken);
       }
 
       // Handle language parameter exactly like api-client.js
       if (options.params?.lang) {
-        headers["X-Language"] = this.ensureStringHeader(options.params.lang);
+        headers['X-Language'] = this.ensureStringHeader(options.params.lang);
       }
 
       // Add any additional headers from options, ensuring they're strings
@@ -716,7 +716,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
       const params: RequestParams = { ...options.params };
       let body = options.body;
 
-      if (options.method === "GET" || !options.method) {
+      if (options.method === 'GET' || !options.method) {
         params.timestampe = requestTimestamp;
       } else if (body) {
         body = { ...body, timestampe: requestTimestamp };
@@ -725,27 +725,27 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
       // Sign the request
       const signature = this.signRequest(
         headers,
-        options.method === "GET" || !options.method ? params : (body ?? {}),
+        options.method === 'GET' || !options.method ? params : (body ?? {}),
       );
       headers.sign = signature;
       this.lastSignature = signature;
 
       // Debug logging to match api-client.js
-      this.logger.debug("Full request URL:", this.href(path, params, this.apiURL));
-      this.logger.debug("Request headers:", headers);
-      this.logger.debug("Request params:", params);
-      this.logger.debug("Request body:", body);
+      this.logger.debug('Full request URL:', this.href(path, params, this.apiURL));
+      this.logger.debug('Request headers:', headers);
+      this.logger.debug('Request params:', params);
+      this.logger.debug('Request body:', body);
 
       // GET endpoints carry everything in the query string; POST/PUT/DELETE
       // send a JSON body. Dispatch to the matching HTTP method. Use the
       // lower-level helpers (not the *Json variants) so the raw Response — and
       // its X-Ratelimit-* headers — is available before the body is parsed.
       const httpResponse =
-        options.method && options.method !== "GET"
+        options.method && options.method !== 'GET'
           ? await this.httpPost({
               path,
 
-              headers: { ...headers, "Content-Type": "application/json" },
+              headers: { ...headers, 'Content-Type': 'application/json' },
               params,
               body: body ? JSON.stringify(body) : undefined,
               host: this.apiURL,
@@ -758,7 +758,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
             });
 
       if (!httpResponse) {
-        throw new MacklinApiError("No response from Macklin API");
+        throw new MacklinApiError('No response from Macklin API');
       }
 
       this.trackRateLimit(httpResponse.headers);
@@ -766,19 +766,19 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
       const response: unknown = await httpResponse.json();
 
       if (!isMacklinApiResponse<T>(response)) {
-        throw new MacklinApiError("Invalid API response format");
+        throw new MacklinApiError('Invalid API response format');
       }
 
       // Handle authentication errors exactly like api-client.js
       if (isAuthCheckEndpoint(path) && response.code === 1005) {
-        throw new MacklinApiError("Authentication required");
+        throw new MacklinApiError('Authentication required');
       }
 
       // Anything other than 200 is a failure (e.g. 504 "Signature failed").
       // The data payload is empty/invalid in that case; downstream typeguards
       // drop it, but surface the failure here so it isn't silent.
       if (response.code !== 200) {
-        this.logger.warn("Macklin API returned a non-success code", {
+        this.logger.warn('Macklin API returned a non-success code', {
           path,
           code: response.code,
           message: response.message,
@@ -793,7 +793,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
       if (error instanceof MacklinApiError) {
         throw error;
       }
-      throw new MacklinApiError("API request failed", undefined, undefined, error);
+      throw new MacklinApiError('API request failed', undefined, undefined, error);
     }
   }
 
@@ -813,8 +813,8 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
    * @source
    */
   private trackRateLimit(headers: Headers): void {
-    const limit = Number(headers.get("x-ratelimit-limit"));
-    const remaining = Number(headers.get("x-ratelimit-remaining"));
+    const limit = Number(headers.get('x-ratelimit-limit'));
+    const remaining = Number(headers.get('x-ratelimit-remaining'));
     if (!Number.isFinite(limit) || !Number.isFinite(remaining) || limit <= 0) {
       return;
     }
@@ -859,10 +859,10 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
     });
 
     if (!isMacklinApiResponse<TimestampResponse>(response)) {
-      throw new MacklinApiError("Invalid API response format");
+      throw new MacklinApiError('Invalid API response format');
     }
 
-    this.logger.debug("serverTimestamp response:", response);
+    this.logger.debug('serverTimestamp response:', response);
 
     const clientTime = Math.round(Date.now() / 1000);
     const timestampData: TimestampStorage = {
@@ -900,7 +900,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
     if (this.lastSignature) {
       // Mirrors the site's `Date.now() + t.join("")`: string concatenation of
       // the current time and the previous signature's digits.
-      const digits = this.lastSignature.match(/\d+/g)?.join("") ?? "";
+      const digits = this.lastSignature.match(/\d+/g)?.join('') ?? '';
       return `${Date.now()}${digits}`;
     }
     // First request (no prior signature): plain current time + small offset.
@@ -951,8 +951,8 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
   private ensureStringHeader(value: unknown): string {
     if (Array.isArray(value)) {
       // If it's an array, take the first value
-      return String(value[0] || "");
+      return String(value[0] || '');
     }
-    return String(value || "");
+    return String(value || '');
   }
 }

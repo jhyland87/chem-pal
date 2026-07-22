@@ -1,5 +1,5 @@
-import { isCAS } from "@/utils/typeGuards/common";
-import { isSimpleName } from "@/helpers/pubchem";
+import { isCAS } from '@/utils/typeGuards/common';
+import { isSimpleName } from '@/helpers/pubchem';
 
 /**
  * Shared sample compounds for exercising the name / CAS / SMILES resolvers in tests (and handy
@@ -74,46 +74,46 @@ function chemical(data: ChemicalFixtureInput): ChemicalFixture {
 }
 
 export const ASPIRIN = chemical({
-  name: "aspirin",
+  name: 'aspirin',
   rankedAliases: [
-    "ACETYLSALICYLIC ACID",
-    "50-78-2",
-    "2-Acetoxybenzoic acid",
-    "2-(Acetyloxy)benzoic acid",
-    "o-acetylsalicylic acid",
-    "Ecotrin",
+    'ACETYLSALICYLIC ACID',
+    '50-78-2',
+    '2-Acetoxybenzoic acid',
+    '2-(Acetyloxy)benzoic acid',
+    'o-acetylsalicylic acid',
+    'Ecotrin',
   ],
-  cas: "50-78-2",
-  smiles: "CC(=O)Oc1ccccc1C(O)=O",
-  inchikey: "BSYNRYMUTXBXSQ-UHFFFAOYSA-N",
+  cas: '50-78-2',
+  smiles: 'CC(=O)Oc1ccccc1C(O)=O',
+  inchikey: 'BSYNRYMUTXBXSQ-UHFFFAOYSA-N',
 });
 
 export const ACETONE = chemical({
-  name: "acetone",
+  name: 'acetone',
   rankedAliases: [
-    "2-propanone",
-    "67-64-1",
-    "propanone",
-    "propan-2-one",
-    "Dimethyl ketone",
-    "Pyroacetic ether",
+    '2-propanone',
+    '67-64-1',
+    'propanone',
+    'propan-2-one',
+    'Dimethyl ketone',
+    'Pyroacetic ether',
   ],
-  cas: "67-64-1",
-  smiles: "CC(=O)C",
-  inchikey: "CSCPPACGZOOCGX-UHFFFAOYSA-N",
+  cas: '67-64-1',
+  smiles: 'CC(=O)C',
+  inchikey: 'CSCPPACGZOOCGX-UHFFFAOYSA-N',
 });
 
 export const ETHANOL = chemical({
-  name: "ethanol",
+  name: 'ethanol',
   rankedAliases: [
-    "ethyl alcohol",
-    "64-17-5",
-    "alcohol",
-    "Ethanol 200 proof",
-    "ethyl hydroxide",
-    "methylcarbinol",
+    'ethyl alcohol',
+    '64-17-5',
+    'alcohol',
+    'Ethanol 200 proof',
+    'ethyl hydroxide',
+    'methylcarbinol',
   ],
-  cas: "64-17-5",
-  smiles: "CCO",
-  inchikey: "LFQSCWFLJHTTHZ-UHFFFAOYSA-N",
+  cas: '64-17-5',
+  smiles: 'CCO',
+  inchikey: 'LFQSCWFLJHTTHZ-UHFFFAOYSA-N',
 });

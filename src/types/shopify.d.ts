@@ -73,7 +73,7 @@ declare global {
     /** Numeric weight value */
     weight: number;
     /** Unit of weight measurement */
-    weightUnit: "POUNDS" | "OUNCES" | "GRAMS" | "KILOGRAMS";
+    weightUnit: 'POUNDS' | 'OUNCES' | 'GRAMS' | 'KILOGRAMS';
     /** Selling price */
     price: ShopifyMoney;
     /** Compare-at (list) price, or null when not on sale */

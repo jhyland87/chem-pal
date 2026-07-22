@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext } from 'react';
 //import "./types.d.ts";
 
 /**
@@ -36,7 +36,7 @@ export const AppContext = createContext<AppContextProps | undefined>(undefined);
 export function useAppContext() {
   const context = useContext(AppContext);
   if (context === undefined) {
-    throw new Error("useAppContext must be used within a AppContext");
+    throw new Error('useAppContext must be used within a AppContext');
   }
   return context;
 }

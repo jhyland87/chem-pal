@@ -1,7 +1,7 @@
-import { StyledFormControlSelector } from "@/components/Styles";
-import { useAppContext } from "@/context";
-import TextField from "@mui/material/TextField";
-import { ChangeEvent } from "react";
+import { StyledFormControlSelector } from '@/components/Styles';
+import { useAppContext } from '@/context';
+import TextField from '@mui/material/TextField';
+import { ChangeEvent } from 'react';
 
 /**
  * SupplierResultLimit component that provides a text input for setting the result limit per supplier.
@@ -39,7 +39,7 @@ export default function SupplierResultLimit() {
     <StyledFormControlSelector>
       <TextField
         label="Result Limit (per supplier)"
-        style={{ lineHeight: "1em" }}
+        style={{ lineHeight: '1em' }}
         id="result-limit"
         size="small"
         value={appContext.userSettings.supplierResultLimit ?? 15}

@@ -11,7 +11,7 @@
  * @source
  */
 
-import semver from "semver";
+import semver from 'semver';
 
 /**
  * How long to wait between GitHub release polls on the manual-install path.
@@ -23,7 +23,7 @@ export const UPDATE_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
  * How the running extension was installed.
  * @category Helpers
  */
-export type InstallSource = "webstore" | "manual";
+export type InstallSource = 'webstore' | 'manual';
 
 /**
  * The subset of the GitHub release payload this module consumes.
@@ -88,11 +88,11 @@ const MAX_NOTE_ITEM_LENGTH = 300;
  */
 function stripMarkdown(text: string): string {
   return text
-    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-    .replace(/[*_]{1,3}([^*_]+)[*_]{1,3}/g, "$1")
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/\s+/g, " ")
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/[*_]{1,3}([^*_]+)[*_]{1,3}/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -166,13 +166,13 @@ export function parseReleaseNotes(body: string | undefined): ReleaseSection[] {
  * @source
  */
 function isGithubRelease(value: unknown): value is GithubRelease {
-  if (typeof value !== "object" || value === null) return false;
-  if (!("tag_name" in value) || typeof value.tag_name !== "string") return false;
-  if (!("html_url" in value) || typeof value.html_url !== "string") return false;
-  if (!("draft" in value) || typeof value.draft !== "boolean") return false;
-  if (!("prerelease" in value) || typeof value.prerelease !== "boolean") return false;
+  if (typeof value !== 'object' || value === null) return false;
+  if (!('tag_name' in value) || typeof value.tag_name !== 'string') return false;
+  if (!('html_url' in value) || typeof value.html_url !== 'string') return false;
+  if (!('draft' in value) || typeof value.draft !== 'boolean') return false;
+  if (!('prerelease' in value) || typeof value.prerelease !== 'boolean') return false;
   // `body` is optional and nullable; anything else means an unexpected shape.
-  if ("body" in value && value.body !== null && typeof value.body !== "string") return false;
+  if ('body' in value && value.body !== null && typeof value.body !== 'string') return false;
   return true;
 }
 
@@ -192,7 +192,7 @@ function isGithubRelease(value: unknown): value is GithubRelease {
  * @source
  */
 export function normalizeTag(tag: string): string | undefined {
-  return semver.valid(tag.replace(/^[vV]/, "")) ?? undefined;
+  return semver.valid(tag.replace(/^[vV]/, '')) ?? undefined;
 }
 
 /**
@@ -222,7 +222,7 @@ export function normalizeTag(tag: string): string | undefined {
  */
 export function getInstallSource(): InstallSource {
   const manifest = chrome.runtime.getManifest();
-  return "update_url" in manifest && manifest.update_url ? "webstore" : "manual";
+  return 'update_url' in manifest && manifest.update_url ? 'webstore' : 'manual';
 }
 
 /**
@@ -240,7 +240,7 @@ export function getInstallSource(): InstallSource {
  * @source
  */
 export async function getLatestRelease(): Promise<GithubRelease | undefined> {
-  return fetchRelease("releases/latest");
+  return fetchRelease('releases/latest');
 }
 
 /**
@@ -269,7 +269,7 @@ export async function getReleaseByTag(version: string): Promise<GithubRelease | 
  * @source
  */
 function normalizeVersion(version: string): string {
-  return version.trim().replace(/^[vV]/, "");
+  return version.trim().replace(/^[vV]/, '');
 }
 
 /**
@@ -290,7 +290,7 @@ async function fetchRelease(endpoint: string): Promise<GithubRelease | undefined
     const data: unknown = await response.json();
     return isGithubRelease(data) ? data : undefined;
   } catch (error) {
-    console.error("Failed to fetch release:", { endpoint, error });
+    console.error('Failed to fetch release:', { endpoint, error });
     return undefined;
   }
 }

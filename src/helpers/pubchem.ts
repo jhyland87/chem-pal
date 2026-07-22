@@ -1,6 +1,6 @@
-import { isCAS } from "@/utils/typeGuards/common";
-import { withTtlCache } from "@/helpers/requestCache";
-import { isPubChemCID } from "@/utils/typeGuards/common";
+import { isCAS } from '@/utils/typeGuards/common';
+import { withTtlCache } from '@/helpers/requestCache';
+import { isPubChemCID } from '@/utils/typeGuards/common';
 
 /**
  * SDQ (Structure Data Query) agent from PubChem API
@@ -16,7 +16,7 @@ import { isPubChemCID } from "@/utils/typeGuards/common";
  * @see https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest
  * @source
  */
-const PUG_REST_BASE = "https://pubchem.ncbi.nlm.nih.gov/rest/pug";
+const PUG_REST_BASE = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug';
 
 /**
  * Compound property fields requested from PUG-REST's `/property` operation. Uses the current
@@ -24,7 +24,7 @@ const PUG_REST_BASE = "https://pubchem.ncbi.nlm.nih.gov/rest/pug";
  * @source
  */
 const COMPOUND_PROPERTY_FIELDS =
-  "MolecularFormula,MolecularWeight,IUPACName,SMILES,InChI,InChIKey,Title";
+  'MolecularFormula,MolecularWeight,IUPACName,SMILES,InChI,InChIKey,Title';
 
 /**
  * A subset of PubChem compound properties, normalized to friendly camelCase field names.
@@ -75,12 +75,12 @@ export interface PubChemDescription {
  * @source
  */
 function extractCids(data: unknown): number[] | undefined {
-  if (typeof data !== "object" || data === null) return undefined;
-  const identifierList = Reflect.get(data, "IdentifierList");
-  if (typeof identifierList !== "object" || identifierList === null) return undefined;
-  const cid = Reflect.get(identifierList, "CID");
+  if (typeof data !== 'object' || data === null) return undefined;
+  const identifierList = Reflect.get(data, 'IdentifierList');
+  if (typeof identifierList !== 'object' || identifierList === null) return undefined;
+  const cid = Reflect.get(identifierList, 'CID');
   if (!Array.isArray(cid)) return undefined;
-  const nums = cid.filter((entry): entry is number => typeof entry === "number");
+  const nums = cid.filter((entry): entry is number => typeof entry === 'number');
   return nums.length > 0 ? nums : undefined;
 }
 
@@ -92,33 +92,33 @@ function extractCids(data: unknown): number[] | undefined {
  * @source
  */
 function extractProperties(data: unknown): PubChemProperties | undefined {
-  if (typeof data !== "object" || data === null) return undefined;
-  const table = Reflect.get(data, "PropertyTable");
-  if (typeof table !== "object" || table === null) return undefined;
-  const properties = Reflect.get(table, "Properties");
+  if (typeof data !== 'object' || data === null) return undefined;
+  const table = Reflect.get(data, 'PropertyTable');
+  if (typeof table !== 'object' || table === null) return undefined;
+  const properties = Reflect.get(table, 'Properties');
   if (!Array.isArray(properties) || properties.length === 0) return undefined;
   const first = properties[0];
-  if (typeof first !== "object" || first === null) return undefined;
+  if (typeof first !== 'object' || first === null) return undefined;
 
   const readString = (key: string): string | undefined => {
     const value = Reflect.get(first, key);
-    return typeof value === "string" ? value : undefined;
+    return typeof value === 'string' ? value : undefined;
   };
 
-  const cidValue = Reflect.get(first, "CID");
-  const weight = Reflect.get(first, "MolecularWeight");
+  const cidValue = Reflect.get(first, 'CID');
+  const weight = Reflect.get(first, 'MolecularWeight');
 
   return {
     cid: isPubChemCID(cidValue) ? cidValue : undefined,
-    molecularFormula: readString("MolecularFormula"),
+    molecularFormula: readString('MolecularFormula'),
     // PubChem usually returns MolecularWeight as a string, but tolerate a numeric payload too.
     molecularWeight:
-      typeof weight === "string" ? weight : typeof weight === "number" ? String(weight) : undefined,
-    iupacName: readString("IUPACName"),
-    smiles: readString("SMILES"),
-    inchi: readString("InChI"),
-    inchiKey: readString("InChIKey"),
-    title: readString("Title"),
+      typeof weight === 'string' ? weight : typeof weight === 'number' ? String(weight) : undefined,
+    iupacName: readString('IUPACName'),
+    smiles: readString('SMILES'),
+    inchi: readString('InChI'),
+    inchiKey: readString('InChIKey'),
+    title: readString('Title'),
   };
 }
 
@@ -131,15 +131,15 @@ function extractProperties(data: unknown): PubChemProperties | undefined {
  * @source
  */
 function extractDescription(data: unknown): PubChemDescription | undefined {
-  if (typeof data !== "object" || data === null) return undefined;
-  const list = Reflect.get(data, "InformationList");
-  if (typeof list !== "object" || list === null) return undefined;
-  const information = Reflect.get(list, "Information");
+  if (typeof data !== 'object' || data === null) return undefined;
+  const list = Reflect.get(data, 'InformationList');
+  if (typeof list !== 'object' || list === null) return undefined;
+  const information = Reflect.get(list, 'Information');
   if (!Array.isArray(information)) return undefined;
 
   const readString = (entry: object, key: string): string | undefined => {
     const value = Reflect.get(entry, key);
-    return typeof value === "string" ? value : undefined;
+    return typeof value === 'string' ? value : undefined;
   };
 
   let title: string | undefined;
@@ -147,11 +147,11 @@ function extractDescription(data: unknown): PubChemDescription | undefined {
   let source: string | undefined;
   let url: string | undefined;
   for (const entry of information) {
-    if (typeof entry !== "object" || entry === null) continue;
-    title ??= readString(entry, "Title");
-    description ??= readString(entry, "Description");
-    source ??= readString(entry, "DescriptionSourceName");
-    url ??= readString(entry, "DescriptionURL");
+    if (typeof entry !== 'object' || entry === null) continue;
+    title ??= readString(entry, 'Title');
+    description ??= readString(entry, 'Description');
+    source ??= readString(entry, 'DescriptionSourceName');
+    url ??= readString(entry, 'DescriptionURL');
   }
 
   if (!description) return undefined;
@@ -176,7 +176,7 @@ async function getCidsByCasUncached(cas: CAS<string>): Promise<PubChemCID[] | un
     const valid = cids.filter(isPubChemCID);
     return valid.length > 0 ? valid : undefined;
   } catch (error) {
-    console.error("Error fetching PubChem CIDs by CAS:", error);
+    console.error('Error fetching PubChem CIDs by CAS:', error);
     return undefined;
   }
 }
@@ -199,7 +199,7 @@ async function getCidsByCasUncached(cas: CAS<string>): Promise<PubChemCID[] | un
  */
 export const getCidsByCas: (cas: CAS<string>) => Promise<PubChemCID[] | undefined> = withTtlCache(
   getCidsByCasUncached,
-  { namespace: "cidsByCas" },
+  { namespace: 'cidsByCas' },
 );
 
 /**
@@ -218,7 +218,7 @@ async function getCidByNameUncached(name: string): Promise<PubChemCID | undefine
     const first = extractCids(data)?.[0];
     return isPubChemCID(first) ? first : undefined;
   } catch (error) {
-    console.error("Error fetching PubChem CID by name:", error);
+    console.error('Error fetching PubChem CID by name:', error);
     return undefined;
   }
 }
@@ -238,7 +238,7 @@ async function getCidByNameUncached(name: string): Promise<PubChemCID | undefine
  */
 export const getCidByName: (name: string) => Promise<PubChemCID | undefined> = withTtlCache(
   getCidByNameUncached,
-  { namespace: "cidByName" },
+  { namespace: 'cidByName' },
 );
 
 /**
@@ -258,7 +258,7 @@ async function getCompoundPropertiesUncached(
     const data = await response.json();
     return extractProperties(data);
   } catch (error) {
-    console.error("Error fetching PubChem compound properties:", error);
+    console.error('Error fetching PubChem compound properties:', error);
     return undefined;
   }
 }
@@ -281,7 +281,7 @@ async function getCompoundPropertiesUncached(
  */
 export const getCompoundProperties: (cid: PubChemCID) => Promise<PubChemProperties | undefined> =
   withTtlCache(getCompoundPropertiesUncached, {
-    namespace: "properties",
+    namespace: 'properties',
   });
 
 /**
@@ -297,7 +297,7 @@ async function getSynonymsByCidUncached(cid: PubChemCID): Promise<string[] | und
     const data = await response.json();
     return extractSynonyms(data);
   } catch (error) {
-    console.error("Error fetching PubChem synonyms by CID:", error);
+    console.error('Error fetching PubChem synonyms by CID:', error);
     return undefined;
   }
 }
@@ -318,7 +318,7 @@ async function getSynonymsByCidUncached(cid: PubChemCID): Promise<string[] | und
  */
 export const getSynonymsByCid: (cid: PubChemCID) => Promise<string[] | undefined> = withTtlCache(
   getSynonymsByCidUncached,
-  { namespace: "synonymsByCid" },
+  { namespace: 'synonymsByCid' },
 );
 
 /**
@@ -336,7 +336,7 @@ async function getCompoundDescriptionUncached(
     const data = await response.json();
     return extractDescription(data);
   } catch (error) {
-    console.error("Error fetching PubChem description:", error);
+    console.error('Error fetching PubChem description:', error);
     return undefined;
   }
 }
@@ -358,7 +358,7 @@ async function getCompoundDescriptionUncached(
  */
 export const getCompoundDescription: (cid: PubChemCID) => Promise<PubChemDescription | undefined> =
   withTtlCache(getCompoundDescriptionUncached, {
-    namespace: "descriptionByCid",
+    namespace: 'descriptionByCid',
   });
 
 /**
@@ -416,11 +416,11 @@ export function pubchemStructureImageUrl(cid: PubChemCID): string {
  * @source
  */
 function assertIsSDQResponse(data: unknown): asserts data is SDQResponse {
-  if (typeof data !== "object" || data === null) {
-    throw new Error("data is not an object");
+  if (typeof data !== 'object' || data === null) {
+    throw new Error('data is not an object');
   }
-  if (!("SDQOutputSet" in data) || typeof data.SDQOutputSet !== "object") {
-    throw new Error("data.SDQOutputSet is not an object");
+  if (!('SDQOutputSet' in data) || typeof data.SDQOutputSet !== 'object') {
+    throw new Error('data.SDQOutputSet is not an object');
   }
 }
 
@@ -430,8 +430,8 @@ function assertIsSDQResponse(data: unknown): asserts data is SDQResponse {
  * @source
  */
 function assertIsSDQWhere(where: unknown): asserts where is SDQWhere {
-  if (typeof where !== "object" || where === null) {
-    throw new Error("where is not an object");
+  if (typeof where !== 'object' || where === null) {
+    throw new Error('where is not an object');
   }
 }
 
@@ -443,30 +443,30 @@ function assertIsSDQWhere(where: unknown): asserts where is SDQWhere {
  */
 async function executeSDQSearchUncached({
   where,
-  select = "*",
+  select = '*',
   limit = 10,
 }: SDQAgentQuery): Promise<SDQResultItem[] | undefined> {
   try {
     assertIsSDQWhere(where);
 
-    if (select !== "*") {
+    if (select !== '*') {
       if (Array.isArray(select)) {
-        select = select.join(",");
+        select = select.join(',');
       } else {
-        select = "*";
+        select = '*';
       }
     }
 
     const pubchemQuery = {
       select,
       limit,
-      collection: "compound",
-      order: ["cid,asc"],
+      collection: 'compound',
+      order: ['cid,asc'],
       start: 1,
       where: { ands: [where] },
     };
 
-    console.debug("pubchemQuery", pubchemQuery);
+    console.debug('pubchemQuery', pubchemQuery);
     const queryURLString = JSON.stringify(pubchemQuery);
 
     const response = await fetch(
@@ -495,7 +495,7 @@ async function executeSDQSearchUncached({
 
     return outputSets[0].rows;
   } catch (error) {
-    console.error("Error querying SDQ agent:", error);
+    console.error('Error querying SDQ agent:', error);
   }
 }
 
@@ -518,7 +518,7 @@ async function executeSDQSearchUncached({
  * @source
  */
 export const executeSDQSearch: (query: SDQAgentQuery) => Promise<SDQResultItem[] | undefined> =
-  withTtlCache(executeSDQSearchUncached, { namespace: "sdqSearch" });
+  withTtlCache(executeSDQSearchUncached, { namespace: 'sdqSearch' });
 
 /**
  * Get the compound name from a synonym.
@@ -536,7 +536,7 @@ export const executeSDQSearch: (query: SDQAgentQuery) => Promise<SDQResultItem[]
 export async function getCompoundNameFromAlias(cmpdsynonym: string): Promise<string | undefined> {
   const searchResult = await executeSDQSearch({
     where: { cmpdsynonym },
-    select: ["cid", "cmpdname", "iupacname"],
+    select: ['cid', 'cmpdname', 'iupacname'],
     limit: 1,
   });
 
@@ -561,13 +561,13 @@ const POPULARITY_WINDOW = 3;
  * @source
  */
 function extractSynonyms(data: unknown): string[] | undefined {
-  if (typeof data !== "object" || data === null || !("InformationList" in data)) {
+  if (typeof data !== 'object' || data === null || !('InformationList' in data)) {
     return undefined;
   }
   const list = (data as { InformationList?: { Information?: { Synonym?: unknown }[] } })
     .InformationList?.Information?.[0]?.Synonym;
   if (!Array.isArray(list)) return undefined;
-  const names = list.filter((entry): entry is string => typeof entry === "string");
+  const names = list.filter((entry): entry is string => typeof entry === 'string');
   return names.length > 0 ? names : undefined;
 }
 
@@ -586,7 +586,7 @@ async function getRankedNamesByNameUncached(name: string): Promise<string[] | un
     const data = await response.json();
     return extractSynonyms(data);
   } catch (error) {
-    console.error("Error fetching PubChem synonyms:", error);
+    console.error('Error fetching PubChem synonyms:', error);
     return undefined;
   }
 }
@@ -607,7 +607,7 @@ async function getRankedNamesByNameUncached(name: string): Promise<string[] | un
  */
 export const getRankedNamesByName: (name: string) => Promise<string[] | undefined> = withTtlCache(
   getRankedNamesByNameUncached,
-  { namespace: "rankedNames" },
+  { namespace: 'rankedNames' },
 );
 
 /**
@@ -701,7 +701,7 @@ export async function suggestAlternativeSearch(
 export function getPubchemIdFromDocument(doc: Document): number | undefined {
   const link = doc.querySelector('a[href*="pubchem.ncbi.nlm.nih.gov/substance"]');
   if (!(link instanceof HTMLAnchorElement)) return undefined;
-  const pubchemId = link.href.split("/").pop();
+  const pubchemId = link.href.split('/').pop();
   if (!pubchemId || isNaN(Number(pubchemId))) return undefined;
   return Number(pubchemId);
 }

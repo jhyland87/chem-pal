@@ -44,13 +44,13 @@ export class BadgeAnimator {
   /** Available predefined character sets for badge animations */
   static readonly charsets: Record<string, string[]> = {
     /** Hourglass animation (⏳ ⌛) */
-    hourglass: ["⏳", "⌛"],
+    hourglass: ['⏳', '⌛'],
     /** Ellipsis animation (․ ‥ …) */
-    ellipsis: ["․", "‥", "…"],
+    ellipsis: ['․', '‥', '…'],
     /** Clock animation (🕛 🕐 🕑 🕒 🕓 🕔 🕕 🕖 🕗 🕘 🕙 🕚) */
-    clock: ["🕛", "🕐", "🕑", "🕒", "🕓", "🕔", "🕕", "🕖", "🕗", "🕘", "🕙", "🕚"],
-    arch: ["◜", "◝", "◞", "◟", "◠", "◡", "○"],
-    ball_wave: ["𓃉𓃉𓃉", "𓃉𓃉∘", "𓃉∘°", "∘°∘", "°∘𓃉", "∘𓃉𓃉"],
+    clock: ['🕛', '🕐', '🕑', '🕒', '🕓', '🕔', '🕕', '🕖', '🕗', '🕘', '🕙', '🕚'],
+    arch: ['◜', '◝', '◞', '◟', '◠', '◡', '○'],
+    ball_wave: ['𓃉𓃉𓃉', '𓃉𓃉∘', '𓃉∘°', '∘°∘', '°∘𓃉', '∘𓃉𓃉'],
     //circle: ["⨀⊙⊚⌾Ⓞⓞ○◯⚬⚬○⦾⦿⨀☉⚬⚭⚮⚯⌾○◌◎⭘￮"],
   };
 
@@ -68,10 +68,10 @@ export class BadgeAnimator {
    * @source
    */
   static animate(chars: string[] | keyof typeof BadgeAnimator.charsets, delay: number = 500): void {
-    const characterSet = typeof chars === "string" ? this.charsets[chars] : chars;
+    const characterSet = typeof chars === 'string' ? this.charsets[chars] : chars;
 
     if (!characterSet || characterSet.length < 1) {
-      throw new Error("At least one character is required for badge animation");
+      throw new Error('At least one character is required for badge animation');
     }
 
     this.clear(); // Clear any existing animation
@@ -88,7 +88,7 @@ export class BadgeAnimator {
    * @param duration - How long to show the final text before clearing (in milliseconds)
    * @source
    */
-  static clear(finalText: string = "", duration: number = 5000): void {
+  static clear(finalText: string = '', duration: number = 5000): void {
     if (this.#timeoutId) {
       clearTimeout(this.#timeoutId);
       this.#timeoutId = null;
@@ -98,11 +98,11 @@ export class BadgeAnimator {
     if (finalText) {
       chrome.action.setBadgeText({ text: finalText }, () => {
         setTimeout(() => {
-          chrome.action.setBadgeText({ text: "" });
+          chrome.action.setBadgeText({ text: '' });
         }, duration);
       });
     } else {
-      chrome.action.setBadgeText({ text: "" });
+      chrome.action.setBadgeText({ text: '' });
     }
   }
 

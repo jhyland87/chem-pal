@@ -1,9 +1,9 @@
 /** @internal */
-import CustomFileIcon, { type CustomFileIconProps } from "@/icons/CustomFileIcon";
-import { FC } from "react";
+import CustomFileIcon, { type CustomFileIconProps } from '@/icons/CustomFileIcon';
+import { FC } from 'react';
 
 /** Props for {@link TDSIcon}: all {@link CustomFileIconProps} except the fixed `label`. */
-export type TDSIconProps = Omit<CustomFileIconProps, "label">;
+export type TDSIconProps = Omit<CustomFileIconProps, 'label'>;
 
 /**
  * A Material-UI icon component that renders a Technical Data Sheet (TDS) document.

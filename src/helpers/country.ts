@@ -1,6 +1,6 @@
-import { CACHE } from "@/constants/common";
-import { cstorage } from "@/utils/storage";
-import { findByIso2, findByName } from "country-list-js";
+import { CACHE } from '@/constants/common';
+import { cstorage } from '@/utils/storage';
+import { findByIso2, findByName } from 'country-list-js';
 
 /**
  * @category Country Helpers
@@ -44,11 +44,11 @@ interface CountryRecord {
  * @source
  */
 function isCountryRecord(value: unknown): value is CountryRecord {
-  if (typeof value !== "object" || value === null) {
+  if (typeof value !== 'object' || value === null) {
     return false;
   }
   const record = value as Record<string, unknown>;
-  return typeof record.name === "string";
+  return typeof record.name === 'string';
 }
 
 /**
@@ -135,15 +135,15 @@ export function findCountryByName(name: string): CountryCode | undefined {
     .toLowerCase()
     .replace(/\b[a-z]/g, (c) => c.toUpperCase());
   const result: unknown = findByName(titleCased);
-  if (typeof result !== "object" || result === null || !("code" in result)) {
+  if (typeof result !== 'object' || result === null || !('code' in result)) {
     return undefined;
   }
   const code: unknown = result.code;
-  if (typeof code !== "object" || code === null || !("iso2" in code)) {
+  if (typeof code !== 'object' || code === null || !('iso2' in code)) {
     return undefined;
   }
   const iso2: unknown = code.iso2;
-  return typeof iso2 === "string" && isKnownCountryCode(iso2) ? iso2 : undefined;
+  return typeof iso2 === 'string' && isKnownCountryCode(iso2) ? iso2 : undefined;
 }
 
 /**
@@ -162,9 +162,9 @@ export function findCountryByName(name: string): CountryCode | undefined {
 export async function getUserCountryName(): Promise<string | undefined> {
   const stored = await cstorage.local.get([CACHE.USER_SETTINGS]);
   const settings: unknown = stored[CACHE.USER_SETTINGS];
-  if (typeof settings !== "object" || settings === null) {
+  if (typeof settings !== 'object' || settings === null) {
     return undefined;
   }
   const country = (settings as Record<string, unknown>).country;
-  return typeof country === "string" ? country : undefined;
+  return typeof country === 'string' ? country : undefined;
 }

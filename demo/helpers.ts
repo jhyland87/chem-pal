@@ -1,16 +1,16 @@
-import type { Locator, Page } from "@playwright/test";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { DEMO_CURSOR_ID } from "./cursor";
+import type { Locator, Page } from '@playwright/test';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { DEMO_CURSOR_ID } from './cursor';
 
 /** DOM id used for the injected popover so teardown can find and remove it. */
-const POPOVER_ID = "playwright-demo-popover";
+const POPOVER_ID = 'playwright-demo-popover';
 
 /** Where element captures are written — the same dir the demo's page screenshots use. */
 const screenshotDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
-  "output",
-  "screenshots",
+  'output',
+  'screenshots',
 );
 
 /**
@@ -50,11 +50,11 @@ export async function typeInto(locator: Locator, text: string, delayMs = 70): Pr
 export async function smoothScrollIntoView(
   page: Page,
   locator: Locator,
-  block: "start" | "center" | "end" | "nearest" = "center",
+  block: 'start' | 'center' | 'end' | 'nearest' = 'center',
   settleMs = 1200,
 ): Promise<void> {
   await locator.evaluate((el, b) => {
-    el.scrollIntoView({ behavior: "smooth", block: b, inline: "nearest" });
+    el.scrollIntoView({ behavior: 'smooth', block: b, inline: 'nearest' });
   }, block);
   await page.waitForTimeout(settleMs);
 }
@@ -87,12 +87,12 @@ export async function smoothScrollToTop(
     let node: Element | null = el.parentElement;
     while (node) {
       if (isScrollable(node)) {
-        node.scrollTo({ top: 0, behavior: "smooth" });
+        node.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
       node = node.parentElement;
     }
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
   await page.waitForTimeout(settleMs);
 }
@@ -114,8 +114,8 @@ export async function smoothScrollToTop(
 export async function highlight(locator: Locator): Promise<void> {
   await locator.evaluate((el) => {
     const r = el.getBoundingClientRect();
-    const moveCursor = Reflect.get(window, "__chempalCursorMoveTo");
-    if (typeof moveCursor === "function") {
+    const moveCursor = Reflect.get(window, '__chempalCursorMoveTo');
+    if (typeof moveCursor === 'function') {
       moveCursor(r.left + r.width / 2, r.top + r.height / 2);
     }
   });
@@ -133,12 +133,12 @@ export async function highlight(locator: Locator): Promise<void> {
  */
 export async function clearHighlight(locator: Locator): Promise<void> {
   await locator.evaluate((el) => {
-    el.style.outline = "none";
+    el.style.outline = 'none';
   });
 }
 
 /** DOM id for the single group-outline overlay so teardown can remove it. */
-const GROUP_HIGHLIGHT_ID = "playwright-demo-group-highlight";
+const GROUP_HIGHLIGHT_ID = 'playwright-demo-group-highlight';
 
 /**
  * Points the demo cursor at the center of the combined bounding box of every
@@ -175,8 +175,8 @@ export async function highlightGroup(page: Page, locator: Locator): Promise<void
 
   await page.evaluate(({ left, top, right, bottom }) => {
     // Rest the demo cursor on the group's center.
-    const moveCursor = Reflect.get(window, "__chempalCursorMoveTo");
-    if (typeof moveCursor === "function") {
+    const moveCursor = Reflect.get(window, '__chempalCursorMoveTo');
+    if (typeof moveCursor === 'function') {
       moveCursor((left + right) / 2, (top + bottom) / 2);
     }
   }, rect);
@@ -221,8 +221,8 @@ export async function fireHotkeyEvent(
   keys: string[],
 ): Promise<void> {
   await page.evaluate((labels) => {
-    const show = Reflect.get(window, "__chempalShowKeys");
-    if (typeof show === "function") {
+    const show = Reflect.get(window, '__chempalShowKeys');
+    if (typeof show === 'function') {
       show(labels);
     }
   }, keys);
@@ -233,7 +233,7 @@ export async function fireHotkeyEvent(
 }
 
 /** DOM id for the spotlight overlay so teardown can find and fade it. */
-const SPOTLIGHT_ID = "playwright-demo-spotlight";
+const SPOTLIGHT_ID = 'playwright-demo-spotlight';
 
 /**
  * Softly blurs and dims everything except the target element to draw the eye to
@@ -265,19 +265,19 @@ export async function spotlight(page: Page, target: Locator): Promise<void> {
       const r = Math.min(vw, x + width + pad);
       const b = Math.min(vh, y + height + pad);
 
-      const container = document.createElement("div");
+      const container = document.createElement('div');
       container.id = id;
       container.style.cssText =
-        "position:fixed;left:0;top:0;width:100%;height:100%;" +
-        "pointer-events:none;z-index:999900;opacity:0;transition:opacity 300ms ease;";
+        'position:fixed;left:0;top:0;width:100%;height:100%;' +
+        'pointer-events:none;z-index:999900;opacity:0;transition:opacity 300ms ease;';
 
       const panel = (left: number, top: number, w: number, h: number): void => {
-        const p = document.createElement("div");
+        const p = document.createElement('div');
         p.style.cssText =
           `position:fixed;left:${left}px;top:${top}px;` +
           `width:${Math.max(0, w)}px;height:${Math.max(0, h)}px;` +
-          "backdrop-filter:blur(2.5px);-webkit-backdrop-filter:blur(2.5px);" +
-          "background-color:rgba(18,20,28,0.22);";
+          'backdrop-filter:blur(2.5px);-webkit-backdrop-filter:blur(2.5px);' +
+          'background-color:rgba(18,20,28,0.22);';
         container.appendChild(p);
       };
       panel(0, 0, vw, t); // above
@@ -287,7 +287,7 @@ export async function spotlight(page: Page, target: Locator): Promise<void> {
 
       document.body.appendChild(container);
       requestAnimationFrame(() => {
-        container.style.opacity = "1";
+        container.style.opacity = '1';
       });
     },
     { x: box.x, y: box.y, width: box.width, height: box.height, id: SPOTLIGHT_ID },
@@ -309,7 +309,7 @@ export async function clearSpotlight(page: Page): Promise<void> {
   await page.evaluate((id) => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.style.opacity = "0";
+    el.style.opacity = '0';
     window.setTimeout(() => el.remove(), 320);
   }, SPOTLIGHT_ID);
 }
@@ -341,26 +341,26 @@ export async function showDemoPopover(page: Page, target: Locator, message: stri
       const margin = 10;
       const edge = 8;
 
-      const popover = document.createElement("div");
+      const popover = document.createElement('div');
       popover.id = id;
       popover.textContent = text;
       Object.assign(popover.style, {
-        position: "absolute",
-        left: "0px",
-        top: "0px",
-        maxWidth: "300px",
-        backgroundColor: "#1e293b",
-        color: "#ffffff",
-        padding: "8px 14px",
-        borderRadius: "6px",
-        fontSize: "14px",
-        fontWeight: "500",
-        lineHeight: "1.35",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
-        zIndex: "999999",
-        fontFamily: "system-ui, sans-serif",
-        pointerEvents: "none",
-        visibility: "hidden",
+        position: 'absolute',
+        left: '0px',
+        top: '0px',
+        maxWidth: '300px',
+        backgroundColor: '#1e293b',
+        color: '#ffffff',
+        padding: '8px 14px',
+        borderRadius: '6px',
+        fontSize: '14px',
+        fontWeight: '500',
+        lineHeight: '1.35',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+        zIndex: '999999',
+        fontFamily: 'system-ui, sans-serif',
+        pointerEvents: 'none',
+        visibility: 'hidden',
       });
       // Append hidden first so we can measure the rendered size.
       document.body.appendChild(popover);
@@ -381,22 +381,22 @@ export async function showDemoPopover(page: Page, target: Locator, message: stri
       );
       popover.style.left = `${clampedLeft + window.scrollX}px`;
       popover.style.top = `${top}px`;
-      popover.style.visibility = "visible";
+      popover.style.visibility = 'visible';
 
       // Arrow sits on the side facing the target and points at its center.
-      const arrow = document.createElement("div");
+      const arrow = document.createElement('div');
       const arrowLeft = Math.max(12, Math.min(centerX - clampedLeft, popW - 12));
       Object.assign(arrow.style, {
-        position: "absolute",
+        position: 'absolute',
         left: `${arrowLeft}px`,
-        transform: "translateX(-50%)",
-        width: "0",
-        height: "0",
-        borderLeft: "6px solid transparent",
-        borderRight: "6px solid transparent",
+        transform: 'translateX(-50%)',
+        width: '0',
+        height: '0',
+        borderLeft: '6px solid transparent',
+        borderRight: '6px solid transparent',
         ...(placeBelow
-          ? { top: "-6px", borderBottom: "6px solid #1e293b" }
-          : { bottom: "-6px", borderTop: "6px solid #1e293b" }),
+          ? { top: '-6px', borderBottom: '6px solid #1e293b' }
+          : { bottom: '-6px', borderTop: '6px solid #1e293b' }),
       });
       popover.appendChild(arrow);
     },
@@ -438,7 +438,7 @@ async function setDemoCursorOpacity(page: Page, opacity: string): Promise<string
   return page.evaluate(
     ({ id, value }) => {
       const el = document.getElementById(id);
-      if (!el) return "";
+      if (!el) return '';
       const previous = el.style.opacity;
       el.style.opacity = value;
       return previous;
@@ -471,7 +471,7 @@ export async function captureImageOfElement(
   locator: Locator | string,
   filename: string,
 ): Promise<void> {
-  locator = typeof locator === "string" ? page.locator(locator) : locator;
+  locator = typeof locator === 'string' ? page.locator(locator) : locator;
 
   // 1. Get the element's coordinates and size
   const box = await locator.boundingBox();
@@ -481,7 +481,7 @@ export async function captureImageOfElement(
 
   // 2. Take a page-level screenshot clipped to the expanded boundaries, with
   // the demo pointer hidden so it doesn't sit in the middle of the crop.
-  const cursorOpacity = await setDemoCursorOpacity(page, "0");
+  const cursorOpacity = await setDemoCursorOpacity(page, '0');
   try {
     await page.screenshot({
       path: path.join(screenshotDir, `${filename}.png`),

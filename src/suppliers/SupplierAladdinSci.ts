@@ -1,16 +1,16 @@
-import { findCAS } from "@/helpers/cas";
-import { HttpError } from "@/helpers/exceptions";
-import { sleep } from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { isHtmlResponse } from "@/utils/typeGuards/common";
-import { SupplierBaseMagento2 } from "./SupplierBaseMagento2";
+import { findCAS } from '@/helpers/cas';
+import { HttpError } from '@/helpers/exceptions';
+import { sleep } from '@/helpers/utils';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { isHtmlResponse } from '@/utils/typeGuards/common';
+import { SupplierBaseMagento2 } from './SupplierBaseMagento2';
 
 /** Outcome of a single product-page fetch attempt. */
 type PageFetchResult =
-  | { status: "ok"; html?: string }
+  | { status: 'ok'; html?: string }
   // `httpStatus` carries the HTTP status when the failure was an HttpError (e.g. 429, 404);
   // undefined for non-HTTP failures (network error, non-HTML response).
-  | { status: "error"; httpStatus?: number };
+  | { status: 'error'; httpStatus?: number };
 
 /**
  * SupplierAladdinSci class that extends SupplierBaseMagento2 and implements AsyncIterable<Product>.
@@ -28,19 +28,19 @@ type PageFetchResult =
  */
 export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = "AladdinSci";
+  public readonly supplierName: string = 'AladdinSci';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = "https://www.aladdinsci.com";
+  public readonly baseURL: string = 'https://www.aladdinsci.com';
 
   // Shipping scope for AladdinSci
-  public readonly shipping: ShippingRange = "worldwide";
+  public readonly shipping: ShippingRange = 'worldwide';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "US";
+  public readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   /** Base unit (n) for the escalating rate-limit backoff: pause = n, then 2n, 3n, … */
   private readonly backoffBaseDelayMs: number = 1000;
@@ -84,8 +84,8 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     return this.getProductDataWithCache(product, async (builder) => {
-      const permalink = builder.get("permalink") ?? builder.get("url");
-      if (typeof permalink !== "string") {
+      const permalink = builder.get('permalink') ?? builder.get('url');
+      if (typeof permalink !== 'string') {
         return builder;
       }
 
@@ -97,7 +97,7 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
         return builder;
       }
 
-      const doc = new DOMParser().parseFromString(html, "text/html");
+      const doc = new DOMParser().parseFromString(html, 'text/html');
 
       // If there is no formula, then this grabs random strings that are not a formula.
       // const synonyms = this.getSynonyms(doc);
@@ -110,15 +110,15 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
 
       builder
         .setCAS(this.casNumber(doc))
-        .setSmiles(this.cellText(doc, "Isomeric SMILES"))
-        .setIupacName(this.cellText(doc, "IUPAC Name"))
-        .setInChIKey(this.cellText(doc, "InChIKey"))
-        .setInChI(this.cellText(doc, "INCHI"))
-        .setPubchemId(this.cellText(doc, "PubChem CID"))
+        .setSmiles(this.cellText(doc, 'Isomeric SMILES'))
+        .setIupacName(this.cellText(doc, 'IUPAC Name'))
+        .setInChIKey(this.cellText(doc, 'InChIKey'))
+        .setInChI(this.cellText(doc, 'INCHI'))
+        .setPubchemId(this.cellText(doc, 'PubChem CID'))
         .setMoleweight(this.molecularWeight(doc))
         .setPurity(this.getPurity(doc))
-        .setSDSUrl(this.safetyGridLink(doc, "SDS"))
-        .setSpecSheetUrl(this.safetyGridLink(doc, "Specification Sheet"));
+        .setSDSUrl(this.safetyGridLink(doc, 'SDS'))
+        .setSpecSheetUrl(this.safetyGridLink(doc, 'Specification Sheet'));
 
       return builder;
     });
@@ -126,9 +126,9 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
 
   private getSynonyms(doc: Document): string | undefined {
     return (
-      Array.from(doc.querySelectorAll("#specifications .panel-body > .spec-table > .spec-row"))
-        ?.find((r) => r.querySelector(".k")?.textContent?.toLowerCase().trim() == "synonyms")
-        ?.querySelector(".v")
+      Array.from(doc.querySelectorAll('#specifications .panel-body > .spec-table > .spec-row'))
+        ?.find((r) => r.querySelector('.k')?.textContent?.toLowerCase().trim() == 'synonyms')
+        ?.querySelector('.v')
         ?.textContent?.trim() ?? undefined
     );
   }
@@ -160,7 +160,7 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
       await this.backoffGate;
 
       const result = await this.attemptPageFetch(url);
-      if (result.status === "ok") {
+      if (result.status === 'ok') {
         this.failedFetchStatuses.delete(url);
         return result.html;
       }
@@ -210,7 +210,7 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
         await sleep(this.backoffBaseDelayMs * this.backoffLevel);
 
         const result = await this.attemptPageFetch(url);
-        if (result.status === "ok") {
+        if (result.status === 'ok') {
           this.failedFetchStatuses.delete(url);
           return result.html;
         }
@@ -246,14 +246,14 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
       // rethrowErrors surfaces the HttpError (e.g. 429) instead of swallowing it.
       const response = await this.httpGet({ path: url, rethrowErrors: true });
       if (!response || !isHtmlResponse(response)) {
-        return { status: "error" };
+        return { status: 'error' };
       }
-      return { status: "ok", html: await response.text() };
+      return { status: 'ok', html: await response.text() };
     } catch (error: unknown) {
       if (error instanceof HttpError) {
-        return { status: "error", httpStatus: error.status };
+        return { status: 'error', httpStatus: error.status };
       }
-      return { status: "error" };
+      return { status: 'error' };
     }
   }
 
@@ -299,11 +299,11 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
    * @source
    */
   private casNumber(doc: Document): string | undefined {
-    const casSpan = Array.from(doc.querySelectorAll(".title-meta > span")).find((span) =>
-      (span.querySelector("strong")?.textContent ?? "").trim().toLowerCase().startsWith("cas"),
+    const casSpan = Array.from(doc.querySelectorAll('.title-meta > span')).find((span) =>
+      (span.querySelector('strong')?.textContent ?? '').trim().toLowerCase().startsWith('cas'),
     );
-    const title = doc.querySelector(".title-row h1")?.textContent;
-    return findCAS(casSpan?.textContent ?? "") || findCAS(title ?? "") || undefined;
+    const title = doc.querySelector('.title-row h1')?.textContent;
+    return findCAS(casSpan?.textContent ?? '') || findCAS(title ?? '') || undefined;
   }
 
   /**
@@ -336,7 +336,7 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
    * @source
    */
   private molecularWeight(doc: Document): string | undefined {
-    const raw = this.cellText(doc, "Molecular Weight");
+    const raw = this.cellText(doc, 'Molecular Weight');
     return raw?.match(/\d+(?:\.\d+)?/)?.[0];
   }
 
@@ -356,21 +356,21 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
    */
   private getPurity(doc: Document): string | undefined {
     const valueFor = (label: string): string | undefined => {
-      for (const row of doc.querySelectorAll("#specifications .spec-row")) {
-        if (row.querySelector(".k")?.textContent?.trim().toLowerCase() === label.toLowerCase()) {
-          return row.querySelector(".v")?.textContent?.trim();
+      for (const row of doc.querySelectorAll('#specifications .spec-row')) {
+        if (row.querySelector('.k')?.textContent?.trim().toLowerCase() === label.toLowerCase()) {
+          return row.querySelector('.v')?.textContent?.trim();
         }
       }
       return undefined;
     };
 
     // Prefer the dedicated "Purity" row; otherwise use "Specifications & Purity" only if it's a %.
-    const raw = valueFor("Purity");
+    const raw = valueFor('Purity');
     if (raw !== undefined) {
       return raw;
     }
-    const fallback = valueFor("Specifications & Purity");
-    return fallback?.includes("%") ? fallback : undefined;
+    const fallback = valueFor('Specifications & Purity');
+    return fallback?.includes('%') ? fallback : undefined;
   }
 
   /**
@@ -387,15 +387,15 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
    * @source
    */
   private safetyGridLink(doc: Document, heading: string): string | undefined {
-    const grid = doc.querySelector(".safety-grid");
+    const grid = doc.querySelector('.safety-grid');
     if (!grid) {
       return undefined;
     }
 
-    for (const item of grid.querySelectorAll(".safety-item")) {
-      if (item.querySelector("h4")?.textContent?.includes(heading)) {
-        const href = item.querySelector("a")?.getAttribute("href")?.trim();
-        return href && !href.startsWith("#") ? href : undefined;
+    for (const item of grid.querySelectorAll('.safety-item')) {
+      if (item.querySelector('h4')?.textContent?.includes(heading)) {
+        const href = item.querySelector('a')?.getAttribute('href')?.trim();
+        return href && !href.startsWith('#') ? href : undefined;
       }
     }
 

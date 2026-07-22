@@ -15,27 +15,27 @@
  * ```
  * @source
  */
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import { OptionsApp } from "./OptionsApp";
-import { i18n } from "./helpers/i18n";
-import "./main.scss";
-import { initThemeAwareToolbarIcon } from "./utils/themeIcon";
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { OptionsApp } from './OptionsApp';
+import { i18n } from './helpers/i18n';
+import './main.scss';
+import { initThemeAwareToolbarIcon } from './utils/themeIcon';
 
-document.title = i18n("app_title");
+document.title = i18n('app_title');
 
 // Match the toolbar icon to the browser's light/dark scheme (no-ops off-extension).
 initThemeAwareToolbarIcon();
 
-const rootEl = document.getElementById("root");
-if (!rootEl) throw new Error("Options page root element (#root) not found");
+const rootEl = document.getElementById('root');
+if (!rootEl) throw new Error('Options page root element (#root) not found');
 
 createRoot(rootEl, {
   onUncaughtError: (error, errorInfo) => {
-    console.error("Uncaught error:", error, errorInfo);
+    console.error('Uncaught error:', error, errorInfo);
   },
   onCaughtError: (error, errorInfo) => {
-    console.error("Caught error:", error, errorInfo);
+    console.error('Caught error:', error, errorInfo);
   },
 }).render(
   <StrictMode>

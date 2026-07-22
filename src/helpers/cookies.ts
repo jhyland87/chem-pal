@@ -1,4 +1,4 @@
-import { Logger } from "@/utils/Logger";
+import { Logger } from '@/utils/Logger';
 
 /**
  * @category Cookies Helpers
@@ -11,7 +11,7 @@ import { Logger } from "@/utils/Logger";
  * @source
  */
 
-const logger = new Logger("cookies");
+const logger = new Logger('cookies');
 
 /**
  * Reports whether the `chrome.cookies` API is usable in the current context.
@@ -28,7 +28,7 @@ const logger = new Logger("cookies");
  * @source
  */
 export function isCookiesApiAvailable(): boolean {
-  return typeof chrome !== "undefined" && Boolean(chrome.cookies);
+  return typeof chrome !== 'undefined' && Boolean(chrome.cookies);
 }
 
 /**
@@ -47,13 +47,13 @@ export function isCookiesApiAvailable(): boolean {
  */
 export async function setCookie(details: chrome.cookies.SetDetails): Promise<void> {
   if (!isCookiesApiAvailable()) {
-    logger.warn("chrome.cookies unavailable; skipping cookie set", { details });
+    logger.warn('chrome.cookies unavailable; skipping cookie set', { details });
     return;
   }
   try {
     await chrome.cookies.set(details);
   } catch (error: unknown) {
-    logger.warn("Failed to set cookie", { details, error });
+    logger.warn('Failed to set cookie', { details, error });
   }
 }
 
@@ -73,13 +73,13 @@ export async function setCookie(details: chrome.cookies.SetDetails): Promise<voi
  */
 export async function getCookies(url: string): Promise<chrome.cookies.Cookie[]> {
   if (!isCookiesApiAvailable()) {
-    logger.warn("chrome.cookies unavailable; cannot read cookies", { url });
+    logger.warn('chrome.cookies unavailable; cannot read cookies', { url });
     return [];
   }
   try {
     return await chrome.cookies.getAll({ url });
   } catch (error: unknown) {
-    logger.warn("Failed to read cookies", { url, error });
+    logger.warn('Failed to read cookies', { url, error });
     return [];
   }
 }
@@ -100,13 +100,13 @@ export async function getCookies(url: string): Promise<chrome.cookies.Cookie[]> 
  */
 export async function getCookie(url: string, name: string): Promise<chrome.cookies.Cookie | null> {
   if (!isCookiesApiAvailable()) {
-    logger.warn("chrome.cookies unavailable; cannot read cookie", { url, name });
+    logger.warn('chrome.cookies unavailable; cannot read cookie', { url, name });
     return null;
   }
   try {
     return await chrome.cookies.get({ url, name });
   } catch (error: unknown) {
-    logger.warn("Failed to read cookie", { url, name, error });
+    logger.warn('Failed to read cookie', { url, name, error });
     return null;
   }
 }

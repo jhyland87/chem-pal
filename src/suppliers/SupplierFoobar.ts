@@ -1,7 +1,7 @@
 /* THIS FILE IS TO BE IGNORED - Its just a template file for making suppliers. DO NOT DELETE IT. */
 
-import type { ProductBuilder } from "@/utils/ProductBuilder";
-import { SupplierBase } from "./SupplierBase";
+import type { ProductBuilder } from '@/utils/ProductBuilder';
+import { SupplierBase } from './SupplierBase';
 
 /**
  * SupplierVWR class that extends SupplierBase.
@@ -14,19 +14,19 @@ import { SupplierBase } from "./SupplierBase";
  */
 export class SupplierFoobar extends SupplierBase<Partial<Product>, Product> implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = "Foobar";
+  public readonly supplierName: string = 'Foobar';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = "https://foobar.com";
+  public readonly baseURL: string = 'https://foobar.com';
 
   // Shipping scope
-  public readonly shipping: ShippingRange = "domestic";
+  public readonly shipping: ShippingRange = 'domestic';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "US";
+  public readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   protected async queryProducts(
     _query: string,
@@ -42,7 +42,7 @@ export class SupplierFoobar extends SupplierBase<Partial<Product>, Product> impl
   }
 
   protected titleSelector(data: Partial<Product>): string {
-    return data.title ?? "";
+    return data.title ?? '';
   }
 
   /**
@@ -58,6 +58,6 @@ export class SupplierFoobar extends SupplierBase<Partial<Product>, Product> impl
    * @source
    */
   protected getUniqueProductKey(data: Partial<Product>): string {
-    return this.href(String(data.url ?? ""));
+    return this.href(String(data.url ?? ''));
   }
 }

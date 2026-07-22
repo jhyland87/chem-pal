@@ -3,11 +3,11 @@ import {
   maxExportsCacheBytes,
   maxHistoryEntries,
   maxSupplierCacheEntries,
-} from "@/../config.json";
-import { IDB_STORE, type IdbStore } from "@/constants/common";
-import type { ExcludedProductsMap } from "@/helpers/excludedProducts";
-import { Logger } from "@/utils/Logger";
-import { type DBSchema, type IDBPDatabase, openDB } from "idb";
+} from '@/../config.json';
+import { IDB_STORE, type IdbStore } from '@/constants/common';
+import type { ExcludedProductsMap } from '@/helpers/excludedProducts';
+import { Logger } from '@/utils/Logger';
+import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
 
 /**
  * Custom event name dispatched when search results are cleared.
@@ -15,29 +15,29 @@ import { type DBSchema, type IDBPDatabase, openDB } from "idb";
  * the former `cstorage.onChanged` pattern for `search_results`.
  * @category Utils
  */
-export const IDB_SEARCH_RESULTS_CLEARED = "idb:search-results-cleared";
+export const IDB_SEARCH_RESULTS_CLEARED = 'idb:search-results-cleared';
 
 /**
  * Custom event name dispatched when supplier stats are updated.
  * Consumers listen for this to live-refresh stats during searches.
  * @category Utils
  */
-export const IDB_SUPPLIER_STATS_UPDATED = "idb:supplier-stats-updated";
+export const IDB_SUPPLIER_STATS_UPDATED = 'idb:supplier-stats-updated';
 
 /**
  * Custom event name dispatched when the cached exports change (added, deleted,
  * or cleared). The export-history list listens for this to live-refresh.
  * @category Utils
  */
-export const IDB_EXPORTS_UPDATED = "idb:exports-updated";
+export const IDB_EXPORTS_UPDATED = 'idb:exports-updated';
 
-const logger = new Logger("idbCache");
+const logger = new Logger('idbCache');
 
-const DB_NAME = "chempal";
+const DB_NAME = 'chempal';
 const DB_VERSION = 7;
 
 /** Single-row key used by the `app_meta` store (mirrors the `"current"` pattern of `search_results`). */
-const APP_META_KEY = "current";
+const APP_META_KEY = 'current';
 // Cache-capacity caps live in config.json alongside the other build-time tunables.
 const MAX_SUPPLIER_CACHE_ENTRIES = maxSupplierCacheEntries;
 const MAX_HISTORY_ENTRIES = maxHistoryEntries;
@@ -61,7 +61,7 @@ export interface ExportRecord {
   /** Originating search query, if any. */
   query?: string;
   /** Whether the export covered all results or only the filtered view. */
-  scope: "all" | "filtered";
+  scope: 'all' | 'filtered';
   /** Number of top-level products exported (excludes variant subrows). */
   rowCount: number;
   /** Byte size of {@link ExportRecord.blob}; summed for the total-size cap. */
@@ -162,45 +162,45 @@ function getDB(): Promise<IDBPDatabase<ChemPalDBSchema>> {
     dbPromise = openDB<ChemPalDBSchema>(DB_NAME, DB_VERSION, {
       upgrade(db) {
         if (!db.objectStoreNames.contains(IDB_STORE.SEARCH_RESULTS)) {
-          db.createObjectStore(IDB_STORE.SEARCH_RESULTS, { keyPath: "id" });
+          db.createObjectStore(IDB_STORE.SEARCH_RESULTS, { keyPath: 'id' });
         }
 
         if (!db.objectStoreNames.contains(IDB_STORE.SEARCH_HISTORY)) {
-          db.createObjectStore(IDB_STORE.SEARCH_HISTORY, { keyPath: "timestamp" });
+          db.createObjectStore(IDB_STORE.SEARCH_HISTORY, { keyPath: 'timestamp' });
         }
 
         if (!db.objectStoreNames.contains(IDB_STORE.SUPPLIER_QUERY_CACHE)) {
-          const sqc = db.createObjectStore(IDB_STORE.SUPPLIER_QUERY_CACHE, { keyPath: "cacheKey" });
-          sqc.createIndex("cachedAt", "__cacheMetadata.cachedAt");
+          const sqc = db.createObjectStore(IDB_STORE.SUPPLIER_QUERY_CACHE, { keyPath: 'cacheKey' });
+          sqc.createIndex('cachedAt', '__cacheMetadata.cachedAt');
         }
 
         if (!db.objectStoreNames.contains(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE)) {
           const spdc = db.createObjectStore(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE, {
-            keyPath: "cacheKey",
+            keyPath: 'cacheKey',
           });
-          spdc.createIndex("timestamp", "timestamp");
+          spdc.createIndex('timestamp', 'timestamp');
         }
 
         if (!db.objectStoreNames.contains(IDB_STORE.SUPPLIER_STATS)) {
-          db.createObjectStore(IDB_STORE.SUPPLIER_STATS, { keyPath: "dateKey" });
+          db.createObjectStore(IDB_STORE.SUPPLIER_STATS, { keyPath: 'dateKey' });
         }
 
         if (!db.objectStoreNames.contains(IDB_STORE.EXCLUDED_PRODUCTS)) {
-          db.createObjectStore(IDB_STORE.EXCLUDED_PRODUCTS, { keyPath: "id" });
+          db.createObjectStore(IDB_STORE.EXCLUDED_PRODUCTS, { keyPath: 'id' });
         }
 
         if (!db.objectStoreNames.contains(IDB_STORE.PRICE_HISTORY)) {
-          const ph = db.createObjectStore(IDB_STORE.PRICE_HISTORY, { keyPath: "id" });
-          ph.createIndex("productKey", "productKey");
+          const ph = db.createObjectStore(IDB_STORE.PRICE_HISTORY, { keyPath: 'id' });
+          ph.createIndex('productKey', 'productKey');
         }
 
         if (!db.objectStoreNames.contains(IDB_STORE.APP_META)) {
-          db.createObjectStore(IDB_STORE.APP_META, { keyPath: "id" });
+          db.createObjectStore(IDB_STORE.APP_META, { keyPath: 'id' });
         }
 
         if (!db.objectStoreNames.contains(IDB_STORE.EXPORTS)) {
-          const exports = db.createObjectStore(IDB_STORE.EXPORTS, { keyPath: "id" });
-          exports.createIndex("createdAt", "createdAt");
+          const exports = db.createObjectStore(IDB_STORE.EXPORTS, { keyPath: 'id' });
+          exports.createIndex('createdAt', 'createdAt');
         }
       },
     });
@@ -239,10 +239,10 @@ function emitExportsUpdated(): void {
 export async function getSearchResults(): Promise<Product[]> {
   try {
     const db = await getDB();
-    const record = await db.get(IDB_STORE.SEARCH_RESULTS, "current");
+    const record = await db.get(IDB_STORE.SEARCH_RESULTS, 'current');
     return record?.data ?? [];
   } catch (error) {
-    logger.error("Failed to get search results from IndexedDB", { error });
+    logger.error('Failed to get search results from IndexedDB', { error });
     return [];
   }
 }
@@ -264,10 +264,10 @@ export async function getSearchResults(): Promise<Product[]> {
 export async function getSearchResultsRecord(): Promise<{ data: Product[]; query?: string }> {
   try {
     const db = await getDB();
-    const record = await db.get(IDB_STORE.SEARCH_RESULTS, "current");
+    const record = await db.get(IDB_STORE.SEARCH_RESULTS, 'current');
     return { data: record?.data ?? [], query: record?.query };
   } catch (error) {
-    logger.error("Failed to get search results record from IndexedDB", { error });
+    logger.error('Failed to get search results record from IndexedDB', { error });
     return { data: [] };
   }
 }
@@ -346,18 +346,18 @@ export async function setSearchResults(results: Product[], query?: string): Prom
     // surface that loudly instead of masking the underlying double-search bug.
     const duplicateIds = findDuplicateProductIds(results);
     if (duplicateIds.length > 0) {
-      logger.warn("Duplicate products in search results — the search likely fired twice", {
+      logger.warn('Duplicate products in search results — the search likely fired twice', {
         duplicateCount: duplicateIds.length,
         duplicateIds,
         total: results.length,
       });
     }
-    await db.put(IDB_STORE.SEARCH_RESULTS, { id: "current", data: results, query });
+    await db.put(IDB_STORE.SEARCH_RESULTS, { id: 'current', data: results, query });
     if (results.length === 0) {
       emitSearchResultsCleared();
     }
   } catch (error) {
-    logger.error("Failed to set search results in IndexedDB", { error });
+    logger.error('Failed to set search results in IndexedDB', { error });
   }
 }
 
@@ -382,12 +382,12 @@ export async function clearSearchResults(options: { notify?: boolean } = {}): Pr
   const { notify = true } = options;
   try {
     const db = await getDB();
-    await db.delete(IDB_STORE.SEARCH_RESULTS, "current");
+    await db.delete(IDB_STORE.SEARCH_RESULTS, 'current');
     if (notify) {
       emitSearchResultsCleared();
     }
   } catch (error) {
-    logger.error("Failed to clear search results from IndexedDB", { error });
+    logger.error('Failed to clear search results from IndexedDB', { error });
   }
 }
 
@@ -412,7 +412,7 @@ export async function getSearchHistory(): Promise<SearchHistoryEntry[]> {
     // Return sorted newest-first
     return all.sort((a, b) => b.timestamp - a.timestamp);
   } catch (error) {
-    logger.error("Failed to get search history from IndexedDB", { error });
+    logger.error('Failed to get search history from IndexedDB', { error });
     return [];
   }
 }
@@ -432,7 +432,7 @@ export async function getSearchHistory(): Promise<SearchHistoryEntry[]> {
 export async function addSearchHistoryEntry(entry: SearchHistoryEntry): Promise<void> {
   try {
     const db = await getDB();
-    const tx = db.transaction(IDB_STORE.SEARCH_HISTORY, "readwrite");
+    const tx = db.transaction(IDB_STORE.SEARCH_HISTORY, 'readwrite');
     const store = tx.objectStore(IDB_STORE.SEARCH_HISTORY);
 
     await store.put(entry);
@@ -452,7 +452,7 @@ export async function addSearchHistoryEntry(entry: SearchHistoryEntry): Promise<
 
     await tx.done;
   } catch (error) {
-    logger.error("Failed to add search history entry to IndexedDB", { error });
+    logger.error('Failed to add search history entry to IndexedDB', { error });
   }
 }
 
@@ -476,7 +476,7 @@ export async function updateSearchHistoryResultCount(
 ): Promise<void> {
   try {
     const db = await getDB();
-    const tx = db.transaction(IDB_STORE.SEARCH_HISTORY, "readwrite");
+    const tx = db.transaction(IDB_STORE.SEARCH_HISTORY, 'readwrite');
     const store = tx.objectStore(IDB_STORE.SEARCH_HISTORY);
     const entry = await store.get(timestamp);
     if (entry) {
@@ -485,7 +485,7 @@ export async function updateSearchHistoryResultCount(
     }
     await tx.done;
   } catch (error) {
-    logger.error("Failed to update search history result count in IndexedDB", { error });
+    logger.error('Failed to update search history result count in IndexedDB', { error });
   }
 }
 
@@ -504,7 +504,7 @@ export async function clearSearchHistory(): Promise<void> {
     const db = await getDB();
     await db.clear(IDB_STORE.SEARCH_HISTORY);
   } catch (error) {
-    logger.error("Failed to clear search history from IndexedDB", { error });
+    logger.error('Failed to clear search history from IndexedDB', { error });
   }
 }
 
@@ -537,7 +537,7 @@ export async function getSupplierQueryCacheEntry(
       __cacheMetadata: record.__cacheMetadata,
     };
   } catch (error) {
-    logger.error("Failed to get supplier query cache entry from IndexedDB", { error });
+    logger.error('Failed to get supplier query cache entry from IndexedDB', { error });
     return undefined;
   }
 }
@@ -561,20 +561,20 @@ export async function putSupplierQueryCacheEntry(
 ): Promise<void> {
   try {
     const db = await getDB();
-    const tx = db.transaction(IDB_STORE.SUPPLIER_QUERY_CACHE, "readwrite");
+    const tx = db.transaction(IDB_STORE.SUPPLIER_QUERY_CACHE, 'readwrite');
     const store = tx.objectStore(IDB_STORE.SUPPLIER_QUERY_CACHE);
 
     // Evict oldest if at capacity
     const count = await store.count();
     if (count >= MAX_SUPPLIER_CACHE_ENTRIES) {
-      const index = store.index("cachedAt");
+      const index = store.index('cachedAt');
       const cursor = await index.openCursor();
       if (cursor) {
-        logger.debug("Evicting oldest supplier query cache entry", {
+        logger.debug('Evicting oldest supplier query cache entry', {
           key: cursor.value.cacheKey,
           age:
             Math.round((Date.now() - cursor.value.__cacheMetadata.cachedAt) / (60 * 60 * 1000)) +
-            " hours",
+            ' hours',
         });
         await cursor.delete();
       }
@@ -588,7 +588,7 @@ export async function putSupplierQueryCacheEntry(
 
     await tx.done;
   } catch (error) {
-    logger.error("Failed to put supplier query cache entry in IndexedDB", { error });
+    logger.error('Failed to put supplier query cache entry in IndexedDB', { error });
   }
 }
 
@@ -608,7 +608,7 @@ export async function deleteSupplierQueryCacheEntry(cacheKey: string): Promise<v
     const db = await getDB();
     await db.delete(IDB_STORE.SUPPLIER_QUERY_CACHE, cacheKey);
   } catch (error) {
-    logger.error("Failed to delete supplier query cache entry from IndexedDB", { error });
+    logger.error('Failed to delete supplier query cache entry from IndexedDB', { error });
   }
 }
 
@@ -645,7 +645,7 @@ export async function getAllSupplierQueryCacheEntries(): Promise<
     const db = await getDB();
     return await db.getAll(IDB_STORE.SUPPLIER_QUERY_CACHE);
   } catch (error) {
-    logger.error("Failed to get all supplier query cache entries from IndexedDB", { error });
+    logger.error('Failed to get all supplier query cache entries from IndexedDB', { error });
     return [];
   }
 }
@@ -665,7 +665,7 @@ export async function clearSupplierQueryCache(): Promise<void> {
     const db = await getDB();
     await db.clear(IDB_STORE.SUPPLIER_QUERY_CACHE);
   } catch (error) {
-    logger.error("Failed to clear supplier query cache from IndexedDB", { error });
+    logger.error('Failed to clear supplier query cache from IndexedDB', { error });
   }
 }
 
@@ -698,7 +698,7 @@ export async function getSupplierProductDataCacheEntry(
       timestamp: record.timestamp,
     };
   } catch (error) {
-    logger.error("Failed to get supplier product data cache entry from IndexedDB", { error });
+    logger.error('Failed to get supplier product data cache entry from IndexedDB', { error });
     return undefined;
   }
 }
@@ -722,13 +722,13 @@ export async function putSupplierProductDataCacheEntry(
 ): Promise<void> {
   try {
     const db = await getDB();
-    const tx = db.transaction(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE, "readwrite");
+    const tx = db.transaction(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE, 'readwrite');
     const store = tx.objectStore(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE);
 
     // Evict oldest if at capacity
     const count = await store.count();
     if (count >= MAX_SUPPLIER_CACHE_ENTRIES) {
-      const index = store.index("timestamp");
+      const index = store.index('timestamp');
       const cursor = await index.openCursor();
       if (cursor) {
         await cursor.delete();
@@ -743,7 +743,7 @@ export async function putSupplierProductDataCacheEntry(
 
     await tx.done;
   } catch (error) {
-    logger.error("Failed to put supplier product data cache entry in IndexedDB", { error });
+    logger.error('Failed to put supplier product data cache entry in IndexedDB', { error });
   }
 }
 
@@ -765,7 +765,7 @@ export async function deleteSupplierProductDataCacheEntry(cacheKey: string): Pro
     const db = await getDB();
     await db.delete(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE, cacheKey);
   } catch (error) {
-    logger.error("Failed to delete supplier product data cache entry from IndexedDB", { error });
+    logger.error('Failed to delete supplier product data cache entry from IndexedDB', { error });
   }
 }
 
@@ -790,7 +790,7 @@ export async function getAllSupplierProductDataCacheEntries(): Promise<
     const db = await getDB();
     return await db.getAll(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE);
   } catch (error) {
-    logger.error("Failed to get all supplier product data cache entries from IndexedDB", { error });
+    logger.error('Failed to get all supplier product data cache entries from IndexedDB', { error });
     return [];
   }
 }
@@ -810,7 +810,7 @@ export async function clearSupplierProductDataCache(): Promise<void> {
     const db = await getDB();
     await db.clear(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE);
   } catch (error) {
-    logger.error("Failed to clear supplier product data cache from IndexedDB", { error });
+    logger.error('Failed to clear supplier product data cache from IndexedDB', { error });
   }
 }
 
@@ -838,7 +838,7 @@ export async function getSupplierStatsEntry(
     const record = await db.get(IDB_STORE.SUPPLIER_STATS, dateKey);
     return record?.suppliers;
   } catch (error) {
-    logger.error("Failed to get supplier stats entry from IndexedDB", { error });
+    logger.error('Failed to get supplier stats entry from IndexedDB', { error });
     return undefined;
   }
 }
@@ -865,7 +865,7 @@ export async function putSupplierStatsEntry(
     await db.put(IDB_STORE.SUPPLIER_STATS, { dateKey, suppliers });
     emitSupplierStatsUpdated();
   } catch (error) {
-    logger.error("Failed to put supplier stats entry in IndexedDB", { error });
+    logger.error('Failed to put supplier stats entry in IndexedDB', { error });
   }
 }
 
@@ -890,7 +890,7 @@ export async function getAllSupplierStats(): Promise<SupplierStatsData> {
     }
     return result;
   } catch (error) {
-    logger.error("Failed to get all supplier stats from IndexedDB", { error });
+    logger.error('Failed to get all supplier stats from IndexedDB', { error });
     return {};
   }
 }
@@ -910,13 +910,13 @@ export async function getAllSupplierStats(): Promise<SupplierStatsData> {
 export async function deleteSupplierStatsEntries(dateKeys: string[]): Promise<void> {
   try {
     const db = await getDB();
-    const tx = db.transaction(IDB_STORE.SUPPLIER_STATS, "readwrite");
+    const tx = db.transaction(IDB_STORE.SUPPLIER_STATS, 'readwrite');
     for (const dateKey of dateKeys) {
       tx.store.delete(dateKey);
     }
     await tx.done;
   } catch (error) {
-    logger.error("Failed to delete supplier stats entries from IndexedDB", { error });
+    logger.error('Failed to delete supplier stats entries from IndexedDB', { error });
   }
 }
 
@@ -935,7 +935,7 @@ export async function clearSupplierStats(): Promise<void> {
     const db = await getDB();
     await db.clear(IDB_STORE.SUPPLIER_STATS);
   } catch (error) {
-    logger.error("Failed to clear supplier stats from IndexedDB", { error });
+    logger.error('Failed to clear supplier stats from IndexedDB', { error });
   }
 }
 
@@ -965,10 +965,10 @@ export async function clearSupplierStats(): Promise<void> {
 export async function getExcludedProducts(): Promise<ExcludedProductsMap> {
   try {
     const db = await getDB();
-    const record = await db.get(IDB_STORE.EXCLUDED_PRODUCTS, "current");
+    const record = await db.get(IDB_STORE.EXCLUDED_PRODUCTS, 'current');
     return record?.map ?? {};
   } catch (error) {
-    logger.error("Failed to get excluded products from IndexedDB", { error });
+    logger.error('Failed to get excluded products from IndexedDB', { error });
     return {};
   }
 }
@@ -992,9 +992,9 @@ export async function getExcludedProducts(): Promise<ExcludedProductsMap> {
 export async function putExcludedProducts(map: ExcludedProductsMap): Promise<void> {
   try {
     const db = await getDB();
-    await db.put(IDB_STORE.EXCLUDED_PRODUCTS, { id: "current", map });
+    await db.put(IDB_STORE.EXCLUDED_PRODUCTS, { id: 'current', map });
   } catch (error) {
-    logger.error("Failed to put excluded products in IndexedDB", { error });
+    logger.error('Failed to put excluded products in IndexedDB', { error });
   }
 }
 
@@ -1014,9 +1014,9 @@ export async function putExcludedProducts(map: ExcludedProductsMap): Promise<voi
 export async function clearExcludedProducts(): Promise<void> {
   try {
     const db = await getDB();
-    await db.delete(IDB_STORE.EXCLUDED_PRODUCTS, "current");
+    await db.delete(IDB_STORE.EXCLUDED_PRODUCTS, 'current');
   } catch (error) {
-    logger.error("Failed to clear excluded products from IndexedDB", { error });
+    logger.error('Failed to clear excluded products from IndexedDB', { error });
   }
 }
 
@@ -1044,7 +1044,7 @@ export async function getPriceSeries(id: string): Promise<PriceHistoryEntry | un
     const db = await getDB();
     return await db.get(IDB_STORE.PRICE_HISTORY, id);
   } catch (error) {
-    logger.error("Failed to get price series from IndexedDB", { error });
+    logger.error('Failed to get price series from IndexedDB', { error });
     return undefined;
   }
 }
@@ -1072,7 +1072,7 @@ export async function putPriceSeries(entry: PriceHistoryEntry): Promise<void> {
     const db = await getDB();
     await db.put(IDB_STORE.PRICE_HISTORY, entry);
   } catch (error) {
-    logger.error("Failed to put price series in IndexedDB", { error });
+    logger.error('Failed to put price series in IndexedDB', { error });
   }
 }
 
@@ -1094,9 +1094,9 @@ export async function putPriceSeries(entry: PriceHistoryEntry): Promise<void> {
 export async function getPriceSeriesByProduct(productKey: string): Promise<PriceHistoryEntry[]> {
   try {
     const db = await getDB();
-    return await db.getAllFromIndex(IDB_STORE.PRICE_HISTORY, "productKey", productKey);
+    return await db.getAllFromIndex(IDB_STORE.PRICE_HISTORY, 'productKey', productKey);
   } catch (error) {
-    logger.error("Failed to get price series by product from IndexedDB", { error });
+    logger.error('Failed to get price series by product from IndexedDB', { error });
     return [];
   }
 }
@@ -1119,7 +1119,7 @@ export async function getAllPriceSeries(): Promise<PriceHistoryEntry[]> {
     const db = await getDB();
     return await db.getAll(IDB_STORE.PRICE_HISTORY);
   } catch (error) {
-    logger.error("Failed to get all price series from IndexedDB", { error });
+    logger.error('Failed to get all price series from IndexedDB', { error });
     return [];
   }
 }
@@ -1142,7 +1142,7 @@ export async function clearPriceHistory(): Promise<void> {
     const db = await getDB();
     await db.clear(IDB_STORE.PRICE_HISTORY);
   } catch (error) {
-    logger.error("Failed to clear price history from IndexedDB", { error });
+    logger.error('Failed to clear price history from IndexedDB', { error });
   }
 }
 
@@ -1169,7 +1169,7 @@ export async function getStoredAppVersion(): Promise<string | undefined> {
     const record = await db.get(IDB_STORE.APP_META, APP_META_KEY);
     return record?.appVersion;
   } catch (error) {
-    logger.error("Failed to get stored app version from IndexedDB", { error });
+    logger.error('Failed to get stored app version from IndexedDB', { error });
     return undefined;
   }
 }
@@ -1198,7 +1198,7 @@ export async function setStoredAppVersion(appVersion: string): Promise<void> {
       updatedAt: Date.now(),
     });
   } catch (error) {
-    logger.error("Failed to set stored app version in IndexedDB", { error });
+    logger.error('Failed to set stored app version in IndexedDB', { error });
   }
 }
 
@@ -1246,7 +1246,7 @@ export async function getMigrationDb(): Promise<IDBPDatabase> {
 export async function putExport(record: ExportRecord): Promise<void> {
   try {
     const db = await getDB();
-    const tx = db.transaction(IDB_STORE.EXPORTS, "readwrite");
+    const tx = db.transaction(IDB_STORE.EXPORTS, 'readwrite');
     const store = tx.objectStore(IDB_STORE.EXPORTS);
     await store.put(record);
 
@@ -1267,7 +1267,7 @@ export async function putExport(record: ExportRecord): Promise<void> {
     await tx.done;
     emitExportsUpdated();
   } catch (error) {
-    logger.error("Failed to put export in IndexedDB", { error });
+    logger.error('Failed to put export in IndexedDB', { error });
   }
 }
 
@@ -1288,7 +1288,7 @@ export async function getAllExports(): Promise<ExportRecord[]> {
     const all = await db.getAll(IDB_STORE.EXPORTS);
     return all.sort((a, b) => b.createdAt - a.createdAt);
   } catch (error) {
-    logger.error("Failed to get exports from IndexedDB", { error });
+    logger.error('Failed to get exports from IndexedDB', { error });
     return [];
   }
 }
@@ -1310,7 +1310,7 @@ export async function deleteExport(id: string): Promise<void> {
     await db.delete(IDB_STORE.EXPORTS, id);
     emitExportsUpdated();
   } catch (error) {
-    logger.error("Failed to delete export from IndexedDB", { error });
+    logger.error('Failed to delete export from IndexedDB', { error });
   }
 }
 
@@ -1330,7 +1330,7 @@ export async function clearExports(): Promise<void> {
     await db.clear(IDB_STORE.EXPORTS);
     emitExportsUpdated();
   } catch (error) {
-    logger.error("Failed to clear exports from IndexedDB", { error });
+    logger.error('Failed to clear exports from IndexedDB', { error });
   }
 }
 
@@ -1387,10 +1387,10 @@ export async function getIdbStorageBreakdown(): Promise<IdbStorageBreakdown> {
           ? entries.reduce(
               (sum, entry) =>
                 sum +
-                (typeof entry === "object" &&
+                (typeof entry === 'object' &&
                 entry !== null &&
-                "sizeBytes" in entry &&
-                typeof entry.sizeBytes === "number"
+                'sizeBytes' in entry &&
+                typeof entry.sizeBytes === 'number'
                   ? entry.sizeBytes
                   : 0),
               0,
@@ -1399,7 +1399,7 @@ export async function getIdbStorageBreakdown(): Promise<IdbStorageBreakdown> {
       byStore[store] = { count: entries.length, bytes };
     }
   } catch (error) {
-    logger.error("Failed to compute IndexedDB storage breakdown", { error });
+    logger.error('Failed to compute IndexedDB storage breakdown', { error });
   }
   const totalBytes = Object.values(byStore).reduce((sum, entry) => sum + entry.bytes, 0);
   return { byStore, totalBytes };
@@ -1433,7 +1433,7 @@ export async function clearAllCaches(): Promise<void> {
         IDB_STORE.SUPPLIER_STATS,
         IDB_STORE.EXCLUDED_PRODUCTS,
       ],
-      "readwrite",
+      'readwrite',
     );
     await Promise.all([
       tx.objectStore(IDB_STORE.SEARCH_RESULTS).clear(),
@@ -1446,6 +1446,6 @@ export async function clearAllCaches(): Promise<void> {
     ]);
     emitSearchResultsCleared();
   } catch (error) {
-    logger.error("Failed to clear all IndexedDB caches", { error });
+    logger.error('Failed to clear all IndexedDB caches', { error });
   }
 }

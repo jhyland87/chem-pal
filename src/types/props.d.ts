@@ -1,6 +1,6 @@
-import { SvgIconProps } from "@mui/material";
-import { SelectChangeEvent } from "@mui/material/Select";
-import { Column, ColumnDef, ColumnFiltersState, Row, RowData, Table } from "@tanstack/react-table";
+import { SvgIconProps } from '@mui/material';
+import { SelectChangeEvent } from '@mui/material/Select';
+import { Column, ColumnDef, ColumnFiltersState, Row, RowData, Table } from '@tanstack/react-table';
 import {
   ChangeEvent,
   ChangeEventHandler,
@@ -9,8 +9,8 @@ import {
   ReactElement,
   ReactNode,
   SetStateAction,
-} from "react";
-import { CustomColumn, Product } from "./types";
+} from 'react';
+import { CustomColumn, Product } from './types';
 
 declare global {
   /**
@@ -66,9 +66,9 @@ declare global {
    * columns don't need to know how the context is structured.
    */
   type ColumnDrawerBinding =
-    | { kind: "searchFilters"; key: keyof SearchFilters }
-    | { kind: "selectedSuppliers" }
-    | { kind: "userSettingsRange"; minKey: keyof UserSettings; maxKey: keyof UserSettings };
+    | { kind: 'searchFilters'; key: keyof SearchFilters }
+    | { kind: 'selectedSuppliers' }
+    | { kind: 'userSettingsRange'; minKey: keyof UserSettings; maxKey: keyof UserSettings };
 
   /**
    * Column-meta payload describing how a column appears in the drawer
@@ -83,7 +83,7 @@ declare global {
   type ColumnDrawerConfig =
     | {
         label: string;
-        widget: "autocompleteStrings";
+        widget: 'autocompleteStrings';
         /** Strings rendered as the option list. */
         options: readonly string[];
         /** Optional display map for option strings, e.g. supplier key → name. */
@@ -95,7 +95,7 @@ declare global {
       }
     | {
         label: string;
-        widget: "autocompleteObjects";
+        widget: 'autocompleteObjects';
         options: ReadonlyArray<{ code: string; label: string }>;
         emptyHelperText: string;
         placeholder?: string;
@@ -103,7 +103,7 @@ declare global {
       }
     | {
         label: string;
-        widget: "chips";
+        widget: 'chips';
         options: readonly string[];
         /** Optional display transform (e.g. capitalize) for chip labels. */
         formatChipLabel?: (option: string) => string;
@@ -111,13 +111,13 @@ declare global {
       }
     | {
         label: string;
-        widget: "numberRange";
+        widget: 'numberRange';
         /**
          * Optional start-adornment. Pass the literal string `"currency"` to
          * resolve the symbol at render time from `userSettings.currency`
          * (e.g. USD → "$", EUR → "€"). Any other string is used as-is.
          */
-        adornment?: "currency" | (string & {});
+        adornment?: 'currency' | (string & {});
         bind: ColumnDrawerBinding;
       };
 

@@ -1,6 +1,6 @@
-import { findCountryByName } from "@/helpers/country";
-import { htmlToAscii } from "@/helpers/utils";
-import { isCountryCode } from "@/utils/typeGuards/common";
+import { findCountryByName } from '@/helpers/country';
+import { htmlToAscii } from '@/helpers/utils';
+import { isCountryCode } from '@/utils/typeGuards/common';
 
 /**
  * @group Suppliers
@@ -12,8 +12,8 @@ import { isCountryCode } from "@/utils/typeGuards/common";
 
 /** Non-ISO country names the `country-list-js` library doesn't index, mapped to ISO codes. */
 const COUNTRY_ALIASES: Record<string, string> = {
-  USA: "US",
-  UK: "GB",
+  USA: 'US',
+  UK: 'GB',
 };
 
 /** Case-insensitive phrases that mean the product is limited to non-consumer buyers. */
@@ -40,9 +40,9 @@ const BUYER_PATTERNS: readonly RegExp[] = [
  */
 function normalizeRestrictionText(text: string): string {
   return text
-    .replace(/\u00a0/g, " ")
-    .replace(/\r\n?/g, "\n")
-    .replace(/[ \t]+/g, " ")
+    .replace(/\u00a0/g, ' ')
+    .replace(/\r\n?/g, '\n')
+    .replace(/[ \t]+/g, ' ')
     .trim();
 }
 
@@ -65,8 +65,8 @@ function normalizeRestrictionText(text: string): string {
  */
 function resolveCountryToken(raw: string): CountryCode | undefined {
   const token = raw
-    .replace(/[^a-zA-Z ]/g, " ")
-    .replace(/\s+/g, " ")
+    .replace(/[^a-zA-Z ]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
   if (token.length === 0) {
     return undefined;
@@ -102,7 +102,7 @@ function resolveCountryToken(raw: string): CountryCode | undefined {
  * @source
  */
 export function parseSynthetikaRestrictions(html?: string): PurchaseRestriction | undefined {
-  if (typeof html !== "string" || html.trim().length === 0) {
+  if (typeof html !== 'string' || html.trim().length === 0) {
     return undefined;
   }
   const text = normalizeRestrictionText(htmlToAscii(html));
@@ -117,7 +117,7 @@ export function parseSynthetikaRestrictions(html?: string): PurchaseRestriction 
   // a "|" (the "Unless government approved" caveat), a "<", or a line break.
   const denyMatch = text.match(/we do not ship this product to:\s*([^|<\n]+)/i);
   if (denyMatch) {
-    for (const token of denyMatch[1].split(",")) {
+    for (const token of denyMatch[1].split(',')) {
       const code = resolveCountryToken(token);
       if (code !== undefined && !excluded.includes(code)) {
         excluded.push(code);

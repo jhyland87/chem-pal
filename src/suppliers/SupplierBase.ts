@@ -1,43 +1,43 @@
-import { defaultResultsLimit } from "@/../config.json";
-import { UOM } from "@/constants/common";
-import { FUZZ_SCORERS, isFuzzScorerName, type FuzzScorerFn } from "@/constants/fuzzScorers";
-import { backgroundFetch, type BackgroundFetchInit } from "@/helpers/backgroundFetch";
-import { setCookie } from "@/helpers/cookies";
-import { EmptyResponseError, HttpError } from "@/helpers/exceptions";
+import { defaultResultsLimit } from '@/../config.json';
+import { UOM } from '@/constants/common';
+import { FUZZ_SCORERS, isFuzzScorerName, type FuzzScorerFn } from '@/constants/fuzzScorers';
+import { backgroundFetch, type BackgroundFetchInit } from '@/helpers/backgroundFetch';
+import { setCookie } from '@/helpers/cookies';
+import { EmptyResponseError, HttpError } from '@/helpers/exceptions';
 import {
   countExcludedProductsForSupplier,
   loadExcludedProductKeys,
-} from "@/helpers/excludedProducts";
-import { fetchDecorator, type FetchDecoratorResponse } from "@/helpers/fetch";
-import { stripQuantityFromString } from "@/helpers/quantity";
-import type { ResolvedStructure } from "@/helpers/smiles";
-import { sleep } from "@/helpers/utils";
-import { getSupplierColor } from "@/theme/colors";
-import { deleteSupplierQueryCacheEntry } from "@/utils/idbCache";
-import { IS_DEV_BUILD } from "@/utils/isDevBuild";
-import { Logger } from "@/utils/Logger";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { scoreAstMatch } from "@/utils/search-query/evaluateAst";
-import { extractOrGroups } from "@/utils/search-query/extractPositiveTerms";
-import { parseSearchQuery } from "@/utils/search-query/parseSearchQuery";
-import type { ParsedSearchQuery } from "@/utils/search-query/types";
-import { SupplierCache } from "@/utils/SupplierCache";
+} from '@/helpers/excludedProducts';
+import { fetchDecorator, type FetchDecoratorResponse } from '@/helpers/fetch';
+import { stripQuantityFromString } from '@/helpers/quantity';
+import type { ResolvedStructure } from '@/helpers/smiles';
+import { sleep } from '@/helpers/utils';
+import { getSupplierColor } from '@/theme/colors';
+import { deleteSupplierQueryCacheEntry } from '@/utils/idbCache';
+import { IS_DEV_BUILD } from '@/utils/isDevBuild';
+import { Logger } from '@/utils/Logger';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { scoreAstMatch } from '@/utils/search-query/evaluateAst';
+import { extractOrGroups } from '@/utils/search-query/extractPositiveTerms';
+import { parseSearchQuery } from '@/utils/search-query/parseSearchQuery';
+import type { ParsedSearchQuery } from '@/utils/search-query/types';
+import { SupplierCache } from '@/utils/SupplierCache';
 import {
   incrementFailure,
   incrementParseError,
   incrementProductCount,
   incrementSearchQueryCount,
   incrementSuccess,
-} from "@/utils/SupplierStatsStore";
+} from '@/utils/SupplierStatsStore';
 import {
   isHtmlResponse,
   isHttpResponse,
   isJsonResponse,
   isMinimalProduct,
   isPopulatedObject,
-} from "@/utils/typeGuards/common";
-import { isCachedProductData } from "@/utils/typeGuards/productbuilder";
-import { Queue } from "async-await-queue";
+} from '@/utils/typeGuards/common';
+import { isCachedProductData } from '@/utils/typeGuards/productbuilder';
+import { Queue } from 'async-await-queue';
 import {
   distance,
   extract,
@@ -50,8 +50,8 @@ import {
   token_similarity_sort_ratio,
   token_sort_ratio,
   WRatio,
-} from "fuzzball";
-import { type JsonValue } from "type-fest";
+} from 'fuzzball';
+import { type JsonValue } from 'type-fest';
 
 // CacheMetadata, CachedData<T>, and ProductDefaults are declared globally in
 // types/supplierCache.d.ts — see that file for their definitions.
@@ -261,11 +261,11 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       return this.shipsTo.includes(location);
     }
     switch (this.shipping) {
-      case "worldwide":
-      case "international":
+      case 'worldwide':
+      case 'international':
         return true;
-      case "domestic":
-      case "local":
+      case 'domestic':
+      case 'local':
         return this.country === location;
       default:
         return true;
@@ -510,8 +510,8 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   protected productDefaults: ProductDefaults = {
     uom: UOM.EA,
     quantity: 1,
-    currencyCode: "USD",
-    currencySymbol: "$",
+    currencyCode: 'USD',
+    currencySymbol: '$',
   };
 
   /**
@@ -670,7 +670,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * @source
    */
   public setFuzzScorerOverride(name: string | undefined): void {
-    console.debug("setFuzzScorerOverride", { name });
+    console.debug('setFuzzScorerOverride', { name });
     if (isFuzzScorerName(name)) {
       this.fuzzScorerOverride = FUZZ_SCORERS[name];
     } else {
@@ -693,7 +693,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * @source
    */
   public setMaxAllowableSearchTimeSec(value: unknown): void {
-    if (value === undefined || value === null || value === "") {
+    if (value === undefined || value === null || value === '') {
       return;
     }
     const seconds = Number(value);
@@ -858,22 +858,22 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       signal: this.controller.signal,
       headers: new Headers(this.headers),
       referrer: this.baseURL,
-      referrerPolicy: "strict-origin-when-cross-origin",
+      referrerPolicy: 'strict-origin-when-cross-origin',
       body: null,
-      method: "HEAD",
-      mode: "cors",
-      credentials: "include",
+      method: 'HEAD',
+      mode: 'cors',
+      credentials: 'include',
     });
 
     try {
       const httpResponse = await this.fetch(requestObj);
       return Object.fromEntries(httpResponse.headers.entries()) satisfies HeadersInit;
     } catch (error: unknown) {
-      if (error instanceof Error && error.name === "AbortError") {
-        this.logger.warn("Request was aborted", { error, signal: this.controller.signal });
-        this.controller.abort("Abort signal detected");
+      if (error instanceof Error && error.name === 'AbortError') {
+        this.logger.warn('Request was aborted', { error, signal: this.controller.signal });
+        this.controller.abort('Abort signal detected');
       } else {
-        this.logger.error("Error received during fetch:", {
+        this.logger.error('Error received during fetch:', {
           error,
           signal: this.controller.signal,
         });
@@ -944,17 +944,17 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     params,
     headers,
   }: RequestOptions): Promise<Maybe<Response>> {
-    this.logger.log("httpPost| Requesting:", {
+    this.logger.log('httpPost| Requesting:', {
       path,
       host,
       body,
       params,
       headers,
     });
-    const method = "POST";
-    const mode = "cors";
+    const method = 'POST';
+    const mode = 'cors';
     const referrer = this.baseURL;
-    const referrerPolicy = "strict-origin-when-cross-origin";
+    const referrerPolicy = 'strict-origin-when-cross-origin';
     const signal = this.controller.signal;
     const headersObj = new Headers({
       ...this.headers,
@@ -963,11 +963,11 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
 
     let bodyStr = null;
     if (body instanceof FormData) {
-      headersObj.set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+      headersObj.set('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
       bodyStr = body;
-    } else if (typeof body === "string") {
+    } else if (typeof body === 'string') {
       bodyStr = body;
-    } else if (typeof body === "object" && body !== null) {
+    } else if (typeof body === 'object' && body !== null) {
       bodyStr = JSON.stringify(body);
     }
     const url = this.href(path, params, host);
@@ -980,7 +980,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       body: bodyStr,
       method,
       mode,
-      credentials: "include",
+      credentials: 'include',
     });
 
     // Fetch the goods
@@ -988,7 +988,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
 
     if (!isHttpResponse(httpResponse) || !httpResponse.ok) {
       const badResponse = await httpResponse.text();
-      this.logger.error("Invalid POST response: ", badResponse);
+      this.logger.error('Invalid POST response: ', badResponse);
       throw new TypeError(`Invalid POST response: ${String(httpResponse)}`);
     }
 
@@ -1018,13 +1018,13 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     params,
     headers,
   }: RequestOptions): Promise<Maybe<Response>> {
-    if (typeof body !== "object" || body === null) {
-      throw new TypeError("httpPostFormData| Body must be an object");
+    if (typeof body !== 'object' || body === null) {
+      throw new TypeError('httpPostFormData| Body must be an object');
     }
 
     headers = {
       ...headers,
-      "Content-Type": "application/x-www-form-urlencoded",
+      'Content-Type': 'application/x-www-form-urlencoded',
     };
     const formData = new FormData();
     for (const [key, value] of Object.entries(body)) {
@@ -1033,10 +1033,10 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     const httpResponse = await this.httpPost({ path, host, body: formData, params, headers });
     if (!isHttpResponse(httpResponse) || !httpResponse.ok) {
       const badResponse = await httpResponse?.text();
-      this.logger.error("Invalid POST response: ", badResponse);
+      this.logger.error('Invalid POST response: ', badResponse);
       throw new TypeError(`Invalid POST response: ${String(httpResponse)}`);
     }
-    this.logger.log("httpPostFormData| Successfully sent POST request to:", path);
+    this.logger.log('httpPostFormData| Successfully sent POST request to:', path);
     return httpResponse;
   }
   /**
@@ -1081,7 +1081,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   }: RequestOptions): Promise<Maybe<JsonValue>> {
     const httpResponse = await this.httpPost({ path, host, body, params, headers });
     if (!isJsonResponse(httpResponse) || !httpResponse.ok) {
-      this.logger.error("httpPostJson| Invalid POST response: ", {
+      this.logger.error('httpPostJson| Invalid POST response: ', {
         httpResponse,
         path,
         host,
@@ -1184,7 +1184,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   }: RequestOptions): Promise<Maybe<Response>> {
     // Check if the request has been aborted before proceeding
     if (this.controller.signal.aborted) {
-      this.logger.warn("Request was aborted before fetch", {
+      this.logger.warn('Request was aborted before fetch', {
         signal: this.controller.signal,
       });
       return;
@@ -1194,14 +1194,14 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
 
     Object.assign(headersRaw, {
       accept: [
-        "text/html",
-        "application/xhtml+xml",
-        "application/xml;q=0.9",
-        "image/avif",
-        "image/webp",
-        "image/apng",
-        "*/*;q=0.8",
-      ].join(","),
+        'text/html',
+        'application/xhtml+xml',
+        'application/xml;q=0.9',
+        'image/avif',
+        'image/webp',
+        'image/apng',
+        '*/*;q=0.8',
+      ].join(','),
       ...(headers ?? {}),
     });
 
@@ -1209,12 +1209,12 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       signal: this.controller.signal,
       headers: new Headers(headersRaw),
       referrer: this.baseURL,
-      referrerPolicy: "no-referrer",
+      referrerPolicy: 'no-referrer',
       body: null,
-      method: "GET",
-      mode: "cors",
-      credentials: "include",
-      redirect: "follow",
+      method: 'GET',
+      mode: 'cors',
+      credentials: 'include',
+      redirect: 'follow',
     });
 
     try {
@@ -1224,17 +1224,17 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       const responseHeaders = Object.fromEntries(
         httpResponse.headers.entries(),
       ) satisfies HeadersInit;
-      this.logger.debug("responseHeaders:", responseHeaders);
-      this.logger.debug("responseHeaders.location:", responseHeaders.location);
+      this.logger.debug('responseHeaders:', responseHeaders);
+      this.logger.debug('responseHeaders.location:', responseHeaders.location);
 
       return httpResponse;
     } catch (error: unknown) {
-      if (error instanceof Error && error.name === "AbortError") {
-        this.logger.warn("Request was aborted", { error, signal: this.controller.signal });
-        this.controller.abort("Abort signal detected");
+      if (error instanceof Error && error.name === 'AbortError') {
+        this.logger.warn('Request was aborted', { error, signal: this.controller.signal });
+        this.controller.abort('Abort signal detected');
         return;
       }
-      this.logger.error("Error received during fetch:", {
+      this.logger.error('Error received during fetch:', {
         error,
         signal: this.controller.signal,
       });
@@ -1264,7 +1264,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    */
   private showFuzzScorerComparisonTable<X>(query: string, data: X[]): void {
     const scorerComparison = data.map((obj, idx) => {
-      const title = String(this.titleSelector(obj) ?? "");
+      const title = String(this.titleSelector(obj) ?? '');
       return {
         idx,
         title,
@@ -1389,7 +1389,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       sortBySimilarity: true,
     }).reduce<FuzzyMatchResult<X>[]>((acc, [obj, score, idx]) => {
       if (score < minMatchPercentage) {
-        this.logger.debug("fuzzyFilter: score below minimum match percentage, excluding product", {
+        this.logger.debug('fuzzyFilter: score below minimum match percentage, excluding product', {
           product: obj,
           score,
           idx,
@@ -1402,7 +1402,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       return acc;
     }, []);
 
-    this.logger.debug("[fuzzyFilter]", {
+    this.logger.debug('[fuzzyFilter]', {
       supplierName: this.supplierName,
       query,
       minMatchPercentage,
@@ -1485,7 +1485,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     const fuzzyWords = !this.fuzzyFilteringDisabled;
 
     const matched = data.reduce<FuzzyMatchResult<X>[]>((acc, obj, idx) => {
-      const title = this.titleSelector(obj) ?? "";
+      const title = this.titleSelector(obj) ?? '';
       const score = scoreAstMatch(title, parsed.ast, { scorer, threshold, fuzzyWords });
       if (score === null) {
         return acc;
@@ -1745,17 +1745,17 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     host,
   }: RequestOptions): Promise<Maybe<JsonValue>> {
     if (
-      typeof headers?.accept === "undefined" ||
+      typeof headers?.accept === 'undefined' ||
       !Array.isArray(headers?.accept) ||
-      !headers?.accept.includes("application/json")
+      !headers?.accept.includes('application/json')
     ) {
-      headers.accept = ["application/json", "text/plain", "*/*"].join(",");
+      headers.accept = ['application/json', 'text/plain', '*/*'].join(',');
     }
     const httpRequest = await this.httpGet({ path, params, headers, host });
 
     if (!isJsonResponse(httpRequest)) {
       const badResponse = isHttpResponse(httpRequest) ? await httpRequest.text() : undefined;
-      this.logger.error("Invalid HTTP GET JSON response:", {
+      this.logger.error('Invalid HTTP GET JSON response:', {
         badResponse,
         httpRequest,
         path,
@@ -1806,26 +1806,26 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   ): Promise<ProductBuilder<T>[] | void> {
     // Check cache first (processed product data)
     this.logger.debug(
-      "queryProductsWithCache: called for",
+      'queryProductsWithCache: called for',
       this.supplierName,
-      "query:",
+      'query:',
       query,
-      "limit:",
+      'limit:',
       limit,
     );
     const key = this.cache.generateCacheKey(query);
     const cached = await this.cache.getCachedQueryEntry(key);
-    this.logger.debug("queryProductsWithCache: cache hit:", !!cached, "key:", key);
+    this.logger.debug('queryProductsWithCache: cache hit:', !!cached, 'key:', key);
     if (cached) {
       const cachedLimit = cached.__cacheMetadata.limit;
-      const insufficientLimit = typeof cachedLimit === "number" && cachedLimit < limit;
+      const insufficientLimit = typeof cachedLimit === 'number' && cachedLimit < limit;
       if (!insufficientLimit) {
-        this.logger.debug("Returning cached query results");
+        this.logger.debug('Returning cached query results');
         // Re-initialize product builders from cached processed data
         return ProductBuilder.createFromCache<T>(this.baseURL, cached.data.slice(0, limit));
       }
       // Cached entry was built with a smaller limit than requested — drop it and re-query below.
-      this.logger.debug("Invalidating query cache due to insufficient limit", {
+      this.logger.debug('Invalidating query cache due to insufficient limit', {
         cachedLimit,
         requestedLimit: limit,
       });
@@ -1887,7 +1887,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     const union: ProductBuilder<T>[] = [];
     for (const term of terms) {
       if (this.requestCount >= this.httpRequestHardLimit) {
-        this.logger.warn("queryProductsResolved: httpRequestHardLimit reached, stopping fallback", {
+        this.logger.warn('queryProductsResolved: httpRequestHardLimit reached, stopping fallback', {
           term,
           requestCount: this.requestCount,
         });
@@ -1898,8 +1898,8 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
         continue;
       }
       for (const builder of batch) {
-        const key = String(builder.get("url") ?? builder.get("id") ?? builder.get("title") ?? "");
-        if (key === "" || seen.has(key)) {
+        const key = String(builder.get('url') ?? builder.get('id') ?? builder.get('title') ?? '');
+        if (key === '' || seen.has(key)) {
           continue;
         }
         seen.add(key);
@@ -1993,7 +1993,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
 
     // Optional per-supplier search-time budget; see armSearchTimeout. When it elapses the
     // race below wins via SEARCH_TIMEOUT and flushes any not-yet-yielded products.
-    const SEARCH_TIMEOUT = Symbol("searchTimeout");
+    const SEARCH_TIMEOUT = Symbol('searchTimeout');
     const { promise: timeoutPromise, handle: timeoutHandle } =
       this.armSearchTimeout(SEARCH_TIMEOUT);
 
@@ -2011,8 +2011,8 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       for (const builder of results) {
         if (survivors.length >= this.limit) break;
         if (this.isExcluded(builder)) {
-          this.logger.debug("Skipping excluded product (pre-detail)", {
-            url: builder.get("url"),
+          this.logger.debug('Skipping excluded product (pre-detail)', {
+            url: builder.get('url'),
           });
           continue;
         }
@@ -2038,7 +2038,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
               const finished = builder ? await this.finishProduct(builder) : undefined;
               return { index, finished };
             } catch (e: unknown) {
-              this.logger.error("Error processing product", { error: e, product });
+              this.logger.error('Error processing product', { error: e, product });
               incrementParseError(this.supplierName);
               return { index, finished: undefined };
             }
@@ -2220,7 +2220,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    */
   protected async finishProduct(product: ProductBuilder<T>): Promise<Maybe<T>> {
     if (!isMinimalProduct(product.dump())) {
-      this.logger.warn("Unable to finish product - Minimum data not set", { product });
+      this.logger.warn('Unable to finish product - Minimum data not set', { product });
       return;
     }
 
@@ -2229,10 +2229,10 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     // supplier implemented `getUniqueProductKey` but forgot to stamp — it would
     // silently disable per-product caching and precise exclusion for that
     // product. Surface it loudly in dev/tests.
-    if (IS_DEV_BUILD && product.get("cacheKey") == null) {
-      this.logger.error("finishProduct| product is missing a stamped cacheKey", {
+    if (IS_DEV_BUILD && product.get('cacheKey') == null) {
+      this.logger.error('finishProduct| product is missing a stamped cacheKey', {
         supplier: this.supplierName,
-        url: product.get("url"),
+        url: product.get('url'),
       });
     }
 
@@ -2249,18 +2249,18 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     // (restricted) site, so a missing store URL is a misconfiguration — surface it loudly in dev.
     // The plain "ebay"/"amazon" methods instead drive an informational "more products there"
     // notice; the store URL is optional, so stamp it only when present and don't warn.
-    if (this.paymentMethods.includes("ebayonly")) {
+    if (this.paymentMethods.includes('ebayonly')) {
       if (IS_DEV_BUILD && !this.ebayStoreURL) {
         this.logger.error("finishProduct| supplier declares 'ebayonly' but sets no ebayStoreURL", {
           supplier: this.supplierName,
         });
       }
       product.setSupplierEbayStoreURL(this.ebayStoreURL);
-    } else if (this.paymentMethods.includes("ebay") && this.ebayStoreURL) {
+    } else if (this.paymentMethods.includes('ebay') && this.ebayStoreURL) {
       product.setSupplierEbayStoreURL(this.ebayStoreURL);
     }
 
-    if (this.paymentMethods.includes("amazononly")) {
+    if (this.paymentMethods.includes('amazononly')) {
       if (IS_DEV_BUILD && !this.amazonStoreURL) {
         this.logger.error(
           "finishProduct| supplier declares 'amazononly' but sets no amazonStoreURL",
@@ -2268,7 +2268,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
         );
       }
       product.setSupplierAmazonStoreURL(this.amazonStoreURL);
-    } else if (this.paymentMethods.includes("amazon") && this.amazonStoreURL) {
+    } else if (this.paymentMethods.includes('amazon') && this.amazonStoreURL) {
       product.setSupplierAmazonStoreURL(this.amazonStoreURL);
     }
 
@@ -2292,8 +2292,8 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * @source
    */
   protected productIdentityKey(product: ProductBuilder<T>): string | undefined {
-    const identity = product.get("cacheKey");
-    if (typeof identity === "string" && identity.length > 0) {
+    const identity = product.get('cacheKey');
+    if (typeof identity === 'string' && identity.length > 0) {
       return this.cache.getProductIdentityCacheKey(identity);
     }
     return undefined;
@@ -2464,7 +2464,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   protected buildSearchParams(
     obj: Record<string, unknown>,
     params: URLSearchParams = new URLSearchParams(),
-    prefix: string = "",
+    prefix: string = '',
   ): URLSearchParams {
     for (const [key, value] of Object.entries(obj)) {
       // Bracket-nest the key as depth grows: parent[child][grandchild]...
@@ -2499,14 +2499,14 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * @source
    */
   protected async getProductData(product: ProductBuilder<T>): Promise<ProductBuilder<T> | void> {
-    const url = product.get("url");
-    if (typeof url !== "string") {
-      this.logger.error("[SupplierBase > getProductData] Invalid URL in product:", { url });
+    const url = product.get('url');
+    if (typeof url !== 'string') {
+      this.logger.error('[SupplierBase > getProductData] Invalid URL in product:', { url });
       return undefined;
     }
     // Skip products the user has ignored (matched by identity key).
     if (this.isExcluded(product)) {
-      this.logger.debug("[SupplierBase > getProductData] Skipping excluded product", {
+      this.logger.debug('[SupplierBase > getProductData] Skipping excluded product', {
         url,
         supplierName: this.supplierName,
       });
@@ -2516,7 +2516,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     // the builder at parse time. Absent only if a supplier failed to stamp one,
     // in which case this product simply isn't cached.
     const cacheKey = this.productIdentityKey(product);
-    this.logger.debug("[SupplierBase > getProductData] Product detail cache key:", cacheKey, {
+    this.logger.debug('[SupplierBase > getProductData] Product detail cache key:', cacheKey, {
       url,
     });
     try {
@@ -2534,7 +2534,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       try {
         resultBuilder = await this.getProductDataWithCache(product, this.getProductData);
       } catch (err: unknown) {
-        this.logger.error("[SupplierBase > getProductData] Error in product detail fetcher:", err);
+        this.logger.error('[SupplierBase > getProductData] Error in product detail fetcher:', err);
         incrementParseError(this.supplierName);
         return undefined;
       }
@@ -2552,7 +2552,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       return resultBuilder;
     } catch (outerErr: unknown) {
       this.logger.error(
-        "[SupplierBase > getProductData] Error in getProductDataWithCache:",
+        '[SupplierBase > getProductData] Error in getProductDataWithCache:',
         outerErr,
       );
       incrementParseError(this.supplierName);
@@ -2587,16 +2587,16 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     product: ProductBuilder<T>,
     fetcher: (builder: ProductBuilder<T>) => Promise<ProductBuilder<T> | void>,
   ): Promise<ProductBuilder<T> | void> {
-    const url = product.get("url");
-    if (typeof url !== "string") {
-      this.logger.error("[SupplierBase > getProductDataWithCache] Invalid URL in product:", {
+    const url = product.get('url');
+    if (typeof url !== 'string') {
+      this.logger.error('[SupplierBase > getProductDataWithCache] Invalid URL in product:', {
         url,
       });
       return undefined;
     }
     // Skip products the user has ignored (matched by identity key).
     if (this.isExcluded(product)) {
-      this.logger.debug("[SupplierBase > getProductDataWithCache] Skipping excluded product", {
+      this.logger.debug('[SupplierBase > getProductDataWithCache] Skipping excluded product', {
         url,
         supplierName: this.supplierName,
       });
@@ -2608,7 +2608,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     // product simply isn't cached.
     const cacheKey = this.productIdentityKey(product);
     this.logger.debug(
-      "[SupplierBase > getProductDataWithCache] Product detail cache key:",
+      '[SupplierBase > getProductDataWithCache] Product detail cache key:',
       cacheKey,
       {
         url,
@@ -2630,7 +2630,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
         resultBuilder = await fetcher(product);
       } catch (err: unknown) {
         this.logger.error(
-          "[SupplierBase > getProductDataWithCache] Error in product detail fetcher:",
+          '[SupplierBase > getProductDataWithCache] Error in product detail fetcher:',
           err,
         );
         incrementParseError(this.supplierName);
@@ -2652,7 +2652,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       return resultBuilder;
     } catch (outerErr: unknown) {
       this.logger.error(
-        "[SupplierBase > getProductDataWithCache] Error in getProductDataWithCache:",
+        '[SupplierBase > getProductDataWithCache] Error in getProductDataWithCache:',
         outerErr,
       );
       incrementParseError(this.supplierName);
@@ -2674,8 +2674,8 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * @source
    */
   protected productFetchKey(product: ProductBuilder<T>): string | undefined {
-    const key = product.get("permalink") ?? product.get("url");
-    return typeof key === "string" ? key : undefined;
+    const key = product.get('permalink') ?? product.get('url');
+    return typeof key === 'string' ? key : undefined;
   }
 
   /**
@@ -2692,7 +2692,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * @source
    */
   protected recordFetchFailure(key: string, httpStatus?: number): void {
-    if (typeof httpStatus === "number") {
+    if (typeof httpStatus === 'number') {
       this.failedFetchStatuses.set(key, httpStatus);
     }
   }
@@ -2739,11 +2739,11 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       .map((item) => {
         const title = this.titleSelector(item);
         if (!title) {
-          this.logger.error("No title found in product:", { item });
+          this.logger.error('No title found in product:', { item });
           return undefined;
         }
-        const groupId = stripQuantityFromString(title.replace(/(?<=\d{1,3})\s(?=\d{3})/g, ""));
-        const groupIdWithoutSpaces = groupId.replace(/[\s-]/g, "");
+        const groupId = stripQuantityFromString(title.replace(/(?<=\d{1,3})\s(?=\d{3})/g, ''));
+        const groupIdWithoutSpaces = groupId.replace(/[\s-]/g, '');
         return { ...item, groupId: groupIdWithoutSpaces };
       })
       .filter((item): item is GroupedItem<R> => item !== undefined);
@@ -2842,23 +2842,23 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       // identical to the previous single increment.
       this.requestCount++;
       if (this.requestCount > this.httpRequestHardLimit) {
-        this.logger.warn("Request count exceeded hard limit", { requestCount: this.requestCount });
+        this.logger.warn('Request count exceeded hard limit', { requestCount: this.requestCount });
         incrementFailure(this.supplierName);
-        throw new Error("Request count exceeded hard limit");
+        throw new Error('Request count exceeded hard limit');
       }
 
       try {
         const response = await fetchDecorator(...args);
         this.logger.debug(`Response Status: ${response.status}`);
-        this.logger.debug("response hash:", response.requestHash);
-        if (typeof response.data === "string" && response.data?.length === 0) {
+        this.logger.debug('response hash:', response.requestHash);
+        if (typeof response.data === 'string' && response.data?.length === 0) {
           throw new EmptyResponseError(`Invalid response: ${response.data}`);
         }
         incrementSuccess(this.supplierName);
         return response;
       } catch (error: unknown) {
         if (this.shouldRetryChallenge(error) && attempt < maxAttempts) {
-          this.logger.warn("Retrying after 403 (WAF cookie handshake)", {
+          this.logger.warn('Retrying after 403 (WAF cookie handshake)', {
             attempt,
             maxAttempts,
             input,
@@ -2873,7 +2873,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
 
     // Unreachable: the loop always returns on success or throws on the final
     // failed attempt. Present only to satisfy the return-type checker.
-    throw new Error("fetch: exhausted retries without resolving");
+    throw new Error('fetch: exhausted retries without resolving');
   }
 
   /**

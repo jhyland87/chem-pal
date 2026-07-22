@@ -1,12 +1,12 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { SearchEvent, emitSearchEvent, onSearchEvent } from "../searchEvents";
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { SearchEvent, emitSearchEvent, onSearchEvent } from '../searchEvents';
 
-describe("searchEvents", () => {
+describe('searchEvents', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it("delivers typed detail from emit to on", () => {
+  it('delivers typed detail from emit to on', () => {
     const handler = vi.fn();
     const off = onSearchEvent(SearchEvent.RESULTS_COUNT, handler);
 
@@ -17,7 +17,7 @@ describe("searchEvents", () => {
     off();
   });
 
-  it("delivers payloadless events (detail defaults to null)", () => {
+  it('delivers payloadless events (detail defaults to null)', () => {
     const handler = vi.fn();
     const off = onSearchEvent(SearchEvent.ABORTED, handler);
 
@@ -29,23 +29,23 @@ describe("searchEvents", () => {
     off();
   });
 
-  it("stops delivering after the returned unsubscribe is called", () => {
+  it('stops delivering after the returned unsubscribe is called', () => {
     const handler = vi.fn();
     const off = onSearchEvent(SearchEvent.STARTED, handler);
 
-    emitSearchEvent(SearchEvent.STARTED, { query: "acetone" });
+    emitSearchEvent(SearchEvent.STARTED, { query: 'acetone' });
     off();
-    emitSearchEvent(SearchEvent.STARTED, { query: "benzene" });
+    emitSearchEvent(SearchEvent.STARTED, { query: 'benzene' });
 
     expect(handler).toHaveBeenCalledTimes(1);
-    expect(handler).toHaveBeenCalledWith({ query: "acetone" });
+    expect(handler).toHaveBeenCalledWith({ query: 'acetone' });
   });
 
-  it("only invokes the handler for its own event type", () => {
+  it('only invokes the handler for its own event type', () => {
     const handler = vi.fn();
     const off = onSearchEvent(SearchEvent.COMPLETED, handler);
 
-    emitSearchEvent(SearchEvent.STARTED, { query: "x" });
+    emitSearchEvent(SearchEvent.STARTED, { query: 'x' });
 
     expect(handler).not.toHaveBeenCalled();
     off();

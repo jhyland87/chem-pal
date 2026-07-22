@@ -1,5 +1,5 @@
-import { JSX, type DefaultThemeRenderContext } from "typedoc";
-import type { TaxonomyMember } from "../types.js";
+import { JSX, type DefaultThemeRenderContext } from 'typedoc';
+import type { TaxonomyMember } from '../types.js';
 
 /**
  * Renders one member of a term as a linked row: kind icon, name, and summary.

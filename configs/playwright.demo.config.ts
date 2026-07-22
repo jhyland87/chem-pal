@@ -1,9 +1,9 @@
-import { defineConfig, devices } from "@playwright/test";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { defineConfig, devices } from '@playwright/test';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
-const resolvePath = (...paths: string[]) => path.resolve(dirname, "..", ...paths);
+const resolvePath = (...paths: string[]) => path.resolve(dirname, '..', ...paths);
 
 /**
  * Playwright config for the ChemPal demo walkthrough (`pnpm run demo`).
@@ -18,8 +18,8 @@ const resolvePath = (...paths: string[]) => path.resolve(dirname, "..", ...paths
  * So recording, viewport, and slowMo are set in the fixture, not here.
  */
 export default defineConfig({
-  testDir: resolvePath("demo"),
-  testMatch: "**/*.demo.ts",
+  testDir: resolvePath('demo'),
+  testMatch: '**/*.demo.ts',
   // Linear demo: one browser, no parallelism, generous per-test budget for
   // the build-free run (backdrop can take a while as suppliers stream in).
   fullyParallel: false,
@@ -28,17 +28,17 @@ export default defineConfig({
   // pauses and per-click delays for a watchable recording, so it needs a roomy
   // per-test budget (backdrop can also take a while as suppliers stream in).
   timeout: 300_000,
-  outputDir: resolvePath("demo-results"),
+  outputDir: resolvePath('demo-results'),
   // Absolute path: an HTML reporter's `outputFolder` is otherwise resolved
   // relative to this config file's dir (configs/), not the repo root.
-  reporter: [["html", { outputFolder: resolvePath("demo-report"), open: "never" }]],
+  reporter: [['html', { outputFolder: resolvePath('demo-report'), open: 'never' }]],
   use: {
-    screenshot: "only-on-failure",
+    screenshot: 'only-on-failure',
   },
   projects: [
     {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
 });

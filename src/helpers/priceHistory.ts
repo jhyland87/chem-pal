@@ -8,14 +8,14 @@
  * @source
  */
 
-import { getProductIdentityKey } from "@/helpers/productIdentity";
-import { getPriceSeries, getPriceSeriesByProduct, putPriceSeries } from "@/utils/idbCache";
+import { getProductIdentityKey } from '@/helpers/productIdentity';
+import { getPriceSeries, getPriceSeriesByProduct, putPriceSeries } from '@/utils/idbCache';
 
 /** The user settings that gate and bound price-history recording. */
-type PriceHistorySettings = Pick<UserSettings, "trackPriceHistory" | "priceHistoryMaxPoints">;
+type PriceHistorySettings = Pick<UserSettings, 'trackPriceHistory' | 'priceHistoryMaxPoints'>;
 
 /** Direction of the most recent price move, from {@link describeTrend}. */
-type TrendDirection = "up" | "down" | "flat";
+type TrendDirection = 'up' | 'down' | 'flat';
 
 /** Summary of the last price move for a series, from {@link describeTrend}. */
 interface PriceTrend {
@@ -53,7 +53,7 @@ interface SeriesInput {
  * @source
  */
 function isRecordablePrice(value: unknown): value is number {
-  return typeof value === "number" && Number.isFinite(value) && value > 0;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0;
 }
 
 /**
@@ -142,7 +142,7 @@ function genuineVariantId(product: Product, variant: Variant): string | undefine
     return undefined;
   }
   const parentIdentity = String(
-    variant.cacheKey ?? product.cacheKey ?? product.url ?? product.title ?? "",
+    variant.cacheKey ?? product.cacheKey ?? product.url ?? product.title ?? '',
   );
   return id === parentIdentity ? undefined : id;
 }
@@ -165,7 +165,7 @@ function genuineVariantId(product: Product, variant: Variant): string | undefine
  * @source
  */
 function variantDiscriminator(product: Product, variant: Variant): string | undefined {
-  const size = variant.quantity == null ? undefined : `${variant.quantity}${variant.uom ?? ""}`;
+  const size = variant.quantity == null ? undefined : `${variant.quantity}${variant.uom ?? ''}`;
   const value = genuineVariantId(product, variant) ?? variant.title ?? size ?? variant.sku;
   if (value == null || String(value).length === 0) {
     return undefined;
@@ -392,13 +392,13 @@ export async function getProductPriceHistory(
  */
 export function describeTrend(points: readonly PricePoint[]): PriceTrend {
   if (points.length < 2) {
-    return { direction: "flat", deltaUsd: 0, pctChange: 0 };
+    return { direction: 'flat', deltaUsd: 0, pctChange: 0 };
   }
   const last = points[points.length - 1].usd;
   const prev = points[points.length - 2].usd;
   const deltaUsd = round2(last - prev);
   const pctChange = prev !== 0 ? (deltaUsd / prev) * 100 : 0;
-  const direction: TrendDirection = deltaUsd > 0 ? "up" : deltaUsd < 0 ? "down" : "flat";
+  const direction: TrendDirection = deltaUsd > 0 ? 'up' : deltaUsd < 0 ? 'down' : 'flat';
   return { direction, deltaUsd, pctChange };
 }
 

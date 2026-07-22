@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { vi } from 'vitest';
 
 /**
  * Creates spy functions for essential console methods.
@@ -19,14 +19,14 @@ import { vi } from "vitest";
  */
 export const createConsoleMock = () => {
   const consoleMock = {
-    log: vi.spyOn(console, "log"),
-    error: vi.spyOn(console, "error"),
-    debug: vi.spyOn(console, "debug"),
-    warn: vi.spyOn(console, "warn"),
-    info: vi.spyOn(console, "info"),
-    table: vi.spyOn(console, "table"),
-    dir: vi.spyOn(console, "dir"),
-    clear: vi.spyOn(console, "clear"),
+    log: vi.spyOn(console, 'log'),
+    error: vi.spyOn(console, 'error'),
+    debug: vi.spyOn(console, 'debug'),
+    warn: vi.spyOn(console, 'warn'),
+    info: vi.spyOn(console, 'info'),
+    table: vi.spyOn(console, 'table'),
+    dir: vi.spyOn(console, 'dir'),
+    clear: vi.spyOn(console, 'clear'),
   };
 
   return consoleMock;

@@ -1,5 +1,5 @@
-import { type Column, type ColumnDef, type Table } from "@tanstack/react-table";
-import { i18n } from "@/helpers/i18n";
+import { type Column, type ColumnDef, type Table } from '@tanstack/react-table';
+import { i18n } from '@/helpers/i18n';
 
 /**
  * Narrows an unknown value to the primitive column value types handled here.
@@ -8,7 +8,7 @@ import { i18n } from "@/helpers/i18n";
  * @returns True if `value` is a string or number
  */
 function isStringOrNumber(value: unknown): value is string | number {
-  return typeof value === "string" || typeof value === "number";
+  return typeof value === 'string' || typeof value === 'number';
 }
 
 /**
@@ -18,9 +18,9 @@ function isStringOrNumber(value: unknown): value is string | number {
  * @returns The accessor key, or undefined for non-accessor columns
  */
 function getAccessorKey<TData>(columnDef: ColumnDef<TData, unknown>): keyof TData | undefined {
-  if ("accessorKey" in columnDef) {
+  if ('accessorKey' in columnDef) {
     const key = columnDef.accessorKey;
-    if (typeof key === "string" || typeof key === "number" || typeof key === "symbol") {
+    if (typeof key === 'string' || typeof key === 'number' || typeof key === 'symbol') {
       // TanStack types accessorKey as its own deep-key union; narrow to this data's keys.
       return key as keyof TData;
     }
@@ -36,17 +36,17 @@ function getAccessorKey<TData>(columnDef: ColumnDef<TData, unknown>): keyof TDat
  */
 function getRenderedHeaderText(rendered: unknown): string {
   if (
-    typeof rendered === "object" &&
+    typeof rendered === 'object' &&
     rendered !== null &&
-    "props" in rendered &&
-    typeof rendered.props === "object" &&
+    'props' in rendered &&
+    typeof rendered.props === 'object' &&
     rendered.props !== null &&
-    "children" in rendered.props &&
-    typeof rendered.props.children === "string"
+    'children' in rendered.props &&
+    typeof rendered.props.children === 'string'
   ) {
     return rendered.props.children;
   }
-  return "";
+  return '';
 }
 
 /**
@@ -60,9 +60,9 @@ function getRenderedHeaderText(rendered: unknown): string {
  */
 export function getHeaderText<TData>(column: Column<TData, unknown>): string {
   const header = column.columnDef.header;
-  if (header === undefined) return "";
-  if (typeof header === "string") return header;
-  if (typeof header === "function") {
+  if (header === undefined) return '';
+  if (typeof header === 'string') return header;
+  if (typeof header === 'function') {
     // TanStack's functional header expects a `HeaderContext` we don't have here.
     // Some headers read it (e.g. the price column derives its currency from
     // `table.options.meta`) and throw when invoked context-free, so guard the
@@ -100,7 +100,7 @@ export function getVisibleUniqueValues<TData>(
   });
 
   return Array.from(values).sort((a, b) => {
-    if (typeof a === "number" && typeof b === "number") return a - b;
+    if (typeof a === 'number' && typeof b === 'number') return a - b;
     return String(a).localeCompare(String(b));
   });
 }
@@ -130,7 +130,7 @@ export function getAllUniqueValues<TData>(
   }, []);
 
   return uniqueValues.sort((a, b) => {
-    if (typeof a === "number" && typeof b === "number") return a - b;
+    if (typeof a === 'number' && typeof b === 'number') return a - b;
     return String(a).localeCompare(String(b));
   });
 }
@@ -181,7 +181,7 @@ export function getVisibleRange<TData>(
  */
 function hasValue(value: unknown): boolean {
   if (value == null) return false;
-  if (typeof value === "string") return value.trim().length > 0;
+  if (typeof value === 'string') return value.trim().length > 0;
   if (Array.isArray(value)) return value.length > 0;
   return true;
 }
@@ -212,7 +212,7 @@ export function getEmptyHideableColumnIds<TData>(table: Table<TData>): string[] 
     if (!column.getCanHide()) continue;
 
     const columnDef = column.columnDef;
-    const isAccessorColumn = "accessorKey" in columnDef || "accessorFn" in columnDef;
+    const isAccessorColumn = 'accessorKey' in columnDef || 'accessorFn' in columnDef;
     const dataKeys = columnDef.meta?.dataKeys ?? [];
     // A display column with no accessor and no declared dataKeys can't be judged.
     if (!isAccessorColumn && dataKeys.length === 0) continue;

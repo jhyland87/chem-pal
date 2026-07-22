@@ -1,4 +1,4 @@
-import { Logger } from "@/utils/Logger";
+import { Logger } from '@/utils/Logger';
 import {
   clearSupplierProductDataCache,
   clearSupplierQueryCache,
@@ -7,8 +7,8 @@ import {
   getSupplierQueryCacheEntry,
   putSupplierProductDataCacheEntry,
   putSupplierQueryCacheEntry,
-} from "@/utils/idbCache";
-import { getProductIdentityKey } from "@/helpers/productIdentity";
+} from '@/utils/idbCache';
+import { getProductIdentityKey } from '@/helpers/productIdentity';
 
 /**
  * Utility class for managing supplier data caching in IndexedDB.
@@ -87,7 +87,7 @@ export class SupplierCache {
     // values fall back to 0 (TTL disabled).
     const minutes = Number(cacheTtlMinutes);
     this.cacheTtlMs = Number.isFinite(minutes) && minutes > 0 ? minutes * 60_000 : 0;
-    this.logger.debug("SupplierCache initialized", {
+    this.logger.debug('SupplierCache initialized', {
       supplierName,
       supplierModule,
       enabled,
@@ -104,8 +104,8 @@ export class SupplierCache {
    * @source
    */
   generateCacheKey(query: string): string {
-    const data = `${query || ""}:${this.supplierName}`;
-    this.logger.debug("Generating cache key with:", {
+    const data = `${query || ''}:${this.supplierName}`;
+    this.logger.debug('Generating cache key with:', {
       query,
       supplierName: this.supplierName,
       data,
@@ -113,14 +113,14 @@ export class SupplierCache {
     try {
       // Try browser's btoa first
       const key = btoa(data);
-      this.logger.debug("Generated cache key:", key);
+      this.logger.debug('Generated cache key:', key);
       return key;
     } catch {
       try {
         // Fallback to Node's Buffer if available
-        if (typeof Buffer !== "undefined") {
-          const key = Buffer.from(data).toString("base64");
-          this.logger.debug("Generated cache key (Buffer):", { key });
+        if (typeof Buffer !== 'undefined') {
+          const key = Buffer.from(data).toString('base64');
+          this.logger.debug('Generated cache key (Buffer):', { key });
           return key;
         }
         // If neither is available, use a simple hash function
@@ -131,13 +131,13 @@ export class SupplierCache {
           hash = hash & hash; // Convert to 32bit integer
         }
         const key = hash.toString(36);
-        this.logger.debug("Generated cache key (hash):", { key });
+        this.logger.debug('Generated cache key (hash):', { key });
         return key;
       } catch (error) {
-        this.logger.error("Error generating cache key:", error);
+        this.logger.error('Error generating cache key:', error);
         // Fallback to a simple string if all else fails
-        const key = data.replace(/[^a-zA-Z0-9]/g, "_");
-        this.logger.debug("Generated cache key (fallback):", { key });
+        const key = data.replace(/[^a-zA-Z0-9]/g, '_');
+        this.logger.debug('Generated cache key (fallback):', { key });
         return key;
       }
     }
@@ -165,13 +165,13 @@ export class SupplierCache {
   async cacheQueryResults(query: string, results: unknown[], limit: number): Promise<void> {
     if (!this.enabled) return;
     if (this.doNotCacheEmptyResults && results.length === 0) {
-      this.logger.debug("Skipping empty-result cache write per doNotCacheEmptyResults", {
+      this.logger.debug('Skipping empty-result cache write per doNotCacheEmptyResults', {
         query,
         supplierName: this.supplierName,
       });
       return;
     }
-    this.logger.debug("[SupplierCache] Caching query results", {
+    this.logger.debug('[SupplierCache] Caching query results', {
       query,
       supplierName: this.supplierName,
       results,
@@ -194,14 +194,14 @@ export class SupplierCache {
         },
       };
 
-      this.logger.debug("Cached query results", {
+      this.logger.debug('Cached query results', {
         key,
         metadata: entry.__cacheMetadata,
       });
 
       await putSupplierQueryCacheEntry(key, entry);
     } catch (error) {
-      this.logger.error("Error storing query results in cache:", { error });
+      this.logger.error('Error storing query results in cache:', { error });
     }
   }
 
@@ -212,7 +212,7 @@ export class SupplierCache {
    */
   async getCachedProductData(key: string): Promise<Maybe<Record<string, unknown>>> {
     if (!this.enabled) return undefined;
-    this.logger.debug("[SupplierCache] Getting cached product data", { key });
+    this.logger.debug('[SupplierCache] Getting cached product data', { key });
     try {
       const cached = await getSupplierProductDataCacheEntry(key);
       if (cached) {
@@ -225,7 +225,7 @@ export class SupplierCache {
       }
       return undefined;
     } catch (error) {
-      this.logger.error("Error retrieving product data from cache:", { error });
+      this.logger.error('Error retrieving product data from cache:', { error });
       return undefined;
     }
   }
@@ -237,14 +237,14 @@ export class SupplierCache {
    */
   async cacheProductData(key: string, data: Record<string, unknown>): Promise<void> {
     if (!this.enabled) return;
-    this.logger.debug("Caching product data", { key, data });
+    this.logger.debug('Caching product data', { key, data });
     try {
       await putSupplierProductDataCacheEntry(key, {
         data,
         timestamp: Date.now(),
       });
     } catch (error) {
-      this.logger.error("Error storing product data in cache:", { error });
+      this.logger.error('Error storing product data in cache:', { error });
     }
   }
 
@@ -254,11 +254,11 @@ export class SupplierCache {
    */
   async getCachedQueryEntry(key: string): Promise<CachedData<unknown> | undefined> {
     if (!this.enabled) return undefined;
-    this.logger.debug("Getting cached query entry", { key });
+    this.logger.debug('Getting cached query entry', { key });
     try {
       const cached = await getSupplierQueryCacheEntry(key);
       if (cached && cached.__cacheMetadata.version !== SupplierCache.CACHE_VERSION) {
-        this.logger.debug("Evicting stale cache entry due to version mismatch", {
+        this.logger.debug('Evicting stale cache entry due to version mismatch', {
           key,
           cachedVersion: cached.__cacheMetadata.version,
           currentVersion: SupplierCache.CACHE_VERSION,
@@ -269,7 +269,7 @@ export class SupplierCache {
       if (cached && this.cacheTtlMs > 0) {
         const age = Date.now() - cached.__cacheMetadata.cachedAt;
         if (age > this.cacheTtlMs) {
-          this.logger.debug("Evicting expired cache entry due to TTL", {
+          this.logger.debug('Evicting expired cache entry due to TTL', {
             key,
             ageMs: age,
             ttlMs: this.cacheTtlMs,
@@ -280,7 +280,7 @@ export class SupplierCache {
       }
       return cached;
     } catch (error) {
-      this.logger.error("Error retrieving query cache entry:", { error });
+      this.logger.error('Error retrieving query cache entry:', { error });
       return undefined;
     }
   }

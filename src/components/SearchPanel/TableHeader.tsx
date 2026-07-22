@@ -1,10 +1,10 @@
-import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
-import ArrowDropUpIcon from "@/icons/ArrowDropUpIcon";
-import type { ColumnMeta } from "@tanstack/react-table";
-import { ColumnDef, flexRender, Header, HeaderGroup, Table } from "@tanstack/react-table";
-import { useMemo } from "react";
-import { ColumnResizer, SortableHeaderContent, TableHeaderCell } from "../StyledComponents";
-import styles from "./TableHeader.module.scss";
+import ArrowDropDownIcon from '@/icons/ArrowDropDownIcon';
+import ArrowDropUpIcon from '@/icons/ArrowDropUpIcon';
+import type { ColumnMeta } from '@tanstack/react-table';
+import { ColumnDef, flexRender, Header, HeaderGroup, Table } from '@tanstack/react-table';
+import { useMemo } from 'react';
+import { ColumnResizer, SortableHeaderContent, TableHeaderCell } from '../StyledComponents';
+import styles from './TableHeader.module.scss';
 
 /**
  * TableHeader component that renders the header row of the product results table.
@@ -49,7 +49,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
       const col = table.options.columns.find((col) => col.id === colName);
       if (col === undefined) continue;
 
-      if (filterVariant === "range") {
+      if (filterVariant === 'range') {
         /**
          * Calculates the range values (min and max) for numeric columns.
          * @returns Array containing [min, max] values
@@ -115,7 +115,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
                       onDoubleClick={header.column.resetSize}
                       onMouseDown={header.getResizeHandler()}
                       onTouchStart={header.getResizeHandler()}
-                      className={`${styles.resizer} ${header.column.getIsResizing() ? styles.isResizing : ""}`}
+                      className={`${styles.resizer} ${header.column.getIsResizing() ? styles.isResizing : ''}`}
                     />
                     <SortableHeaderContent
                       canSort={header.column.getCanSort()}
@@ -123,8 +123,8 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
                     >
                       {flexRender(header.column.columnDef.header, header.getContext())}
                       {{
-                        asc: <ArrowDropUpIcon className={styles["sort-icon"]} />,
-                        desc: <ArrowDropDownIcon className={styles["sort-icon"]} />,
+                        asc: <ArrowDropUpIcon className={styles['sort-icon']} />,
+                        desc: <ArrowDropDownIcon className={styles['sort-icon']} />,
                       }[String(header.column.getIsSorted())] ?? null}
                     </SortableHeaderContent>
                   </>

@@ -1,13 +1,13 @@
-import { CACHE } from "@/constants/common";
-import { HttpError } from "@/helpers/exceptions";
-import { parseQuantity } from "@/helpers/quantity";
-import { parseChemicalSpecs, parseGrade, parsePurity } from "@/helpers/science";
-import { mapDefined } from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { translateAstToTypesenseFilter } from "@/utils/search-query/translators/translateAstToTypesenseFilter";
-import { cstorage } from "@/utils/storage";
-import { assertValidSearchResponse } from "@/utils/typeGuards/chemsavers";
-import { SupplierBase } from "./SupplierBase";
+import { CACHE } from '@/constants/common';
+import { HttpError } from '@/helpers/exceptions';
+import { parseQuantity } from '@/helpers/quantity';
+import { parseChemicalSpecs, parseGrade, parsePurity } from '@/helpers/science';
+import { mapDefined } from '@/helpers/utils';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { translateAstToTypesenseFilter } from '@/utils/search-query/translators/translateAstToTypesenseFilter';
+import { cstorage } from '@/utils/storage';
+import { assertValidSearchResponse } from '@/utils/typeGuards/chemsavers';
+import { SupplierBase } from './SupplierBase';
 
 /**
  * Module used to retrieve products sold on the Chemsavers website.
@@ -25,24 +25,24 @@ export class SupplierChemsavers
   implements ISupplier
 {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = "Chemsavers";
+  public readonly supplierName: string = 'Chemsavers';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = "https://www.chemsavers.com";
+  public readonly baseURL: string = 'https://www.chemsavers.com';
 
   // Shipping scope for Chemsavers
-  public readonly shipping: ShippingRange = "international";
+  public readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "US";
+  public readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["amazononly"];
+  public readonly paymentMethods: PaymentMethod[] = ['amazononly'];
 
-  public readonly amazonStoreURL: string = "https://www.amazon.com/s?rh=p_89%3AChemsavers";
+  public readonly amazonStoreURL: string = 'https://www.amazon.com/s?rh=p_89%3AChemsavers';
 
   // The API URL for the Typesense search API.
-  protected apiURL: string = "0ul35zwtpkx14ifhp-1.a1.typesense.net";
+  protected apiURL: string = '0ul35zwtpkx14ifhp-1.a1.typesense.net';
 
   // Override the type of queryResults to use our specific type
   protected queryResults: Array<ChemsaversProductObject> = [];
@@ -52,7 +52,7 @@ export class SupplierChemsavers
 
   // Default Typesense API key. Used unless a rehydrated key is found in storage
   // (see loadStoredApiKey); replaced and persisted by rehydrateApiKey on a 401.
-  protected apiKey: string = "iPltuzpMbSZEuxT0fjPI0Ct9R1UBETTd";
+  protected apiKey: string = 'iPltuzpMbSZEuxT0fjPI0Ct9R1UBETTd';
 
   // Typesense's filter_by supports &&/||/! so advanced queries are translated
   // server-side instead of using the keyword-only fallback.
@@ -80,12 +80,12 @@ export class SupplierChemsavers
 
   // HTTP headers used as a basis for all queries.
   protected headers: HeadersInit = {
-    accept: ["application/json", "text/plain", "*/*"].join(","),
-    "accept-language": "en-US,en;q=0.9",
-    "cache-control": "no-cache",
-    "content-type": "text/plain",
-    pragma: "no-cache",
-    priority: "u=1, i",
+    accept: ['application/json', 'text/plain', '*/*'].join(','),
+    'accept-language': 'en-US,en;q=0.9',
+    'cache-control': 'no-cache',
+    'content-type': 'text/plain',
+    pragma: 'no-cache',
+    priority: 'u=1, i',
   };
 
   /**
@@ -97,7 +97,7 @@ export class SupplierChemsavers
    * ```
    */
   protected async rehydrateApiKey() {
-    this.logger.debug("Rehydrating api key");
+    this.logger.debug('Rehydrating api key');
     // const fetchParams = {
     //   headers: {
     //     accept: "*/*",
@@ -125,19 +125,19 @@ export class SupplierChemsavers
     // storefront document from this (side-panel) context trips the extension page's
     // `script-src 'self'` CSP and CORS; the worker has no document/CSP context and
     // returns the response as plain text for the regex below.
-    const getHomePageReq = await this.backgroundFetch("https://chemsavers.com/", {
+    const getHomePageReq = await this.backgroundFetch('https://chemsavers.com/', {
       headers: {
         accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-        "accept-language": "en-US,en;q=0.8",
-        "cache-control": "no-cache",
-        pragma: "no-cache",
+          'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'accept-language': 'en-US,en;q=0.8',
+        'cache-control': 'no-cache',
+        pragma: 'no-cache',
       },
-      method: "GET",
-      credentials: "include",
+      method: 'GET',
+      credentials: 'include',
     });
 
-    this.logger.debug("getHomePageReq:", { getHomePageReq });
+    this.logger.debug('getHomePageReq:', { getHomePageReq });
 
     const getHomePage = await getHomePageReq.text();
     if (!getHomePage) {
@@ -158,14 +158,14 @@ export class SupplierChemsavers
 
     const getJsContentReq = await this.backgroundFetch(scriptSrcMatch.groups.src, {
       headers: {
-        accept: "*/*",
-        "accept-language": "en-US,en;q=0.8",
-        "cache-control": "no-cache",
-        pragma: "no-cache",
+        accept: '*/*',
+        'accept-language': 'en-US,en;q=0.8',
+        'cache-control': 'no-cache',
+        pragma: 'no-cache',
       },
-      referrer: "https://chemsavers.com/",
-      method: "GET",
-      credentials: "include",
+      referrer: 'https://chemsavers.com/',
+      method: 'GET',
+      credentials: 'include',
     });
 
     const getJsContent = await getJsContentReq?.text();
@@ -188,7 +188,7 @@ export class SupplierChemsavers
     }
 
     if (this.apiKey === apiKeyMatch.groups.apiKey) {
-      this.logger.info("API key is already rehydrated:", { apiKey: this.apiKey });
+      this.logger.info('API key is already rehydrated:', { apiKey: this.apiKey });
       return;
     }
 
@@ -229,21 +229,21 @@ export class SupplierChemsavers
       searchRequest = await this.searchTypesense(body);
     } catch (error) {
       if (!this.isUnauthorized(error)) {
-        this.logger.error("Error querying products:", error);
+        this.logger.error('Error querying products:', error);
         return;
       }
 
       // 401: the key is stale. Drop the dead stored key, rehydrate once, and retry. A
       // second 401 (or any retry failure) propagates — we stop the search rather than
       // continue with a dead key.
-      this.logger.warn("Search returned 401; rehydrating API key and retrying");
+      this.logger.warn('Search returned 401; rehydrating API key and retrying');
       await this.clearStoredApiKey();
       await this.rehydrateApiKey();
       searchRequest = await this.searchTypesense(body);
     }
 
     try {
-      this.logger.debug("Query response:", searchRequest);
+      this.logger.debug('Query response:', searchRequest);
 
       assertValidSearchResponse(searchRequest);
 
@@ -252,18 +252,18 @@ export class SupplierChemsavers
       const products = searchRequest.results[0].hits
         .flat()
         .map((hit) => hit.document)
-        .filter((p) => p.inventory_tracking === "none" || p.inventoryLevel > 0);
+        .filter((p) => p.inventory_tracking === 'none' || p.inventoryLevel > 0);
 
-      this.logger.debug("Mapped response objects:", products);
+      this.logger.debug('Mapped response objects:', products);
 
       const fuzzResults = this.fuzzyFilterAst<ChemsaversProductObject>(products);
 
-      this.logger.debug("fuzzResults:", { query, searchRequest, products, fuzzResults });
+      this.logger.debug('fuzzResults:', { query, searchRequest, products, fuzzResults });
       const grouped = this.groupVariants<ChemsaversProductObject>(fuzzResults);
       // Initialize product builders from filtered results
       return this.initProductBuilders(grouped.slice(0, limit));
     } catch (error) {
-      this.logger.error("Error querying products:", error);
+      this.logger.error('Error querying products:', error);
       return;
     }
   }
@@ -284,7 +284,7 @@ export class SupplierChemsavers
       path: `/multi_search`,
       host: this.apiURL,
       params: {
-        "x-typesense-api-key": this.apiKey,
+        'x-typesense-api-key': this.apiKey,
       },
       body,
     });
@@ -320,11 +320,11 @@ export class SupplierChemsavers
     try {
       const stored = await cstorage.local.get([CACHE.CHEMSAVERS_API_KEY]);
       const key: unknown = stored[CACHE.CHEMSAVERS_API_KEY];
-      if (typeof key === "string" && key.length > 0) {
+      if (typeof key === 'string' && key.length > 0) {
         this.apiKey = key;
       }
     } catch (error) {
-      this.logger.warn("Failed to read stored API key", { error });
+      this.logger.warn('Failed to read stored API key', { error });
     }
   }
 
@@ -343,7 +343,7 @@ export class SupplierChemsavers
     try {
       await cstorage.local.set({ [CACHE.CHEMSAVERS_API_KEY]: key });
     } catch (error) {
-      this.logger.warn("Failed to persist API key", { error });
+      this.logger.warn('Failed to persist API key', { error });
     }
   }
 
@@ -361,7 +361,7 @@ export class SupplierChemsavers
     try {
       await cstorage.local.remove(CACHE.CHEMSAVERS_API_KEY);
     } catch (error) {
-      this.logger.warn("Failed to remove stored API key", { error });
+      this.logger.warn('Failed to remove stored API key', { error });
     }
   }
 
@@ -412,7 +412,7 @@ export class SupplierChemsavers
         .setID(result.id)
         .setCacheKey(this.getUniqueProductKey(result))
         .setSku(result.sku)
-        .setPricing(result.price, "USD", "$")
+        .setPricing(result.price, 'USD', '$')
         .setQuantity(quantity.quantity, quantity.uom)
         .setCAS(result.CAS)
         .setPurity(parsePurity(result.name))
@@ -461,15 +461,15 @@ export class SupplierChemsavers
     // For an advanced query, let Typesense's filter_by do the boolean matching
     // over `name` and return everything else via the `*` wildcard query.
     const search = parsed.isAdvanced
-      ? { q: "*", filter_by: translateAstToTypesenseFilter(parsed.ast) }
+      ? { q: '*', filter_by: translateAstToTypesenseFilter(parsed.ast) }
       : { q: query };
 
     return {
       searches: [
         {
-          query_by: "name, CAS, sku",
-          highlight_full_fields: "name, CAS, sku",
-          collection: "products",
+          query_by: 'name, CAS, sku',
+          highlight_full_fields: 'name, CAS, sku',
+          collection: 'products',
           ...search,
           page: 0,
           per_page: limit,

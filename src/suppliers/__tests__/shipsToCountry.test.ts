@@ -1,11 +1,11 @@
 import {
   resetChromeStorageMock,
   setupChromeStorageMock,
-} from "@/__fixtures__/helpers/chrome/storageMock";
-import { beforeAll, beforeEach, describe, expect, it } from "vitest";
-import * as suppliers from "..";
-import { SupplierBase } from "../SupplierBase";
-import { SupplierFactory } from "../SupplierFactory";
+} from '@/__fixtures__/helpers/chrome/storageMock';
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import * as suppliers from '..';
+import { SupplierBase } from '../SupplierBase';
+import { SupplierFactory } from '../SupplierFactory';
 
 beforeAll(() => {
   setupChromeStorageMock();
@@ -23,48 +23,48 @@ const makeInstance = (name: keyof typeof suppliers) => {
     limit: number,
     controller: AbortController,
   ) => SupplierBase<unknown, Product>;
-  return new Cls("", 1, controller);
+  return new Cls('', 1, controller);
 };
 
-describe("SupplierBase.shipsToCountry", () => {
-  it("uses the explicit shipsTo list when the supplier declares one (Ambeed)", () => {
-    const ambeed = makeInstance("SupplierAmbeed");
-    expect(ambeed.shipsToCountry("US")).toBe(true);
-    expect(ambeed.shipsToCountry("GB")).toBe(true);
+describe('SupplierBase.shipsToCountry', () => {
+  it('uses the explicit shipsTo list when the supplier declares one (Ambeed)', () => {
+    const ambeed = makeInstance('SupplierAmbeed');
+    expect(ambeed.shipsToCountry('US')).toBe(true);
+    expect(ambeed.shipsToCountry('GB')).toBe(true);
     // "ZA" (South Africa) is not in Ambeed's shipsTo list.
-    expect(ambeed.shipsToCountry("ZA")).toBe(false);
+    expect(ambeed.shipsToCountry('ZA')).toBe(false);
   });
 
-  it("restricts a domestic supplier to its own country (Carolina, US)", () => {
-    const carolina = makeInstance("SupplierCarolina");
-    expect(carolina.shipsToCountry("US")).toBe(true);
-    expect(carolina.shipsToCountry("DE")).toBe(false);
+  it('restricts a domestic supplier to its own country (Carolina, US)', () => {
+    const carolina = makeInstance('SupplierCarolina');
+    expect(carolina.shipsToCountry('US')).toBe(true);
+    expect(carolina.shipsToCountry('DE')).toBe(false);
   });
 
-  it("ships everywhere for a worldwide supplier (LiMac, LV)", () => {
-    const limac = makeInstance("SupplierLiMac");
-    expect(limac.shipsToCountry("US")).toBe(true);
-    expect(limac.shipsToCountry("LV")).toBe(true);
+  it('ships everywhere for a worldwide supplier (LiMac, LV)', () => {
+    const limac = makeInstance('SupplierLiMac');
+    expect(limac.shipsToCountry('US')).toBe(true);
+    expect(limac.shipsToCountry('LV')).toBe(true);
   });
 
-  it("ships everywhere for an international supplier (Onyxmet, CA)", () => {
-    const onyxmet = makeInstance("SupplierOnyxmet");
-    expect(onyxmet.shipsToCountry("US")).toBe(true);
-    expect(onyxmet.shipsToCountry("CA")).toBe(true);
+  it('ships everywhere for an international supplier (Onyxmet, CA)', () => {
+    const onyxmet = makeInstance('SupplierOnyxmet');
+    expect(onyxmet.shipsToCountry('US')).toBe(true);
+    expect(onyxmet.shipsToCountry('CA')).toBe(true);
   });
 });
 
-describe("SupplierFactory.supplierShipsTo", () => {
-  it("returns a ships-to boolean for every exported supplier", () => {
-    const map = SupplierFactory.supplierShipsTo("US");
+describe('SupplierFactory.supplierShipsTo', () => {
+  it('returns a ships-to boolean for every exported supplier', () => {
+    const map = SupplierFactory.supplierShipsTo('US');
     expect(Object.keys(map)).toEqual(Object.keys(suppliers));
     for (const value of Object.values(map)) {
-      expect(typeof value).toBe("boolean");
+      expect(typeof value).toBe('boolean');
     }
   });
 
   it("matches each supplier's own shipsToCountry result", () => {
-    const map = SupplierFactory.supplierShipsTo("DE");
+    const map = SupplierFactory.supplierShipsTo('DE');
     // Carolina is US-domestic → does not ship to DE.
     expect(map.SupplierCarolina).toBe(false);
     // LiMac is worldwide → ships to DE.
@@ -72,7 +72,7 @@ describe("SupplierFactory.supplierShipsTo", () => {
   });
 });
 
-describe("SupplierFactory.filterByShipping", () => {
+describe('SupplierFactory.filterByShipping', () => {
   const createMockSupplier = (name: string, shipsTo: string[]) =>
     ({
       supplierName: name,
@@ -80,44 +80,44 @@ describe("SupplierFactory.filterByShipping", () => {
     }) as unknown as SupplierBase<unknown, Product>;
 
   const instances = [
-    createMockSupplier("ShipsToUS", ["US", "CA"]),
-    createMockSupplier("DomesticDE", ["DE"]),
-    createMockSupplier("Worldwide", ["US", "CA", "DE", "GB"]),
+    createMockSupplier('ShipsToUS', ['US', 'CA']),
+    createMockSupplier('DomesticDE', ['DE']),
+    createMockSupplier('Worldwide', ['US', 'CA', 'DE', 'GB']),
   ];
 
   const makeFactory = (location?: string, exclude: boolean = false) =>
-    new SupplierFactory<Product>("test", {
+    new SupplierFactory<Product>('test', {
       limit: 5,
       controller: new AbortController(),
       location,
       excludeNonShippingSuppliers: exclude,
     });
 
-  it("keeps only suppliers that ship to the location when enabled", () => {
-    const factory = makeFactory("US", true);
+  it('keeps only suppliers that ship to the location when enabled', () => {
+    const factory = makeFactory('US', true);
     const result = (
       factory as unknown as {
         filterByShipping: (i: SupplierBase<unknown, Product>[]) => SupplierBase<unknown, Product>[];
       }
     ).filterByShipping(instances);
-    expect(result.map((r) => r.supplierName)).toEqual(["ShipsToUS", "Worldwide"]);
+    expect(result.map((r) => r.supplierName)).toEqual(['ShipsToUS', 'Worldwide']);
   });
 
-  it("returns all suppliers when the toggle is off", () => {
-    const factory = makeFactory("US", false);
+  it('returns all suppliers when the toggle is off', () => {
+    const factory = makeFactory('US', false);
     const result = (factory as any).filterByShipping(instances);
     expect(result).toHaveLength(3);
   });
 
-  it("returns all suppliers when no location is set", () => {
+  it('returns all suppliers when no location is set', () => {
     const factory = makeFactory(undefined, true);
     const result = (factory as any).filterByShipping(instances);
     expect(result).toHaveLength(3);
   });
 
-  it("stores the location and toggle passed to the constructor", () => {
-    const factory = makeFactory("DE", true);
-    expect((factory as any).location).toBe("DE");
+  it('stores the location and toggle passed to the constructor', () => {
+    const factory = makeFactory('DE', true);
+    expect((factory as any).location).toBe('DE');
     expect((factory as any).excludeNonShippingSuppliers).toBe(true);
   });
 });

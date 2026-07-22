@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 const shopifyVariantNodeSchema = z.object({
   id: z.string(),
@@ -7,7 +7,7 @@ const shopifyVariantNodeSchema = z.object({
   availableForSale: z.boolean(),
   currentlyNotInStock: z.boolean(),
   weight: z.number(),
-  weightUnit: z.enum(["POUNDS", "OUNCES", "GRAMS", "KILOGRAMS"]),
+  weightUnit: z.enum(['POUNDS', 'OUNCES', 'GRAMS', 'KILOGRAMS']),
   price: z.object({
     amount: z.string(),
   }),
@@ -131,7 +131,7 @@ const shopifySearchResponseSchema = z.object({
 export function isValidShopifySearchResponse(response: unknown): response is ShopifySearchResponse {
   const parsed = shopifySearchResponseSchema.safeParse(response);
   if (!parsed.success) {
-    console.warn("isValidShopifySearchResponse: response is not a valid ShopifySearchResponse", {
+    console.warn('isValidShopifySearchResponse: response is not a valid ShopifySearchResponse', {
       response,
       parsed,
       error: parsed.error,

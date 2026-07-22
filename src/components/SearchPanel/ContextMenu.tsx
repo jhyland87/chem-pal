@@ -1,36 +1,36 @@
-import { useStatusBar } from "@/components/StatusBar";
-import { useAppContext } from "@/context";
+import { useStatusBar } from '@/components/StatusBar';
+import { useAppContext } from '@/context';
 import {
   buildResultsWorkbook,
   downloadBlob,
   type ExportContext,
   type ExportFilterSummary,
   type ExportGroup,
-} from "@/helpers/exportResults";
-import { i18n } from "@/helpers/i18n";
-import { getExportableProductData } from "@/helpers/product";
-import { getProductIdentityKey } from "@/helpers/productIdentity";
-import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
-import ArrowDropUpIcon from "@/icons/ArrowDropUpIcon";
-import ArrowRightIcon from "@/icons/ArrowRightIcon";
-import BlockIcon from "@/icons/BlockIcon";
-import BookmarkIcon from "@/icons/BookmarkIcon";
-import CopyIcon from "@/icons/CopyIcon";
-import FolderDeleteIcon from "@/icons/FolderDeleteIcon";
-import HttpIcon from "@/icons/HttpIcon";
-import SettingsIcon from "@/icons/SettingsIcon";
-import { deleteSupplierProductDataCacheEntry, putExport } from "@/utils/idbCache";
-import GridOnIcon from "@mui/icons-material/GridOn";
-import Divider from "@mui/material/Divider";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import MenuItem from "@mui/material/MenuItem";
-import MenuList from "@mui/material/MenuList";
-import Paper from "@mui/material/Paper";
-import type { Table } from "@tanstack/react-table";
-import { dump as yamlDump } from "js-yaml";
-import { useEffect, useRef, useState } from "react";
-import styles from "./ContextMenu.module.scss";
+} from '@/helpers/exportResults';
+import { i18n } from '@/helpers/i18n';
+import { getExportableProductData } from '@/helpers/product';
+import { getProductIdentityKey } from '@/helpers/productIdentity';
+import ArrowDropDownIcon from '@/icons/ArrowDropDownIcon';
+import ArrowDropUpIcon from '@/icons/ArrowDropUpIcon';
+import ArrowRightIcon from '@/icons/ArrowRightIcon';
+import BlockIcon from '@/icons/BlockIcon';
+import BookmarkIcon from '@/icons/BookmarkIcon';
+import CopyIcon from '@/icons/CopyIcon';
+import FolderDeleteIcon from '@/icons/FolderDeleteIcon';
+import HttpIcon from '@/icons/HttpIcon';
+import SettingsIcon from '@/icons/SettingsIcon';
+import { deleteSupplierProductDataCacheEntry, putExport } from '@/utils/idbCache';
+import GridOnIcon from '@mui/icons-material/GridOn';
+import Divider from '@mui/material/Divider';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import MenuItem from '@mui/material/MenuItem';
+import MenuList from '@mui/material/MenuList';
+import Paper from '@mui/material/Paper';
+import type { Table } from '@tanstack/react-table';
+import { dump as yamlDump } from 'js-yaml';
+import { useEffect, useRef, useState } from 'react';
+import styles from './ContextMenu.module.scss';
 
 /**
  * Props for the ContextMenu component.
@@ -85,17 +85,17 @@ interface ContextMenuPosition {
  */
 function formatFilterValue(value: unknown): string {
   if (Array.isArray(value)) {
-    const isRange = value.length === 2 && value.every((v) => v == null || typeof v === "number");
+    const isRange = value.length === 2 && value.every((v) => v == null || typeof v === 'number');
     if (isRange) {
       const [min, max] = value;
-      return `${min ?? ""}–${max ?? ""}`;
+      return `${min ?? ''}–${max ?? ''}`;
     }
     return value
       .filter((v) => v != null)
       .map((v) => String(v))
-      .join(", ");
+      .join(', ');
   }
-  return value == null ? "" : String(value);
+  return value == null ? '' : String(value);
 }
 
 /**
@@ -112,14 +112,14 @@ function formatFilterValue(value: unknown): string {
  * @source
  */
 function buildExportFilename(query: string | undefined, createdAt: number): string {
-  const stamp = new Date(createdAt).toISOString().slice(0, 19).replace(/[:T]/g, "-");
+  const stamp = new Date(createdAt).toISOString().slice(0, 19).replace(/[:T]/g, '-');
   const slug =
-    (query ?? "")
+    (query ?? '')
       .trim()
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 40) || "results";
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 40) || 'results';
   return `chempal-export-${slug}-${stamp}.xlsx`;
 }
 
@@ -206,17 +206,17 @@ export default function ContextMenu({
      * @source
      */
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key === 'Escape') {
         onClose();
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleEscape);
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
     };
   }, [onClose]);
 
@@ -262,10 +262,10 @@ export default function ContextMenu({
    */
   const handleCopyTitle = async () => {
     try {
-      await navigator.clipboard.writeText(product.title || "Unknown Product");
-      console.log("Product title copied to clipboard");
+      await navigator.clipboard.writeText(product.title || 'Unknown Product');
+      console.log('Product title copied to clipboard');
     } catch (err) {
-      console.error("Failed to copy product title:", err);
+      console.error('Failed to copy product title:', err);
     }
     onClose();
   };
@@ -279,9 +279,9 @@ export default function ContextMenu({
     if (openUrl) {
       try {
         await navigator.clipboard.writeText(openUrl);
-        console.log("Product URL copied to clipboard");
+        console.log('Product URL copied to clipboard');
       } catch (err) {
-        console.error("Failed to copy product URL:", err);
+        console.error('Failed to copy product URL:', err);
       }
     }
     onClose();
@@ -295,16 +295,16 @@ export default function ContextMenu({
   const handleOpenInNewTab = async () => {
     if (openUrl) {
       // Chrome extension compatible way to open new tab
-      if (typeof chrome !== "undefined" && chrome.tabs) {
+      if (typeof chrome !== 'undefined' && chrome.tabs) {
         try {
           await chrome.tabs.create({ url: openUrl });
         } catch {
           // Fallback for non-extension environments
-          window.open(openUrl, "_blank", "noopener,noreferrer");
+          window.open(openUrl, '_blank', 'noopener,noreferrer');
         }
       } else {
         // Fallback for non-extension environments
-        window.open(openUrl, "_blank", "noopener,noreferrer");
+        window.open(openUrl, '_blank', 'noopener,noreferrer');
       }
     }
     onClose();
@@ -318,7 +318,7 @@ export default function ContextMenu({
    * @source
    */
   const handleCreateBookmark = async () => {
-    const FOLDER_NAME = i18n("bookmark_favorites_folder");
+    const FOLDER_NAME = i18n('bookmark_favorites_folder');
 
     /**
      * Recursively searches the bookmark tree for a folder matching the given name.
@@ -383,17 +383,17 @@ export default function ContextMenu({
       const duplicate = children.find((node) => node.url === openUrl);
 
       if (duplicate) {
-        flashStatusText(i18n("bookmark_already_exists", [FOLDER_NAME]));
+        flashStatusText(i18n('bookmark_already_exists', [FOLDER_NAME]));
       } else {
         await chrome.bookmarks.create({
           parentId: folderId,
           title: product.title,
           url: openUrl,
         });
-        flashStatusText(i18n("bookmark_created", [FOLDER_NAME]));
+        flashStatusText(i18n('bookmark_created', [FOLDER_NAME]));
       }
     } catch (error) {
-      console.error("Failed to create bookmark:", { error, product });
+      console.error('Failed to create bookmark:', { error, product });
     }
 
     onClose();
@@ -408,12 +408,12 @@ export default function ContextMenu({
     if (navigator.share && openUrl) {
       try {
         await navigator.share({
-          title: product.title || i18n("share_fallback_title"),
-          text: i18n("share_text", [product.title]),
+          title: product.title || i18n('share_fallback_title'),
+          text: i18n('share_text', [product.title]),
           url: openUrl,
         });
       } catch (error) {
-        console.error("Share failed, falling back to clipboard", { error });
+        console.error('Share failed, falling back to clipboard', { error });
         await handleCopyUrl();
       }
     } else {
@@ -456,7 +456,7 @@ export default function ContextMenu({
     try {
       await onExcludeProduct?.(product);
     } catch (error) {
-      console.warn("Failed to ignore product:", { error });
+      console.warn('Failed to ignore product:', { error });
     }
     onClose();
   };
@@ -471,7 +471,7 @@ export default function ContextMenu({
    */
   const handleRemoveFromCache = async () => {
     if (!product.cacheKey || !product.supplier) {
-      flashStatusText(i18n("context_menu_cache_remove_unavailable"));
+      flashStatusText(i18n('context_menu_cache_remove_unavailable'));
       onClose();
       return;
     }
@@ -479,9 +479,9 @@ export default function ContextMenu({
     try {
       const cacheKey = getProductIdentityKey(product.cacheKey, product.supplier);
       await deleteSupplierProductDataCacheEntry(cacheKey);
-      flashStatusText(i18n("context_menu_removed_from_cache", [product.title]));
+      flashStatusText(i18n('context_menu_removed_from_cache', [product.title]));
     } catch (error) {
-      console.error("Failed to remove product from cache:", { error, product });
+      console.error('Failed to remove product from cache:', { error, product });
     }
 
     onClose();
@@ -493,9 +493,9 @@ export default function ContextMenu({
 
     try {
       await navigator.clipboard.writeText(productInfo);
-      console.log("JSON product info copied to clipboard", { productInfoObj, productInfo });
+      console.log('JSON product info copied to clipboard', { productInfoObj, productInfo });
     } catch (error) {
-      console.error("Failed to copy JSON product info", { productInfoObj, productInfo, error });
+      console.error('Failed to copy JSON product info', { productInfoObj, productInfo, error });
     }
     onClose();
   };
@@ -511,12 +511,12 @@ export default function ContextMenu({
 
     try {
       await navigator.clipboard.writeText(productInfo);
-      console.log("YAML product info copied to clipboard", {
+      console.log('YAML product info copied to clipboard', {
         productInfo,
         productInfoObj,
       });
     } catch (error) {
-      console.error("Failed to copy YAML product info", { productInfoObj, productInfo, error });
+      console.error('Failed to copy YAML product info', { productInfoObj, productInfo, error });
     }
     onClose();
   };
@@ -537,12 +537,12 @@ export default function ContextMenu({
     const filters: ExportFilterSummary[] = [];
     const globalFilter = table.getState().globalFilter;
     if (globalFilter) {
-      filters.push({ label: i18n("export_summary_filter_global"), value: String(globalFilter) });
+      filters.push({ label: i18n('export_summary_filter_global'), value: String(globalFilter) });
     }
     for (const { id, value } of table.getState().columnFilters) {
       const header = table.getColumn(id)?.columnDef.header;
       filters.push({
-        label: typeof header === "string" ? header : id,
+        label: typeof header === 'string' ? header : id,
         value: formatFilterValue(value),
       });
     }
@@ -556,16 +556,16 @@ export default function ContextMenu({
    * @param scope - Whether to export all results or only the filtered view.
    * @source
    */
-  const handleExport = async (scope: "all" | "filtered") => {
+  const handleExport = async (scope: 'all' | 'filtered') => {
     try {
       const rowModel =
-        scope === "all" ? table.getPreFilteredRowModel() : table.getFilteredRowModel();
+        scope === 'all' ? table.getPreFilteredRowModel() : table.getFilteredRowModel();
       const groups: ExportGroup[] = rowModel.rows
         .filter((row) => row.depth === 0)
         .map((row) => ({
           parent: row.original,
           variants:
-            scope === "filtered"
+            scope === 'filtered'
               ? row.subRows.map((sub) => sub.original)
               : (row.original.variants ?? []),
         }));
@@ -600,17 +600,17 @@ export default function ContextMenu({
         blob,
       });
       downloadBlob(blob, filename);
-      flashStatusText(i18n("export_success", [String(groups.length)]));
+      flashStatusText(i18n('export_success', [String(groups.length)]));
     } catch (error) {
-      console.error("Failed to export results", { error });
-      flashStatusText(i18n("export_failed"));
+      console.error('Failed to export results', { error });
+      flashStatusText(i18n('export_failed'));
     }
     onClose();
   };
 
   return (
     <Paper
-      className={styles["context-menu-paper"]}
+      className={styles['context-menu-paper']}
       ref={menuRef}
       elevation={8}
       style={{
@@ -619,18 +619,18 @@ export default function ContextMenu({
       }}
     >
       <MenuList dense>
-        <MenuItem className={styles["context-menu-item"]} onClick={handleCopyTitle}>
+        <MenuItem className={styles['context-menu-item']} onClick={handleCopyTitle}>
           <ListItemIcon>
             <CopyIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText
-            className={styles["context-menu-option-text"]}
-            primary={i18n("context_menu_copy_title")}
+            className={styles['context-menu-option-text']}
+            primary={i18n('context_menu_copy_title')}
           />
         </MenuItem>
 
         <MenuItem
-          className={styles["context-menu-item"]}
+          className={styles['context-menu-item']}
           onClick={handleCopyUrl}
           disabled={!openUrl}
         >
@@ -638,84 +638,84 @@ export default function ContextMenu({
             <HttpIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText
-            className={styles["context-menu-option-text"]}
-            primary={i18n("context_menu_copy_url")}
+            className={styles['context-menu-option-text']}
+            primary={i18n('context_menu_copy_url')}
           />
         </MenuItem>
 
-        <MenuItem className={styles["context-menu-item"]} onClick={handleCopyProductInfo}>
+        <MenuItem className={styles['context-menu-item']} onClick={handleCopyProductInfo}>
           <ListItemIcon>
             <CopyIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText
-            className={styles["context-menu-option-text"]}
-            primary={i18n("context_menu_copy_product_info")}
+            className={styles['context-menu-option-text']}
+            primary={i18n('context_menu_copy_product_info')}
           />
         </MenuItem>
 
-        <MenuItem className={styles["context-menu-item"]} onClick={handleCopyProductInfoJson}>
+        <MenuItem className={styles['context-menu-item']} onClick={handleCopyProductInfoJson}>
           <ListItemIcon>
             <CopyIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText
-            className={styles["context-menu-option-text"]}
-            primary={i18n("context_menu_copy_product_info_json")}
+            className={styles['context-menu-option-text']}
+            primary={i18n('context_menu_copy_product_info_json')}
           />
         </MenuItem>
 
         <Divider />
 
-        <MenuItem className={styles["context-menu-item"]} onClick={() => void handleExport("all")}>
+        <MenuItem className={styles['context-menu-item']} onClick={() => void handleExport('all')}>
           <ListItemIcon>
             <GridOnIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText
-            className={styles["context-menu-option-text"]}
-            primary={i18n("context_menu_export_all")}
+            className={styles['context-menu-option-text']}
+            primary={i18n('context_menu_export_all')}
           />
         </MenuItem>
 
         {hasActiveFilters && (
           <MenuItem
-            className={styles["context-menu-item"]}
-            onClick={() => void handleExport("filtered")}
+            className={styles['context-menu-item']}
+            onClick={() => void handleExport('filtered')}
           >
             <ListItemIcon>
               <GridOnIcon fontSize="small" />
             </ListItemIcon>
             <ListItemText
-              className={styles["context-menu-option-text"]}
-              primary={i18n("context_menu_export_filtered")}
+              className={styles['context-menu-option-text']}
+              primary={i18n('context_menu_export_filtered')}
             />
           </MenuItem>
         )}
 
         <Divider />
 
-        <MenuItem className={styles["context-menu-item"]} onClick={handleIgnoreProduct}>
+        <MenuItem className={styles['context-menu-item']} onClick={handleIgnoreProduct}>
           <ListItemIcon>
             <BlockIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText
-            className={styles["context-menu-option-text"]}
-            primary={i18n("context_menu_ignore_product")}
+            className={styles['context-menu-option-text']}
+            primary={i18n('context_menu_ignore_product')}
           />
         </MenuItem>
 
-        <MenuItem className={styles["context-menu-item"]} onClick={handleRemoveFromCache}>
+        <MenuItem className={styles['context-menu-item']} onClick={handleRemoveFromCache}>
           <ListItemIcon>
             <FolderDeleteIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText
-            className={styles["context-menu-option-text"]}
-            primary={i18n("context_menu_remove_product_from_cache")}
+            className={styles['context-menu-option-text']}
+            primary={i18n('context_menu_remove_product_from_cache')}
           />
         </MenuItem>
 
         <Divider />
 
         <MenuItem
-          className={styles["context-menu-item"]}
+          className={styles['context-menu-item']}
           onClick={handleOpenInNewTab}
           disabled={!openUrl}
         >
@@ -723,33 +723,33 @@ export default function ContextMenu({
             <ArrowRightIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText
-            className={styles["context-menu-option-text"]}
-            primary={i18n("context_menu_open_in_new_tab")}
+            className={styles['context-menu-option-text']}
+            primary={i18n('context_menu_open_in_new_tab')}
           />
         </MenuItem>
 
         {(showExpandAll || showCollapseAll) && <Divider />}
 
         {showExpandAll && (
-          <MenuItem className={styles["context-menu-item"]} onClick={handleExpandAllVisible}>
+          <MenuItem className={styles['context-menu-item']} onClick={handleExpandAllVisible}>
             <ListItemIcon>
               <ArrowDropDownIcon fontSize="small" />
             </ListItemIcon>
             <ListItemText
-              className={styles["context-menu-option-text"]}
-              primary={i18n("context_menu_expand_all")}
+              className={styles['context-menu-option-text']}
+              primary={i18n('context_menu_expand_all')}
             />
           </MenuItem>
         )}
 
         {showCollapseAll && (
-          <MenuItem className={styles["context-menu-item"]} onClick={handleCollapseAllVisible}>
+          <MenuItem className={styles['context-menu-item']} onClick={handleCollapseAllVisible}>
             <ListItemIcon>
               <ArrowDropUpIcon fontSize="small" />
             </ListItemIcon>
             <ListItemText
-              className={styles["context-menu-option-text"]}
-              primary={i18n("context_menu_collapse_all")}
+              className={styles['context-menu-option-text']}
+              primary={i18n('context_menu_collapse_all')}
             />
           </MenuItem>
         )}
@@ -763,13 +763,13 @@ export default function ContextMenu({
 
         <Divider />
 
-        <MenuItem className={styles["context-menu-item"]} onClick={handleCreateBookmark}>
+        <MenuItem className={styles['context-menu-item']} onClick={handleCreateBookmark}>
           <ListItemIcon>
             <BookmarkIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText
-            className={styles["context-menu-option-text"]}
-            primary={i18n("context_menu_create_bookmark")}
+            className={styles['context-menu-option-text']}
+            primary={i18n('context_menu_create_bookmark')}
           />
         </MenuItem>
 
@@ -780,13 +780,13 @@ export default function ContextMenu({
          <ListItemText className={styles["context-menu-option-text"]} primary={i18n("context_menu_search_similar")} />
         </MenuItem>*/}
 
-        <MenuItem className={styles["context-menu-item"]} onClick={handleShare} disabled={!openUrl}>
+        <MenuItem className={styles['context-menu-item']} onClick={handleShare} disabled={!openUrl}>
           <ListItemIcon>
             <SettingsIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText
-            className={styles["context-menu-option-text"]}
-            primary={i18n("context_menu_share")}
+            className={styles['context-menu-option-text']}
+            primary={i18n('context_menu_share')}
           />
         </MenuItem>
       </MenuList>
@@ -795,4 +795,4 @@ export default function ContextMenu({
 }
 
 // Hook moved to be co-located with component for better organization
-export { useContextMenu } from "./useContextMenu.hook";
+export { useContextMenu } from './useContextMenu.hook';

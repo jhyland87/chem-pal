@@ -1,8 +1,8 @@
-import { ProductDetailStoreNotice } from "@/components/StyledComponents";
-import { default as Link } from "@/components/TabLink";
-import { i18n } from "@/helpers/i18n";
-import { Typography } from "@mui/material";
-import { type ReactElement } from "react";
+import { ProductDetailStoreNotice } from '@/components/StyledComponents';
+import { default as Link } from '@/components/TabLink';
+import { i18n } from '@/helpers/i18n';
+import { Typography } from '@mui/material';
+import { type ReactElement } from 'react';
 
 /** Props for {@link SupplierStoreNotice}. */
 interface SupplierStoreNoticeProps {
@@ -34,12 +34,12 @@ interface SupplierStoreNoticeProps {
  */
 export function SupplierStoreNotice({ product }: SupplierStoreNoticeProps): ReactElement | null {
   const paymentMethods = product.paymentMethods ?? [];
-  const ebayOnly = paymentMethods.includes("ebayonly");
-  const amazonOnly = paymentMethods.includes("amazononly");
+  const ebayOnly = paymentMethods.includes('ebayonly');
+  const amazonOnly = paymentMethods.includes('amazononly');
   const ebayURL =
-    ebayOnly || paymentMethods.includes("ebay") ? product.supplierEbayStoreURL : undefined;
+    ebayOnly || paymentMethods.includes('ebay') ? product.supplierEbayStoreURL : undefined;
   const amazonURL =
-    amazonOnly || paymentMethods.includes("amazon") ? product.supplierAmazonStoreURL : undefined;
+    amazonOnly || paymentMethods.includes('amazon') ? product.supplierAmazonStoreURL : undefined;
 
   if (!ebayURL && !amazonURL) return null;
 
@@ -47,7 +47,7 @@ export function SupplierStoreNotice({ product }: SupplierStoreNoticeProps): Reac
   // "more products available" wording. A mixed config is treated as a restriction if any shown
   // marketplace is "*only".
   const isRestriction = Boolean((ebayURL && ebayOnly) || (amazonURL && amazonOnly));
-  const prefix = isRestriction ? "product_detail_store_only" : "product_detail_store_more";
+  const prefix = isRestriction ? 'product_detail_store_only' : 'product_detail_store_more';
 
   // One whole sentence per case rather than a stitched-together prefix/suffix: i18n() returns a
   // plain string (no JSX interpolation), and splitting a sentence around an inline link breaks
@@ -61,8 +61,8 @@ export function SupplierStoreNotice({ product }: SupplierStoreNoticeProps): Reac
         {i18n(messageKey)}
       </Typography>
       <span className="store-links">
-        {ebayURL && <Link href={ebayURL}>{i18n("product_detail_store_only_ebay_link")}</Link>}
-        {amazonURL && <Link href={amazonURL}>{i18n("product_detail_store_only_amazon_link")}</Link>}
+        {ebayURL && <Link href={ebayURL}>{i18n('product_detail_store_only_ebay_link')}</Link>}
+        {amazonURL && <Link href={amazonURL}>{i18n('product_detail_store_only_amazon_link')}</Link>}
       </span>
     </ProductDetailStoreNotice>
   );

@@ -1,7 +1,7 @@
-import { useAppContext } from "@/context";
-import { IS_DEV_BUILD } from "@/utils/isDevBuild";
-import { FC } from "react";
-import { AdvancedModeBadge, BadgeTray, DevBadge } from "./StyledComponents";
+import { useAppContext } from '@/context';
+import { IS_DEV_BUILD } from '@/utils/isDevBuild';
+import { FC } from 'react';
+import { AdvancedModeBadge, BadgeTray, DevBadge } from './StyledComponents';
 
 /**
  * Corner status badges for the bottom-left of the app: "DEV BUILD" in

@@ -57,7 +57,7 @@ declare global {
     /** Request body for POST/PUT requests */
     body?: Record<string, unknown>;
     /** HTTP method to use (defaults to GET) */
-    method?: "GET" | "POST" | "PUT" | "DELETE";
+    method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   }
 
   /**
@@ -82,11 +82,11 @@ declare global {
    */
   interface MacklinRequestHeaders extends HttpHeaders {
     /** Server-synchronized timestamp */
-    "X-Timestamp"?: string;
+    'X-Timestamp'?: string;
     /** User authentication token */
-    "X-User-Token"?: string;
+    'X-User-Token'?: string;
     /** Request language (e.g., "en", "zh") */
-    "X-Language"?: string;
+    'X-Language'?: string;
     /** Request signature generated from headers and params */
     sign?: string;
   }

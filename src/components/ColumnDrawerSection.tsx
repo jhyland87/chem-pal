@@ -1,9 +1,9 @@
-import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
-import { useAppContext } from "@/context";
-import { i18n } from "@/helpers/i18n";
-import { toFiniteNumber } from "@/helpers/utils";
-import { SupplierFactory } from "@/suppliers/SupplierFactory";
-import { ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
+import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
+import { useAppContext } from '@/context';
+import { i18n } from '@/helpers/i18n';
+import { toFiniteNumber } from '@/helpers/utils';
+import { SupplierFactory } from '@/suppliers/SupplierFactory';
+import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import {
   Accordion,
   Autocomplete,
@@ -14,10 +14,10 @@ import {
   Switch,
   TextField,
   Typography,
-} from "@mui/material";
-import { ChangeEvent, ReactNode, SyntheticEvent, useMemo } from "react";
-import styles from "./DrawerSearchPanel.module.scss";
-import { StyledAccordionDetails, StyledAccordionSummary } from "./StyledComponents";
+} from '@mui/material';
+import { ChangeEvent, ReactNode, SyntheticEvent, useMemo } from 'react';
+import styles from './DrawerSearchPanel.module.scss';
+import { StyledAccordionDetails, StyledAccordionSummary } from './StyledComponents';
 
 /** A selectable country option for the country autocomplete: ISO code + display label. */
 type CountryOption = { code: string; label: string };
@@ -101,7 +101,7 @@ export default function ColumnDrawerSection({
   const excludeSuppliers = userSettings.excludeNonShippingSuppliers ?? true;
   const { location } = userSettings;
   const isSupplierSelector =
-    config.widget === "autocompleteStrings" && config.bind.kind === "selectedSuppliers";
+    config.widget === 'autocompleteStrings' && config.bind.kind === 'selectedSuppliers';
   const excludedSuppliers = useMemo(() => {
     if (!isSupplierSelector || !excludeSuppliers || !location) {
       return new Set<string>();
@@ -120,14 +120,14 @@ export default function ColumnDrawerSection({
     <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
       <Typography>
         {config.label}
-        {hint !== undefined && <span className={styles["accordion-hint"]}>{hint}</span>}
+        {hint !== undefined && <span className={styles['accordion-hint']}>{hint}</span>}
       </Typography>
     </StyledAccordionSummary>
   );
 
   // autocompleteStrings — e.g. Search Suppliers (keys: string[]).
-  if (config.widget === "autocompleteStrings") {
-    if (config.bind.kind !== "selectedSuppliers" && config.bind.kind !== "searchFilters") {
+  if (config.widget === 'autocompleteStrings') {
+    if (config.bind.kind !== 'selectedSuppliers' && config.bind.kind !== 'searchFilters') {
       return null;
     }
 
@@ -136,17 +136,17 @@ export default function ColumnDrawerSection({
     // mount hydration lands — coalesce to [] so the Autocomplete + summary
     // code below can treat `currentValue` as a concrete array uniformly.
     const currentValue: string[] =
-      config.bind.kind === "selectedSuppliers"
+      config.bind.kind === 'selectedSuppliers'
         ? (selectedSuppliers ?? [])
         : // `bind.key` is `keyof SearchFilters`, whose values are `string |
           // string[]`; this widget only binds to the `string[]` filters.
           ((searchFilters[config.bind.key] as string[] | undefined) ?? []);
 
     const handleChange = (_event: SyntheticEvent, newValue: string[]) => {
-      if (config.bind.kind === "selectedSuppliers") {
+      if (config.bind.kind === 'selectedSuppliers') {
         // Autocomplete yields plain strings; keep only valid supplier names.
         setSelectedSuppliers(newValue.filter(SupplierFactory.isSupplierClassName));
-      } else if (config.bind.kind === "searchFilters") {
+      } else if (config.bind.kind === 'searchFilters') {
         setSearchFilters({ ...searchFilters, [config.bind.key]: newValue });
       }
     };
@@ -181,7 +181,7 @@ export default function ColumnDrawerSection({
                   component="li"
                   key={key}
                   {...optionProps}
-                  sx={excluded ? { fontStyle: "italic", color: "text.disabled" } : undefined}
+                  sx={excluded ? { fontStyle: 'italic', color: 'text.disabled' } : undefined}
                 >
                   {optionLabels?.[option] ?? option}
                 </Box>
@@ -190,10 +190,10 @@ export default function ColumnDrawerSection({
             renderInput={(params) => (
               <TextField
                 {...params}
-                label={i18n("filter_by_label", [config.label.toLowerCase()])}
+                label={i18n('filter_by_label', [config.label.toLowerCase()])}
                 placeholder={placeholder}
                 helperText={currentValue.length === 0 ? emptyHelperText : undefined}
-                slotProps={{ formHelperText: { sx: { fontStyle: "italic" } } }}
+                slotProps={{ formHelperText: { sx: { fontStyle: 'italic' } } }}
               />
             )}
           />
@@ -212,7 +212,7 @@ export default function ColumnDrawerSection({
                   }
                 />
               }
-              label={i18n("drawer_only_shipping_suppliers")}
+              label={i18n('drawer_only_shipping_suppliers')}
             />
           )}
           {isSupplierSelector && (
@@ -230,7 +230,7 @@ export default function ColumnDrawerSection({
                   }
                 />
               }
-              label={i18n("drawer_hide_restricted_products")}
+              label={i18n('drawer_hide_restricted_products')}
             />
           )}
         </StyledAccordionDetails>
@@ -239,8 +239,8 @@ export default function ColumnDrawerSection({
   }
 
   // autocompleteObjects — e.g. Country (options are { code, label }).
-  if (config.widget === "autocompleteObjects") {
-    if (config.bind.kind !== "searchFilters") return null;
+  if (config.widget === 'autocompleteObjects') {
+    if (config.bind.kind !== 'searchFilters') return null;
     const bindKey = config.bind.key;
     const { options, emptyHelperText, placeholder } = config;
     // `bindKey` is `keyof SearchFilters` (values `string | string[]`); this
@@ -279,10 +279,10 @@ export default function ColumnDrawerSection({
             renderInput={(params) => (
               <TextField
                 {...params}
-                label={i18n("filter_by_label", [config.label.toLowerCase()])}
+                label={i18n('filter_by_label', [config.label.toLowerCase()])}
                 placeholder={placeholder}
                 helperText={selectedCodes.length === 0 ? emptyHelperText : undefined}
-                slotProps={{ formHelperText: { sx: { fontStyle: "italic" } } }}
+                slotProps={{ formHelperText: { sx: { fontStyle: 'italic' } } }}
               />
             )}
           />
@@ -292,8 +292,8 @@ export default function ColumnDrawerSection({
   }
 
   // chips — e.g. Shipping Type (chip toggle for a fixed string list).
-  if (config.widget === "chips") {
-    if (config.bind.kind !== "searchFilters") return null;
+  if (config.widget === 'chips') {
+    if (config.bind.kind !== 'searchFilters') return null;
     const bindKey = config.bind.key;
     const { options, formatChipLabel } = config;
     // `bindKey` is `keyof SearchFilters` (values `string | string[]`); this
@@ -311,15 +311,15 @@ export default function ColumnDrawerSection({
       <Accordion expanded={isExpanded} onChange={onAccordionChange(panelId)}>
         {summary(selected.length > 0 ? ` (${selected.length} selected)` : undefined)}
         <StyledAccordionDetails>
-          <Box className={styles["chip-container"]}>
+          <Box className={styles['chip-container']}>
             {options.map((option) => (
               <Chip
                 key={option}
                 label={formatChipLabel ? formatChipLabel(option) : option}
                 size="small"
                 onClick={() => toggle(option)}
-                color={selected.includes(option) ? "primary" : "default"}
-                variant={selected.includes(option) ? "filled" : "outlined"}
+                color={selected.includes(option) ? 'primary' : 'default'}
+                variant={selected.includes(option) ? 'filled' : 'outlined'}
               />
             ))}
           </Box>
@@ -329,8 +329,8 @@ export default function ColumnDrawerSection({
   }
 
   // numberRange — e.g. Price Range (two numeric inputs with optional adornment).
-  if (config.widget === "numberRange") {
-    if (config.bind.kind !== "userSettingsRange") return null;
+  if (config.widget === 'numberRange') {
+    if (config.bind.kind !== 'userSettingsRange') return null;
     const { minKey, maxKey } = config.bind;
     // `minKey`/`maxKey` are `keyof UserSettings` (a heterogeneous interface);
     // this widget only binds them to the numeric range settings.
@@ -339,7 +339,7 @@ export default function ColumnDrawerSection({
     // Resolve the `"currency"` sentinel at render time so the symbol follows
     // the user's current currency setting (USD → "$", EUR → "€", etc.).
     const adornment =
-      config.adornment === "currency"
+      config.adornment === 'currency'
         ? userSettings.currency
           ? CURRENCY_SYMBOL_MAP[userSettings.currency]
           : undefined
@@ -349,10 +349,10 @@ export default function ColumnDrawerSection({
       minValue != null || maxValue != null
         ? ` (${
             minValue != null && maxValue != null
-              ? `${adornment ?? ""}${minValue} - ${adornment ?? ""}${maxValue}`
+              ? `${adornment ?? ''}${minValue} - ${adornment ?? ''}${maxValue}`
               : minValue != null
-                ? `min ${adornment ?? ""}${minValue}`
-                : `max ${adornment ?? ""}${maxValue}`
+                ? `min ${adornment ?? ''}${minValue}`
+                : `max ${adornment ?? ''}${maxValue}`
           })`
         : undefined;
 
@@ -365,12 +365,12 @@ export default function ColumnDrawerSection({
       <Accordion expanded={isExpanded} onChange={onAccordionChange(panelId)}>
         {summary(hint)}
         <StyledAccordionDetails>
-          <Box sx={{ display: "flex", gap: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2 }}>
             <TextField
-              label={i18n("drawer_range_min")}
+              label={i18n('drawer_range_min')}
               type="number"
               size="small"
-              value={minValue ?? ""}
+              value={minValue ?? ''}
               onChange={handleNumberChange(minKey)}
               slotProps={{
                 input: adornment
@@ -382,10 +382,10 @@ export default function ColumnDrawerSection({
               }}
             />
             <TextField
-              label={i18n("drawer_range_max")}
+              label={i18n('drawer_range_max')}
               type="number"
               size="small"
-              value={maxValue ?? ""}
+              value={maxValue ?? ''}
               onChange={handleNumberChange(maxKey)}
               slotProps={{
                 input: adornment

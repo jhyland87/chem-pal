@@ -1,12 +1,12 @@
-import { i18n } from "@/helpers/i18n";
-import type { Migration } from "@/migrations/types";
-import Alert from "@mui/material/Alert";
-import Button from "@mui/material/Button";
-import Modal from "@mui/material/Modal";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import styles from "./MigrationPrompt.module.scss";
-import { AboutModalBox } from "./StyledComponents";
+import { i18n } from '@/helpers/i18n';
+import type { Migration } from '@/migrations/types';
+import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
+import Modal from '@mui/material/Modal';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import styles from './MigrationPrompt.module.scss';
+import { AboutModalBox } from './StyledComponents';
 
 /**
  * Props for {@link MigrationPrompt}.
@@ -62,24 +62,24 @@ export function MigrationPrompt({
       aria-labelledby="migration-title"
       aria-describedby="migration-body"
     >
-      <AboutModalBox className={styles["migration-box"]}>
+      <AboutModalBox className={styles['migration-box']}>
         <Typography
           id="migration-title"
           variant="h6"
           component="h2"
-          className={styles["migration-title"]}
+          className={styles['migration-title']}
           gutterBottom
         >
-          {i18n("migration_title")}
+          {i18n('migration_title')}
         </Typography>
         <Typography id="migration-body" variant="body2" gutterBottom>
-          {i18n("migration_body")}
+          {i18n('migration_body')}
         </Typography>
 
-        <Stack className={styles["migration-steps"]} spacing={0.5}>
+        <Stack className={styles['migration-steps']} spacing={0.5}>
           {steps.map((step) => (
             <Typography key={`${step.from}-${step.to}`} variant="caption" color="text.secondary">
-              {i18n("migration_step", [step.from, step.to, step.description])}
+              {i18n('migration_step', [step.from, step.to, step.description])}
             </Typography>
           ))}
         </Stack>
@@ -94,10 +94,10 @@ export function MigrationPrompt({
           direction="row"
           spacing={1}
           justifyContent="flex-end"
-          className={styles["migration-actions"]}
+          className={styles['migration-actions']}
         >
           <Button data-testid="migration-cancel" onClick={onCancel} disabled={busy} color="inherit">
-            {i18n("migration_cancel")}
+            {i18n('migration_cancel')}
           </Button>
           <Button
             data-testid="migration-apply"
@@ -105,7 +105,7 @@ export function MigrationPrompt({
             disabled={busy}
             variant="contained"
           >
-            {i18n("migration_apply")}
+            {i18n('migration_apply')}
           </Button>
         </Stack>
       </AboutModalBox>

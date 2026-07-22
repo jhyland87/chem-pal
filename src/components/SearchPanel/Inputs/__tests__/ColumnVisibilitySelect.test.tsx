@@ -1,23 +1,23 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import ColumnVisibilitySelect from "../ColumnVisibilitySelect";
+import { fireEvent, render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import ColumnVisibilitySelect from '../ColumnVisibilitySelect';
 
-describe("ColumnVisibilitySelect", () => {
+describe('ColumnVisibilitySelect', () => {
   const mockColumnNames = {
-    id: "ID",
-    name: "Name",
-    price: "Price",
-    quantity: "Quantity",
+    id: 'ID',
+    name: 'Name',
+    price: 'Price',
+    quantity: 'Quantity',
   };
 
-  const mockColumnVisibility = ["id", "name"];
+  const mockColumnVisibility = ['id', 'name'];
   const mockHandleColumnVisibilityChange = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("renders with correct options", () => {
+  it('renders with correct options', () => {
     render(
       <ColumnVisibilitySelect
         columnNames={mockColumnNames}
@@ -27,15 +27,15 @@ describe("ColumnVisibilitySelect", () => {
     );
 
     // Check that all column names are rendered as list items
-    expect(screen.getByText("ID")).toBeInTheDocument();
-    expect(screen.getByText("Name")).toBeInTheDocument();
-    expect(screen.getByText("Price")).toBeInTheDocument();
-    expect(screen.getByText("Quantity")).toBeInTheDocument();
+    expect(screen.getByText('ID')).toBeInTheDocument();
+    expect(screen.getByText('Name')).toBeInTheDocument();
+    expect(screen.getByText('Price')).toBeInTheDocument();
+    expect(screen.getByText('Quantity')).toBeInTheDocument();
     // Defaults option should also be present
-    expect(screen.getByText("Defaults")).toBeInTheDocument();
+    expect(screen.getByText('Defaults')).toBeInTheDocument();
   });
 
-  it("shows checked checkboxes for visible columns", () => {
+  it('shows checked checkboxes for visible columns', () => {
     render(
       <ColumnVisibilitySelect
         columnNames={mockColumnNames}
@@ -45,19 +45,19 @@ describe("ColumnVisibilitySelect", () => {
     );
 
     // Visible columns should have checked checkboxes
-    const idCheckbox = screen.getByRole("checkbox", { name: "ID" });
-    const nameCheckbox = screen.getByRole("checkbox", { name: "Name" });
+    const idCheckbox = screen.getByRole('checkbox', { name: 'ID' });
+    const nameCheckbox = screen.getByRole('checkbox', { name: 'Name' });
     expect(idCheckbox).toBeChecked();
     expect(nameCheckbox).toBeChecked();
 
     // Non-visible columns should be unchecked
-    const priceCheckbox = screen.getByRole("checkbox", { name: "Price" });
-    const quantityCheckbox = screen.getByRole("checkbox", { name: "Quantity" });
+    const priceCheckbox = screen.getByRole('checkbox', { name: 'Price' });
+    const quantityCheckbox = screen.getByRole('checkbox', { name: 'Quantity' });
     expect(priceCheckbox).not.toBeChecked();
     expect(quantityCheckbox).not.toBeChecked();
   });
 
-  it("calls handleColumnVisibilityChange when clicking a column", () => {
+  it('calls handleColumnVisibilityChange when clicking a column', () => {
     render(
       <ColumnVisibilitySelect
         columnNames={mockColumnNames}
@@ -67,14 +67,14 @@ describe("ColumnVisibilitySelect", () => {
     );
 
     // Click on "Price" to toggle it
-    fireEvent.click(screen.getByText("Price"));
+    fireEvent.click(screen.getByText('Price'));
 
     expect(mockHandleColumnVisibilityChange).toHaveBeenCalledTimes(1);
     const event = mockHandleColumnVisibilityChange.mock.calls[0][0];
-    expect(event.target.value).toContain("price");
+    expect(event.target.value).toContain('price');
   });
 
-  it("handles empty column names", () => {
+  it('handles empty column names', () => {
     render(
       <ColumnVisibilitySelect
         columnNames={{}}
@@ -84,11 +84,11 @@ describe("ColumnVisibilitySelect", () => {
     );
 
     // Only the "Defaults" item should be rendered
-    expect(screen.getByText("Defaults")).toBeInTheDocument();
-    expect(screen.queryByText("ID")).not.toBeInTheDocument();
+    expect(screen.getByText('Defaults')).toBeInTheDocument();
+    expect(screen.queryByText('ID')).not.toBeInTheDocument();
   });
 
-  it("handles empty column visibility", () => {
+  it('handles empty column visibility', () => {
     render(
       <ColumnVisibilitySelect
         columnNames={mockColumnNames}
@@ -98,10 +98,10 @@ describe("ColumnVisibilitySelect", () => {
     );
 
     // All column checkboxes should be unchecked
-    const idCheckbox = screen.getByRole("checkbox", { name: "ID" });
-    const nameCheckbox = screen.getByRole("checkbox", { name: "Name" });
-    const priceCheckbox = screen.getByRole("checkbox", { name: "Price" });
-    const quantityCheckbox = screen.getByRole("checkbox", { name: "Quantity" });
+    const idCheckbox = screen.getByRole('checkbox', { name: 'ID' });
+    const nameCheckbox = screen.getByRole('checkbox', { name: 'Name' });
+    const priceCheckbox = screen.getByRole('checkbox', { name: 'Price' });
+    const quantityCheckbox = screen.getByRole('checkbox', { name: 'Quantity' });
     expect(idCheckbox).not.toBeChecked();
     expect(nameCheckbox).not.toBeChecked();
     expect(priceCheckbox).not.toBeChecked();

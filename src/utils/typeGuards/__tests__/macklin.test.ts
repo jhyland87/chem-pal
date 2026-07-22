@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import productInfoFixture from "@/suppliers/__fixtures__/macklin/product-info.json";
+import { describe, expect, it } from 'vitest';
+import productInfoFixture from '@/suppliers/__fixtures__/macklin/product-info.json';
 import {
   ApiEndpoints,
   AuthRequiredEndpoints,
@@ -12,31 +12,31 @@ import {
   isMacklinProductInfo,
   isMacklinSearchResult,
   isTimestampResponse,
-} from "../macklin";
+} from '../macklin';
 
-describe("Macklin TypeGuards", () => {
-  describe("isTimestampResponse", () => {
+describe('Macklin TypeGuards', () => {
+  describe('isTimestampResponse', () => {
     const validResponse = {
       timestamp: 1748793383,
     };
 
-    it("should return true for a valid timestamp response", () => {
+    it('should return true for a valid timestamp response', () => {
       expect(isTimestampResponse(validResponse)).toBe(true);
     });
 
-    it("should return false for null", () => {
+    it('should return false for null', () => {
       expect(isTimestampResponse(null)).toBe(false);
     });
 
-    it("should return false for non-object values", () => {
+    it('should return false for non-object values', () => {
       const nonObjectValues = [
-        "not an object",
+        'not an object',
         123,
         true,
         false,
         undefined,
         () => {},
-        Symbol("timestamp"),
+        Symbol('timestamp'),
         [],
       ];
 
@@ -45,46 +45,46 @@ describe("Macklin TypeGuards", () => {
       });
     });
 
-    it("should return false for objects missing timestamp property", () => {
+    it('should return false for objects missing timestamp property', () => {
       const noTimestamp = {};
       expect(isTimestampResponse(noTimestamp)).toBe(false);
     });
 
-    it("should return false for objects with non-numeric timestamp", () => {
+    it('should return false for objects with non-numeric timestamp', () => {
       const invalidTimestamp = {
-        timestamp: "1748793383", // Should be number
+        timestamp: '1748793383', // Should be number
       };
       expect(isTimestampResponse(invalidTimestamp)).toBe(false);
     });
   });
 
-  describe("isMacklinApiResponse", () => {
+  describe('isMacklinApiResponse', () => {
     const validResponse = {
       code: 200,
-      message: "Success",
+      message: 'Success',
       data: {
         // Any data type is allowed
-        someData: "value",
+        someData: 'value',
       },
     };
 
-    it("should return true for a valid API response", () => {
+    it('should return true for a valid API response', () => {
       expect(isMacklinApiResponse(validResponse)).toBe(true);
     });
 
-    it("should return false for null", () => {
+    it('should return false for null', () => {
       expect(isMacklinApiResponse(null)).toBe(false);
     });
 
-    it("should return false for non-object values", () => {
+    it('should return false for non-object values', () => {
       const nonObjectValues = [
-        "not an object",
+        'not an object',
         123,
         true,
         false,
         undefined,
         () => {},
-        Symbol("response"),
+        Symbol('response'),
         [],
       ];
 
@@ -93,11 +93,11 @@ describe("Macklin TypeGuards", () => {
       });
     });
 
-    it("should return false for objects missing required properties", () => {
+    it('should return false for objects missing required properties', () => {
       const missingProps = [
         {
           // Missing code
-          message: "Success",
+          message: 'Success',
           data: {},
         },
         {
@@ -107,7 +107,7 @@ describe("Macklin TypeGuards", () => {
         },
         {
           code: 200,
-          message: "Success",
+          message: 'Success',
           // Missing data
         },
         {
@@ -120,11 +120,11 @@ describe("Macklin TypeGuards", () => {
       });
     });
 
-    it("should return false for objects with wrong property types", () => {
+    it('should return false for objects with wrong property types', () => {
       const wrongTypes = [
         {
-          code: "200", // Should be number
-          message: "Success",
+          code: '200', // Should be number
+          message: 'Success',
           data: {},
         },
         {
@@ -140,25 +140,25 @@ describe("Macklin TypeGuards", () => {
     });
   });
 
-  describe("isAuthRequiredEndpoint", () => {
-    it("should return true for auth required endpoints", () => {
+  describe('isAuthRequiredEndpoint', () => {
+    it('should return true for auth required endpoints', () => {
       Object.values(AuthRequiredEndpoints).forEach((endpoint) => {
         expect(isAuthRequiredEndpoint(endpoint)).toBe(true);
       });
     });
 
-    it("should return false for non-auth required endpoints", () => {
+    it('should return false for non-auth required endpoints', () => {
       const nonAuthEndpoints = [
-        "/api/timestamp",
-        "/api/item/search",
-        "/api/user/info",
-        "/api/fruit/head",
-        "/api/favourite/add",
-        "/api/fruit/add",
-        "/api/quick/buy",
-        "/invalid/endpoint",
-        "",
-        "not a url",
+        '/api/timestamp',
+        '/api/item/search',
+        '/api/user/info',
+        '/api/fruit/head',
+        '/api/favourite/add',
+        '/api/fruit/add',
+        '/api/quick/buy',
+        '/invalid/endpoint',
+        '',
+        'not a url',
       ];
 
       nonAuthEndpoints.forEach((endpoint) => {
@@ -167,8 +167,8 @@ describe("Macklin TypeGuards", () => {
     });
   });
 
-  describe("isAuthCheckEndpoint", () => {
-    it("should return true for auth check endpoints", () => {
+  describe('isAuthCheckEndpoint', () => {
+    it('should return true for auth check endpoints', () => {
       const authCheckEndpoints = [
         ApiEndpoints.USER_INFO,
         ApiEndpoints.FRUIT_HEAD,
@@ -181,14 +181,14 @@ describe("Macklin TypeGuards", () => {
       });
     });
 
-    it("should return false for non-auth check endpoints", () => {
+    it('should return false for non-auth check endpoints', () => {
       const nonAuthCheckEndpoints = [
         ApiEndpoints.TIMESTAMP,
         ApiEndpoints.SEARCH,
         ApiEndpoints.QUICK_BUY,
-        "/invalid/endpoint",
-        "",
-        "not a url",
+        '/invalid/endpoint',
+        '',
+        'not a url',
       ];
 
       nonAuthCheckEndpoints.forEach((endpoint) => {
@@ -197,34 +197,34 @@ describe("Macklin TypeGuards", () => {
     });
   });
 
-  describe("isMacklinSearchResult", () => {
+  describe('isMacklinSearchResult', () => {
     const validSearchResult = {
       list: [
         {
           // Any item type is allowed
           id: 1,
-          name: "Product 1",
+          name: 'Product 1',
         },
       ],
     };
 
-    it("should return true for a valid search result", () => {
+    it('should return true for a valid search result', () => {
       expect(isMacklinSearchResult(validSearchResult)).toBe(true);
     });
 
-    it("should return false for null", () => {
+    it('should return false for null', () => {
       expect(isMacklinSearchResult(null)).toBe(false);
     });
 
-    it("should return false for non-object values", () => {
+    it('should return false for non-object values', () => {
       const nonObjectValues = [
-        "not an object",
+        'not an object',
         123,
         true,
         false,
         undefined,
         () => {},
-        Symbol("searchResult"),
+        Symbol('searchResult'),
         [],
       ];
 
@@ -233,19 +233,19 @@ describe("Macklin TypeGuards", () => {
       });
     });
 
-    it("should return false for objects missing list property", () => {
+    it('should return false for objects missing list property', () => {
       const noList = {};
       expect(isMacklinSearchResult(noList)).toBe(false);
     });
 
-    it("should return false for objects with non-object list", () => {
+    it('should return false for objects with non-object list', () => {
       const invalidList = {
-        list: "not an object", // Should be object
+        list: 'not an object', // Should be object
       };
       expect(isMacklinSearchResult(invalidList)).toBe(false);
     });
 
-    it("should return false for objects with null list", () => {
+    it('should return false for objects with null list', () => {
       const nullList = {
         list: null,
       };
@@ -253,43 +253,43 @@ describe("Macklin TypeGuards", () => {
     });
   });
 
-  describe("isMacklinProductDetailsResponse", () => {
+  describe('isMacklinProductDetailsResponse', () => {
     const validProductDetails = {
       item_id: 123,
-      item_code: "ABC123",
+      item_code: 'ABC123',
       product_id: 456,
-      product_code: "PROD456",
-      product_price: "29.99",
-      product_unit: "g",
-      product_locked_stock: "0",
-      product_pack: "500",
-      item_en_name: "Sodium Chloride",
-      product_stock: "100",
-      chem_cas: "7647-14-5",
-      delivery_desc_show: "In stock",
+      product_code: 'PROD456',
+      product_price: '29.99',
+      product_unit: 'g',
+      product_locked_stock: '0',
+      product_pack: '500',
+      item_en_name: 'Sodium Chloride',
+      product_stock: '100',
+      chem_cas: '7647-14-5',
+      delivery_desc_show: 'In stock',
     };
 
     const validResponse = {
       list: [validProductDetails],
     };
 
-    it("should return true for a valid product details response", () => {
+    it('should return true for a valid product details response', () => {
       expect(isMacklinProductDetailsResponse(validResponse)).toBe(true);
     });
 
-    it("should return false for null", () => {
+    it('should return false for null', () => {
       expect(isMacklinProductDetailsResponse(null)).toBe(false);
     });
 
-    it("should return false for non-object values", () => {
+    it('should return false for non-object values', () => {
       const nonObjectValues = [
-        "not an object",
+        'not an object',
         123,
         true,
         false,
         undefined,
         () => {},
-        Symbol("response"),
+        Symbol('response'),
         [],
       ];
 
@@ -298,31 +298,31 @@ describe("Macklin TypeGuards", () => {
       });
     });
 
-    it("should return false for objects missing list property", () => {
+    it('should return false for objects missing list property', () => {
       const noList = {};
       expect(isMacklinProductDetailsResponse(noList)).toBe(false);
     });
 
-    it("should return false for objects with non-array list", () => {
+    it('should return false for objects with non-array list', () => {
       const invalidList = {
-        list: "not an array", // Should be array
+        list: 'not an array', // Should be array
       };
       expect(isMacklinProductDetailsResponse(invalidList)).toBe(false);
     });
 
-    it("should return false for objects with null list", () => {
+    it('should return false for objects with null list', () => {
       const nullList = {
         list: null,
       };
       expect(isMacklinProductDetailsResponse(nullList)).toBe(false);
     });
 
-    it("should return false for objects with invalid items in list", () => {
+    it('should return false for objects with invalid items in list', () => {
       const invalidItems = {
         list: [
           {
             // Invalid product details
-            item_id: "123", // Should be number
+            item_id: '123', // Should be number
           },
         ],
       };
@@ -330,39 +330,39 @@ describe("Macklin TypeGuards", () => {
     });
   });
 
-  describe("isMacklinProductDetails", () => {
+  describe('isMacklinProductDetails', () => {
     const validProductDetails = {
       item_id: 123,
-      item_code: "ABC123",
+      item_code: 'ABC123',
       product_id: 456,
-      product_code: "PROD456",
-      product_price: "29.99",
-      product_unit: "g",
-      product_locked_stock: "0",
-      product_pack: "500",
-      item_en_name: "Sodium Chloride",
-      product_stock: "100",
-      chem_cas: "7647-14-5",
-      delivery_desc_show: "In stock",
+      product_code: 'PROD456',
+      product_price: '29.99',
+      product_unit: 'g',
+      product_locked_stock: '0',
+      product_pack: '500',
+      item_en_name: 'Sodium Chloride',
+      product_stock: '100',
+      chem_cas: '7647-14-5',
+      delivery_desc_show: 'In stock',
     };
 
-    it("should return true for valid product details", () => {
+    it('should return true for valid product details', () => {
       expect(isMacklinProductDetails(validProductDetails)).toBe(true);
     });
 
-    it("should return false for null", () => {
+    it('should return false for null', () => {
       expect(isMacklinProductDetails(null)).toBe(false);
     });
 
-    it("should return false for non-object values", () => {
+    it('should return false for non-object values', () => {
       const nonObjectValues = [
-        "not an object",
+        'not an object',
         123,
         true,
         false,
         undefined,
         () => {},
-        Symbol("productDetails"),
+        Symbol('productDetails'),
         [],
       ];
 
@@ -371,35 +371,35 @@ describe("Macklin TypeGuards", () => {
       });
     });
 
-    it("should return false for objects missing required properties", () => {
+    it('should return false for objects missing required properties', () => {
       const missingProps = [
         {
           // Missing item_id
-          item_code: "ABC123",
+          item_code: 'ABC123',
           product_id: 456,
-          product_code: "PROD456",
-          product_price: "29.99",
-          product_unit: "g",
-          product_locked_stock: "0",
-          product_pack: "500",
-          item_en_name: "Sodium Chloride",
-          product_stock: "100",
-          chem_cas: "7647-14-5",
-          delivery_desc_show: "In stock",
+          product_code: 'PROD456',
+          product_price: '29.99',
+          product_unit: 'g',
+          product_locked_stock: '0',
+          product_pack: '500',
+          item_en_name: 'Sodium Chloride',
+          product_stock: '100',
+          chem_cas: '7647-14-5',
+          delivery_desc_show: 'In stock',
         },
         {
           item_id: 123,
           // Missing item_code
           product_id: 456,
-          product_code: "PROD456",
-          product_price: "29.99",
-          product_unit: "g",
-          product_locked_stock: "0",
-          product_pack: "500",
-          item_en_name: "Sodium Chloride",
-          product_stock: "100",
-          chem_cas: "7647-14-5",
-          delivery_desc_show: "In stock",
+          product_code: 'PROD456',
+          product_price: '29.99',
+          product_unit: 'g',
+          product_locked_stock: '0',
+          product_pack: '500',
+          item_en_name: 'Sodium Chloride',
+          product_stock: '100',
+          chem_cas: '7647-14-5',
+          delivery_desc_show: 'In stock',
         },
         // ... and so on for each required property
       ];
@@ -409,11 +409,11 @@ describe("Macklin TypeGuards", () => {
       });
     });
 
-    it("should return false for objects with wrong property types", () => {
+    it('should return false for objects with wrong property types', () => {
       const wrongTypes = [
         {
           ...validProductDetails,
-          item_id: "123", // Should be number
+          item_id: '123', // Should be number
         },
         {
           ...validProductDetails,
@@ -421,7 +421,7 @@ describe("Macklin TypeGuards", () => {
         },
         {
           ...validProductDetails,
-          product_id: "456", // Should be number
+          product_id: '456', // Should be number
         },
         // ... and so on for each property
       ];
@@ -431,7 +431,7 @@ describe("Macklin TypeGuards", () => {
       });
     });
 
-    it("should return false for objects with null or undefined property values", () => {
+    it('should return false for objects with null or undefined property values', () => {
       const nullProps = [
         {
           ...validProductDetails,
@@ -450,15 +450,15 @@ describe("Macklin TypeGuards", () => {
     });
   });
 
-  describe("isMacklinMsdsSearchResponse", () => {
-    it("returns true for the unwrapped success data payload (has url)", () => {
+  describe('isMacklinMsdsSearchResponse', () => {
+    it('returns true for the unwrapped success data payload (has url)', () => {
       const success = {
-        url: "https://www.macklin.cn/pdf/msds/download?lang=en&id=23884&item_id=819228&chem_cas=33725-74-5",
+        url: 'https://www.macklin.cn/pdf/msds/download?lang=en&id=23884&item_id=819228&chem_cas=33725-74-5',
       };
       expect(isMacklinMsdsSearchResponse(success)).toBe(true);
     });
 
-    it("returns false for error payloads (data is an empty array) and bad shapes", () => {
+    it('returns false for error payloads (data is an empty array) and bad shapes', () => {
       const errors = [
         [], // error responses unwrap to data: []
         null,
@@ -472,13 +472,13 @@ describe("Macklin TypeGuards", () => {
     });
   });
 
-  describe("isMacklinProductInfo", () => {
-    it("returns true for the real product-info data payload (has item.chem_mw)", () => {
+  describe('isMacklinProductInfo', () => {
+    it('returns true for the real product-info data payload (has item.chem_mw)', () => {
       // request<T> unwraps the envelope, so the guard validates `data`.
       expect(isMacklinProductInfo(productInfoFixture.data)).toBe(true);
     });
 
-    it("returns false when item or chem_mw is missing", () => {
+    it('returns false when item or chem_mw is missing', () => {
       const invalid = [
         null,
         undefined,

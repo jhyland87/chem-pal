@@ -1,6 +1,6 @@
-import { CACHE } from "@/constants/common";
-import { cstorage } from "@/utils/storage";
-import { useCallback, useEffect, useState, FormEvent } from "react";
+import { CACHE } from '@/constants/common';
+import { cstorage } from '@/utils/storage';
+import { useCallback, useEffect, useState, FormEvent } from 'react';
 
 /**
  * Return type for the useSearchInput hook.
@@ -49,7 +49,7 @@ interface UseSearchInputReturn {
  * @source
  */
 export function useSearchInput(): UseSearchInputReturn {
-  const [searchInputValue, setSearchInputValue] = useState<string>("");
+  const [searchInputValue, setSearchInputValue] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Load the search input from Chrome storage on component mount
@@ -61,7 +61,7 @@ export function useSearchInput(): UseSearchInputReturn {
           setSearchInputValue(data[CACHE.SEARCH_INPUT]);
         }
       } catch (error) {
-        console.warn("Failed to load search input from Chrome storage:", error);
+        console.warn('Failed to load search input from Chrome storage:', error);
       }
     };
     loadSearchInput();
@@ -80,9 +80,9 @@ export function useSearchInput(): UseSearchInputReturn {
     // Save to Chrome storage
     try {
       await cstorage.session.set({ [CACHE.SEARCH_INPUT]: value });
-      console.log("searchInput saved as:", value);
+      console.log('searchInput saved as:', value);
     } catch (error) {
-      console.error("Failed to save search input:", error);
+      console.error('Failed to save search input:', error);
     }
   }, []);
 

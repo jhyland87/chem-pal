@@ -18,49 +18,49 @@ import {
   putPriceSeries,
   putSupplierProductDataCacheEntry,
   setSearchResults,
-} from "@/utils/idbCache";
-import { maxExportEntries } from "@/../config.json";
-import { Logger } from "@/utils/Logger";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+} from '@/utils/idbCache';
+import { maxExportEntries } from '@/../config.json';
+import { Logger } from '@/utils/Logger';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const product = (fields: Partial<Product>): Product => fields as unknown as Product;
 
-describe("findDuplicateProductIds", () => {
-  it("returns an empty list when every product is unique", () => {
-    expect(findDuplicateProductIds([product({ id: "P1" }), product({ id: "P2" })])).toEqual([]);
+describe('findDuplicateProductIds', () => {
+  it('returns an empty list when every product is unique', () => {
+    expect(findDuplicateProductIds([product({ id: 'P1' }), product({ id: 'P2' })])).toEqual([]);
   });
 
-  it("reports duplicates keyed off the real product id, not the positional _id", () => {
+  it('reports duplicates keyed off the real product id, not the positional _id', () => {
     const duplicates = findDuplicateProductIds([
-      product({ id: "P1", _id: 0 }),
-      product({ id: "P1", _id: 1 }),
-      product({ id: "P2", _id: 2 }),
+      product({ id: 'P1', _id: 0 }),
+      product({ id: 'P1', _id: 1 }),
+      product({ id: 'P2', _id: 2 }),
     ]);
 
-    expect(duplicates).toEqual(["id:P1"]);
+    expect(duplicates).toEqual(['id:P1']);
   });
 
-  it("keys off cacheKey when present, ignoring _id", () => {
+  it('keys off cacheKey when present, ignoring _id', () => {
     expect(
       findDuplicateProductIds([
-        product({ cacheKey: "ck1", _id: 0 }),
-        product({ cacheKey: "ck1", _id: 1 }),
+        product({ cacheKey: 'ck1', _id: 0 }),
+        product({ cacheKey: 'ck1', _id: 1 }),
       ]),
-    ).toEqual(["ck:ck1"]);
+    ).toEqual(['ck:ck1']);
   });
 
-  it("falls back to supplier+url when a product has no id or cacheKey", () => {
+  it('falls back to supplier+url when a product has no id or cacheKey', () => {
     const duplicates = findDuplicateProductIds([
-      product({ supplier: "Ambeed", url: "/x" }),
-      product({ supplier: "Ambeed", url: "/x" }),
-      product({ supplier: "Ambeed", url: "/y" }),
+      product({ supplier: 'Ambeed', url: '/x' }),
+      product({ supplier: 'Ambeed', url: '/x' }),
+      product({ supplier: 'Ambeed', url: '/y' }),
     ]);
 
-    expect(duplicates).toEqual(["su:Ambeed:/x"]);
+    expect(duplicates).toEqual(['su:Ambeed:/x']);
   });
 });
 
-describe("setSearchResults duplicate detection", () => {
+describe('setSearchResults duplicate detection', () => {
   beforeEach(async () => {
     await clearSearchResults({ notify: false });
   });
@@ -69,18 +69,18 @@ describe("setSearchResults duplicate detection", () => {
     vi.restoreAllMocks();
   });
 
-  it("stored results from a correct (single) search have unique ids", async () => {
-    const warn = vi.spyOn(Logger.prototype, "warn").mockImplementation(() => {});
-    await setSearchResults([product({ id: "P1", _id: 0 }), product({ id: "P2", _id: 1 })]);
+  it('stored results from a correct (single) search have unique ids', async () => {
+    const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => {});
+    await setSearchResults([product({ id: 'P1', _id: 0 }), product({ id: 'P2', _id: 1 })]);
 
     const ids = (await getSearchResults()).map((p) => p.id);
     expect(new Set(ids).size).toBe(ids.length);
     expect(warn).not.toHaveBeenCalled();
   });
 
-  it("warns — and does NOT silently drop — when duplicates reach storage", async () => {
-    const warn = vi.spyOn(Logger.prototype, "warn").mockImplementation(() => {});
-    const one = [product({ id: "P1", _id: 0 }), product({ id: "P2", _id: 1 })];
+  it('warns — and does NOT silently drop — when duplicates reach storage', async () => {
+    const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => {});
+    const one = [product({ id: 'P1', _id: 0 }), product({ id: 'P2', _id: 1 })];
 
     // A doubled search would persist the same products twice.
     await setSearchResults([...one, ...one]);
@@ -88,11 +88,11 @@ describe("setSearchResults duplicate detection", () => {
     // The duplicates are surfaced, not hidden: storage still reflects the bug so
     // the regression is visible rather than masked by a silent dedupe.
     expect(warn).toHaveBeenCalled();
-    expect((await getSearchResults()).map((p) => p.id)).toEqual(["P1", "P2", "P1", "P2"]);
+    expect((await getSearchResults()).map((p) => p.id)).toEqual(['P1', 'P2', 'P1', 'P2']);
   });
 });
 
-describe("search_results query round-trip", () => {
+describe('search_results query round-trip', () => {
   beforeEach(async () => {
     await clearSearchResults({ notify: false });
   });
@@ -101,54 +101,54 @@ describe("search_results query round-trip", () => {
     vi.restoreAllMocks();
   });
 
-  it("persists the query alongside the results and reads both back", async () => {
-    await setSearchResults([product({ id: "P1", _id: 0 })], "acetone");
+  it('persists the query alongside the results and reads both back', async () => {
+    await setSearchResults([product({ id: 'P1', _id: 0 })], 'acetone');
 
     const record = await getSearchResultsRecord();
-    expect(record.query).toBe("acetone");
-    expect(record.data.map((p) => p.id)).toEqual(["P1"]);
+    expect(record.query).toBe('acetone');
+    expect(record.data.map((p) => p.id)).toEqual(['P1']);
   });
 
-  it("returns an undefined query when results are stored without one", async () => {
-    await setSearchResults([product({ id: "P1", _id: 0 })]);
+  it('returns an undefined query when results are stored without one', async () => {
+    await setSearchResults([product({ id: 'P1', _id: 0 })]);
 
     const record = await getSearchResultsRecord();
     expect(record.query).toBeUndefined();
     expect(record.data).toHaveLength(1);
   });
 
-  it("returns empty data and no query when nothing is stored", async () => {
+  it('returns empty data and no query when nothing is stored', async () => {
     const record = await getSearchResultsRecord();
     expect(record).toEqual({ data: [], query: undefined });
   });
 });
 
-describe("deleteSupplierProductDataCacheEntry", () => {
+describe('deleteSupplierProductDataCacheEntry', () => {
   afterEach(async () => {
     await clearSupplierProductDataCache();
   });
 
-  it("removes a single product-detail cache entry, leaving others intact", async () => {
-    await putSupplierProductDataCacheEntry("key-a", { data: { price: 1 }, timestamp: 1 });
-    await putSupplierProductDataCacheEntry("key-b", { data: { price: 2 }, timestamp: 2 });
+  it('removes a single product-detail cache entry, leaving others intact', async () => {
+    await putSupplierProductDataCacheEntry('key-a', { data: { price: 1 }, timestamp: 1 });
+    await putSupplierProductDataCacheEntry('key-b', { data: { price: 2 }, timestamp: 2 });
 
-    await deleteSupplierProductDataCacheEntry("key-a");
+    await deleteSupplierProductDataCacheEntry('key-a');
 
-    expect(await getSupplierProductDataCacheEntry("key-a")).toBeUndefined();
-    expect(await getSupplierProductDataCacheEntry("key-b")).toBeDefined();
+    expect(await getSupplierProductDataCacheEntry('key-a')).toBeUndefined();
+    expect(await getSupplierProductDataCacheEntry('key-b')).toBeDefined();
   });
 
   it("is a no-op for a key that isn't cached", async () => {
-    await expect(deleteSupplierProductDataCacheEntry("missing")).resolves.toBeUndefined();
+    await expect(deleteSupplierProductDataCacheEntry('missing')).resolves.toBeUndefined();
   });
 });
 
-describe("price history store", () => {
+describe('price history store', () => {
   const entry = (id: string, productKey: string, usd: number) => ({
     id,
     productKey,
-    supplier: "Loudwolf",
-    title: "Acetone",
+    supplier: 'Loudwolf',
+    title: 'Acetone',
     points: [{ t: 1, usd }],
     updatedAt: 1,
   });
@@ -157,46 +157,46 @@ describe("price history store", () => {
     await clearPriceHistory();
   });
 
-  it("round-trips a single series by id", async () => {
-    await putPriceSeries(entry("pk-1", "pk-1", 19.99));
-    expect((await getPriceSeries("pk-1"))?.points).toEqual([{ t: 1, usd: 19.99 }]);
+  it('round-trips a single series by id', async () => {
+    await putPriceSeries(entry('pk-1', 'pk-1', 19.99));
+    expect((await getPriceSeries('pk-1'))?.points).toEqual([{ t: 1, usd: 19.99 }]);
   });
 
-  it("returns undefined for a series that was never written", async () => {
-    expect(await getPriceSeries("nope")).toBeUndefined();
+  it('returns undefined for a series that was never written', async () => {
+    expect(await getPriceSeries('nope')).toBeUndefined();
   });
 
   it("fetches a product's base and variant series via the productKey index", async () => {
-    await putPriceSeries(entry("pk-1", "pk-1", 20));
-    await putPriceSeries(entry("pk-1::A", "pk-1", 5));
-    await putPriceSeries(entry("pk-2", "pk-2", 9));
+    await putPriceSeries(entry('pk-1', 'pk-1', 20));
+    await putPriceSeries(entry('pk-1::A', 'pk-1', 5));
+    await putPriceSeries(entry('pk-2', 'pk-2', 9));
 
-    const series = await getPriceSeriesByProduct("pk-1");
-    expect(series.map((s) => s.id).sort()).toEqual(["pk-1", "pk-1::A"]);
+    const series = await getPriceSeriesByProduct('pk-1');
+    expect(series.map((s) => s.id).sort()).toEqual(['pk-1', 'pk-1::A']);
   });
 
-  it("clearPriceHistory empties the store", async () => {
-    await putPriceSeries(entry("pk-1", "pk-1", 20));
+  it('clearPriceHistory empties the store', async () => {
+    await putPriceSeries(entry('pk-1', 'pk-1', 20));
     await clearPriceHistory();
-    expect(await getPriceSeries("pk-1")).toBeUndefined();
+    expect(await getPriceSeries('pk-1')).toBeUndefined();
   });
 
-  it("is preserved by clearAllCaches (price history is user data, not a cache)", async () => {
-    await putPriceSeries(entry("pk-1", "pk-1", 20));
+  it('is preserved by clearAllCaches (price history is user data, not a cache)', async () => {
+    await putPriceSeries(entry('pk-1', 'pk-1', 20));
     await clearAllCaches();
-    expect(await getPriceSeries("pk-1")).toBeDefined();
+    expect(await getPriceSeries('pk-1')).toBeDefined();
   });
 });
 
-describe("result exports store", () => {
+describe('result exports store', () => {
   const exportRecord = (fields: Partial<ExportRecord>): ExportRecord => ({
-    id: "id",
+    id: 'id',
     createdAt: 1,
-    filename: "chempal-export.xlsx",
-    scope: "all",
+    filename: 'chempal-export.xlsx',
+    scope: 'all',
     rowCount: 1,
     sizeBytes: 100,
-    blob: new Blob(["x"]),
+    blob: new Blob(['x']),
     ...fields,
   });
 
@@ -211,14 +211,14 @@ describe("result exports store", () => {
   it("round-trips an export record's metadata", async () => {
     await putExport(
       exportRecord({
-        id: "e1",
+        id: 'e1',
         createdAt: 10,
-        filename: "chempal-export-acetone.xlsx",
-        scope: "filtered",
-        query: "acetone",
+        filename: 'chempal-export-acetone.xlsx',
+        scope: 'filtered',
+        query: 'acetone',
         rowCount: 12,
         sizeBytes: 4096,
-        blob: new Blob(["hello"]),
+        blob: new Blob(['hello']),
       }),
     );
 
@@ -227,25 +227,25 @@ describe("result exports store", () => {
     // fake-indexeddb doesn't preserve Blob identity through structuredClone the
     // way a real browser does, so assert the record metadata rather than the Blob.
     expect(all[0]).toMatchObject({
-      id: "e1",
-      filename: "chempal-export-acetone.xlsx",
-      scope: "filtered",
-      query: "acetone",
+      id: 'e1',
+      filename: 'chempal-export-acetone.xlsx',
+      scope: 'filtered',
+      query: 'acetone',
       rowCount: 12,
       sizeBytes: 4096,
     });
     expect(all[0].blob).toBeDefined();
   });
 
-  it("returns exports newest-first", async () => {
-    await putExport(exportRecord({ id: "old", createdAt: 1 }));
-    await putExport(exportRecord({ id: "new", createdAt: 3 }));
-    await putExport(exportRecord({ id: "mid", createdAt: 2 }));
+  it('returns exports newest-first', async () => {
+    await putExport(exportRecord({ id: 'old', createdAt: 1 }));
+    await putExport(exportRecord({ id: 'new', createdAt: 3 }));
+    await putExport(exportRecord({ id: 'mid', createdAt: 2 }));
 
-    expect((await getAllExports()).map((e) => e.id)).toEqual(["new", "mid", "old"]);
+    expect((await getAllExports()).map((e) => e.id)).toEqual(['new', 'mid', 'old']);
   });
 
-  it("evicts the oldest once the record-count cap is exceeded", async () => {
+  it('evicts the oldest once the record-count cap is exceeded', async () => {
     for (let i = 0; i < maxExportEntries + 2; i++) {
       await putExport(exportRecord({ id: `e${i}`, createdAt: i + 1, sizeBytes: 10 }));
     }
@@ -254,45 +254,45 @@ describe("result exports store", () => {
     expect(all).toHaveLength(maxExportEntries);
     // The two oldest (e0, e1) are gone; the newest survives.
     const ids = all.map((e) => e.id);
-    expect(ids).not.toContain("e0");
-    expect(ids).not.toContain("e1");
+    expect(ids).not.toContain('e0');
+    expect(ids).not.toContain('e1');
     expect(ids).toContain(`e${maxExportEntries + 1}`);
   });
 
-  it("evicts the oldest once the total-size cap is exceeded", async () => {
+  it('evicts the oldest once the total-size cap is exceeded', async () => {
     // sizeBytes is tracked independently of the (tiny) Blob, so we can trip the
     // 25 MB byte cap without allocating real large files.
     const twentyMB = 20 * 1024 * 1024;
-    await putExport(exportRecord({ id: "a", createdAt: 1, sizeBytes: twentyMB }));
-    await putExport(exportRecord({ id: "b", createdAt: 2, sizeBytes: twentyMB }));
+    await putExport(exportRecord({ id: 'a', createdAt: 1, sizeBytes: twentyMB }));
+    await putExport(exportRecord({ id: 'b', createdAt: 2, sizeBytes: twentyMB }));
 
     const all = await getAllExports();
-    expect(all.map((e) => e.id)).toEqual(["b"]);
+    expect(all.map((e) => e.id)).toEqual(['b']);
   });
 
-  it("always keeps the newest export even if it alone exceeds the size cap", async () => {
-    await putExport(exportRecord({ id: "huge", createdAt: 1, sizeBytes: 30 * 1024 * 1024 }));
-    expect((await getAllExports()).map((e) => e.id)).toEqual(["huge"]);
+  it('always keeps the newest export even if it alone exceeds the size cap', async () => {
+    await putExport(exportRecord({ id: 'huge', createdAt: 1, sizeBytes: 30 * 1024 * 1024 }));
+    expect((await getAllExports()).map((e) => e.id)).toEqual(['huge']);
   });
 
-  it("deleteExport removes a single export", async () => {
-    await putExport(exportRecord({ id: "e1", createdAt: 1 }));
-    await putExport(exportRecord({ id: "e2", createdAt: 2 }));
+  it('deleteExport removes a single export', async () => {
+    await putExport(exportRecord({ id: 'e1', createdAt: 1 }));
+    await putExport(exportRecord({ id: 'e2', createdAt: 2 }));
 
-    await deleteExport("e1");
+    await deleteExport('e1');
 
-    expect((await getAllExports()).map((e) => e.id)).toEqual(["e2"]);
+    expect((await getAllExports()).map((e) => e.id)).toEqual(['e2']);
   });
 
-  it("clearExports empties the store", async () => {
-    await putExport(exportRecord({ id: "e1", createdAt: 1 }));
+  it('clearExports empties the store', async () => {
+    await putExport(exportRecord({ id: 'e1', createdAt: 1 }));
     await clearExports();
     expect(await getAllExports()).toEqual([]);
   });
 
-  it("is preserved by clearAllCaches (exports are user data, not a cache)", async () => {
-    await putExport(exportRecord({ id: "e1", createdAt: 1 }));
+  it('is preserved by clearAllCaches (exports are user data, not a cache)', async () => {
+    await putExport(exportRecord({ id: 'e1', createdAt: 1 }));
     await clearAllCaches();
-    expect((await getAllExports()).map((e) => e.id)).toEqual(["e1"]);
+    expect((await getAllExports()).map((e) => e.id)).toEqual(['e1']);
   });
 });

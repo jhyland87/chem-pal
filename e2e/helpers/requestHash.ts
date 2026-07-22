@@ -1,4 +1,4 @@
-import { createHash } from "crypto";
+import { createHash } from 'crypto';
 
 /**
  * Standalone MD5 hash function that matches the logic in `src/helpers/request.ts`'s
@@ -15,11 +15,11 @@ import { createHash } from "crypto";
 export function getRequestHash(
   method: string,
   url: string,
-  body: string = "",
+  body: string = '',
 ): { hash: string; file: string; hostname: string } {
   const parsed = new URL(url);
-  const input = method + (parsed.pathname ?? "") + (parsed.search ?? "") + (body ?? "");
-  const hash = createHash("md5").update(input).digest("hex");
+  const input = method + (parsed.pathname ?? '') + (parsed.search ?? '') + (body ?? '');
+  const hash = createHash('md5').update(input).digest('hex');
 
   return {
     hash,

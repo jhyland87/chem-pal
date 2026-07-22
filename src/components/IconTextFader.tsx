@@ -1,5 +1,5 @@
-import Collapse from "@mui/material/Collapse";
-import { useEffect, useState } from "react";
+import Collapse from '@mui/material/Collapse';
+import { useEffect, useState } from 'react';
 
 /**
  * IconTextFader component that smoothly transitions between an icon and text.
@@ -27,8 +27,8 @@ export default function IconTextFader({ children, text, active }: IconTextFaderP
   return (
     <div
       style={{
-        width: "100%",
-        height: "100%",
+        width: '100%',
+        height: '100%',
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(active)}

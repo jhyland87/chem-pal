@@ -1,5 +1,5 @@
-import { UOM, UOM_ALIASES, type Uom } from "@/constants/common";
-import { isUOM } from "@/utils/typeGuards/common";
+import { UOM, UOM_ALIASES, type Uom } from '@/constants/common';
+import { isUOM } from '@/utils/typeGuards/common';
 
 /**
  * Quantity parsing and unit conversion utilities for handling different units of measurement.
@@ -37,11 +37,11 @@ type UnitConversion = { threshold: number; factor: number; from: string; to: str
  * @group Quantity
  */
 const unitConversions: UnitConversion[] = [
-  { threshold: 1000, factor: 1000, from: "g", to: "kg" },
-  { threshold: 1000, factor: 1000, from: "mg", to: "g" },
-  { threshold: 1000, factor: 1000, from: "kg", to: "t" },
-  { threshold: 1000, factor: 1000, from: "ml", to: "l" },
-  { threshold: 100, factor: 100, from: "cm", to: "m" },
+  { threshold: 1000, factor: 1000, from: 'g', to: 'kg' },
+  { threshold: 1000, factor: 1000, from: 'mg', to: 'g' },
+  { threshold: 1000, factor: 1000, from: 'kg', to: 't' },
+  { threshold: 1000, factor: 1000, from: 'ml', to: 'l' },
+  { threshold: 100, factor: 100, from: 'cm', to: 'm' },
 ];
 
 /**
@@ -96,7 +96,7 @@ export function normalizeQuantity(input: QuantityObject): QuantityObject {
 export function parseQuantity(value: string): QuantityObject | void {
   if (!value) return;
 
-  const quantityPatternRegex = new RegExp(quantityPattern, "i");
+  const quantityPatternRegex = new RegExp(quantityPattern, 'i');
   const quantityMatch = value.match(quantityPatternRegex);
 
   if (!quantityMatch?.groups?.quantity || !quantityMatch?.groups?.uom) return;
@@ -106,13 +106,13 @@ export function parseQuantity(value: string): QuantityObject | void {
   // Handle foreign number formats where commas and decimals are swapped
   if (parsedQuantity.match(/^(\d+\.\d+,\d{1,2}|\d{1,3},\d{1,2}|\d{1,3},\d{1,2})$/))
     parsedQuantity = parsedQuantity
-      .replaceAll(".", "xx")
-      .replaceAll(",", ".")
-      .replaceAll("xx", ",");
+      .replaceAll('.', 'xx')
+      .replaceAll(',', '.')
+      .replaceAll('xx', ',');
 
   const uom = standardizeUom(quantityMatch.groups.uom);
-  const quantity = Number(parsedQuantity.replaceAll(/[,\s]/g, ""));
-  const multiplier = Number(quantityMatch.groups?.multiplier ?? "1");
+  const quantity = Number(parsedQuantity.replaceAll(/[,\s]/g, ''));
+  const multiplier = Number(quantityMatch.groups?.multiplier ?? '1');
 
   if (uom && quantity) return normalizeQuantity({ quantity: quantity * multiplier, uom });
 }
@@ -138,11 +138,11 @@ export function parseQuantity(value: string): QuantityObject | void {
  * @source
  */
 export function stripQuantityFromString(value: string): string {
-  if (!value || typeof value !== "string") return value;
+  if (!value || typeof value !== 'string') return value;
 
-  const quantityPatternRegex = new RegExp(quantityPattern, "ig");
+  const quantityPatternRegex = new RegExp(quantityPattern, 'ig');
 
-  return value.replace(quantityPatternRegex, "").trim();
+  return value.replace(quantityPatternRegex, '').trim();
 }
 
 /**
@@ -194,7 +194,7 @@ export function standardizeUom(uom: string): Uom | void {
  * @source
  */
 export function toBaseQuantity(quantity: number, unit: string): number {
-  if (typeof quantity !== "number") return quantity;
+  if (typeof quantity !== 'number') return quantity;
 
   switch (unit) {
     // Solids, convert all to milligrams
@@ -311,11 +311,11 @@ export function formatUomForDisplay(uom: unknown): string {
   if (!isUOM(uom)) return String(uom);
   switch (uom) {
     case UOM.ML:
-      return "mL";
+      return 'mL';
     case UOM.L:
-      return "L";
+      return 'L';
     case UOM.FLOZ:
-      return "fl oz";
+      return 'fl oz';
     default:
       return String(uom);
   }

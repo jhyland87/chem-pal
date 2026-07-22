@@ -1,18 +1,18 @@
-import { Settings as SettingsIcon } from "@mui/icons-material";
-import { Box, IconButton } from "@mui/material";
-import { FC } from "react";
-import { useNavigate } from "react-router-dom";
-import "../main.scss";
-import { useTheme } from "../themes";
-import { SearchForm } from "./SearchForm";
-import styles from "./SearchPage.module.scss";
-import { SearchContainer } from "./StyledComponents";
-import { ThemeSwitcher } from "./ThemeSwitcher";
+import { Settings as SettingsIcon } from '@mui/icons-material';
+import { Box, IconButton } from '@mui/material';
+import { FC } from 'react';
+import { useNavigate } from 'react-router-dom';
+import '../main.scss';
+import { useTheme } from '../themes';
+import { SearchForm } from './SearchForm';
+import styles from './SearchPage.module.scss';
+import { SearchContainer } from './StyledComponents';
+import { ThemeSwitcher } from './ThemeSwitcher';
 
 /** Landing-page logo served from the extension's static assets (see `public/static/images/logo`). */
-const LIGHT_MODE_LOGO = "/static/images/logo/ChemPal-logo.svg";
+const LIGHT_MODE_LOGO = '/static/images/logo/ChemPal-logo.svg';
 /** Inverted variant used on the dark theme so the badge stays legible. */
-const DARK_MODE_LOGO = "/static/images/logo/ChemPal-logo-inverted.svg";
+const DARK_MODE_LOGO = '/static/images/logo/ChemPal-logo-inverted.svg';
 
 /**
  * Props for {@link SearchPage}.
@@ -32,7 +32,7 @@ interface SearchPageProps {
   onDrawerToggle: () => void;
 }
 
-const isDevelopment = process.env.NODE_ENV === "development";
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 /**
  * The landing/home view: centered logo, the {@link SearchForm}, a settings
@@ -50,22 +50,22 @@ const isDevelopment = process.env.NODE_ENV === "development";
 const SearchPage: FC<SearchPageProps> = ({ onSearch, onDrawerToggle }) => {
   const navigate = useNavigate();
   const { mode } = useTheme();
-  const logo = mode === "light" ? LIGHT_MODE_LOGO : DARK_MODE_LOGO;
+  const logo = mode === 'light' ? LIGHT_MODE_LOGO : DARK_MODE_LOGO;
 
   const handleSearch = (query: string) => {
     onSearch(query);
-    navigate("/results");
+    navigate('/results');
   };
 
-  const containerClass = `search-page__container ${isDevelopment ? "search-page__container--dev" : "search-page__container--production"}`;
-  const logoClass = `search-page__logo ${isDevelopment ? "search-page__logo--dev" : "search-page__logo--production"}`;
-  const wrapperClass = `search-page__search-wrapper ${isDevelopment ? "search-page__search-wrapper--dev" : "search-page__search-wrapper--production"}`;
+  const containerClass = `search-page__container ${isDevelopment ? 'search-page__container--dev' : 'search-page__container--production'}`;
+  const logoClass = `search-page__logo ${isDevelopment ? 'search-page__logo--dev' : 'search-page__logo--production'}`;
+  const wrapperClass = `search-page__search-wrapper ${isDevelopment ? 'search-page__search-wrapper--dev' : 'search-page__search-wrapper--production'}`;
 
   return (
     <SearchContainer className={containerClass}>
       {/* Settings Gear - Top Right */}
       <IconButton
-        className={styles["search-page-settings-button"]}
+        className={styles['search-page-settings-button']}
         onClick={onDrawerToggle}
         size="medium"
       >
@@ -73,7 +73,7 @@ const SearchPage: FC<SearchPageProps> = ({ onSearch, onDrawerToggle }) => {
       </IconButton>
 
       {/* Theme Switcher - Bottom Right */}
-      <Box className={styles["search-page-theme-switcher"]}>
+      <Box className={styles['search-page-theme-switcher']}>
         <ThemeSwitcher />
       </Box>
 

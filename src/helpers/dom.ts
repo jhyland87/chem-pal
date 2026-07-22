@@ -19,7 +19,7 @@
 export function findElementWithText(
   root: HTMLElement,
   searchText: string,
-  elementTag: string = "*",
+  elementTag: string = '*',
 ): HTMLElement | undefined {
   // The "." at the start is crucial—it means "look inside the context node"
   const xpath = `.//${elementTag}[contains(text(), '${searchText}')]`;

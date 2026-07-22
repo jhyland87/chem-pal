@@ -1,12 +1,12 @@
-import { AVAILABILITY, type Availability } from "@/constants/common";
-import { FUZZ_SCORERS, type FuzzScorerFn } from "@/constants/fuzzScorers";
-import { findCAS } from "@/helpers/cas";
-import { parseQuantity } from "@/helpers/quantity";
-import { createDOM } from "@/helpers/request";
-import { firstMap, mapDefined } from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import priceParser from "price-parser";
-import { SupplierBase } from "./SupplierBase";
+import { AVAILABILITY, type Availability } from '@/constants/common';
+import { FUZZ_SCORERS, type FuzzScorerFn } from '@/constants/fuzzScorers';
+import { findCAS } from '@/helpers/cas';
+import { parseQuantity } from '@/helpers/quantity';
+import { createDOM } from '@/helpers/request';
+import { firstMap, mapDefined } from '@/helpers/utils';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import priceParser from 'price-parser';
+import { SupplierBase } from './SupplierBase';
 /**
  * Supplier implementation for Warchem, a Polish based chemical supplier.
  *
@@ -25,20 +25,20 @@ import { SupplierBase } from "./SupplierBase";
  */
 export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> implements ISupplier {
   // Display name of the supplier used for UI and logging
-  public readonly supplierName: string = "Warchem";
+  public readonly supplierName: string = 'Warchem';
 
   // Base URL for all API and web requests to Warchem
-  public readonly baseURL: string = "https://warchem.pl";
+  public readonly baseURL: string = 'https://warchem.pl';
 
   // Shipping scope for Warchem
-  public readonly shipping: ShippingRange = "domestic";
+  public readonly shipping: ShippingRange = 'domestic';
 
   // The country code of the supplier.
   // This is used to determine the currency and other country-specific information.
-  public readonly country: CountryCode = "PL";
+  public readonly country: CountryCode = 'PL';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa", "ach", "cash"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa', 'ach', 'cash'];
 
   // Cached search results from the last query execution
   protected queryResults: Array<Partial<Product>> = [];
@@ -74,14 +74,14 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
    * @source
    */
   protected getUniqueProductKey(data: Element): string {
-    const productId = data.getAttribute("id");
+    const productId = data.getAttribute('id');
     if (productId) {
       return productId;
     }
     const href = data
       .querySelector('div[itemprop="item"] link[itemprop="url"]')
-      ?.getAttribute("href");
-    return this.href(String(href ?? ""));
+      ?.getAttribute('href');
+    return this.href(String(href ?? ''));
   }
 
   /**
@@ -92,7 +92,7 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
    */
   protected async setup(): Promise<void> {
     await this.httpPost({
-      path: "/szukaj.html",
+      path: '/szukaj.html',
       body: {
         ilosc_na_stronie: 36,
       },
@@ -124,32 +124,32 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     const searchRequest = await this.httpGetHtml({
-      path: "/szukaj.html",
+      path: '/szukaj.html',
       params: {
         szukaj: encodeURIComponent(query),
-        opis: "tak",
-        fraza: "nie",
-        nrkat: "nie",
-        kodprod: "nie",
-        ean: "nie",
-        kategoria: "1",
-        podkat: "tak",
+        opis: 'tak',
+        fraza: 'nie',
+        nrkat: 'nie',
+        kodprod: 'nie',
+        ean: 'nie',
+        kategoria: '1',
+        podkat: 'tak',
       },
     });
 
     if (!searchRequest) {
-      this.logger.error("No search response", { query });
+      this.logger.error('No search response', { query });
       return;
     }
 
-    this.logger.log("Received search response", { query, searchRequest });
+    this.logger.log('Received search response', { query, searchRequest });
 
     const fuzzResults = this.fuzzHtmlResponse(query, searchRequest);
 
-    this.logger.info("fuzzResults:", { query, searchRequest, fuzzResults });
+    this.logger.info('fuzzResults:', { query, searchRequest, fuzzResults });
 
     const builders = this.initProductBuilders(fuzzResults.slice(0, limit));
-    this.logger.info("builders:", { query, searchRequest, fuzzResults, builders });
+    this.logger.info('builders:', { query, searchRequest, fuzzResults, builders });
     return builders;
   }
 
@@ -181,17 +181,17 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
     // Create a new DOM to do the travesing/parsing
     const parsedHTML = createDOM(response);
     if (!parsedHTML || parsedHTML === null) {
-      throw new Error("No data found when loading HTML");
+      throw new Error('No data found when loading HTML');
     }
 
     const productContainers = parsedHTML.querySelectorAll(
       // This selector excludes any results that have product restriction warnings, which are stored in the .LiniaOpisu element.
       // All product elements have .LiniaOpisu, but the ones with no restrictions have the nested div with just &nbsp;&nbsp;
       // inside, whereas the ones with restrictions have spans with the restriction text.
-      "div.ListingWierszeKontener > div.Wiersz.LiniaDolna:not(:has(.LiniaOpisu > div > span))",
+      'div.ListingWierszeKontener > div.Wiersz.LiniaDolna:not(:has(.LiniaOpisu > div > span))',
     );
     if (!productContainers || productContainers.length === 0) {
-      this.logger.log("No products found", { query, response, parsedHTML, productContainers });
+      this.logger.log('No products found', { query, response, parsedHTML, productContainers });
       return [];
     }
 
@@ -227,23 +227,23 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
    * @source
    */
   protected initProductBuilders(elements: Element[]): ProductBuilder<Product>[] {
-    this.logger.info("initProductBuilders elements:", { elements });
+    this.logger.info('initProductBuilders elements:', { elements });
     return mapDefined(elements, (element: Element) => {
-      this.logger.info("initProductBuilders mapping element:", { element });
+      this.logger.info('initProductBuilders mapping element:', { element });
       const builder = new ProductBuilder<Product>(this.baseURL);
 
-      const productId = element.getAttribute("id");
+      const productId = element.getAttribute('id');
 
       const itemDiv = element.querySelector('div[itemprop="item"]');
-      const productName = itemDiv?.querySelector('meta[itemprop="name"]')?.getAttribute("content");
-      const productUrl = itemDiv?.querySelector('link[itemprop="url"]')?.getAttribute("href");
+      const productName = itemDiv?.querySelector('meta[itemprop="name"]')?.getAttribute('content');
+      const productUrl = itemDiv?.querySelector('link[itemprop="url"]')?.getAttribute('href');
 
       if (!productName) {
-        this.logger.error("No product name for product", { element });
+        this.logger.error('No product name for product', { element });
         return;
       }
       if (!productUrl) {
-        this.logger.error("No product URL for product", { element });
+        this.logger.error('No product URL for product', { element });
         return;
       }
 
@@ -251,16 +251,16 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
         .setBasicInfo(productName, productUrl, this.supplierName)
         .setID(productId)
         .setCacheKey(this.getUniqueProductKey(element))
-        .setImage(itemDiv?.querySelector('link[itemprop="image"]')?.getAttribute("href"))
-        .setSku(itemDiv?.querySelector('meta[itemprop="sku"]')?.getAttribute("content"))
+        .setImage(itemDiv?.querySelector('link[itemprop="image"]')?.getAttribute('href'))
+        .setSku(itemDiv?.querySelector('meta[itemprop="sku"]')?.getAttribute('content'))
         .setAvailability(
           this.getAvailabilityFromLink(
-            itemDiv?.querySelector('link[itemprop="availability"]')?.getAttribute("href") ?? "",
+            itemDiv?.querySelector('link[itemprop="availability"]')?.getAttribute('href') ?? '',
           ),
         )
-        .setPrice(itemDiv?.querySelector('meta[itemprop="price"]')?.getAttribute("content") ?? "")
+        .setPrice(itemDiv?.querySelector('meta[itemprop="price"]')?.getAttribute('content') ?? '')
         .setCurrencyCode(
-          itemDiv?.querySelector('meta[itemprop="priceCurrency"]')?.getAttribute("content") ?? "",
+          itemDiv?.querySelector('meta[itemprop="priceCurrency"]')?.getAttribute('content') ?? '',
         );
 
       // const headerElem = element.querySelector("h3 > a");
@@ -269,7 +269,7 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
       //   return;
       // }
 
-      this.logger.info("initProductBuilders setting basic info", {
+      this.logger.info('initProductBuilders setting basic info', {
         productName,
         productUrl,
         builder,
@@ -280,15 +280,15 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
   }
 
   private getAvailabilityFromLink(link: string): Availability {
-    const availability = link.split("/").pop();
+    const availability = link.split('/').pop();
     switch (availability) {
-      case "InStock":
+      case 'InStock':
         return AVAILABILITY.IN_STOCK;
-      case "OutOfStock":
+      case 'OutOfStock':
         return AVAILABILITY.OUT_OF_STOCK;
-      case "PreOrder":
+      case 'PreOrder':
         return AVAILABILITY.PRE_ORDER;
-      case "BackOrder":
+      case 'BackOrder':
         return AVAILABILITY.BACKORDER;
       default:
         return AVAILABILITY.UNKNOWN;
@@ -327,66 +327,66 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
   ): Promise<ProductBuilder<Product> | void> {
     // Meta tags: ['og:title', 'og:description', 'og:type', 'og:url', 'og:image', 'product:price:amount', 'product:price:currency', 'product:availability', 'product:condition', 'product:retailer_item_id']
     return this.getProductDataWithCache(product, async (builder) => {
-      this.logger.debug("Querying data for partialproduct", { builder });
-      if (typeof builder === "undefined") {
-        this.logger.error("No products to get data for", { builder });
+      this.logger.debug('Querying data for partialproduct', { builder });
+      if (typeof builder === 'undefined') {
+        this.logger.error('No products to get data for', { builder });
         return;
       }
 
       const productResponse = await this.httpGetHtml({
-        path: builder.get("url"),
+        path: builder.get('url'),
       });
 
       if (!productResponse) {
-        this.logger.warn("No product response", { builder });
+        this.logger.warn('No product response', { builder });
         return;
       }
 
-      this.logger.debug("productResponse", { builder, productResponse });
+      this.logger.debug('productResponse', { builder, productResponse });
 
       const parsedHTML = createDOM(productResponse);
-      const metaTags = parsedHTML.getElementsByTagName("meta");
+      const metaTags = parsedHTML.getElementsByTagName('meta');
 
       const productMeta = Array.from(metaTags).reduce<Record<string, string>>((acc, meta) => {
-        const property = meta.getAttribute("property");
-        if (typeof property === "string") {
-          acc[property] = meta.getAttribute("content") ?? "";
+        const property = meta.getAttribute('property');
+        if (typeof property === 'string') {
+          acc[property] = meta.getAttribute('content') ?? '';
         }
         return acc;
       }, {});
 
-      this.logger.debug("productMeta", { builder, productMeta });
+      this.logger.debug('productMeta', { builder, productMeta });
 
       // @todo The typing on this seems to be incorrect, will require a global type override
       const priceParsed = priceParser.parseFirst(
-        `${productMeta["product:price:amount"]} ${productMeta["product:price:currency"]}`,
+        `${productMeta['product:price:amount']} ${productMeta['product:price:currency']}`,
       );
 
       product.setCurrencySymbol(priceParsed?.currency?.symbols?.at(0));
 
-      if (productMeta["product:price:amount"]) {
-        product.setPrice(productMeta["product:price:amount"]);
+      if (productMeta['product:price:amount']) {
+        product.setPrice(productMeta['product:price:amount']);
       }
 
-      product.setCurrencyCode(productMeta["product:price:currency"]);
+      product.setCurrencyCode(productMeta['product:price:currency']);
 
-      product.setID(productMeta["product:retailer_item_id"]);
-      product.setDescription(productMeta["og:description"]);
-      product.setImage(productMeta["og:image"]);
+      product.setID(productMeta['product:retailer_item_id']);
+      product.setDescription(productMeta['og:description']);
+      product.setImage(productMeta['og:image']);
 
-      if (productMeta["product:availability"]) {
-        product.setAvailability(productMeta["product:availability"]);
+      if (productMeta['product:availability']) {
+        product.setAvailability(productMeta['product:availability']);
       }
 
       // Sometimes the CAS can be found in the products title or description.
       product.setCAS(
         firstMap(
           (p) => findCAS(p),
-          [productMeta["og:title"], productMeta["og:description"]].filter(Boolean),
+          [productMeta['og:title'], productMeta['og:description']].filter(Boolean),
         ),
       );
 
-      const qtyRaw = parsedHTML.querySelector(".CechaProduktu label span")?.textContent;
+      const qtyRaw = parsedHTML.querySelector('.CechaProduktu label span')?.textContent;
       if (qtyRaw) {
         const qty = parseQuantity(qtyRaw);
         if (qty) {
@@ -400,17 +400,17 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
       // their prices live in the inline `opcje` script + radio inputs.
       const variants = this.parseVariants(productResponse, parsedHTML);
       if (variants.length > 0) {
-        this.logger.info("variants found", { builder, productResponse, parsedHTML, variants });
+        this.logger.info('variants found', { builder, productResponse, parsedHTML, variants });
         product.setVariants(variants);
       } else {
-        this.logger.warn("No variants found", { builder, productResponse, parsedHTML });
+        this.logger.warn('No variants found', { builder, productResponse, parsedHTML });
       }
 
       // The description tab carries a structured spec table with the most
       // reliable CAS, formula, and molar mass for the product.
       this.applyDataTable(product, parsedHTML);
 
-      this.logger.debug("product", product);
+      this.logger.debug('product', product);
       return product;
     });
   }
@@ -441,7 +441,7 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
     this.logger.debug(`Found ${links.length} links when searching for data files`, { links });
 
     for (const link of links) {
-      const href = link.getAttribute("href");
+      const href = link.getAttribute('href');
       const text = link.textContent;
       if (href && text) {
         if (text.match(/\sSJ$/)) {
@@ -481,21 +481,21 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
     this.logger.debug(`Found ${rows.length} rows when searching for data table`, { rows });
 
     for (const row of rows) {
-      const cells = row.querySelectorAll("td");
-      const label = cells[0]?.textContent?.replace(/\s+/g, " ").replace(/:\s*$/, "").trim();
-      const value = cells[1]?.textContent?.replace(/\s+/g, " ").trim();
+      const cells = row.querySelectorAll('td');
+      const label = cells[0]?.textContent?.replace(/\s+/g, ' ').replace(/:\s*$/, '').trim();
+      const value = cells[1]?.textContent?.replace(/\s+/g, ' ').trim();
       if (!label || !value) {
         continue;
       }
 
-      if (label.startsWith("Numer CAS")) {
+      if (label.startsWith('Numer CAS')) {
         // This should override the CAS that may have been set by a match in the title/description
         // if there was one.
         const cas = findCAS(value);
         if (cas) {
-          if (builder.get("cas") && builder.get("cas") !== cas) {
+          if (builder.get('cas') && builder.get('cas') !== cas) {
             this.logger.warn(
-              `There was a CAS # found in the title or description (${builder.get("cas")}), ` +
+              `There was a CAS # found in the title or description (${builder.get('cas')}), ` +
                 `but it differs from the one found in the Numer Cas row of the data ` +
                 `table(${cas}).... Weird. Prioritizing the datatable value.`,
               { builder, datatableCas: cas, parsedCas: value },
@@ -503,13 +503,13 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
           }
           builder.setCAS(cas);
         }
-      } else if (label.startsWith("Wzór chemiczny")) {
+      } else if (label.startsWith('Wzór chemiczny')) {
         // The table value is already display-formatted (unicode subscripts and
         // hydrate notation), so store it verbatim rather than re-parsing it.
         builder.setData({ formula: value });
-      } else if (label.startsWith("Masa molowa")) {
+      } else if (label.startsWith('Masa molowa')) {
         // e.g. "261,06 g/mol" — Polish decimal comma, strip the unit.
-        builder.setMoleweight(Number(value.replace(/[^\d.,]/g, "").replace(",", ".")));
+        builder.setMoleweight(Number(value.replace(/[^\d.,]/g, '').replace(',', '.')));
       }
     }
   }
@@ -545,13 +545,13 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
     // (quotes may be single or double). Named groups label each PLN field; only
     // the gross (brutto) price is shown, but the rest document the format.
     const opcjePattern = new RegExp(
-      "opcje\\[(?<q1>['\"])(?<optionKey>x(?<featureId>\\d+)-(?<valueId>\\d+))\\k<q1>\\]\\s*=\\s*" +
-        "(?<q2>['\"])(?<netPrice>\\d+(?:\\.\\d+)?);" +
-        "(?<grossPrice>\\d+(?:\\.\\d+)?);" +
-        "(?<previousNetPrice>\\d+(?:\\.\\d+)?);" +
-        "(?<previousGrossPrice>\\d+(?:\\.\\d+)?);" +
-        "(?<catalogPrice>\\d+(?:\\.\\d+)?)\\k<q2>;",
-      "g",
+      'opcje\\[(?<q1>[\'"])(?<optionKey>x(?<featureId>\\d+)-(?<valueId>\\d+))\\k<q1>\\]\\s*=\\s*' +
+        '(?<q2>[\'"])(?<netPrice>\\d+(?:\\.\\d+)?);' +
+        '(?<grossPrice>\\d+(?:\\.\\d+)?);' +
+        '(?<previousNetPrice>\\d+(?:\\.\\d+)?);' +
+        '(?<previousGrossPrice>\\d+(?:\\.\\d+)?);' +
+        '(?<catalogPrice>\\d+(?:\\.\\d+)?)\\k<q2>;',
+      'g',
     );
 
     const parsedJsPrices = Array.from(html.matchAll(opcjePattern));
@@ -572,8 +572,8 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
 
     const radios = productPageDom.querySelectorAll('.CechaWyboru input[type="radio"]');
     return mapDefined(Array.from(radios), (radio: Element) => {
-      const cecha = radio.getAttribute("data-id-cechy");
-      const id = radio.getAttribute("data-id");
+      const cecha = radio.getAttribute('data-id-cechy');
+      const id = radio.getAttribute('data-id');
       if (!cecha || !id) {
         return;
       }
@@ -583,7 +583,7 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
         return;
       }
 
-      const qty = parseQuantity(radio.getAttribute("aria-label") ?? "");
+      const qty = parseQuantity(radio.getAttribute('aria-label') ?? '');
 
       return {
         id,
@@ -616,13 +616,13 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
    */
   protected titleSelector(data: Element): Maybe<string> {
     if (!data) {
-      this.logger.error("No data for product", { data });
+      this.logger.error('No data for product', { data });
       return undefined;
     }
     // document.querySelectorAll('div.ListingWierszeKontener > div.Wiersz')[1].querySelector('div.ProdCena > h3 > a').textContent
-    const title = data.querySelector("div.ProdCena > h3 > a")?.textContent?.trim();
+    const title = data.querySelector('div.ProdCena > h3 > a')?.textContent?.trim();
     if (title === null) {
-      this.logger.error("No title for product", { data });
+      this.logger.error('No title for product', { data });
       return undefined;
     }
     return title;

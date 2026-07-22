@@ -3,12 +3,12 @@ import {
   getMigrationDb,
   getStoredAppVersion,
   setStoredAppVersion,
-} from "@/utils/idbCache";
-import { Logger } from "@/utils/Logger";
-import semver from "semver";
-import type { Migration } from "./types";
+} from '@/utils/idbCache';
+import { Logger } from '@/utils/Logger';
+import semver from 'semver';
+import type { Migration } from './types';
 
-const logger = new Logger("migrations");
+const logger = new Logger('migrations');
 
 /** Matches a step filename, capturing the `from` and `to` semver versions. */
 const FILENAME_PATTERN = /\/v(\d+\.\d+\.\d+)-to-v(\d+\.\d+\.\d+)\.ts$/;
@@ -39,16 +39,16 @@ export interface MigrationStatus {
  * @source
  */
 function isMigration(value: unknown): value is Migration {
-  if (typeof value !== "object" || value === null) return false;
+  if (typeof value !== 'object' || value === null) return false;
   return (
-    "from" in value &&
-    typeof value.from === "string" &&
-    "to" in value &&
-    typeof value.to === "string" &&
-    "description" in value &&
-    typeof value.description === "string" &&
-    "up" in value &&
-    typeof value.up === "function"
+    'from' in value &&
+    typeof value.from === 'string' &&
+    'to' in value &&
+    typeof value.to === 'string' &&
+    'description' in value &&
+    typeof value.description === 'string' &&
+    'up' in value &&
+    typeof value.up === 'function'
   );
 }
 
@@ -81,10 +81,10 @@ function sortMigrations(migrations: Migration[]): Migration[] {
  * @source
  */
 function loadMigrations(): Migration[] {
-  const modules = import.meta.glob("./steps/*.ts", { eager: true });
+  const modules = import.meta.glob('./steps/*.ts', { eager: true });
   const migrations: Migration[] = [];
   for (const [path, mod] of Object.entries(modules)) {
-    if (typeof mod !== "object" || mod === null || !("migration" in mod)) {
+    if (typeof mod !== 'object' || mod === null || !('migration' in mod)) {
       throw new Error(`Migration file ${path} must named-export a \`migration\` object`);
     }
     const migration = mod.migration;
@@ -194,27 +194,27 @@ export async function getMigrationStatus(): Promise<MigrationStatus> {
 export async function runMigrations(steps: Migration[]): Promise<void> {
   if (steps.length === 0) return;
   const db = await getMigrationDb();
-  logger.info("Running migrations", { steps: steps.map((s) => `${s.from} → ${s.to}`).join(", ") });
+  logger.info('Running migrations', { steps: steps.map((s) => `${s.from} → ${s.to}`).join(', ') });
   try {
     for (const migration of steps) {
       const _logger = logger.sub(`${migration.from} → ${migration.to}`);
-      _logger.info("Applying migration step");
+      _logger.info('Applying migration step');
       try {
         await migration.up({ db, logger: _logger });
-        _logger.info("Migration step applied successfully");
+        _logger.info('Migration step applied successfully');
         await setStoredAppVersion(migration.to);
       } catch (error) {
-        _logger.error("Migration step failed", {
+        _logger.error('Migration step failed', {
           error,
-          reason: error instanceof Error ? error.message : "Unknown error",
+          reason: error instanceof Error ? error.message : 'Unknown error',
         });
         throw error;
       }
     }
   } catch (error) {
-    logger.error("Migrations failed", {
+    logger.error('Migrations failed', {
       error,
-      reason: error instanceof Error ? error.message : "Unknown error",
+      reason: error instanceof Error ? error.message : 'Unknown error',
     });
     throw error;
   } finally {

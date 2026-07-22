@@ -1,7 +1,7 @@
-import { findCAS } from "@/helpers/cas";
-import { getPubchemIdFromDocument } from "@/helpers/pubchem";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { SupplierBaseShopify } from "./SupplierBaseShopify";
+import { findCAS } from '@/helpers/cas';
+import { getPubchemIdFromDocument } from '@/helpers/pubchem';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { SupplierBaseShopify } from './SupplierBaseShopify';
 
 /**
  * SupplierAsesChem class that extends SupplierBaseShopify.
@@ -17,22 +17,22 @@ import { SupplierBaseShopify } from "./SupplierBaseShopify";
  */
 export class SupplierAsesChem extends SupplierBaseShopify implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = "AsesChem";
+  public readonly supplierName: string = 'AsesChem';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = "https://ases.in";
+  public readonly baseURL: string = 'https://ases.in';
 
   // Shipping scope
-  public readonly shipping: ShippingRange = "domestic";
+  public readonly shipping: ShippingRange = 'domestic';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "IN";
+  public readonly country: CountryCode = 'IN';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   // Shopify API URL for GraphQL queries
-  protected apiURL: string = "aseschem.myshopify.com";
+  protected apiURL: string = 'aseschem.myshopify.com';
 
   /**
    * Enriches a search-result product with details only present on its product page. Fetches the
@@ -55,19 +55,19 @@ export class SupplierAsesChem extends SupplierBaseShopify implements ISupplier {
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     return this.getProductDataWithCache(product, async (builder) => {
-      if (typeof builder === "undefined") {
-        this.logger.error("No product to get data for");
+      if (typeof builder === 'undefined') {
+        this.logger.error('No product to get data for');
         return;
       }
 
-      const productResponse = await this.httpGetHtml({ path: builder.get("url") });
+      const productResponse = await this.httpGetHtml({ path: builder.get('url') });
       if (!productResponse) {
-        this.logger.warn("No product page response", { builder });
+        this.logger.warn('No product page response', { builder });
         return builder;
       }
 
       const parser = new DOMParser();
-      const doc = parser.parseFromString(productResponse, "text/html");
+      const doc = parser.parseFromString(productResponse, 'text/html');
 
       this.applyDocuments(builder, doc);
       this.applyDescriptionDetails(builder, doc);
@@ -98,11 +98,11 @@ export class SupplierAsesChem extends SupplierBaseShopify implements ISupplier {
       'div[class^="product-detail"] a[href*="pdf"], div[class^="product-detail"] a[href*="doc"]',
     );
     for (const link of links) {
-      const text = (link.textContent ?? "").toLowerCase();
-      const href = link.getAttribute("href");
-      if (text.includes("coa")) {
+      const text = (link.textContent ?? '').toLowerCase();
+      const href = link.getAttribute('href');
+      if (text.includes('coa')) {
         builder.setCoaUrl(href);
-      } else if (text.includes("sds")) {
+      } else if (text.includes('sds')) {
         builder.setSDSUrl(href);
       }
     }
@@ -126,33 +126,33 @@ export class SupplierAsesChem extends SupplierBaseShopify implements ISupplier {
    * @source
    */
   private applyDescriptionDetails(builder: ProductBuilder<Product>, doc: Document): void {
-    const container = doc.querySelector("div.product-description");
+    const container = doc.querySelector('div.product-description');
     if (!container) return;
 
-    const paragraphs = Array.from(container.querySelectorAll(":scope > p"));
+    const paragraphs = Array.from(container.querySelectorAll(':scope > p'));
 
     const labelMatches = (paragraph: Element, label: string): boolean =>
-      (paragraph.querySelector("strong")?.textContent ?? "").toLowerCase().includes(label);
+      (paragraph.querySelector('strong')?.textContent ?? '').toLowerCase().includes(label);
 
-    const descriptionParagraph = paragraphs.find((p) => labelMatches(p, "description"));
+    const descriptionParagraph = paragraphs.find((p) => labelMatches(p, 'description'));
     if (descriptionParagraph) {
-      const label = descriptionParagraph.querySelector("strong")?.textContent ?? "";
-      const full = descriptionParagraph.textContent ?? "";
+      const label = descriptionParagraph.querySelector('strong')?.textContent ?? '';
+      const full = descriptionParagraph.textContent ?? '';
       const description = (full.startsWith(label) ? full.slice(label.length) : full)
-        .replace(/^[\s\-–—:]+/, "")
+        .replace(/^[\s\-–—:]+/, '')
         .trim();
       builder.setDescription(description);
     }
 
-    const formulaParagraph = paragraphs.find((p) => labelMatches(p, "molecular formula"));
+    const formulaParagraph = paragraphs.find((p) => labelMatches(p, 'molecular formula'));
     if (formulaParagraph) {
       // The formula text carries <sub> markup (e.g. C<sub>6</sub>H<sub>15</sub>NO<sub>3</sub>),
       // which setFormula parses into unicode subscripts, so pass innerHTML rather than textContent.
       const formulaSource =
-        formulaParagraph.querySelector("a") ?? formulaParagraph.querySelector("span");
+        formulaParagraph.querySelector('a') ?? formulaParagraph.querySelector('span');
       builder.setFormula(formulaSource?.innerHTML);
 
-      const pubchemHref = formulaParagraph.querySelector("a")?.getAttribute("href");
+      const pubchemHref = formulaParagraph.querySelector('a')?.getAttribute('href');
       if (pubchemHref) {
         const cid = pubchemHref?.match(/\/compound\/(\d+)/i)?.[1];
         builder.setPubchemId(cid);
@@ -165,7 +165,7 @@ export class SupplierAsesChem extends SupplierBaseShopify implements ISupplier {
     }
 
     // CAS and molecular weight appear inline in the block text (setCAS validates the checksum).
-    const text = container.textContent ?? "";
+    const text = container.textContent ?? '';
     builder.setCAS(findCAS(text));
     builder.setMoleweight(text.match(/M\.?\s*W\.?\s*[:-]?\s*([\d.]+)/i)?.[1]);
   }
@@ -186,9 +186,9 @@ export class SupplierAsesChem extends SupplierBaseShopify implements ISupplier {
    * @source
    */
   private applyImages(builder: ProductBuilder<Product>, doc: Document): void {
-    const mainImage = doc.querySelector<HTMLImageElement>("a.main-img-link img.rimage__image");
+    const mainImage = doc.querySelector<HTMLImageElement>('a.main-img-link img.rimage__image');
     if (!mainImage) return;
-    builder.setImage(this.resolveImageSrc(mainImage, 1024), mainImage.getAttribute("alt"));
+    builder.setImage(this.resolveImageSrc(mainImage, 1024), mainImage.getAttribute('alt'));
     builder.setThumbnail(this.resolveImageSrc(mainImage, 150));
   }
 
@@ -209,8 +209,8 @@ export class SupplierAsesChem extends SupplierBaseShopify implements ISupplier {
    */
   private resolveImageSrc(img: HTMLImageElement, width: number): string | undefined {
     const raw =
-      img.getAttribute("src") || img.getAttribute("data-lazy-src") || img.getAttribute("data-src");
-    return raw?.replace("{width}", String(width)) ?? undefined;
+      img.getAttribute('src') || img.getAttribute('data-lazy-src') || img.getAttribute('data-src');
+    return raw?.replace('{width}', String(width)) ?? undefined;
   }
 
   /**
@@ -228,9 +228,9 @@ export class SupplierAsesChem extends SupplierBaseShopify implements ISupplier {
    * @source
    */
   private applyReviews(builder: ProductBuilder<Product>, doc: Document): void {
-    const widget = doc.querySelector(".jdgm-rev-widg");
+    const widget = doc.querySelector('.jdgm-rev-widg');
     if (!widget) return;
-    builder.setRating(widget.getAttribute("data-average-rating"));
-    builder.setReviewCount(widget.getAttribute("data-number-of-reviews"));
+    builder.setRating(widget.getAttribute('data-average-rating'));
+    builder.setReviewCount(widget.getAttribute('data-number-of-reviews'));
   }
 }

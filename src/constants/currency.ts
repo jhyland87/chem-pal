@@ -4,7 +4,7 @@
  * @source
  */
 
-import currencyInfo from "country-list-js/data/currency_info.json";
+import currencyInfo from 'country-list-js/data/currency_info.json';
 
 /**
  * Per-currency info as published by `country-list-js` (code → symbol/decimal).
@@ -34,7 +34,7 @@ export const CURRENCY_SYMBOL_MAP: { [key: string]: string } = Object.fromEntries
  * library data.
  */
 const CURRENCY_CODE_OVERRIDES: { [key: string]: string } = {
-  "₹": "INR",
+  '₹': 'INR',
 };
 
 /**

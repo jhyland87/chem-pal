@@ -1,9 +1,9 @@
-import { parsePrice } from "@/helpers/currency";
-import { parseQuantity } from "@/helpers/quantity";
-import { mapDefined } from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import chunk from "lodash/chunk";
-import { SupplierBase } from "./SupplierBase";
+import { parsePrice } from '@/helpers/currency';
+import { parseQuantity } from '@/helpers/quantity';
+import { mapDefined } from '@/helpers/utils';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import chunk from 'lodash/chunk';
+import { SupplierBase } from './SupplierBase';
 /**
  * Supplier implementation for Loudwolf chemical supplier.
  * Extends the base supplier class and provides Loudwolf-specific implementation
@@ -23,20 +23,20 @@ import { SupplierBase } from "./SupplierBase";
  */
 export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> implements ISupplier {
   // Display name of the supplier used for UI and logging
-  public readonly supplierName: string = "Loudwolf";
+  public readonly supplierName: string = 'Loudwolf';
 
   // Base URL for all API and web requests to Loudwolf
-  public readonly baseURL: string = "https://www.loudwolf.com";
+  public readonly baseURL: string = 'https://www.loudwolf.com';
 
   // Shipping scope for Loudwolf
-  public readonly shipping: ShippingRange = "worldwide";
+  public readonly shipping: ShippingRange = 'worldwide';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   // The country code of the supplier.
   // This is used to determine the currency and other country-specific information.
-  public readonly country: CountryCode = "US";
+  public readonly country: CountryCode = 'US';
 
   // Cached search results from the last query execution
   protected queryResults: Array<Partial<Product>> = [];
@@ -72,9 +72,9 @@ export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> im
    * @source
    */
   protected getUniqueProductKey(data: Element): string {
-    const href = data.querySelector("div.caption h4 a")?.getAttribute("href") ?? "";
+    const href = data.querySelector('div.caption h4 a')?.getAttribute('href') ?? '';
     const url = new URL(href, this.baseURL);
-    return url.searchParams.get("product_id") ?? this.href(href);
+    return url.searchParams.get('product_id') ?? this.href(href);
   }
 
   /**
@@ -101,27 +101,27 @@ export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> im
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    this.logger.log("queryProducts:", { query, limit });
-    localStorage.setItem("display", "list");
+    this.logger.log('queryProducts:', { query, limit });
+    localStorage.setItem('display', 'list');
 
     const searchResponse = await this.httpGetHtml({
-      path: "/storefront/index.php",
+      path: '/storefront/index.php',
       params: {
         search: encodeURIComponent(query),
-        route: "product/search",
+        route: 'product/search',
         limit: 100,
       },
     });
 
     if (!searchResponse) {
-      this.logger.error("No search response", { query, limit });
+      this.logger.error('No search response', { query, limit });
       return;
     }
 
-    this.logger.debug("searchResponse:", { searchResponse });
+    this.logger.debug('searchResponse:', { searchResponse });
 
     const $fuzzResults = this.fuzzHtmlResponse(query, searchResponse);
-    this.logger.debug("fuzzResults:", { fuzzResults: Array.from($fuzzResults) });
+    this.logger.debug('fuzzResults:', { fuzzResults: Array.from($fuzzResults) });
 
     return this.initProductBuilders($fuzzResults.slice(0, limit));
   }
@@ -153,10 +153,10 @@ export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> im
   protected fuzzHtmlResponse(query: string, response: string): Element[] {
     // Create a new DOM to do the travesing/parsing
     const parser = new DOMParser();
-    const parsedHTML = parser.parseFromString(response, "text/html");
+    const parsedHTML = parser.parseFromString(response, 'text/html');
 
     // Select all products by a known selector path
-    const products = parsedHTML.querySelectorAll("div.product-layout.product-list");
+    const products = parsedHTML.querySelectorAll('div.product-layout.product-list');
 
     // Do the fuzzy filtering using the element found when using this.titleSelector()
     return this.fuzzyFilterAst<Element>(Array.from(products));
@@ -193,35 +193,35 @@ export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> im
     return mapDefined($elements, (element: Element) => {
       const builder = new ProductBuilder<Product>(this.baseURL);
 
-      const priceElem = element.querySelector("div.caption > p.price");
-      const price = parsePrice(priceElem?.textContent?.trim() || "");
+      const priceElem = element.querySelector('div.caption > p.price');
+      const price = parsePrice(priceElem?.textContent?.trim() || '');
 
       if (price === undefined) {
-        this.logger.error("No price for product", element);
+        this.logger.error('No price for product', element);
         return;
       }
 
-      const href = element.querySelector("div.caption h4 a")?.getAttribute("href");
+      const href = element.querySelector('div.caption h4 a')?.getAttribute('href');
 
       if (!href) {
-        this.logger.error("No URL for product", { element });
+        this.logger.error('No URL for product', { element });
         return;
       }
 
       const url = new URL(href, this.baseURL);
 
-      const id = url.searchParams.get("product_id");
+      const id = url.searchParams.get('product_id');
 
       if (id === null) {
-        this.logger.error("No ID for product", { element, url });
+        this.logger.error('No ID for product', { element, url });
         return;
       }
-      const title = element.querySelector("div.caption h4 a")?.textContent?.trim() || "";
+      const title = element.querySelector('div.caption h4 a')?.textContent?.trim() || '';
 
       return builder
         .setBasicInfo(title, String(url), this.supplierName)
         .setDescription(
-          element.querySelector("div.caption > p:nth-child(2)")?.textContent?.trim() || "",
+          element.querySelector('div.caption > p:nth-child(2)')?.textContent?.trim() || '',
         )
         .setID(id)
         .setCacheKey(this.getUniqueProductKey(element))
@@ -260,34 +260,34 @@ export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> im
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     return this.getProductDataWithCache(product, async (builder) => {
-      this.logger.debug("Querying data for partialproduct:", builder);
+      this.logger.debug('Querying data for partialproduct:', builder);
 
-      if (typeof builder === "undefined") {
-        this.logger.error("No products to get data for");
+      if (typeof builder === 'undefined') {
+        this.logger.error('No products to get data for');
         return;
       }
 
       const productResponse = await this.httpGetHtml({
-        path: builder.get("url"),
+        path: builder.get('url'),
       });
 
       if (!productResponse) {
-        this.logger.warn("No product response", { builder });
+        this.logger.warn('No product response', { builder });
         return;
       }
 
-      this.logger.debug("productResponse:", { productResponse });
+      this.logger.debug('productResponse:', { productResponse });
 
       const parser = new DOMParser();
-      const parsedHTML = parser.parseFromString(productResponse, "text/html");
-      const domContent = parsedHTML.querySelector("#content");
+      const parsedHTML = parser.parseFromString(productResponse, 'text/html');
+      const domContent = parsedHTML.querySelector('#content');
       const dataGrid = Array.from(
-        domContent?.querySelectorAll("#content .tab-content .MsoTableGrid") || [],
+        domContent?.querySelectorAll('#content .tab-content .MsoTableGrid') || [],
       )
         .find((element) => element.textContent?.trim().match(/CAS/i))
-        ?.querySelectorAll("p");
+        ?.querySelectorAll('p');
 
-      const dataRows = Array.from(dataGrid || []).map((n) => n.textContent?.trim() ?? "");
+      const dataRows = Array.from(dataGrid || []).map((n) => n.textContent?.trim() ?? '');
 
       // Apply each spec row straight to the builder via its validating setter.
       // (setCAS extracts the number from the cell text itself.)
@@ -328,11 +328,11 @@ export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> im
    * @source
    */
   protected titleSelector(data: Element): string {
-    const title = data.querySelector("div.caption h4 a");
+    const title = data.querySelector('div.caption h4 a');
     if (title === null) {
-      this.logger.error("No title for product", { data });
-      return "";
+      this.logger.error('No title for product', { data });
+      return '';
     }
-    return title.textContent?.trim() || "";
+    return title.textContent?.trim() || '';
   }
 }

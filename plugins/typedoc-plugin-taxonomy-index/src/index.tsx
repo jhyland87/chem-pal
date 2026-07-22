@@ -1,5 +1,5 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
 import {
   DefaultTheme,
   JSX,
@@ -9,17 +9,17 @@ import {
   type DefaultThemeRenderContext,
   type Reflection,
   type RendererEvent as RendererEventType,
-} from "typedoc";
-import { TAXONOMY_CSS } from "./assets.js";
-import { collectTaxonomy } from "./collect.js";
-import { declareOptions, resolveOptions, type ResolvedOptions } from "./options.js";
-import { indexPage } from "./render/indexPage.js";
-import { memberRow } from "./render/memberRow.js";
-import { termPage } from "./render/termPage.js";
-import type { Taxonomy } from "./types.js";
+} from 'typedoc';
+import { TAXONOMY_CSS } from './assets.js';
+import { collectTaxonomy } from './collect.js';
+import { declareOptions, resolveOptions, type ResolvedOptions } from './options.js';
+import { indexPage } from './render/indexPage.js';
+import { memberRow } from './render/memberRow.js';
+import { termPage } from './render/termPage.js';
+import type { Taxonomy } from './types.js';
 
 /** Where the stylesheet is written, relative to the output directory. */
-const CSS_PATH = "assets/taxonomy.css";
+const CSS_PATH = 'assets/taxonomy.css';
 
 /** One page this plugin is responsible for emitting. */
 interface TaxonomyPage {
@@ -81,7 +81,7 @@ function makePageEvent(event: RendererEventType, page: TaxonomyPage): PageEvent<
   pageEvent.project = event.project;
   pageEvent.url = page.url;
   pageEvent.filename = join(event.outputDirectory, page.url);
-  pageEvent.pageKind = "reflection";
+  pageEvent.pageKind = 'reflection';
   return pageEvent;
 }
 
@@ -101,20 +101,20 @@ async function emitTaxonomy(
   const theme = app.renderer.theme;
   if (!(theme instanceof DefaultTheme)) {
     app.logger.warn(
-      "typedoc-plugin-taxonomy-index requires a theme extending DefaultTheme; skipping taxonomy pages.",
+      'typedoc-plugin-taxonomy-index requires a theme extending DefaultTheme; skipping taxonomy pages.',
     );
     return;
   }
 
   const taxonomy = collectTaxonomy(event.project, options);
   if (taxonomy.categories.length === 0 && taxonomy.groups.length === 0) {
-    app.logger.warn("typedoc-plugin-taxonomy-index found no @category or @group tags; skipping.");
+    app.logger.warn('typedoc-plugin-taxonomy-index found no @category or @group tags; skipping.');
     return;
   }
 
   const cssTarget = join(event.outputDirectory, CSS_PATH);
   await mkdir(dirname(cssTarget), { recursive: true });
-  await writeFile(cssTarget, TAXONOMY_CSS, "utf-8");
+  await writeFile(cssTarget, TAXONOMY_CSS, 'utf-8');
 
   for (const page of buildPageList(taxonomy, options)) {
     const pageEvent = makePageEvent(event, page);
@@ -123,7 +123,7 @@ async function emitTaxonomy(
       context.defaultLayout((props) => page.render(context, props), pageEvent),
     )}\n`;
     await mkdir(dirname(pageEvent.filename), { recursive: true });
-    await writeFile(pageEvent.filename, html, "utf-8");
+    await writeFile(pageEvent.filename, html, 'utf-8');
   }
 
   app.logger.info(
@@ -162,13 +162,13 @@ export function load(app: Application): void {
       }
 
       if (options.sidebarLink) {
-        const existing = app.options.getValue("sidebarLinks");
-        app.options.setValue("sidebarLinks", { ...existing, [options.title]: options.out });
+        const existing = app.options.getValue('sidebarLinks');
+        app.options.setValue('sidebarLinks', { ...existing, [options.title]: options.out });
       }
 
       if (!styleHookRegistered) {
         styleHookRegistered = true;
-        app.renderer.hooks.on("head.end", (context) => (
+        app.renderer.hooks.on('head.end', (context) => (
           <link rel="stylesheet" href={context.relativeURL(CSS_PATH)} />
         ));
       }

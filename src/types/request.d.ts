@@ -88,7 +88,7 @@ declare global {
    * Mirrors `chrome.cookies.SetDetails` but makes `url` optional — `SupplierBase`
    * defaults it to the supplier's `baseURL`.
    */
-  type SupplierCookieSeed = Omit<chrome.cookies.SetDetails, "url"> & { url?: string };
+  type SupplierCookieSeed = Omit<chrome.cookies.SetDetails, 'url'> & { url?: string };
 }
 
 // This export is needed to make the file a module

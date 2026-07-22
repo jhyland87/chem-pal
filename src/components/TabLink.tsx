@@ -1,7 +1,7 @@
-import { addHistory } from "@/helpers/history";
-import { useStatusBar } from "@/components/StatusBar";
-import Link from "@mui/material/Link";
-import { MouseEvent, ReactNode } from "react";
+import { addHistory } from '@/helpers/history';
+import { useStatusBar } from '@/components/StatusBar';
+import Link from '@mui/material/Link';
+import { MouseEvent, ReactNode } from 'react';
 
 /**
  * Props for {@link TabLink}. A plain anchor plus optional search-history
@@ -30,10 +30,10 @@ const handleResultClick = (event: MouseEvent<HTMLAnchorElement>, history?: Histo
   // Use currentTarget (the element the handler is bound to) rather than
   // target, which could be a child element inside the anchor.
   const anchor = event.currentTarget;
-  if (typeof chrome?.tabs !== "undefined") {
+  if (typeof chrome?.tabs !== 'undefined') {
     chrome.tabs.create({ url: anchor.href, active: false });
   } else {
-    window.open(anchor.href, "_blank");
+    window.open(anchor.href, '_blank');
   }
 
   if (history) {
@@ -62,7 +62,7 @@ export default function TabLink({ href, history, children, ...props }: TabLinkPr
       onClick={(e) => handleResultClick(e, history)}
       onMouseEnter={() => setStatusText(href)}
       onMouseLeave={() => setStatusText(null)}
-      sx={{ textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
+      sx={{ textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
       {...props}
     >
       {children}

@@ -1,7 +1,7 @@
-import { hotkeys as hotkeysConfig, sequenceResetMs } from "@/../config.json";
-import { useEffect, useMemo, useRef } from "react";
-import { matches, normalizeKey, parseBinding, parseSequence, resolveBinding } from "./matcher";
-import type { HotkeyConfig, HotkeyHandlers, ParsedBinding } from "./types";
+import { hotkeys as hotkeysConfig, sequenceResetMs } from '@/../config.json';
+import { useEffect, useMemo, useRef } from 'react';
+import { matches, normalizeKey, parseBinding, parseSequence, resolveBinding } from './matcher';
+import type { HotkeyConfig, HotkeyHandlers, ParsedBinding } from './types';
 
 /**
  * Idle window (ms) after which an in-progress key sequence is abandoned.
@@ -12,7 +12,7 @@ import type { HotkeyConfig, HotkeyHandlers, ParsedBinding } from "./types";
 const SEQUENCE_RESET_MS = sequenceResetMs;
 
 /** Keys that are modifiers on their own; excluded from the sequence buffer. */
-const MODIFIER_KEYS = new Set(["meta", "control", "alt", "shift"]);
+const MODIFIER_KEYS = new Set(['meta', 'control', 'alt', 'shift']);
 
 /**
  * Returns `true` when the event originated from an editable element
@@ -23,7 +23,7 @@ function isEditableTarget(event: KeyboardEvent): boolean {
   const target = event.target;
   if (!(target instanceof HTMLElement)) return false;
   const tag = target.tagName;
-  if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
   if (target.isContentEditable) return true;
   return false;
 }
@@ -183,8 +183,8 @@ export function useHotkeys(handlers: HotkeyHandlers, options: UseHotkeysOptions 
       }
     };
 
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
   }, [compiled, handlers, onTriggered]);
 }
 

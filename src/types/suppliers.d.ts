@@ -6,5 +6,5 @@ declare global {
    * Derived from the `src/suppliers` barrel so it stays in sync automatically as
    * suppliers are added or removed there.
    */
-  type SupplierClassName = keyof typeof import("@/suppliers");
+  type SupplierClassName = keyof typeof import('@/suppliers');
 }

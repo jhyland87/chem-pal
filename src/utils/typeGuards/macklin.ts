@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Macklin API paths used by the supplier module, relative to its API host.
@@ -10,13 +10,13 @@ import { z } from "zod";
  * @source
  */
 export enum ApiEndpoints {
-  TIMESTAMP = "/api/timestamp",
-  SEARCH = "/api/item/search",
-  USER_INFO = "/api/user/info",
-  FRUIT_HEAD = "/api/fruit/head",
-  FAVOURITE_ADD = "/api/favourite/add",
-  FRUIT_ADD = "/api/fruit/add",
-  QUICK_BUY = "/api/quick/buy",
+  TIMESTAMP = '/api/timestamp',
+  SEARCH = '/api/item/search',
+  USER_INFO = '/api/user/info',
+  FRUIT_HEAD = '/api/fruit/head',
+  FAVOURITE_ADD = '/api/favourite/add',
+  FRUIT_ADD = '/api/fruit/add',
+  QUICK_BUY = '/api/quick/buy',
 }
 
 /**
@@ -30,12 +30,12 @@ export enum ApiEndpoints {
  * @source
  */
 export enum AuthRequiredEndpoints {
-  ORDER_LIST = "/api/center/order_list",
-  EXPRESS = "/api/center/express",
-  PREPAY = "/api/center/prepay",
-  COUPON = "/api/center/coupon",
-  ADDRESS_LIST = "/api/address/list",
-  FRUIT_ORDER = "/api/fruit/order",
+  ORDER_LIST = '/api/center/order_list',
+  EXPRESS = '/api/center/express',
+  PREPAY = '/api/center/prepay',
+  COUPON = '/api/center/coupon',
+  ADDRESS_LIST = '/api/address/list',
+  FRUIT_ORDER = '/api/fruit/order',
 }
 
 const timestampResponseSchema = z.object({
@@ -192,7 +192,7 @@ export function isAuthCheckEndpoint(url: string): boolean {
 }
 
 const macklinSearchResultSchema = z.object({
-  list: z.custom<object>((val) => typeof val === "object" && val !== null),
+  list: z.custom<object>((val) => typeof val === 'object' && val !== null),
 });
 
 /**
@@ -237,8 +237,8 @@ export function isMacklinSearchResult<T>(data: unknown): data is MacklinSearchRe
 export function isMacklinProductDetailsResponse(
   data: unknown,
 ): data is MacklinProductDetailsResponse {
-  if (typeof data !== "object" || data === null) return false;
-  if (!("list" in data) || !Array.isArray(data.list)) return false;
+  if (typeof data !== 'object' || data === null) return false;
+  if (!('list' in data) || !Array.isArray(data.list)) return false;
   return data.list.every(isMacklinProductDetails);
 }
 
@@ -288,11 +288,11 @@ export function isMacklinProductDetails(data: unknown): data is MacklinProductDe
  */
 export function isTimestampStorage(data: unknown): data is TimestampStorage {
   return (
-    typeof data === "object" &&
+    typeof data === 'object' &&
     data !== null &&
-    "serverTm" in data &&
-    typeof data.serverTm === "number" &&
-    "clientTm" in data &&
-    typeof data.clientTm === "number"
+    'serverTm' in data &&
+    typeof data.serverTm === 'number' &&
+    'clientTm' in data &&
+    typeof data.clientTm === 'number'
   );
 }

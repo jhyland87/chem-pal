@@ -221,7 +221,7 @@ declare global {
     // dev/wp-json-calls/products-args.json
 
     /** Scope under which the request is made; determines fields present in response. */
-    context?: "view" | "edit" | "embed";
+    context?: 'view' | 'edit' | 'embed';
     /** Current page of the collection. */
     page?: number;
     /** Maximum number of items to be returned in result set. */
@@ -235,7 +235,7 @@ declare global {
     /** Limit response to resources published before a given ISO8601 compliant date. */
     before?: string;
     /** Column to use for ordering results. */
-    date_column?: "date" | "date_gmt" | "modified" | "modified_gmt";
+    date_column?: 'date' | 'date_gmt' | 'modified' | 'modified_gmt';
     /** Exclude products with specific IDs. */
     exclude?: number[];
     /** Include products with specific IDs. */
@@ -243,26 +243,26 @@ declare global {
     /** Offset the result set by a specific number of items. */
     offset?: number;
     /** Order sort attribute ascending or descending. */
-    order?: "asc" | "desc";
+    order?: 'asc' | 'desc';
     /** Sort collection by object attribute. */
     orderby?:
-      | "date"
-      | "modified"
-      | "id"
-      | "include"
-      | "title"
-      | "slug"
-      | "price"
-      | "popularity"
-      | "rating"
-      | "menu_order"
-      | "comment_count";
+      | 'date'
+      | 'modified'
+      | 'id'
+      | 'include'
+      | 'title'
+      | 'slug'
+      | 'price'
+      | 'popularity'
+      | 'rating'
+      | 'menu_order'
+      | 'comment_count';
     /** Limit result set to products with specific parent IDs. */
     parent?: number[];
     /** Exclude products with specific parent IDs. */
     parent_exclude?: number[];
     /** Limit result set to products with specific type. */
-    type?: "simple" | "variable" | "grouped" | "external" | "variation";
+    type?: 'simple' | 'variable' | 'grouped' | 'external' | 'variation';
     /** Limit result set to products with specific SKU. */
     sku?: string;
     /** Limit result set to featured products. */
@@ -270,21 +270,21 @@ declare global {
     /** Limit result set to products with specific category. */
     category?: string;
     /** Operator to use for category filtering. */
-    category_operator?: "in" | "not_in" | "and";
+    category_operator?: 'in' | 'not_in' | 'and';
     /** Limit result set to products with specific brand. */
     brand?: string;
     /** Operator to use for brand filtering. */
-    brand_operator?: "in" | "not_in" | "and";
+    brand_operator?: 'in' | 'not_in' | 'and';
     /** Limit result set to products with specific tag. */
     tag?: string;
     /** Operator to use for tag filtering. */
-    tag_operator?: "in" | "not_in" | "and";
+    tag_operator?: 'in' | 'not_in' | 'and';
     on_sale?: boolean;
     /** Limit result set to products with minimum price. */
     min_price?: string;
     /** Limit result set to products with maximum price. */
     max_price?: string;
-    stock_status?: Array<"instock" | "outofstock" | "onbackorder">;
+    stock_status?: Array<'instock' | 'outofstock' | 'onbackorder'>;
     /** Limit result set to products with specific attributes. */
     attributes?: {
       /** Attribute name. */
@@ -294,12 +294,12 @@ declare global {
       /** Limit result set to products with specific slug. */
       slug?: string[];
       /** Operator to use for attribute filtering. */
-      operator?: "in" | "not_in" | "and";
+      operator?: 'in' | 'not_in' | 'and';
     }[];
     /** Relation between attributes. */
-    attribute_relation?: "and" | "in";
+    attribute_relation?: 'and' | 'in';
     /** Catalog visibility. */
-    catalog_visibility?: "any" | "visible" | "catalog" | "search" | "hidden";
+    catalog_visibility?: 'any' | 'visible' | 'catalog' | 'search' | 'hidden';
     /** Limit result set to products with specific rating. */
     rating?: Array<1 | 2 | 3 | 4 | 5>;
     /** Limit result set to products with specific related ID. */

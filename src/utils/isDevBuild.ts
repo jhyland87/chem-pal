@@ -18,4 +18,4 @@
  * ```
  * @source
  */
-export const IS_DEV_BUILD = import.meta.env.MODE !== "production";
+export const IS_DEV_BUILD = import.meta.env.MODE !== 'production';

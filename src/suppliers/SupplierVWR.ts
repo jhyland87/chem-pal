@@ -1,6 +1,6 @@
-import { AVAILABILITY } from "@/constants/common";
-import { parseQuantity } from "@/helpers/quantity";
-import { ProductBuilder } from "@/utils/ProductBuilder";
+import { AVAILABILITY } from '@/constants/common';
+import { parseQuantity } from '@/helpers/quantity';
+import { ProductBuilder } from '@/utils/ProductBuilder';
 import {
   isVWRAssetReferencesResponse,
   isVWROrdertableResponse,
@@ -9,8 +9,8 @@ import {
   isVWRStockResponse,
   isVWRSubstanceResponse,
   isVWRTokenResponse,
-} from "@/utils/typeGuards/vwr";
-import { SupplierBase } from "./SupplierBase";
+} from '@/utils/typeGuards/vwr';
+import { SupplierBase } from './SupplierBase';
 
 /**
  * SupplierVWR - supplier implementation for VWR (Avantor Sciences).
@@ -28,26 +28,26 @@ import { SupplierBase } from "./SupplierBase";
  */
 export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = "VWR";
+  public readonly supplierName: string = 'VWR';
 
   // Base URL for HTTP(s) requests (storefront; used for product links + referrer).
   // Must be www.vwr.com — it's the storefront referrer and the host granted in the manifest.
-  public readonly baseURL: string = "https://www.vwr.com";
+  public readonly baseURL: string = 'https://www.vwr.com';
 
   // Bare host for the OCC API (base builds `https://${apiURL}/*` for requiredHosts)
-  public readonly apiURL: string = "occapi.avantorsciences.com";
+  public readonly apiURL: string = 'occapi.avantorsciences.com';
 
   // Shipping scope
-  public readonly shipping: ShippingRange = "worldwide";
+  public readonly shipping: ShippingRange = 'worldwide';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "US";
+  public readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   // OAuth client id for the anonymous client_credentials grant.
-  private readonly clientId: string = "VVjdGUHAb3ETZLEVTWtFy3BmhFhXSdBB";
+  private readonly clientId: string = 'VVjdGUHAb3ETZLEVTWtFy3BmhFhXSdBB';
 
   // Cached bearer token and its absolute expiry (epoch ms).
   private accessToken?: string;
@@ -65,13 +65,13 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
   // OCC API paths. All except the token endpoint carry the `/occ/v2/us.vwr.com` prefix;
   // `assetReferences` is base-product specific so it's built on demand.
   private readonly paths = {
-    token: "/authorizationserver/oauth/token",
-    search: "/occ/v2/us.vwr.com/products/search",
-    ordertable: "/occ/v2/us.vwr.com/api/product/ordertable",
-    substance: "/occ/v2/us.vwr.com/api/product/chemical/substance",
-    specification: "/occ/v2/us.vwr.com/api/product/chemical/specification",
-    stock: "/occ/v2/us.vwr.com/api/product/getAnonymousStockAvailability",
-    canonicalUrl: "/occ/v2/us.vwr.com/canonicalurl",
+    token: '/authorizationserver/oauth/token',
+    search: '/occ/v2/us.vwr.com/products/search',
+    ordertable: '/occ/v2/us.vwr.com/api/product/ordertable',
+    substance: '/occ/v2/us.vwr.com/api/product/chemical/substance',
+    specification: '/occ/v2/us.vwr.com/api/product/chemical/specification',
+    stock: '/occ/v2/us.vwr.com/api/product/getAnonymousStockAvailability',
+    canonicalUrl: '/occ/v2/us.vwr.com/canonicalurl',
     assetReferences: (baseProduct: string): string =>
       `/occ/v2/us.vwr.com/products/${baseProduct}/assetreferences`,
   } as const;
@@ -114,21 +114,21 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
 
     const body = new URLSearchParams({
       client_id: this.clientId,
-      client_secret: "",
-      grant_type: "client_credentials",
+      client_secret: '',
+      grant_type: 'client_credentials',
     }).toString();
 
     const response = await this.httpPost({
       path: this.paths.token,
       host: this.apiURL,
       body,
-      headers: { "content-type": "application/x-www-form-urlencoded" },
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
     });
 
     const tokenData = response ? await response.json() : undefined;
     if (!isVWRTokenResponse(tokenData)) {
-      this.logger.error("Invalid VWR token response", { tokenData });
-      throw new TypeError("SupplierVWR| Failed to obtain access token");
+      this.logger.error('Invalid VWR token response', { tokenData });
+      throw new TypeError('SupplierVWR| Failed to obtain access token');
     }
 
     this.accessToken = tokenData.access_token;
@@ -191,7 +191,7 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
         if (!response) {
           continue;
         }
-        if (typeof response.pagination?.totalPages === "number") {
+        if (typeof response.pagination?.totalPages === 'number') {
           totalPages = response.pagination.totalPages;
         }
         // Drop discontinued and restricted (e.g. license-required) products.
@@ -209,7 +209,7 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
       if (batchSurvivors === 0) {
         emptyStreak += 1;
         if (emptyStreak >= this.maxEmptySearchBatches) {
-          this.logger.debug("VWR search: stopping after consecutive empty batches", {
+          this.logger.debug('VWR search: stopping after consecutive empty batches', {
             query,
             nextPage,
             emptyStreak,
@@ -222,7 +222,7 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
     }
 
     if (builders.length === 0) {
-      this.logger.warn("VWR search returned no usable products", { query });
+      this.logger.warn('VWR search returned no usable products', { query });
       return;
     }
 
@@ -240,24 +240,24 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
     const response = await this.httpPostJson({
       path: this.paths.search,
       host: this.apiURL,
-      body: "{}",
-      headers: { "content-type": "application/json" },
+      body: '{}',
+      headers: { 'content-type': 'application/json' },
       params: {
-        fields: "FULL",
+        fields: 'FULL',
         // Search via formula: chemical_formula_adv=Na2SO3
         // Search via CAS: cas_number=7757-83-7
         // Search via Keyword: keyword=sodium
         query: `chemical_name=${query}`,
         pageSize: 10,
         currentPage: page,
-        lang: "en_US",
-        curr: "USD",
+        lang: 'en_US',
+        curr: 'USD',
         newStorefront: true,
       },
     });
 
     if (!isVWRSearchResponse(response)) {
-      this.logger.error("Invalid VWR search response", { response, page });
+      this.logger.error('Invalid VWR search response', { response, page });
       return;
     }
     return response;
@@ -278,7 +278,7 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
   protected initProductBuilders(results: VWRSearchProduct[]): ProductBuilder<Product>[] {
     return results.map((item) => {
       const builder = new ProductBuilder<Product>(this.baseURL);
-      const title = item.displayName ?? item.name ?? "";
+      const title = item.displayName ?? item.name ?? '';
       const price = item.uomSpecificPrices?.[0];
 
       builder
@@ -290,10 +290,10 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
         .setDescription(item.description);
 
       if (price) {
-        builder.setPricing(price.value, price.currencyIso ?? "USD", "$");
+        builder.setPricing(price.value, price.currencyIso ?? 'USD', '$');
       }
 
-      const image = item.images?.find((img) => img.imageType === "PRIMARY") ?? item.images?.[0];
+      const image = item.images?.find((img) => img.imageType === 'PRIMARY') ?? item.images?.[0];
       if (image) {
         builder.setImage(image.url, title).setThumbnail(image.url);
       }
@@ -309,7 +309,7 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
    * @source
    */
   protected titleSelector(data: VWRSearchProduct): string {
-    return data.displayName ?? data.name ?? "";
+    return data.displayName ?? data.name ?? '';
   }
 
   /**
@@ -329,17 +329,17 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     return this.getProductDataWithCache(product, async (builder) => {
-      const baseProduct = this.baseProductFromUrl(builder.get("url"));
+      const baseProduct = this.baseProductFromUrl(builder.get('url'));
       if (!baseProduct) {
-        this.logger.warn("VWR getProductData| could not derive baseProduct", {
-          url: builder.get("url"),
+        this.logger.warn('VWR getProductData| could not derive baseProduct', {
+          url: builder.get('url'),
         });
         return builder;
       }
 
       const commonParams = {
-        lang: "en_US",
-        curr: "USD",
+        lang: 'en_US',
+        curr: 'USD',
         newStorefront: true,
       };
 
@@ -347,22 +347,22 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
         this.httpGetJson({
           path: this.paths.ordertable,
           host: this.apiURL,
-          params: { ...commonParams, productId: baseProduct, impressions: "", user: "anonymous" },
+          params: { ...commonParams, productId: baseProduct, impressions: '', user: 'anonymous' },
         }),
         this.httpGetJson({
           path: this.paths.assetReferences(baseProduct),
           host: this.apiURL,
-          params: { ...commonParams, fields: "DEFAULT" },
+          params: { ...commonParams, fields: 'DEFAULT' },
         }),
         this.httpGetJson({
           path: this.paths.substance,
           host: this.apiURL,
-          params: { ...commonParams, productId: baseProduct, user: "anonymous" },
+          params: { ...commonParams, productId: baseProduct, user: 'anonymous' },
         }),
         this.httpGetJson({
           path: this.paths.specification,
           host: this.apiURL,
-          params: { ...commonParams, productId: baseProduct, user: "anonymous" },
+          params: { ...commonParams, productId: baseProduct, user: 'anonymous' },
         }),
         this.fetchCanonicalUrl(baseProduct),
       ]);
@@ -394,8 +394,8 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
       substance.substanceAttributes.find((a) => a.code === name || a.name === name)?.value;
 
     // MW_value may carry a unit suffix (e.g. "79.06 g/mol"); take just the leading number.
-    const moleweight = attr("MW_value")?.match(/\d+(?:\.\d+)?/)?.[0];
-    builder.setCAS(attr("c_cas")).setFormula(attr("c_formula")).setMoleweight(moleweight);
+    const moleweight = attr('MW_value')?.match(/\d+(?:\.\d+)?/)?.[0];
+    builder.setCAS(attr('c_cas')).setFormula(attr('c_formula')).setMoleweight(moleweight);
   }
 
   /**
@@ -410,7 +410,7 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
     if (!isVWRSpecificationResponse(specification)) {
       return;
     }
-    const purity = specification.find((entry) => entry.name.toLowerCase() === "purity")?.result;
+    const purity = specification.find((entry) => entry.name.toLowerCase() === 'purity')?.result;
     builder.setPurity(purity);
   }
 
@@ -427,10 +427,10 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
         path: this.paths.canonicalUrl,
         host: this.apiURL,
         params: {
-          pageType: "product",
+          pageType: 'product',
           id: baseProduct,
-          lang: "en_US",
-          curr: "USD",
+          lang: 'en_US',
+          curr: 'USD',
           newStorefront: true,
         },
       });
@@ -438,9 +438,9 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
         return undefined;
       }
       const url = (await response.text()).trim();
-      return url.startsWith("http") ? url : undefined;
+      return url.startsWith('http') ? url : undefined;
     } catch (error: unknown) {
-      this.logger.warn("VWR canonical URL fetch failed", { baseProduct, error });
+      this.logger.warn('VWR canonical URL fetch failed', { baseProduct, error });
       return undefined;
     }
   }
@@ -466,17 +466,17 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
       return;
     }
 
-    const code = String(builder.get("id") ?? "");
+    const code = String(builder.get('id') ?? '');
     const matched = rows.find((row) => row.code === code) ?? rows[0];
 
-    const quantity = parseQuantity(this.rowSize(matched) ?? "");
+    const quantity = parseQuantity(this.rowSize(matched) ?? '');
     if (quantity) {
       builder.setQuantity(quantity);
     }
 
     const price = matched.prices?.[0];
     if (price) {
-      builder.setPricing(price.listPrice, price.currencyCode ?? "USD", "$");
+      builder.setPricing(price.listPrice, price.currencyCode ?? 'USD', '$');
     }
 
     const stockMap = await this.fetchStock(
@@ -485,13 +485,13 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
 
     const matchedStock = stockMap.get(matched.catalogNumber);
     if (matchedStock) {
-      builder.setAvailability(matchedStock.stockStatus === "inStock");
+      builder.setAvailability(matchedStock.stockStatus === 'inStock');
       builder.setStatusTxt(matchedStock.availabilityMessage);
     }
 
     builder.addVariants(
       rows.map((row) => {
-        const variantQuantity = parseQuantity(this.rowSize(row) ?? "");
+        const variantQuantity = parseQuantity(this.rowSize(row) ?? '');
         const stock = stockMap.get(row.catalogNumber);
         const variant: Partial<Variant> = {
           id: row.code,
@@ -502,7 +502,7 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
         };
         if (stock) {
           variant.availability =
-            stock.stockStatus === "inStock" ? AVAILABILITY.IN_STOCK : AVAILABILITY.OUT_OF_STOCK;
+            stock.stockStatus === 'inStock' ? AVAILABILITY.IN_STOCK : AVAILABILITY.OUT_OF_STOCK;
         }
         return variant;
       }),
@@ -524,10 +524,10 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
     assets: unknown,
   ): void {
     const sdsFromAssets = isVWRAssetReferencesResponse(assets)
-      ? this.pickAsset(assets.assetReferences, "MSDS")
+      ? this.pickAsset(assets.assetReferences, 'MSDS')
       : undefined;
     const coa = isVWRAssetReferencesResponse(assets)
-      ? this.pickAsset(assets.assetReferences, "CERTIFICATE_OF_ANALYSIS")
+      ? this.pickAsset(assets.assetReferences, 'CERTIFICATE_OF_ANALYSIS')
       : undefined;
 
     const sdsFallback = isVWROrdertableResponse(ordertable)
@@ -547,10 +547,10 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
    */
   private pickAsset(
     assetReferences: VWRAssetReference[],
-    assetType: NonNullable<VWRAssetReference["assetType"]>,
+    assetType: NonNullable<VWRAssetReference['assetType']>,
   ): string | undefined {
     const ofType = assetReferences.filter((asset) => asset.assetType === assetType);
-    const preferred = ofType.find((asset) => asset.languageLists?.includes("en_US"));
+    const preferred = ofType.find((asset) => asset.languageLists?.includes('en_US'));
     return (preferred ?? ofType[0])?.url;
   }
 
@@ -572,17 +572,17 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
       path: this.paths.stock,
       host: this.apiURL,
       body: catalogNumbers.map((catalogNumber) => ({ catalogNumber })),
-      headers: { "content-type": "application/json" },
+      headers: { 'content-type': 'application/json' },
       params: {
-        fields: "FULL",
-        lang: "en_US",
-        curr: "USD",
+        fields: 'FULL',
+        lang: 'en_US',
+        curr: 'USD',
         newStorefront: true,
       },
     });
 
     if (!isVWRStockResponse(response)) {
-      this.logger.warn("Invalid VWR stock response", { response });
+      this.logger.warn('Invalid VWR stock response', { response });
       return stockMap;
     }
 
@@ -602,7 +602,7 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
    * @source
    */
   private rowSize(row: VWRProductRow): string | undefined {
-    return row.colCellMap?.entry?.find((cell) => cell.key === "o_size")?.value ?? undefined;
+    return row.colCellMap?.entry?.find((cell) => cell.key === 'o_size')?.value ?? undefined;
   }
 
   /**
@@ -623,7 +623,7 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
    * @source
    */
   private baseProductFromUrl(url: unknown): string | undefined {
-    if (typeof url !== "string") {
+    if (typeof url !== 'string') {
       return undefined;
     }
     return url.match(/\/store\/product\/([^/]+)\//)?.[1];

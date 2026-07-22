@@ -1,4 +1,4 @@
-import { TruncatedDescription } from "@/components/SearchPanel/TruncatedDescription";
+import { TruncatedDescription } from '@/components/SearchPanel/TruncatedDescription';
 import {
   PriceHistoryTooltip,
   ProductDetailBody,
@@ -13,29 +13,29 @@ import {
   ProductDetailVariantsColumn,
   ProductDetailVariantsGrid,
   ProductImageNavButton,
-} from "@/components/StyledComponents";
-import { default as Link } from "@/components/TabLink";
-import { SupplierStoreNotice } from "@/components/SearchPanel/SupplierStoreNotice";
-import { omit } from "@/helpers/collectionUtils";
-import { i18n } from "@/helpers/i18n";
-import { formatDisplayPrice } from "@/helpers/price";
+} from '@/components/StyledComponents';
+import { default as Link } from '@/components/TabLink';
+import { SupplierStoreNotice } from '@/components/SearchPanel/SupplierStoreNotice';
+import { omit } from '@/helpers/collectionUtils';
+import { i18n } from '@/helpers/i18n';
+import { formatDisplayPrice } from '@/helpers/price';
 import {
   buildAggregateSeries,
   describeTrend,
   getProductPriceHistory,
   productSeriesKey,
   variantSeriesKey,
-} from "@/helpers/priceHistory";
-import { isPresent, resolveProductImages, samePurchasableUnit } from "@/helpers/product";
-import { formatTimestamp, preloadImages } from "@/helpers/utils";
-import COAIcon from "@/icons/COAIcon";
-import SDSIcon from "@/icons/SDSIcon";
-import TDSIcon from "@/icons/TDSIcon";
-import { useCyclingIndex } from "@/shared/hooks/useCyclingIndex.hook";
-import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import { Typography } from "@mui/material";
-import type { Row, Table } from "@tanstack/react-table";
+} from '@/helpers/priceHistory';
+import { isPresent, resolveProductImages, samePurchasableUnit } from '@/helpers/product';
+import { formatTimestamp, preloadImages } from '@/helpers/utils';
+import COAIcon from '@/icons/COAIcon';
+import SDSIcon from '@/icons/SDSIcon';
+import TDSIcon from '@/icons/TDSIcon';
+import { useCyclingIndex } from '@/shared/hooks/useCyclingIndex.hook';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { Typography } from '@mui/material';
+import type { Row, Table } from '@tanstack/react-table';
 import {
   Fragment,
   useEffect,
@@ -44,7 +44,7 @@ import {
   type MouseEvent,
   type ReactElement,
   type ReactNode,
-} from "react";
+} from 'react';
 
 /** How long each image is shown before cycling to the next, in milliseconds. */
 const IMAGE_CYCLE_MS = 3000;
@@ -87,29 +87,29 @@ function buildDetailFields(product: Product): DetailField[] {
     if (isPresent(value)) fields.push({ label, value: String(value) });
   };
 
-  pushText(i18n("product_detail_cas"), product.cas);
-  pushText(i18n("product_detail_formula"), product.formula);
-  pushText(i18n("product_detail_molecular_weight"), product.moleweight);
-  pushText(i18n("product_detail_iupac_name"), product.iupacName);
-  pushText(i18n("product_detail_inchikey"), product.inchiKey);
-  pushText(i18n("product_detail_inchi"), product.inchi);
-  pushText(i18n("product_detail_smiles"), product.smiles);
-  pushText(i18n("product_detail_purity"), product.purity);
-  pushText(i18n("product_detail_grade"), product.grade);
-  pushText(i18n("product_detail_concentration"), product.concentration);
-  pushText(i18n("product_detail_manufacturer"), product.manufacturer);
+  pushText(i18n('product_detail_cas'), product.cas);
+  pushText(i18n('product_detail_formula'), product.formula);
+  pushText(i18n('product_detail_molecular_weight'), product.moleweight);
+  pushText(i18n('product_detail_iupac_name'), product.iupacName);
+  pushText(i18n('product_detail_inchikey'), product.inchiKey);
+  pushText(i18n('product_detail_inchi'), product.inchi);
+  pushText(i18n('product_detail_smiles'), product.smiles);
+  pushText(i18n('product_detail_purity'), product.purity);
+  pushText(i18n('product_detail_grade'), product.grade);
+  pushText(i18n('product_detail_concentration'), product.concentration);
+  pushText(i18n('product_detail_manufacturer'), product.manufacturer);
   // Description is rendered in its own full-width band, not as a compact row.
 
   // PubChem link — truthy check narrows the optional id.
   const { pubchemId } = product;
   if (pubchemId) {
     fields.push({
-      label: i18n("product_detail_pubchem"),
+      label: i18n('product_detail_pubchem'),
       value: (
         <Link
           href={`https://pubchem.ncbi.nlm.nih.gov/compound/${pubchemId}`}
-          aria-label={i18n("product_detail_pubchem_cid", [String(pubchemId)])}
-          title={i18n("product_detail_pubchem_view")}
+          aria-label={i18n('product_detail_pubchem_cid', [String(pubchemId)])}
+          title={i18n('product_detail_pubchem_view')}
         >
           {pubchemId}
         </Link>
@@ -140,8 +140,8 @@ function buildDocLinks(product: Product): ReactNode[] {
       <Link
         key="sds"
         href={sdsUrl}
-        aria-label={i18n("product_detail_sds")}
-        title={i18n("product_detail_sds")}
+        aria-label={i18n('product_detail_sds')}
+        title={i18n('product_detail_sds')}
       >
         <SDSIcon fontSize="small" />
       </Link>,
@@ -152,8 +152,8 @@ function buildDocLinks(product: Product): ReactNode[] {
       <Link
         key="tds"
         href={specSheetUrl}
-        aria-label={i18n("product_detail_tds")}
-        title={i18n("product_detail_tds")}
+        aria-label={i18n('product_detail_tds')}
+        title={i18n('product_detail_tds')}
       >
         <TDSIcon fontSize="small" />
       </Link>,
@@ -164,8 +164,8 @@ function buildDocLinks(product: Product): ReactNode[] {
       <Link
         key="coa"
         href={coaUrl}
-        aria-label={i18n("product_detail_coa")}
-        title={i18n("product_detail_coa")}
+        aria-label={i18n('product_detail_coa')}
+        title={i18n('product_detail_coa')}
       >
         <COAIcon fontSize="small" />
       </Link>,
@@ -219,10 +219,10 @@ export function ProductImageCarousel({
   // immediately (loaded by the <img> below), so we preload only the rest — ahead of the
   // automatic rotation — and the key keeps the effect stable across value-equal renders.
   const thumbnails = available.map(({ image }) => image.thumbSrc).filter(Boolean);
-  const thumbnailKey = thumbnails.join("\n");
+  const thumbnailKey = thumbnails.join('\n');
 
   useEffect(() => {
-    const urls = thumbnailKey.length > 0 ? thumbnailKey.split("\n") : [];
+    const urls = thumbnailKey.length > 0 ? thumbnailKey.split('\n') : [];
     const pending = urls.slice(1).filter((url) => !preloadedRef.current.has(url));
     if (pending.length === 0) return;
     for (const url of pending) preloadedRef.current.add(url);
@@ -244,7 +244,7 @@ export function ProductImageCarousel({
     <ProductDetailImageBox>
       <Link
         href={current.image.fullSrc}
-        aria-label={i18n("product_detail_open_full_image", [title])}
+        aria-label={i18n('product_detail_open_full_image', [title])}
       >
         <img
           src={current.image.thumbSrc}
@@ -257,7 +257,7 @@ export function ProductImageCarousel({
           <ProductImageNavButton
             type="button"
             className="image-nav prev"
-            aria-label={i18n("product_detail_prev_image")}
+            aria-label={i18n('product_detail_prev_image')}
             onClick={(event) => navigate(event, prev)}
           >
             <ArrowBackIosNewIcon fontSize="small" />
@@ -265,7 +265,7 @@ export function ProductImageCarousel({
           <ProductImageNavButton
             type="button"
             className="image-nav next"
-            aria-label={i18n("product_detail_next_image")}
+            aria-label={i18n('product_detail_next_image')}
             onClick={(event) => navigate(event, next)}
           >
             <ArrowForwardIosIcon fontSize="small" />
@@ -277,13 +277,13 @@ export function ProductImageCarousel({
 }
 
 /** The user settings the price-history views read to convert USD for display. */
-type PriceHistorySettings = Pick<UserSettings, "currency" | "currencyRate" | "trackPriceHistory">;
+type PriceHistorySettings = Pick<UserSettings, 'currency' | 'currencyRate' | 'trackPriceHistory'>;
 
 /** MUI theme color token per trend direction (rising price = bad = red). */
-const TREND_COLOR = { up: "error.main", down: "success.main", flat: "text.secondary" } as const;
+const TREND_COLOR = { up: 'error.main', down: 'success.main', flat: 'text.secondary' } as const;
 
 /** Glyph per trend direction. */
-const TREND_GLYPH = { up: "▲", down: "▼", flat: "—" } as const;
+const TREND_GLYPH = { up: '▲', down: '▼', flat: '—' } as const;
 
 /**
  * Format a USD amount for display in the user's currency, reusing the same
@@ -298,7 +298,7 @@ const TREND_GLYPH = { up: "▲", down: "▼", flat: "—" } as const;
  * @source
  */
 function formatUsd(usd: number, userSettings?: PriceHistorySettings): string {
-  return formatDisplayPrice({ usdPrice: usd, price: usd, currencyCode: "USD" }, userSettings);
+  return formatDisplayPrice({ usdPrice: usd, price: usd, currencyCode: 'USD' }, userSettings);
 }
 
 /**
@@ -329,15 +329,15 @@ function PriceSparkline({ points }: { points: readonly PricePoint[] }): ReactEle
       const y = pad + (height - pad * 2) * (1 - (p.usd - min) / span);
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     })
-    .join(" ");
+    .join(' ');
   return (
     <svg
       width={width}
       height={height}
       viewBox={`0 0 ${width} ${height}`}
       role="img"
-      aria-label={i18n("product_detail_sparkline_aria")}
-      style={{ display: "block" }}
+      aria-label={i18n('product_detail_sparkline_aria')}
+      style={{ display: 'block' }}
     >
       <polyline
         points={coords}
@@ -372,17 +372,17 @@ function PriceTrend({
 }): ReactElement | null {
   if (points.length < 2) return null;
   const trend = describeTrend(points);
-  const sign = trend.deltaUsd > 0 ? "+" : trend.deltaUsd < 0 ? "−" : "";
+  const sign = trend.deltaUsd > 0 ? '+' : trend.deltaUsd < 0 ? '−' : '';
   const magnitude = formatUsd(Math.abs(trend.deltaUsd), userSettings);
   return (
     <Typography
       component="span"
       variant="caption"
       color={TREND_COLOR[trend.direction]}
-      sx={{ whiteSpace: "nowrap", fontWeight: 600 }}
+      sx={{ whiteSpace: 'nowrap', fontWeight: 600 }}
     >
       {TREND_GLYPH[trend.direction]}
-      {trend.direction !== "flat" &&
+      {trend.direction !== 'flat' &&
         ` ${sign}${magnitude} (${sign}${Math.abs(trend.pctChange).toFixed(1)}%)`}
     </Typography>
   );
@@ -403,27 +403,27 @@ function PriceTrend({
 function EntryTrend({ prev, curr }: { prev?: PricePoint; curr: PricePoint }): ReactElement | null {
   if (prev === undefined) return null;
   const trend = describeTrend([prev, curr]);
-  const sign = trend.deltaUsd > 0 ? "+" : trend.deltaUsd < 0 ? "−" : "";
+  const sign = trend.deltaUsd > 0 ? '+' : trend.deltaUsd < 0 ? '−' : '';
   const paletteKey =
-    trend.direction === "up" ? "error" : trend.direction === "down" ? "success" : undefined;
+    trend.direction === 'up' ? 'error' : trend.direction === 'down' ? 'success' : undefined;
   return (
     <Typography
       component="span"
       variant="caption"
       sx={(theme) => ({
-        whiteSpace: "nowrap",
+        whiteSpace: 'nowrap',
         fontWeight: 600,
-        fontSize: "inherit",
+        fontSize: 'inherit',
         // Brighten the arrows on the dark popover surface (green especially reads
         // dim there); keep the standard shade on the light surface.
         color:
           paletteKey === undefined
             ? theme.palette.text.secondary
-            : theme.palette[paletteKey][theme.palette.mode === "dark" ? "light" : "main"],
+            : theme.palette[paletteKey][theme.palette.mode === 'dark' ? 'light' : 'main'],
       })}
     >
       {TREND_GLYPH[trend.direction]}
-      {trend.direction !== "flat" && ` ${sign}${Math.abs(trend.pctChange).toFixed(1)}%`}
+      {trend.direction !== 'flat' && ` ${sign}${Math.abs(trend.pctChange).toFixed(1)}%`}
     </Typography>
   );
 }
@@ -451,17 +451,17 @@ function VariantPriceHistoryCard({
   if (points.length < 2) return null;
   return (
     <div style={{ minWidth: 180 }}>
-      <div style={{ color: "inherit", marginBottom: 6 }}>
+      <div style={{ color: 'inherit', marginBottom: 6 }}>
         <PriceSparkline points={points} />
       </div>
-      <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "0.72rem" }}>
+      <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '0.72rem' }}>
         <thead>
           <tr>
-            <th style={{ textAlign: "left", paddingRight: 12, opacity: 0.7, fontWeight: 600 }}>
-              {i18n("product_detail_price_history_col_date")}
+            <th style={{ textAlign: 'left', paddingRight: 12, opacity: 0.7, fontWeight: 600 }}>
+              {i18n('product_detail_price_history_col_date')}
             </th>
-            <th style={{ textAlign: "right", opacity: 0.7, fontWeight: 600 }}>
-              {i18n("product_detail_price_history_col_price")}
+            <th style={{ textAlign: 'right', opacity: 0.7, fontWeight: 600 }}>
+              {i18n('product_detail_price_history_col_price')}
             </th>
             <th aria-hidden />
           </tr>
@@ -472,13 +472,13 @@ function VariantPriceHistoryCard({
           {points
             .map((point, index) => (
               <tr key={point.t}>
-                <td style={{ textAlign: "left", paddingRight: 12, whiteSpace: "nowrap" }}>
+                <td style={{ textAlign: 'left', paddingRight: 12, whiteSpace: 'nowrap' }}>
                   {formatTimestamp(point.t)}
                 </td>
-                <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                   {formatUsd(point.usd, userSettings)}
                 </td>
-                <td style={{ textAlign: "right", paddingLeft: 12, whiteSpace: "nowrap" }}>
+                <td style={{ textAlign: 'right', paddingLeft: 12, whiteSpace: 'nowrap' }}>
                   <EntryTrend prev={points[index - 1]} curr={point} />
                 </td>
               </tr>
@@ -518,22 +518,22 @@ function ProductPriceHistory({
   return (
     <ProductDetailFieldRow>
       <span className="detail-label">
-        {i18n("product_detail_price_history_currency", [userSettings?.currency ?? "USD"])}
+        {i18n('product_detail_price_history_currency', [userSettings?.currency ?? 'USD'])}
       </span>
       <span className="detail-value">
         {hasTrend ? (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <span style={{ color: "inherit" }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span style={{ color: 'inherit' }}>
               <PriceSparkline points={points} />
             </span>
             <PriceTrend points={points} userSettings={userSettings} />
             <Typography component="span" variant="caption" color="text.secondary">
-              {i18n("product_detail_points", [String(points.length)])}
+              {i18n('product_detail_points', [String(points.length)])}
             </Typography>
           </span>
         ) : (
           <Typography component="span" variant="caption" color="text.secondary">
-            {i18n("product_detail_no_history")}
+            {i18n('product_detail_no_history')}
           </Typography>
         )}
       </span>
@@ -655,21 +655,21 @@ export function ProductDetailPanel({ row, table }: ProductDetailPanelProps): Rea
                   color="text.secondary"
                   fontWeight={600}
                 >
-                  {i18n("product_detail_variants_currency", [userSettings?.currency ?? "USD"])}
+                  {i18n('product_detail_variants_currency', [userSettings?.currency ?? 'USD'])}
                 </Typography>
                 {displayedVariants.map((variant, index) => {
                   const variantId = variantSeriesKey(product, variant);
                   const variantSeries = seriesFor(variant);
                   return (
-                    <Fragment key={`${variantId ?? variant.title ?? "variant"}-${index}`}>
+                    <Fragment key={`${variantId ?? variant.title ?? 'variant'}-${index}`}>
                       <span className="variant-name">
                         <Link
                           href={
                             variant.permalink ?? variant.url ?? product.permalink ?? product.url
                           }
                           history={{
-                            type: "product",
-                            data: omit({ ...product, ...variant }, "variants"),
+                            type: 'product',
+                            data: omit({ ...product, ...variant }, 'variants'),
                           }}
                         >
                           {variant.title ?? product.title}
@@ -690,7 +690,7 @@ export function ProductDetailPanel({ row, table }: ProductDetailPanelProps): Rea
                               />
                             }
                           >
-                            <span style={{ display: "inline-flex" }}>
+                            <span style={{ display: 'inline-flex' }}>
                               <PriceTrend
                                 points={variantSeries.points}
                                 userSettings={userSettings}
@@ -723,6 +723,6 @@ export function ProductDetailPanel({ row, table }: ProductDetailPanelProps): Rea
  * @source
  */
 function variantQuantity(variant: Variant): string {
-  if (!isPresent(variant.quantity)) return "";
-  return `${variant.quantity} ${variant.uom ?? ""}`.trim();
+  if (!isPresent(variant.quantity)) return '';
+  return `${variant.quantity} ${variant.uom ?? ''}`.trim();
 }

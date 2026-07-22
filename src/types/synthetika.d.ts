@@ -87,7 +87,7 @@ declare global {
       [key: string]: unknown;
     }>;
 
-    variants?: omit<SynthetikaProduct, "variants">[];
+    variants?: omit<SynthetikaProduct, 'variants'>[];
   }
 }
 

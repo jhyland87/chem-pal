@@ -1,8 +1,8 @@
-import { i18n } from "@/helpers/i18n";
-import type { UpdateNotice } from "@/hooks/useUpdateAvailable";
-import { useState } from "react";
-import { PromptSnackbar } from "./PromptSnackbar";
-import { WhatsNewModal } from "./WhatsNewModal";
+import { i18n } from '@/helpers/i18n';
+import type { UpdateNotice } from '@/hooks/useUpdateAvailable';
+import { useState } from 'react';
+import { PromptSnackbar } from './PromptSnackbar';
+import { WhatsNewModal } from './WhatsNewModal';
 
 /**
  * Props for {@link UpdatePrompt}.
@@ -61,10 +61,10 @@ export function UpdatePrompt({ notice, onDismiss, onApply }: UpdatePromptProps) 
   // snackbar acts directly.
   const hasNotes = notice.notes.length > 0;
   const actionLabel = hasNotes
-    ? i18n("update_whats_new")
-    : notice.source === "webstore"
-      ? i18n("update_action_reload")
-      : i18n("update_action_view");
+    ? i18n('update_whats_new')
+    : notice.source === 'webstore'
+      ? i18n('update_action_reload')
+      : i18n('update_action_view');
 
   const handleAction = () => {
     if (hasNotes) {
@@ -83,11 +83,11 @@ export function UpdatePrompt({ notice, onDismiss, onApply }: UpdatePromptProps) 
         // Hidden while the modal is up (never two notices for one update), and
         // stays hidden once the notes have been read and closed.
         open={!notesOpen && !notesSeen}
-        message={i18n("update_available_message", [notice.version])}
+        message={i18n('update_available_message', [notice.version])}
         actionLabel={actionLabel}
         onAction={handleAction}
         onDismiss={onDismiss}
-        dismissLabel={i18n("update_dismiss")}
+        dismissLabel={i18n('update_dismiss')}
       />
       <WhatsNewModal
         notice={notice}

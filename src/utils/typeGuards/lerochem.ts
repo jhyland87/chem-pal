@@ -1,4 +1,4 @@
-import { isPopulatedObject } from "./common";
+import { isPopulatedObject } from './common';
 
 /**
  * Type guard for the `#product-details` `data-product` dataset (a PrestaShop
@@ -38,5 +38,5 @@ export function isLeroChemDataProduct(value: unknown): value is LeroChemDataProd
  * @source
  */
 export function isLeroChemVariantRefresh(value: unknown): value is LeroChemVariantRefresh {
-  return isPopulatedObject(value) && typeof value.product_details === "string";
+  return isPopulatedObject(value) && typeof value.product_details === 'string';
 }

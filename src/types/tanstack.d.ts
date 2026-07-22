@@ -1,10 +1,10 @@
-import "@tanstack/react-table";
-import { UserSettings } from "./common";
+import '@tanstack/react-table';
+import { UserSettings } from './common';
 
 /**
  * TanStack Table types.
  */
-declare module "@tanstack/react-table" {
+declare module '@tanstack/react-table' {
   /**
    * Table meta data.
    */
@@ -24,13 +24,13 @@ declare module "@tanstack/react-table" {
     /** Function to update user settings */
     setUserSettings?: (settings: UserSettings) => void;
     /** Function to sort table rows by match percentage (fuzz match, Levenshtein distance, basically) */
-    sortByMatchPercentage?: (order?: "asc" | "desc") => void;
+    sortByMatchPercentage?: (order?: 'asc' | 'desc') => void;
     /** Function to check if table is currently sorted by match percentage */
     isSortedByMatchPercentage?: () => boolean;
     /** Function to get current match percentage sort order */
-    getMatchPercentageSortOrder?: () => "asc" | "desc" | null;
+    getMatchPercentageSortOrder?: () => 'asc' | 'desc' | null;
     /** Internal state for custom sorting */
-    _customSort?: { type: string; order: "asc" | "desc" };
+    _customSort?: { type: string; order: 'asc' | 'desc' };
   }
 
   /**
@@ -116,7 +116,7 @@ declare module "@tanstack/react-table" {
      * Type of filter to use for this column
      * @example "range"
      */
-    filterVariant?: "range" | "select" | "text";
+    filterVariant?: 'range' | 'select' | 'text';
 
     /**
      * List of all possible unique values for select filters
@@ -163,7 +163,7 @@ declare module "@tanstack/react-table" {
      * collapsed count chip) — useful when text codes (e.g. country codes like
      * `"US"`) would read better as icons (e.g. a flag).
      */
-    renderSelectOption?: (value: string) => import("react").ReactNode;
+    renderSelectOption?: (value: string) => import('react').ReactNode;
 
     /**
      * Product fields this column's content is derived from. Used by

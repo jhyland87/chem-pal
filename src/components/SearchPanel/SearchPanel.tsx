@@ -1,7 +1,7 @@
-import { hasExpandableDetail } from "@/helpers/product";
-import { type ColumnFiltersState } from "@tanstack/react-table";
-import { useState } from "react";
-import ResultsTable from "./ResultsTable";
+import { hasExpandableDetail } from '@/helpers/product';
+import { type ColumnFiltersState } from '@tanstack/react-table';
+import { useState } from 'react';
+import ResultsTable from './ResultsTable';
 
 /**
  * SearchPanel component that serves as the main container for search functionality.

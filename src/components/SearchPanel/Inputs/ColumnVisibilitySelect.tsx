@@ -1,4 +1,4 @@
-import { FilterListItemIcon } from "@/components/Styles";
+import { FilterListItemIcon } from '@/components/Styles';
 import {
   Checkbox,
   FormControl,
@@ -7,8 +7,8 @@ import {
   ListItemButton,
   ListItemText,
   SelectChangeEvent,
-} from "@mui/material";
-import styles from "./ColumnVisibilitySelect.module.scss";
+} from '@mui/material';
+import styles from './ColumnVisibilitySelect.module.scss';
 
 /**
  * ColumnVisibilitySelect component that provides a scrollable list of checkboxes for controlling
@@ -37,7 +37,7 @@ export default function ColumnVisibilitySelect({
   handleColumnVisibilityChange: (event: SelectChangeEvent<string[]>) => void;
 }) {
   // Default columns to show when "defaults" is checked - these should match the actual column keys
-  const defaultColumns = ["supplier", "country", "shipping", "quantity", "price"];
+  const defaultColumns = ['supplier', 'country', 'shipping', 'quantity', 'price'];
 
   // Get the actual column keys that exist and match our default column names
   const availableDefaultKeys = defaultColumns.filter((defaultCol) =>
@@ -92,10 +92,10 @@ export default function ColumnVisibilitySelect({
     <FormControl
       component="fieldset"
       variant="standard"
-      className={styles["column-visibility-select"]}
+      className={styles['column-visibility-select']}
     >
       {/*<FormLabel component="legend">Column Visibility</FormLabel>*/}
-      <List dense className={styles["column-visibility-select__list"]}>
+      <List dense className={styles['column-visibility-select__list']}>
         {/* Defaults checkbox */}
         <ListItem key="defaults" disablePadding>
           <ListItemButton role={undefined} onClick={handleDefaultsSelect} dense>
@@ -106,20 +106,20 @@ export default function ColumnVisibilitySelect({
                 checked={isDefaultsChecked}
                 tabIndex={-1}
                 disableRipple
-                slotProps={{ input: { "aria-labelledby": "checkbox-list-label-defaults" } }}
+                slotProps={{ input: { 'aria-labelledby': 'checkbox-list-label-defaults' } }}
               />
             </FilterListItemIcon>
             <ListItemText
               id="checkbox-list-label-defaults"
               primary="Defaults"
-              slotProps={{ primary: { variant: "body2", fontWeight: "medium" } }}
+              slotProps={{ primary: { variant: 'body2', fontWeight: 'medium' } }}
             />
           </ListItemButton>
         </ListItem>
 
         {/* Regular column checkboxes */}
         {Object.entries(columnNames)
-          .filter(([key]) => key !== "title") // Filter out title column
+          .filter(([key]) => key !== 'title') // Filter out title column
           .map(([key, name]) => {
             const labelId = `checkbox-list-label-${key}`;
 
@@ -133,13 +133,13 @@ export default function ColumnVisibilitySelect({
                       checked={columnVisibility.includes(key)}
                       tabIndex={-1}
                       disableRipple
-                      slotProps={{ input: { "aria-labelledby": labelId } }}
+                      slotProps={{ input: { 'aria-labelledby': labelId } }}
                     />
                   </FilterListItemIcon>
                   <ListItemText
                     id={labelId}
                     primary={name}
-                    slotProps={{ primary: { variant: "body2" } }}
+                    slotProps={{ primary: { variant: 'body2' } }}
                   />
                 </ListItemButton>
               </ListItem>

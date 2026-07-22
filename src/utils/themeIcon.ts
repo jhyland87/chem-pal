@@ -10,12 +10,12 @@
  *
  * @module themeIcon
  */
-import { Logger } from "@/utils/Logger";
+import { Logger } from '@/utils/Logger';
 
-const logger = new Logger("themeIcon");
+const logger = new Logger('themeIcon');
 
 /** The browser color schemes we render distinct toolbar icons for. */
-type ColorScheme = "light" | "dark";
+type ColorScheme = 'light' | 'dark';
 
 /**
  * Per-scheme sized toolbar icons, resolved relative to the extension root (the
@@ -24,16 +24,16 @@ type ColorScheme = "light" | "dark";
  */
 const THEME_ICON_PATHS: Record<ColorScheme, Record<number, string>> = {
   light: {
-    16: "static/images/logo/ChemPal-logo-16.png",
-    32: "static/images/logo/ChemPal-logo-32.png",
-    48: "static/images/logo/ChemPal-logo-48.png",
-    128: "static/images/logo/ChemPal-logo-128.png",
+    16: 'static/images/logo/ChemPal-logo-16.png',
+    32: 'static/images/logo/ChemPal-logo-32.png',
+    48: 'static/images/logo/ChemPal-logo-48.png',
+    128: 'static/images/logo/ChemPal-logo-128.png',
   },
   dark: {
-    16: "static/images/logo/ChemPal-logo-inverted-16.png",
-    32: "static/images/logo/ChemPal-logo-inverted-32.png",
-    48: "static/images/logo/ChemPal-logo-inverted-48.png",
-    128: "static/images/logo/ChemPal-logo-inverted-128.png",
+    16: 'static/images/logo/ChemPal-logo-inverted-16.png',
+    32: 'static/images/logo/ChemPal-logo-inverted-32.png',
+    48: 'static/images/logo/ChemPal-logo-inverted-48.png',
+    128: 'static/images/logo/ChemPal-logo-inverted-128.png',
   },
 };
 
@@ -68,16 +68,16 @@ async function applyToolbarIcon(scheme: ColorScheme): Promise<void> {
  * @source
  */
 export function initThemeAwareToolbarIcon(): void {
-  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
     return;
   }
-  if (typeof chrome === "undefined" || chrome.action?.setIcon === undefined) {
+  if (typeof chrome === 'undefined' || chrome.action?.setIcon === undefined) {
     return;
   }
 
-  const darkScheme = window.matchMedia("(prefers-color-scheme: dark)");
-  void applyToolbarIcon(darkScheme.matches ? "dark" : "light");
-  darkScheme.addEventListener("change", (event) => {
-    void applyToolbarIcon(event.matches ? "dark" : "light");
+  const darkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+  void applyToolbarIcon(darkScheme.matches ? 'dark' : 'light');
+  darkScheme.addEventListener('change', (event) => {
+    void applyToolbarIcon(event.matches ? 'dark' : 'light');
   });
 }

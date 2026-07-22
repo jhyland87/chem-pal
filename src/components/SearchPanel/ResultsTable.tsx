@@ -1,26 +1,26 @@
-import { defaultSettings } from "@/../config.json";
-import LoadingBackdrop from "@/components/LoadingBackdrop";
-import resultStyles from "@/components/ResultsPanel.module.scss";
-import { CACHE, DRAWER_INDEX } from "@/constants/common";
-import { emitSearchEvent, SearchEvent } from "@/events/searchEvents";
-import { i18n } from "@/helpers/i18n";
-import { generatePageSizes } from "@/helpers/utils";
-import { HotkeyEvent } from "@/hotkeys";
-import { getEmptyHideableColumnIds } from "@/mixins/tanstack";
-import { isTabView, openExtensionTab } from "@/utils/displayContext";
-import { cstorage } from "@/utils/storage";
-import { isInputElement, isValidUserSettings } from "@/utils/typeGuards/common";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import FirstPageIcon from "@mui/icons-material/FirstPage";
-import LastPageIcon from "@mui/icons-material/LastPage";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import ScienceIcon from "@mui/icons-material/Science";
-import SearchOffIcon from "@mui/icons-material/SearchOff";
-import SettingsIcon from "@mui/icons-material/Settings";
-import ViewColumnIcon from "@mui/icons-material/ViewColumn";
+import { defaultSettings } from '@/../config.json';
+import LoadingBackdrop from '@/components/LoadingBackdrop';
+import resultStyles from '@/components/ResultsPanel.module.scss';
+import { CACHE, DRAWER_INDEX } from '@/constants/common';
+import { emitSearchEvent, SearchEvent } from '@/events/searchEvents';
+import { i18n } from '@/helpers/i18n';
+import { generatePageSizes } from '@/helpers/utils';
+import { HotkeyEvent } from '@/hotkeys';
+import { getEmptyHideableColumnIds } from '@/mixins/tanstack';
+import { isTabView, openExtensionTab } from '@/utils/displayContext';
+import { cstorage } from '@/utils/storage';
+import { isInputElement, isValidUserSettings } from '@/utils/typeGuards/common';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import FirstPageIcon from '@mui/icons-material/FirstPage';
+import LastPageIcon from '@mui/icons-material/LastPage';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import ScienceIcon from '@mui/icons-material/Science';
+import SearchOffIcon from '@mui/icons-material/SearchOff';
+import SettingsIcon from '@mui/icons-material/Settings';
+import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 
 import {
   Box,
@@ -34,7 +34,7 @@ import {
   TableRow,
   Tooltip,
   Typography,
-} from "@mui/material";
+} from '@mui/material';
 import {
   Column,
   ColumnFiltersState,
@@ -42,9 +42,9 @@ import {
   Header,
   Row,
   type TableState,
-} from "@tanstack/react-table";
-import debounce from "lodash/debounce";
-import isEmpty from "lodash/isEmpty";
+} from '@tanstack/react-table';
+import debounce from 'lodash/debounce';
+import isEmpty from 'lodash/isEmpty';
 import {
   ComponentType,
   Dispatch,
@@ -56,7 +56,7 @@ import {
   useEffect,
   useRef,
   useState,
-} from "react";
+} from 'react';
 import {
   BackButton,
   ColoredIconButton,
@@ -82,26 +82,26 @@ import {
   StyledTableCell,
   StyledTableHead,
   SubRowTableRow,
-} from "../StyledComponents";
-import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
-import ArrowDropUpIcon from "@/icons/ArrowDropUpIcon";
-import ContextMenu from "./ContextMenu";
-import { useAppContext } from "./hooks/useContext";
-import { useSearch } from "./hooks/useSearch";
-import RangeColumnFilter from "./Inputs/RangeColumnFilter";
-import SelectColumnFilter from "./Inputs/SelectColumnFilter";
-import TextColumnFilter from "./Inputs/TextColumnFilter";
-import { ProductDetailPanel } from "./ProductDetailPanel";
-import styles from "./ResultsTable.module.scss";
-import { useAutoColumnSizing } from "./useAutoColumnSizing.hook";
-import { useContextMenu } from "./useContextMenu.hook";
-import { useResultsTable } from "./useResultsTable.hook";
+} from '../StyledComponents';
+import ArrowDropDownIcon from '@/icons/ArrowDropDownIcon';
+import ArrowDropUpIcon from '@/icons/ArrowDropUpIcon';
+import ContextMenu from './ContextMenu';
+import { useAppContext } from './hooks/useContext';
+import { useSearch } from './hooks/useSearch';
+import RangeColumnFilter from './Inputs/RangeColumnFilter';
+import SelectColumnFilter from './Inputs/SelectColumnFilter';
+import TextColumnFilter from './Inputs/TextColumnFilter';
+import { ProductDetailPanel } from './ProductDetailPanel';
+import styles from './ResultsTable.module.scss';
+import { useAutoColumnSizing } from './useAutoColumnSizing.hook';
+import { useContextMenu } from './useContextMenu.hook';
+import { useResultsTable } from './useResultsTable.hook';
 
-type FilterVariant = "text" | "range" | "select";
+type FilterVariant = 'text' | 'range' | 'select';
 
 /** Narrows an unknown column `filterVariant` to a known {@link FilterVariant}. */
 const isFilterVariant = (value: unknown): value is FilterVariant =>
-  value === "text" || value === "range" || value === "select";
+  value === 'text' || value === 'range' || value === 'select';
 
 // defaultSettings from config.json is static, but its JSON-inferred type widens
 // string literals (e.g. `fontSize: string`), so it isn't structurally a
@@ -131,7 +131,7 @@ const filterComponentMap: Record<FilterVariant, ComponentType<FilterVariantInput
  */
 function FilterVariantCell({ header }: { header: Header<Product, unknown> }) {
   const rawVariant = header.column.columnDef.meta?.filterVariant;
-  const variant: FilterVariant = isFilterVariant(rawVariant) ? rawVariant : "text";
+  const variant: FilterVariant = isFilterVariant(rawVariant) ? rawVariant : 'text';
   const Component = filterComponentMap[variant];
   if (!Component) return null;
   return <Component column={header.column} />;
@@ -174,7 +174,7 @@ export default function ResultsTable({
   const appContext = useAppContext();
   const [showFilters, setShowFilters] = useState(false);
   const [columnMenuAnchor, setColumnMenuAnchor] = useState<null | HTMLElement>(null);
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [globalFilter, setGlobalFilter] = useState('');
   const globalFilterInputRef = useRef<HTMLInputElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -326,11 +326,11 @@ export default function ResultsTable({
         const stored = data[CACHE.TABLE_STATE] as
           | (Partial<TableState> & { globalFilter?: string; showFilters?: boolean })
           | undefined;
-        if (stored && typeof stored === "object") {
-          if (typeof stored.globalFilter === "string") {
+        if (stored && typeof stored === 'object') {
+          if (typeof stored.globalFilter === 'string') {
             setGlobalFilter(stored.globalFilter);
           }
-          if (typeof stored.showFilters === "boolean") {
+          if (typeof stored.showFilters === 'boolean') {
             setShowFilters(stored.showFilters);
           }
           if (Array.isArray(stored.columnFilters)) {
@@ -339,7 +339,7 @@ export default function ResultsTable({
           setTableState((prev) => ({ ...prev, ...stored }));
         }
       } catch (error) {
-        console.warn("Failed to load table state from session storage:", { error });
+        console.warn('Failed to load table state from session storage:', { error });
       }
       isStateLoadedRef.current = true;
     };
@@ -376,7 +376,7 @@ export default function ResultsTable({
           },
         });
       } catch (error) {
-        console.warn("Failed to persist table state:", { error });
+        console.warn('Failed to persist table state:', { error });
       }
     }, 300),
     [],
@@ -402,7 +402,7 @@ export default function ResultsTable({
   // because MUI warns before effects run.
   const filteredRowCount = table.getRowModel().rows.filter((row) => row.depth === 0).length;
   const totalRowCount = table.getFilteredRowModel().rows.length;
-  const supplierResultsCount = table.getColumn("supplier")?.getFacetedUniqueValues().size ?? 0;
+  const supplierResultsCount = table.getColumn('supplier')?.getFacetedUniqueValues().size ?? 0;
 
   // The rows-per-page the user explicitly asked for, via the Select or the
   // "show all" hotkey. Filtering can clamp the *effective* pageSize below this
@@ -510,7 +510,7 @@ export default function ResultsTable({
   };
 
   const handleKeyPress = (event: KeyboardEvent) => {
-    if (event.key === "Enter" && isInputElement(event.target)) {
+    if (event.key === 'Enter' && isInputElement(event.target)) {
       handleSearch(event.target.value);
     }
   };
@@ -532,27 +532,27 @@ export default function ResultsTable({
         isAborting={isAborting}
         onClick={handleStopSearch}
       />
-      <div className={resultStyles["results-container"]}>
-        <div className={resultStyles["results-header"]}>
-          <div className={resultStyles["header-left"]}>
+      <div className={resultStyles['results-container']}>
+        <div className={resultStyles['results-header']}>
+          <div className={resultStyles['header-left']}>
             {appContext?.setPanel && (
               <BackButton
                 onClick={() => appContext.setPanel!(0)}
                 size="small"
-                aria-label={i18n("common_back_to_search")}
+                aria-label={i18n('common_back_to_search')}
               >
                 <ArrowBackIcon />
               </BackButton>
             )}
           </div>
-          <div className={resultStyles["header-right"]}>
+          <div className={resultStyles['header-right']}>
             {/* Advanced search: opens the drawer's Search tab (mirrors the home
                 page's ScienceIcon). First icon, to the left of the others. */}
             <ColoredIconButton
               onClick={() => appContext?.toggleDrawer(DRAWER_INDEX.SEARCH)}
               size="small"
               iconColor="#666"
-              aria-label={i18n("search_advanced_options")}
+              aria-label={i18n('search_advanced_options')}
             >
               <ScienceIcon />
             </ColoredIconButton>
@@ -562,7 +562,7 @@ export default function ResultsTable({
               isActive={showFilters}
               activeColor="#007bff"
               textColor="#666"
-              aria-label={i18n("results_toggle_filters")}
+              aria-label={i18n('results_toggle_filters')}
             >
               <FilterListIcon />
             </FilterIconButton>
@@ -570,7 +570,7 @@ export default function ResultsTable({
               onClick={(e) => setColumnMenuAnchor(e.currentTarget)}
               size="small"
               iconColor="#666"
-              aria-label={i18n("results_column_visibility")}
+              aria-label={i18n('results_column_visibility')}
             >
               <ViewColumnIcon />
             </ColoredIconButton>
@@ -578,7 +578,7 @@ export default function ResultsTable({
               onClick={() => appContext?.toggleDrawer(DRAWER_INDEX.SETTINGS)}
               size="small"
               iconColor="#666"
-              aria-label={i18n("results_open_options")}
+              aria-label={i18n('results_open_options')}
             >
               <SettingsIcon />
             </ColoredIconButton>
@@ -588,7 +588,7 @@ export default function ResultsTable({
                 onClick={() => void openExtensionTab()}
                 size="small"
                 iconColor="#666"
-                aria-label={i18n("common_open_in_tab")}
+                aria-label={i18n('common_open_in_tab')}
               >
                 <OpenInNewIcon />
               </ColoredIconButton>
@@ -602,9 +602,9 @@ export default function ResultsTable({
           {/* Show the originating query here; the result count lives in the
               pagination footer below. */}
           <ResultsCountDisplay
-            title={executedQuery ? i18n("results_searched_for", [executedQuery]) : undefined}
+            title={executedQuery ? i18n('results_searched_for', [executedQuery]) : undefined}
           >
-            {executedQuery ? i18n("results_query", [executedQuery]) : ""}
+            {executedQuery ? i18n('results_query', [executedQuery]) : ''}
           </ResultsCountDisplay>
           {/* Only show the global filter if there are results. Based on
               searchResults (not the filtered row model) so the input doesn't
@@ -613,14 +613,14 @@ export default function ResultsTable({
             <GlobalFilterTextField
               size="small"
               variant="outlined"
-              placeholder={i18n("results_filter_placeholder")}
+              placeholder={i18n('results_filter_placeholder')}
               value={globalFilter}
               onChange={(e) => setGlobalFilter(e.target.value)}
               inputRef={globalFilterInputRef}
               slotProps={{
                 input: {
                   onKeyDown: handleKeyPress,
-                  "aria-label": i18n("results_filter_aria"),
+                  'aria-label': i18n('results_filter_aria'),
                 },
               }}
             />
@@ -629,18 +629,18 @@ export default function ResultsTable({
 
         <Box
           ref={scrollContainerRef}
-          className={`${resultStyles["results-paper"]} ${resultStyles["results-paper-container"]}`}
+          className={`${resultStyles['results-paper']} ${resultStyles['results-paper-container']}`}
         >
           {/* Hidden measurement table for auto-sizing */}
           <table
-            className={resultStyles["hidden-measurement-table"]}
+            className={resultStyles['hidden-measurement-table']}
             {...getMeasurementTableProps()}
           >
             <thead className="results-table-column-headers">
               <tr>
                 {table.getAllLeafColumns().map((col) => (
                   <th key={col.id}>
-                    {typeof col.columnDef.header === "function"
+                    {typeof col.columnDef.header === 'function'
                       ? col.id
                       : (col.columnDef.header ?? col.id)}
                   </th>
@@ -655,9 +655,9 @@ export default function ResultsTable({
                   <tr key={row.id}>
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id}>
-                        {typeof cell.column.columnDef.cell === "function"
+                        {typeof cell.column.columnDef.cell === 'function'
                           ? cell.column.columnDef.cell(cell.getContext())
-                          : ""}
+                          : ''}
                       </td>
                     ))}
                   </tr>
@@ -704,18 +704,18 @@ export default function ResultsTable({
                   return (
                     <TableRow key={`${headerGroup.id}-filters`}>
                       {headerGroup.headers.map((header) => {
-                        if (header.column.id === "expander") {
+                        if (header.column.id === 'expander') {
                           return (
                             <FilterTableCell
                               key={`${header.id}-filter`}
                               cellWidth={27.5}
                               sx={{ flexShrink: 0 }}
                             >
-                              <Tooltip title={i18n("results_clear_filters")}>
+                              <Tooltip title={i18n('results_clear_filters')}>
                                 <IconButton
                                   size="small"
                                   onClick={() => columnFilterFns[1]([])}
-                                  aria-label={i18n("results_clear_filters")}
+                                  aria-label={i18n('results_clear_filters')}
                                   sx={{ flexShrink: 0 }}
                                 >
                                   <SearchOffIcon fontSize="small" sx={{ flexShrink: 0 }} />
@@ -756,7 +756,7 @@ export default function ResultsTable({
                         {row.getVisibleCells().map((cell) => (
                           <StyledTableCell
                             key={cell.id}
-                            className={resultStyles["styled-table-cell"]}
+                            className={resultStyles['styled-table-cell']}
                             style={{
                               textAlign: cell.column.columnDef.meta?.style?.textAlign,
                             }}
@@ -775,15 +775,15 @@ export default function ResultsTable({
                     </Fragment>
                   ))
               ) : (
-                <TableRow className={resultStyles["styled-table-row"]}>
+                <TableRow className={resultStyles['styled-table-row']}>
                   <EmptyStateCell colSpan={table.getAllColumns().length}>
                     {searchResults.length === 0
                       ? isLoading
-                        ? i18n("results_status_searching")
-                        : tableText || i18n("results_status_no_search_query")
+                        ? i18n('results_status_searching')
+                        : tableText || i18n('results_status_no_search_query')
                       : table.getState().columnFilters.length > 0 || table.getState().globalFilter
-                        ? i18n("results_status_no_results_filtered")
-                        : i18n("results_status_no_results_found")}
+                        ? i18n('results_status_no_results_filtered')
+                        : i18n('results_status_no_results_found')}
                   </EmptyStateCell>
                 </TableRow>
               )}
@@ -792,13 +792,13 @@ export default function ResultsTable({
 
           {/* Enhanced error handling */}
           {error && (
-            <ErrorContainer className={resultStyles["error-container"]}>
-              <p>{i18n("results_error", [error])}</p>
+            <ErrorContainer className={resultStyles['error-container']}>
+              <p>{i18n('results_error', [error])}</p>
               <ErrorRetryButton
                 onClick={() => window.location.reload()}
-                className={resultStyles["error-retry-button"]}
+                className={resultStyles['error-retry-button']}
               >
-                {i18n("results_retry")}
+                {i18n('results_retry')}
               </ErrorRetryButton>
             </ErrorContainer>
           )}
@@ -808,7 +808,7 @@ export default function ResultsTable({
             <PaginationContainer>
               {/* Page Size Selector */}
               <PageSizeContainer>
-                <Typography variant="body2">{i18n("results_show")}:</Typography>
+                <Typography variant="body2">{i18n('results_show')}:</Typography>
                 <FormControl size="small">
                   <PageSizeSelect
                     value={table.getState().pagination.pageSize}
@@ -821,16 +821,16 @@ export default function ResultsTable({
                         next >= totalRowCount ? Number.POSITIVE_INFINITY : next;
                       table.setPageSize(next);
                     }}
-                    aria-label={i18n("results_rows_per_page_aria")}
+                    aria-label={i18n('results_rows_per_page_aria')}
                   >
                     {generatePageSizes(totalRowCount, 10, 5).map((pageSize) => (
                       <MenuItem key={pageSize} value={pageSize}>
-                        {pageSize === totalRowCount ? i18n("results_all") : pageSize}
+                        {pageSize === totalRowCount ? i18n('results_all') : pageSize}
                       </MenuItem>
                     ))}
                   </PageSizeSelect>
                 </FormControl>
-                <Typography variant="body2">{i18n("results_rows")}</Typography>
+                <Typography variant="body2">{i18n('results_rows')}</Typography>
               </PageSizeContainer>
 
               {/* Page Info — "Showing N of M" surfaces the post-filter vs
@@ -838,13 +838,13 @@ export default function ResultsTable({
                   column / global filter. When no filter is active (filtered
                   === total) it collapses back to the plain total form. */}
               <Typography variant="body2">
-                {i18n("results_page_of_total", [
+                {i18n('results_page_of_total', [
                   String(table.getState().pagination.pageIndex + 1),
                   String(table.getPageCount()),
-                ]) + " "}
+                ]) + ' '}
                 {filteredRowCount === totalRowCount
-                  ? i18n("results_total", [String(totalRowCount)])
-                  : i18n("results_showing", [String(filteredRowCount), String(totalRowCount)])}
+                  ? i18n('results_total', [String(totalRowCount)])
+                  : i18n('results_showing', [String(filteredRowCount), String(totalRowCount)])}
               </Typography>
 
               {/* Navigation Buttons */}
@@ -887,7 +887,7 @@ export default function ResultsTable({
           anchorEl={columnMenuAnchor}
           open={Boolean(columnMenuAnchor)}
           onClose={() => setColumnMenuAnchor(null)}
-          className={styles["column-visibility-menu"]}
+          className={styles['column-visibility-menu']}
         >
           {table
             .getAllLeafColumns()
@@ -899,7 +899,7 @@ export default function ResultsTable({
               // header falls back to its plain i18n label so it isn't stringified
               // into JS source or dropped to the raw lowercase column id.
               const headerDef = column.columnDef.header;
-              const label = typeof headerDef === "string" ? headerDef : i18n(`column_${column.id}`);
+              const label = typeof headerDef === 'string' ? headerDef : i18n(`column_${column.id}`);
               return (
                 <ColumnMenuItemContainer key={column.id}>
                   <FormControlLabel

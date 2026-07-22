@@ -1,8 +1,8 @@
-import { AppContext } from "@/context";
-import { act, renderHook } from "@testing-library/react";
-import { createElement, type ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useHelpTooltip } from "../useHelpTooltip.hook";
+import { AppContext } from '@/context';
+import { act, renderHook } from '@testing-library/react';
+import { createElement, type ReactNode } from 'react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useHelpTooltip } from '../useHelpTooltip.hook';
 
 function createWrapper(showHelp: boolean | undefined) {
   const value = {
@@ -24,18 +24,18 @@ function createWrapper(showHelp: boolean | undefined) {
     createElement(AppContext.Provider, { value }, children);
 }
 
-describe("useHelpTooltip", () => {
+describe('useHelpTooltip', () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
 
-  it("starts hidden", () => {
+  it('starts hidden', () => {
     const { result } = renderHook(() => useHelpTooltip(), {
       wrapper: createWrapper(true),
     });
     expect(result.current.showHelp).toBe(false);
   });
 
-  it("shows after the delay and hides again after the duration", async () => {
+  it('shows after the delay and hides again after the duration', async () => {
     const { result } = renderHook(() => useHelpTooltip(500, 2000), {
       wrapper: createWrapper(true),
     });
@@ -53,7 +53,7 @@ describe("useHelpTooltip", () => {
     expect(result.current.showHelp).toBe(false);
   });
 
-  it("never shows when showHelp setting is false", async () => {
+  it('never shows when showHelp setting is false', async () => {
     const { result } = renderHook(() => useHelpTooltip(500, 2000), {
       wrapper: createWrapper(false),
     });
@@ -64,7 +64,7 @@ describe("useHelpTooltip", () => {
     expect(result.current.showHelp).toBe(false);
   });
 
-  it("handleTooltipOpen and handleTooltipClose toggle visibility", () => {
+  it('handleTooltipOpen and handleTooltipClose toggle visibility', () => {
     const { result } = renderHook(() => useHelpTooltip(), {
       wrapper: createWrapper(false),
     });
@@ -76,7 +76,7 @@ describe("useHelpTooltip", () => {
     expect(result.current.showHelp).toBe(false);
   });
 
-  it("exposes setShowHelp for direct state control", () => {
+  it('exposes setShowHelp for direct state control', () => {
     const { result } = renderHook(() => useHelpTooltip(), {
       wrapper: createWrapper(false),
     });
@@ -85,7 +85,7 @@ describe("useHelpTooltip", () => {
     expect(result.current.showHelp).toBe(true);
   });
 
-  it("uses default delay and duration when none provided", async () => {
+  it('uses default delay and duration when none provided', async () => {
     const { result } = renderHook(() => useHelpTooltip(), {
       wrapper: createWrapper(true),
     });

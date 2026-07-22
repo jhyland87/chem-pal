@@ -1,11 +1,11 @@
-import { UOM } from "@/constants/common";
-import { parsePrice } from "@/helpers/currency";
-import { parseQuantity, toBaseQuantity } from "@/helpers/quantity";
-import { htmlToAscii, mapDefined } from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { isValidSearchResponse, isProductDetail } from "@/utils/typeGuards/mysimplestore";
-import { isValidVariant } from "@/utils/typeGuards/productbuilder";
-import { SupplierBase } from "./SupplierBase";
+import { UOM } from '@/constants/common';
+import { parsePrice } from '@/helpers/currency';
+import { parseQuantity, toBaseQuantity } from '@/helpers/quantity';
+import { htmlToAscii, mapDefined } from '@/helpers/utils';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { isValidSearchResponse, isProductDetail } from '@/utils/typeGuards/mysimplestore';
+import { isValidVariant } from '@/utils/typeGuards/productbuilder';
+import { SupplierBase } from './SupplierBase';
 /**
  * Abstract base for suppliers running on the MySimpleStore / GoDaddy "Online Store"
  * platform (a Spree-based JSON storefront). The API lives at
@@ -42,8 +42,8 @@ export abstract class SupplierBaseMySimpleStore
   protected productDefaults = {
     uom: UOM.EA,
     quantity: 1,
-    currencyCode: "USD",
-    currencySymbol: "$",
+    currencyCode: 'USD',
+    currencySymbol: '$',
   };
 
   /**
@@ -145,19 +145,19 @@ export abstract class SupplierBaseMySimpleStore
   ): Promise<ProductBuilder<Product>[] | void> {
     const searchResponse = await this.httpGetJson({
       host: this.apiHost,
-      path: "/api/v2/products",
+      path: '/api/v2/products',
       params: {
-        app: "vnext",
+        app: 'vnext',
         page: 1,
         per_page: limit,
-        "q[keywords]": query,
-        "q[name_or_description_text_cont]": query,
-        "q[descend_by_match]": "true",
+        'q[keywords]': query,
+        'q[name_or_description_text_cont]': query,
+        'q[descend_by_match]': 'true',
       },
     });
 
     if (!isValidSearchResponse(searchResponse)) {
-      this.logger.error("Invalid or empty MySimpleStore search response", {
+      this.logger.error('Invalid or empty MySimpleStore search response', {
         query,
         searchResponse,
       });
@@ -166,7 +166,7 @@ export abstract class SupplierBaseMySimpleStore
 
     const fuzzResults = this.fuzzyFilterAst<MySimpleStoreListProduct>(searchResponse.products);
 
-    this.logger.info("fuzzResults", { query, products: searchResponse.products, fuzzResults });
+    this.logger.info('fuzzResults', { query, products: searchResponse.products, fuzzResults });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));
   }
@@ -197,10 +197,10 @@ export abstract class SupplierBaseMySimpleStore
         .setImage(image, product.name)
         .setDescription(product.description_raw)
         // CAS lives in the free-form description copy; setCAS extracts it.
-        .setCAS(`${product.name}\n${product.description_raw ?? ""}`);
+        .setCAS(`${product.name}\n${product.description_raw ?? ''}`);
 
       if (product.price) {
-        builder.setPricing(product.price.numeric, product.price.currency ?? "USD", "$");
+        builder.setPricing(product.price.numeric, product.price.currency ?? 'USD', '$');
       }
 
       return builder;
@@ -224,7 +224,7 @@ export abstract class SupplierBaseMySimpleStore
    * @source
    */
   protected variantSortRank(variant: Partial<Variant>): number {
-    if (typeof variant.quantity !== "number" || !variant.uom) {
+    if (typeof variant.quantity !== 'number' || !variant.uom) {
       return Number.POSITIVE_INFINITY;
     }
     return toBaseQuantity(variant.quantity, variant.uom);
@@ -250,8 +250,8 @@ export abstract class SupplierBaseMySimpleStore
     const parsed: Partial<Variant> = { id: variant.id };
 
     // `options_text` is "Size: 1 LITER"; the size label is the part after the colon.
-    const sizeLabel = (variant.options_text ?? variant.option_values?.[0]?.name ?? "")
-      .split(":")
+    const sizeLabel = (variant.options_text ?? variant.option_values?.[0]?.name ?? '')
+      .split(':')
       .pop()
       ?.trim();
     if (sizeLabel) {
@@ -304,17 +304,17 @@ export abstract class SupplierBaseMySimpleStore
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     return this.getProductDataWithCache(product, async (builder) => {
-      const url = builder.get("url");
-      if (typeof url !== "string") {
-        this.logger.error("[MySimpleStore] Invalid product URL", { url });
+      const url = builder.get('url');
+      if (typeof url !== 'string') {
+        this.logger.error('[MySimpleStore] Invalid product URL', { url });
         return;
       }
 
       // The product page URL ends in the slug (".../ols/products/{slug}"); the
       // detail endpoint is keyed by that slug.
-      const slug = url.split("/").pop();
+      const slug = url.split('/').pop();
       if (!slug) {
-        this.logger.error("[MySimpleStore] Could not derive slug from URL", { url });
+        this.logger.error('[MySimpleStore] Could not derive slug from URL', { url });
         return builder;
       }
 
@@ -323,10 +323,10 @@ export abstract class SupplierBaseMySimpleStore
         detail = await this.httpGetJson({
           host: this.apiHost,
           path: `/api/v2/products/${slug}`,
-          params: { app: "vnext" },
+          params: { app: 'vnext' },
         });
       } catch (error) {
-        this.logger.warn("[MySimpleStore] Detail fetch failed; keeping listing data", {
+        this.logger.warn('[MySimpleStore] Detail fetch failed; keeping listing data', {
           error,
           slug,
         });
@@ -334,7 +334,7 @@ export abstract class SupplierBaseMySimpleStore
       }
 
       if (!isProductDetail(detail)) {
-        this.logger.warn("[MySimpleStore] Invalid product detail; keeping listing data", {
+        this.logger.warn('[MySimpleStore] Invalid product detail; keeping listing data', {
           slug,
           detail,
         });
@@ -357,7 +357,7 @@ export abstract class SupplierBaseMySimpleStore
           builder.addImage(src, detail.name);
         }
       });
-      if (typeof detail.in_stock === "boolean") {
+      if (typeof detail.in_stock === 'boolean') {
         builder.setAvailability(detail.in_stock);
       }
 
@@ -371,17 +371,17 @@ export abstract class SupplierBaseMySimpleStore
 
       const primary = variants[0];
       if (primary) {
-        if (typeof primary.price === "number") builder.setPrice(primary.price);
+        if (typeof primary.price === 'number') builder.setPrice(primary.price);
         if (primary.currencyCode) builder.setCurrencyCode(primary.currencyCode);
         if (primary.currencySymbol) builder.setCurrencySymbol(primary.currencySymbol);
-        if (typeof primary.quantity === "number" && primary.uom) {
+        if (typeof primary.quantity === 'number' && primary.uom) {
           builder.setQuantity(primary.quantity, primary.uom);
         }
         if (primary.sku) builder.setSku(primary.sku);
       } else {
         // Single-size products carry no variants; recover the size from the name
         // or description so the product isn't dropped for lacking a quantity.
-        const fallback = parseQuantity(detail.name) ?? parseQuantity(detail.description_text ?? "");
+        const fallback = parseQuantity(detail.name) ?? parseQuantity(detail.description_text ?? '');
         if (fallback) {
           builder.setQuantity(fallback.quantity, fallback.uom);
         }

@@ -1,5 +1,5 @@
-import { md5sum, serialize } from "@/helpers/utils";
-import * as contentType from "content-type";
+import { md5sum, serialize } from '@/helpers/utils';
+import * as contentType from 'content-type';
 
 /**
  * @group Helpers
@@ -58,7 +58,7 @@ export function getRequestHash(request: Request): RequestHashObject {
   const url = new URL(request.url);
   const resultHash = md5sum(
     // POST
-    request.method + (url.pathname ?? "") + (url.search ?? "") + (request.body ?? ""),
+    request.method + (url.pathname ?? '') + (url.search ?? '') + (request.body ?? ''),
   );
 
   return {
@@ -105,7 +105,7 @@ export async function getCachableResponse(
   const reqHash = getRequestHash(request);
 
   // Generate a serialized object to be saved
-  const dataType = contentType.parse(String(response.headers.get("content-type") ?? ""));
+  const dataType = contentType.parse(String(response.headers.get('content-type') ?? ''));
 
   const serializedResponse: SerializedResponse = {
     contentType: dataType.type,
@@ -113,7 +113,7 @@ export async function getCachableResponse(
 
   const clonedResponse = response.clone();
 
-  if (serializedResponse.contentType === "application/json") {
+  if (serializedResponse.contentType === 'application/json') {
     // Json gets stringified
     serializedResponse.content = serialize(JSON.stringify(await clonedResponse.json()));
   } else {
@@ -142,12 +142,12 @@ export async function getCachableResponse(
  */
 export function urlencode(str: string): string {
   return encodeURIComponent(str)
-    .replace(/!/g, "%21")
-    .replace(/'/g, "%27")
-    .replace(/\(/g, "%28")
-    .replace(/\)/g, "%29")
-    .replace(/\*/g, "%2A")
-    .replace(/%20/g, "+");
+    .replace(/!/g, '%21')
+    .replace(/'/g, '%27')
+    .replace(/\(/g, '%28')
+    .replace(/\)/g, '%29')
+    .replace(/\*/g, '%2A')
+    .replace(/%20/g, '+');
 }
 
 /**
@@ -164,9 +164,9 @@ export function urlencode(str: string): string {
  */
 export function createDOM(html: string): Document {
   const parser = new DOMParser();
-  const doc = parser.parseFromString(html, "text/html");
+  const doc = parser.parseFromString(html, 'text/html');
   if (!doc) {
-    throw new Error("Failed to parse HTML");
+    throw new Error('Failed to parse HTML');
   }
   return doc;
 }
@@ -176,4 +176,4 @@ export function createDOM(html: string): Document {
  * single entry point.
  * @category Helpers
  */
-export { fetchDecorator, generateRequestHash, generateSimpleHash } from "./fetch";
+export { fetchDecorator, generateRequestHash, generateSimpleHash } from './fetch';

@@ -1,14 +1,14 @@
-import { getColumnFilterConfig } from "@/components/SearchPanel/TableColumns";
-import { AVAILABILITY_LABEL_MAP, CACHE } from "@/constants/common";
-import { useAppContext } from "@/context";
-import { SearchEvent, emitSearchEvent } from "@/events/searchEvents";
-import { addExcludedProduct } from "@/helpers/excludedProducts";
-import { i18n } from "@/helpers/i18n";
-import { recordProductPrices } from "@/helpers/priceHistory";
-import { dedupeProducts, getProductDedupeKey } from "@/helpers/productIdentity";
-import { suggestAlternativeSearch } from "@/helpers/pubchem";
-import { HotkeyEvent } from "@/hotkeys";
-import { SupplierFactory } from "@/suppliers/SupplierFactory";
+import { getColumnFilterConfig } from '@/components/SearchPanel/TableColumns';
+import { AVAILABILITY_LABEL_MAP, CACHE } from '@/constants/common';
+import { useAppContext } from '@/context';
+import { SearchEvent, emitSearchEvent } from '@/events/searchEvents';
+import { addExcludedProduct } from '@/helpers/excludedProducts';
+import { i18n } from '@/helpers/i18n';
+import { recordProductPrices } from '@/helpers/priceHistory';
+import { dedupeProducts, getProductDedupeKey } from '@/helpers/productIdentity';
+import { suggestAlternativeSearch } from '@/helpers/pubchem';
+import { HotkeyEvent } from '@/hotkeys';
+import { SupplierFactory } from '@/suppliers/SupplierFactory';
 import {
   IDB_SEARCH_RESULTS_CLEARED,
   addSearchHistoryEntry,
@@ -17,12 +17,12 @@ import {
   getSearchResultsRecord,
   setSearchResults as idbSetSearchResults,
   updateSearchHistoryResultCount as idbUpdateHistoryResultCount,
-} from "@/utils/idbCache";
-import { Logger } from "@/utils/Logger";
-import { cstorage } from "@/utils/storage";
-import { startTransition, useCallback, useEffect, useRef, useState } from "react";
+} from '@/utils/idbCache';
+import { Logger } from '@/utils/Logger';
+import { cstorage } from '@/utils/storage';
+import { startTransition, useCallback, useEffect, useRef, useState } from 'react';
 
-const logger = new Logger("useSearch");
+const logger = new Logger('useSearch');
 
 interface SearchState {
   isLoading: boolean;
@@ -50,14 +50,14 @@ export function updateColumnFilterFromResult(config: ColumnFilterConfig, result:
     if (columnName in config === false) continue;
     const column = config[columnName];
 
-    if (column.filterVariant === "range") {
-      if (typeof columnValue !== "number") continue;
-      if (typeof column.filterData[0] !== "number" || columnValue < column.filterData[0]) {
+    if (column.filterVariant === 'range') {
+      if (typeof columnValue !== 'number') continue;
+      if (typeof column.filterData[0] !== 'number' || columnValue < column.filterData[0]) {
         column.filterData[0] = columnValue;
-      } else if (typeof column.filterData[1] !== "number" || columnValue < column.filterData[1]) {
+      } else if (typeof column.filterData[1] !== 'number' || columnValue < column.filterData[1]) {
         column.filterData[1] = columnValue;
       }
-    } else if (column.filterVariant === "select" || column.filterVariant === "text") {
+    } else if (column.filterVariant === 'select' || column.filterVariant === 'text') {
       if (!column.filterData.includes(columnValue)) {
         column.filterData.push(columnValue);
       }
@@ -83,7 +83,7 @@ export async function saveResultsToSession(results: Product[], query?: string): 
   try {
     await idbSetSearchResults(results, query);
   } catch (error) {
-    logger.warn("Failed to save search results to IndexedDB:", { error });
+    logger.warn('Failed to save search results to IndexedDB:', { error });
   }
 }
 
@@ -103,12 +103,12 @@ export async function createInitialHistoryEntry(
       query,
       timestamp,
       resultCount: 0,
-      type: "search",
+      type: 'search',
       filters: { ...filters },
       selectedSuppliers: [...selectedSuppliers],
     });
   } catch (error) {
-    logger.warn("Failed to save search history:", { error });
+    logger.warn('Failed to save search history:', { error });
   }
 }
 
@@ -120,7 +120,7 @@ export async function updateHistoryResultCount(timestamp: number, count: number)
   try {
     await idbUpdateHistoryResultCount(timestamp, count);
   } catch (error) {
-    logger.warn("Failed to update search history result count:", { error });
+    logger.warn('Failed to update search history result count:', { error });
   }
 }
 
@@ -134,12 +134,12 @@ async function getZeroResultQueries(): Promise<Set<string>> {
   try {
     const history = await getSearchHistory();
     for (const entry of history) {
-      if (entry.type === "search" && entry.resultCount === 0 && entry.query) {
+      if (entry.type === 'search' && entry.resultCount === 0 && entry.query) {
         failed.add(entry.query.toLowerCase());
       }
     }
   } catch (error) {
-    logger.warn("Failed to load search history for suggestions:", { error });
+    logger.warn('Failed to load search history for suggestions:', { error });
   }
   return failed;
 }
@@ -153,25 +153,25 @@ export async function buildNoResultsMessage(
   query: string,
   filtersActive: boolean,
 ): Promise<string> {
-  const lines = [i18n("search_no_results_for", [query])];
+  const lines = [i18n('search_no_results_for', [query])];
 
   if (filtersActive) {
-    lines.push(i18n("search_try_broaden"));
+    lines.push(i18n('search_try_broaden'));
   }
 
   try {
     const excluded = await getZeroResultQueries();
     const { name, cas } = await suggestAlternativeSearch(query, excluded);
     if (name) {
-      lines.push(i18n("search_suggest_name", [name]));
+      lines.push(i18n('search_suggest_name', [name]));
     } else if (cas) {
-      lines.push(i18n("search_suggest_cas", [cas]));
+      lines.push(i18n('search_suggest_cas', [cas]));
     }
   } catch (error) {
-    logger.warn("Failed to build alternative search suggestion:", { error });
+    logger.warn('Failed to build alternative search suggestion:', { error });
   }
 
-  return lines.join("\n");
+  return lines.join('\n');
 }
 
 /**
@@ -192,7 +192,7 @@ function passesSearchFilters(
       product.variants?.[0]?.availability ??
       product.variants?.[0]?.status ??
       product.variants?.[0]?.statusTxt ??
-      ""
+      ''
     ).toLowerCase();
 
     if (productAvailability && !allowedStatuses.includes(productAvailability)) {
@@ -288,11 +288,11 @@ export function useSearch() {
   };
 
   const [state, setState] = useState<SearchState>(initialState);
-  const [tableText, setTableText] = useState<string>("");
+  const [tableText, setTableText] = useState<string>('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   // The query string of the most recently executed search. Displayed in the
   // results panel header so the user can see what they searched for.
-  const [executedQuery, setExecutedQuery] = useState<string>("");
+  const [executedQuery, setExecutedQuery] = useState<string>('');
 
   // Guard to ensure session storage is only loaded once, even under StrictMode's
   // double-invoke of effects in development.
@@ -331,7 +331,7 @@ export function useSearch() {
         const searchPending = hasPendingSearch || Boolean(appContext.pendingSearchQuery?.trim());
 
         if (!searchPending && cachedResults.length > 0) {
-          logger.debug("Loading previous search results from IndexedDB", {
+          logger.debug('Loading previous search results from IndexedDB', {
             length: cachedResults.length,
             results: cachedResults,
           });
@@ -347,7 +347,7 @@ export function useSearch() {
           // written before the query was stored in IndexedDB.
           const restoredQuery =
             cachedRecord.query ??
-            (typeof sessionData[CACHE.QUERY] === "string" ? sessionData[CACHE.QUERY] : "");
+            (typeof sessionData[CACHE.QUERY] === 'string' ? sessionData[CACHE.QUERY] : '');
           if (restoredQuery) {
             setExecutedQuery(restoredQuery);
           }
@@ -357,7 +357,7 @@ export function useSearch() {
         if (hasPendingSearch) {
           isSearchInitiatedRef.current = true;
 
-          logger.debug("Found new search submission, executing search", {
+          logger.debug('Found new search submission, executing search', {
             query: sessionData[CACHE.QUERY],
           });
           // Await the flag removal to prevent race conditions with re-runs
@@ -367,7 +367,7 @@ export function useSearch() {
             logger.warn(`Failed to clear ${CACHE.SEARCH_IS_NEW_SEARCH} flag`, { error });
           }
 
-          logger.debug("executing search FROM USEFFECT", {
+          logger.debug('executing search FROM USEFFECT', {
             query: sessionData[CACHE.QUERY],
           });
           // Execute the search - performSearch reads supplierResultLimit/suppliers
@@ -375,7 +375,7 @@ export function useSearch() {
           performSearch({ query: sessionData[CACHE.QUERY] });
         }
       } catch (error) {
-        logger.warn("Failed to load search data from session storage:", { error });
+        logger.warn('Failed to load search data from session storage:', { error });
       }
     };
     loadSearchData();
@@ -406,7 +406,7 @@ export function useSearch() {
       // both pass the check. Cleared in the finally below once the search settles.
       const normalizedQuery = query.trim();
       if (inFlightQueryRef.current === normalizedQuery) {
-        logger.debug("performSearch: duplicate in-flight query ignored", { query });
+        logger.debug('performSearch: duplicate in-flight query ignored', { query });
         return;
       }
       inFlightQueryRef.current = normalizedQuery;
@@ -414,7 +414,7 @@ export function useSearch() {
       const { searchFilters } = appContext;
       const filtersActive = hasActiveFilters(searchFilters, appContext.userSettings);
 
-      logger.debug("performSearch", {
+      logger.debug('performSearch', {
         query,
         supplierResultLimit,
         suppliers,
@@ -430,12 +430,12 @@ export function useSearch() {
       setState({
         isLoading: true,
         isAborting: false,
-        status: i18n("results_status_searching"),
+        status: i18n('results_status_searching'),
         error: undefined,
         resultCount: 0,
       });
       setSearchResults([]);
-      setTableText("");
+      setTableText('');
       setExecutedQuery(query);
 
       // Drop stale persisted results so a 0-result/aborted search doesn't
@@ -445,7 +445,7 @@ export function useSearch() {
       // Create a history entry immediately so it's recorded even if the search is cancelled or hangs.
       // The resultCount will be updated live as results stream in.
       const historyTimestamp = Date.now();
-      logger.log("Searching for", { query, suppliers, appContext });
+      logger.log('Searching for', { query, suppliers, appContext });
       void createInitialHistoryEntry(
         query,
         historyTimestamp,
@@ -462,7 +462,7 @@ export function useSearch() {
       // When filters are active, fetch more results so there's enough after filtering.
       // The per-supplier limit is applied post-filter, so we ask each supplier for more.
       const fetchLimit = filtersActive ? userLimit * 5 : userLimit;
-      logger.debug("fetchLimit", {
+      logger.debug('fetchLimit', {
         fetchLimit,
         userLimit,
         filtersActive,
@@ -527,7 +527,7 @@ export function useSearch() {
             startTransition(() => {
               setState((prev) => ({
                 ...prev,
-                status: i18n("search_status_fetching", [String(allResults.length)]),
+                status: i18n('search_status_fetching', [String(allResults.length)]),
               }));
             });
           }
@@ -568,7 +568,7 @@ export function useSearch() {
           await saveResultsToSession(finalResults, query);
           await updateHistoryResultCount(historyTimestamp, finalResults.length);
 
-          logger.debug("Fetched results", {
+          logger.debug('Fetched results', {
             allResults,
             filtered,
             finalResults,
@@ -593,7 +593,7 @@ export function useSearch() {
                 ...prev,
                 resultCount: totalResults,
                 status: i18n(
-                  totalResults === 1 ? "search_status_found_one" : "search_status_found_other",
+                  totalResults === 1 ? 'search_status_found_one' : 'search_status_found_other',
                   [String(totalResults)],
                 ),
               }));
@@ -650,13 +650,13 @@ export function useSearch() {
           // When the shipping filter alone emptied the supplier set, explain that
           // directly instead of the generic "no products" suggestion flow.
           const message = productQueryFactory.shippingExcludedAll
-            ? i18n("search_no_shipping_suppliers")
+            ? i18n('search_no_shipping_suppliers')
             : await buildNoResultsMessage(query, filtersActive);
           setTableText(message);
-          logger.debug("setting table text", { tableText: message });
+          logger.debug('setting table text', { tableText: message });
         } else {
           // Clear any status text from a previous search.
-          setTableText("");
+          setTableText('');
         }
 
         // Signal completion; the badge controller reconciles the final count.
@@ -678,26 +678,26 @@ export function useSearch() {
         // Either branch lands here once the stream has fully drained — including
         // after an abort, when in-flight requests have finished settling — so
         // this is where isLoading/isAborting reset and the overlay closes.
-        if (error instanceof Error && error.name === "AbortError") {
+        if (error instanceof Error && error.name === 'AbortError') {
           emitSearchEvent(SearchEvent.ABORTED, { reason: error.message });
           setState((prev) => ({
             ...prev,
             isLoading: false,
             isAborting: false,
-            status: i18n("search_status_aborted"),
+            status: i18n('search_status_aborted'),
             error: undefined,
           }));
-          setTableText(i18n("search_status_aborted"));
+          setTableText(i18n('search_status_aborted'));
         } else {
           emitSearchEvent(SearchEvent.FAILED, {
-            error: error instanceof Error ? error.message : i18n("search_error_failed"),
+            error: error instanceof Error ? error.message : i18n('search_error_failed'),
           });
           setState((prev) => ({
             ...prev,
             isLoading: false,
             isAborting: false,
             status: false,
-            error: error instanceof Error ? error.message : i18n("search_error_failed"),
+            error: error instanceof Error ? error.message : i18n('search_error_failed'),
           }));
         }
       } finally {
@@ -766,7 +766,7 @@ export function useSearch() {
           url: product.url,
         });
       } catch (error) {
-        logger.warn("Failed to persist excluded product:", { error });
+        logger.warn('Failed to persist excluded product:', { error });
       }
       // Persist the updated results so a reload doesn't resurrect the row. Keep the
       // current query so removing a row doesn't drop the header label.
@@ -776,17 +776,17 @@ export function useSearch() {
   );
 
   const handleStopSearch = useCallback(() => {
-    logger.debug("triggering abort..");
+    logger.debug('triggering abort..');
     // Signal the abort but keep the overlay up: requests already in flight will
     // keep streaming back until the supplier streams settle. Flip into the
     // "Aborting..." state now; performSearch resets isLoading/isAborting once the
     // stream finishes draining, which is what actually closes the overlay.
-    fetchControllerRef.current.abort("Request was aborted by user");
+    fetchControllerRef.current.abort('Request was aborted by user');
     startTransition(() => {
       setState((prev) => ({
         ...prev,
         isAborting: true,
-        status: i18n("loading_aborting"),
+        status: i18n('loading_aborting'),
       }));
     });
   }, []);

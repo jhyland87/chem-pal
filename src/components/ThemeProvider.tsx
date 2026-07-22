@@ -1,6 +1,6 @@
-import { useAppContext } from "@/context";
-import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
-import { FC, ReactNode, useEffect } from "react";
+import { useAppContext } from '@/context';
+import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
+import { FC, ReactNode, useEffect } from 'react';
 import {
   darkPalette,
   darkTheme,
@@ -9,7 +9,7 @@ import {
   ThemeContext,
   ThemeContextType,
   ThemeMode,
-} from "../themes";
+} from '../themes';
 
 /**
  * Props for {@link ThemeProvider}.
@@ -27,11 +27,11 @@ interface ThemeProviderProps {
 // `UserSettings.fontSize` is optional — narrow to the non-undefined union so
 // Record can key off valid size names only. The fallback path in the effect
 // below handles the undefined case at runtime.
-type FontSize = NonNullable<UserSettings["fontSize"]>;
+type FontSize = NonNullable<UserSettings['fontSize']>;
 const FONT_SIZE_PX: Record<FontSize, string> = {
-  small: "14px",
-  medium: "16px",
-  large: "18px",
+  small: '14px',
+  medium: '16px',
+  large: '18px',
 };
 
 /**
@@ -65,14 +65,14 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({ children }) => {
       (size !== undefined && FONT_SIZE_PX[size]) || FONT_SIZE_PX.medium;
   }, [userSettings.fontSize]);
 
-  const mode: ThemeMode = userSettings.theme === "dark" ? "dark" : "light";
+  const mode: ThemeMode = userSettings.theme === 'dark' ? 'dark' : 'light';
 
   const toggleTheme = () => {
-    setUserSettings({ ...userSettings, theme: mode === "light" ? "dark" : "light" });
+    setUserSettings({ ...userSettings, theme: mode === 'light' ? 'dark' : 'light' });
   };
 
-  const currentTheme = mode === "light" ? lightTheme : darkTheme;
-  const currentPalette = mode === "light" ? lightPalette : darkPalette;
+  const currentTheme = mode === 'light' ? lightTheme : darkTheme;
+  const currentPalette = mode === 'light' ? lightPalette : darkPalette;
 
   const themeContextValue: ThemeContextType = {
     mode,

@@ -17,14 +17,14 @@
  * @source
  */
 
-import { toDateKey } from "@/helpers/supplierStats";
+import { toDateKey } from '@/helpers/supplierStats';
 import {
   getSupplierStatsEntry,
   putSupplierStatsEntry,
   getAllSupplierStats,
   deleteSupplierStatsEntries,
   clearSupplierStats as idbClearSupplierStats,
-} from "@/utils/idbCache";
+} from '@/utils/idbCache';
 
 const RETENTION_DAYS = 30;
 const FLUSH_DELAY_MS = 500;
@@ -92,7 +92,7 @@ async function flushToStorage(): Promise<void> {
   for (const [key, delta] of batch) {
     // Keys are built internally by bufferIncrement as `date:supplier:field`, so the
     // tuple shape is guaranteed; split() only ever returns the wider string[] type.
-    const [date, supplier, field] = key.split(":") as [string, string, keyof SupplierDayStats];
+    const [date, supplier, field] = key.split(':') as [string, string, keyof SupplierDayStats];
     if (!byDate[date]) byDate[date] = [];
     byDate[date].push([date, supplier, field, delta]);
   }
@@ -112,7 +112,7 @@ async function flushToStorage(): Promise<void> {
     // Prune old entries
     await pruneOldEntries();
   } catch (error) {
-    console.warn("Failed to flush supplier stats:", error);
+    console.warn('Failed to flush supplier stats:', error);
     for (const [key, delta] of batch) {
       pendingIncrements.set(key, (pendingIncrements.get(key) ?? 0) + delta);
     }
@@ -130,7 +130,7 @@ async function pruneOldEntries(): Promise<void> {
       await deleteSupplierStatsEntries(keysToRemove);
     }
   } catch (err) {
-    console.warn("Failed to prune old supplier stats:", err);
+    console.warn('Failed to prune old supplier stats:', err);
   }
 }
 
@@ -139,7 +139,7 @@ async function pruneOldEntries(): Promise<void> {
  * @category Utils
  */
 export function incrementSearchQueryCount(supplier: string): void {
-  bufferIncrement(supplier, "searchQueryCount");
+  bufferIncrement(supplier, 'searchQueryCount');
 }
 
 /**
@@ -147,7 +147,7 @@ export function incrementSearchQueryCount(supplier: string): void {
  * @category Utils
  */
 export function incrementSuccess(supplier: string): void {
-  bufferIncrement(supplier, "successCount");
+  bufferIncrement(supplier, 'successCount');
 }
 
 /**
@@ -155,7 +155,7 @@ export function incrementSuccess(supplier: string): void {
  * @category Utils
  */
 export function incrementFailure(supplier: string): void {
-  bufferIncrement(supplier, "failureCount");
+  bufferIncrement(supplier, 'failureCount');
 }
 
 /**
@@ -163,7 +163,7 @@ export function incrementFailure(supplier: string): void {
  * @category Utils
  */
 export function incrementProductCount(supplier: string): void {
-  bufferIncrement(supplier, "uniqueProductCount");
+  bufferIncrement(supplier, 'uniqueProductCount');
 }
 
 /**
@@ -171,7 +171,7 @@ export function incrementProductCount(supplier: string): void {
  * @category Utils
  */
 export function incrementParseError(supplier: string): void {
-  bufferIncrement(supplier, "parseErrorCount");
+  bufferIncrement(supplier, 'parseErrorCount');
 }
 
 /**
@@ -187,7 +187,7 @@ export async function getStats(): Promise<SupplierStatsData> {
   try {
     return await getAllSupplierStats();
   } catch (error) {
-    console.warn("Failed to read supplier stats:", error);
+    console.warn('Failed to read supplier stats:', error);
     return {};
   }
 }
@@ -201,6 +201,6 @@ export async function clearStats(): Promise<void> {
   try {
     await idbClearSupplierStats();
   } catch (error) {
-    console.warn("Failed to clear supplier stats:", error);
+    console.warn('Failed to clear supplier stats:', error);
   }
 }

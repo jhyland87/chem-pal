@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Minimal shape every Wix product must satisfy for the supplier to consume it.

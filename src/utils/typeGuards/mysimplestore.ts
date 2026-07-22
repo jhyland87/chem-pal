@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Minimal shape every MySimpleStore search-list product must satisfy for the

@@ -1,7 +1,7 @@
-import Tooltip from "@mui/material/Tooltip";
-import { SVGProps, FC, ReactNode } from "react";
+import Tooltip from '@mui/material/Tooltip';
+import { SVGProps, FC, ReactNode } from 'react';
 
-export type CryptoType = "bitcoin" | "ethereum" | "tether" | "litecoin";
+export type CryptoType = 'bitcoin' | 'ethereum' | 'tether' | 'litecoin';
 
 export interface CryptoPaymentIconProps extends SVGProps<SVGSVGElement> {
   type: CryptoType;

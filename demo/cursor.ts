@@ -18,13 +18,13 @@
  *
  * @module demo/cursor
  */
-import { type BrowserContext } from "@playwright/test";
+import { type BrowserContext } from '@playwright/test';
 
 /**
  * DOM id of the injected pointer node, so screenshot helpers can hide it for a
  * capture (see `captureImageOfElement`) without reaching for a literal.
  */
-export const DEMO_CURSOR_ID = "__chempalDemoCursor";
+export const DEMO_CURSOR_ID = '__chempalDemoCursor';
 
 /** Milliseconds the pointer takes to ease from its old spot to a new one. */
 const GLIDE_MS = 200;
@@ -68,7 +68,7 @@ export async function installCursorOverlay(context: BrowserContext): Promise<voi
       }
 
       const CURSOR_ID = cursorId;
-      const STYLE_ID = "__chempalDemoCursorStyle";
+      const STYLE_ID = '__chempalDemoCursorStyle';
       // Tip of the arrow within the 24x24 SVG viewBox — used as the click hotspot.
       const TIP_X = 5;
       const TIP_Y = 3;
@@ -80,12 +80,12 @@ export async function installCursorOverlay(context: BrowserContext): Promise<voi
 
         // One-time ripple keyframes.
         if (!document.getElementById(STYLE_ID)) {
-          const style = document.createElement("style");
+          const style = document.createElement('style');
           style.id = STYLE_ID;
           style.textContent =
-            "@keyframes __chempalRipple{" +
-            "from{transform:translate(-50%,-50%) scale(0.25);opacity:0.9}" +
-            "to{transform:translate(-50%,-50%) scale(2.5);opacity:0}}";
+            '@keyframes __chempalRipple{' +
+            'from{transform:translate(-50%,-50%) scale(0.25);opacity:0.9}' +
+            'to{transform:translate(-50%,-50%) scale(2.5);opacity:0}}';
           document.head.appendChild(style);
         }
 
@@ -93,13 +93,13 @@ export async function installCursorOverlay(context: BrowserContext): Promise<voi
         // so it reads over any background. Positioned so the tip sits on the mouse.
         // No transition yet — the first placement is instant so it doesn't swoop
         // in from the corner; easing is switched on after that.
-        const cursor = document.createElement("div");
+        const cursor = document.createElement('div');
         cursor.id = CURSOR_ID;
         cursor.style.cssText =
-          "position:fixed;left:0;top:0;width:24px;height:24px;" +
-          "pointer-events:none;z-index:2147483647;opacity:0;" +
+          'position:fixed;left:0;top:0;width:24px;height:24px;' +
+          'pointer-events:none;z-index:2147483647;opacity:0;' +
           `transform:translate(-${TIP_X}px,-${TIP_Y}px);` +
-          "will-change:transform;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.45));";
+          'will-change:transform;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.45));';
         cursor.innerHTML =
           '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" ' +
           'xmlns="http://www.w3.org/2000/svg">' +
@@ -114,28 +114,28 @@ export async function installCursorOverlay(context: BrowserContext): Promise<voi
           if (!cursor.isConnected && document.body) {
             document.body.appendChild(cursor);
           }
-          cursor.style.opacity = "1";
+          cursor.style.opacity = '1';
           // First placement is instant so the pointer doesn't swoop in from the
           // corner; after that each move eases over the requested duration.
-          cursor.style.transition = placed ? `transform ${durMs}ms ease-out` : "none";
+          cursor.style.transition = placed ? `transform ${durMs}ms ease-out` : 'none';
           cursor.style.transform = `translate(${x - TIP_X}px,${y - TIP_Y}px)`;
           placed = true;
         };
 
         // Let the helpers glide the pointer onto an element without moving the real
         // mouse (which would trigger hover tooltips before we want them).
-        Reflect.set(window, "__chempalCursorMoveTo", (x: number, y: number) =>
+        Reflect.set(window, '__chempalCursorMoveTo', (x: number, y: number) =>
           moveTo(x, y, glideMs),
         );
 
         window.addEventListener(
-          "mousemove",
+          'mousemove',
           (event) => moveTo(event.clientX, event.clientY, glideMs),
           { capture: true, passive: true },
         );
 
         window.addEventListener(
-          "mousedown",
+          'mousedown',
           (event) => {
             // Send the pointer to the exact click point at normal glide speed, then
             // hold the ripple back a beat so it appears once the pointer arrives —
@@ -144,14 +144,14 @@ export async function installCursorOverlay(context: BrowserContext): Promise<voi
             const y = event.clientY;
             moveTo(x, y, glideMs);
             window.setTimeout(() => {
-              const ripple = document.createElement("div");
+              const ripple = document.createElement('div');
               ripple.style.cssText =
-                "position:fixed;width:34px;height:34px;border-radius:50%;" +
-                "border:2px solid rgba(37,99,235,0.9);pointer-events:none;" +
-                "z-index:2147483646;transform:translate(-50%,-50%) scale(0.25);" +
+                'position:fixed;width:34px;height:34px;border-radius:50%;' +
+                'border:2px solid rgba(37,99,235,0.9);pointer-events:none;' +
+                'z-index:2147483646;transform:translate(-50%,-50%) scale(0.25);' +
                 `left:${x}px;top:${y}px;` +
-                "animation:__chempalRipple 500ms ease-out forwards;";
-              ripple.addEventListener("animationend", () => ripple.remove());
+                'animation:__chempalRipple 500ms ease-out forwards;';
+              ripple.addEventListener('animationend', () => ripple.remove());
               if (document.body) {
                 document.body.appendChild(ripple);
               }
@@ -165,7 +165,7 @@ export async function installCursorOverlay(context: BrowserContext): Promise<voi
       if (document.body) {
         install();
       } else {
-        document.addEventListener("DOMContentLoaded", install, { once: true });
+        document.addEventListener('DOMContentLoaded', install, { once: true });
       }
     },
     { glideMs: GLIDE_MS, rippleDelayMs: RIPPLE_DELAY_MS, cursorId: DEMO_CURSOR_ID },

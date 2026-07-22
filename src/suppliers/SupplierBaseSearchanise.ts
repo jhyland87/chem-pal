@@ -1,10 +1,10 @@
-import { findCAS } from "@/helpers/cas";
-import { parseQuantity } from "@/helpers/quantity";
-import { findMolarity, findMolarMass, findPurity } from "@/helpers/science";
-import { firstMap } from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { isSearchaniseVariant, isValidSearchResponse } from "@/utils/typeGuards/searchanise";
-import { SupplierBase } from "./SupplierBase";
+import { findCAS } from '@/helpers/cas';
+import { parseQuantity } from '@/helpers/quantity';
+import { findMolarity, findMolarMass, findPurity } from '@/helpers/science';
+import { firstMap } from '@/helpers/utils';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { isSearchaniseVariant, isValidSearchResponse } from '@/utils/typeGuards/searchanise';
+import { SupplierBase } from './SupplierBase';
 
 /**
  * Base class for Searchanise-based suppliers that provides common functionality for
@@ -53,9 +53,9 @@ export abstract class SupplierBaseSearchanise
   extends SupplierBase<ItemListing, Product>
   implements ISupplier
 {
-  protected apiKey: string = "";
+  protected apiKey: string = '';
 
-  protected apiURL: string = "searchserverapi.com";
+  protected apiURL: string = 'searchserverapi.com';
 
   /**
    * Derives the unique product key from a Searchanise item listing: its
@@ -115,7 +115,7 @@ export abstract class SupplierBaseSearchanise
       //q: query,
       maxResults: 200,
       startIndex: 0,
-      sortBy: "relevance",
+      sortBy: 'relevance',
       items: true,
       pageStartIndex: 0,
       queryBy: {
@@ -123,46 +123,46 @@ export abstract class SupplierBaseSearchanise
       },
       pagesMaxResults: 1,
       vendorsMaxResults: 200,
-      output: "json",
+      output: 'json',
       _: new Date().getTime(),
       ...this.baseSearchParams,
     };
 
     const searchRequest = await this.httpGetJson({
-      path: "/getresults",
+      path: '/getresults',
       host: this.apiURL,
       params: getParams,
     });
 
     if (!isValidSearchResponse(searchRequest)) {
-      this.logger.error("Invalid search response", { response: searchRequest });
+      this.logger.error('Invalid search response', { response: searchRequest });
       return;
     }
 
-    if (!("items" in searchRequest)) {
-      this.logger.error("Invalid search response", { response: searchRequest });
+    if (!('items' in searchRequest)) {
+      this.logger.error('Invalid search response', { response: searchRequest });
       return;
     }
 
-    if ("items" in searchRequest === false || !Array.isArray(searchRequest.items)) {
-      this.logger.error("Search response items is not an array", { items: searchRequest.items });
+    if ('items' in searchRequest === false || !Array.isArray(searchRequest.items)) {
+      this.logger.error('Search response items is not an array', { items: searchRequest.items });
       return;
     }
 
     if (searchRequest.items.length === 0) {
-      this.logger.error("Search response items is empty", { items: searchRequest.items });
+      this.logger.error('Search response items is empty', { items: searchRequest.items });
       return;
     }
 
     const validItems = (searchRequest.items ?? []).filter(
       (item): item is ItemListing =>
         item !== null &&
-        typeof item === "object" &&
-        "quantity" in item &&
+        typeof item === 'object' &&
+        'quantity' in item &&
         Number(item.quantity) > 0,
     );
     const fuzzResults = this.fuzzyFilterAst<ItemListing>(validItems);
-    this.logger.info("fuzzResults", { fuzzResults });
+    this.logger.info('fuzzResults', { fuzzResults });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));
   }
@@ -234,7 +234,7 @@ export abstract class SupplierBaseSearchanise
         ]);
 
         if (!quantity) {
-          this.logger.warn("Failed to get quantity from retrieved product data", {
+          this.logger.warn('Failed to get quantity from retrieved product data', {
             item,
             parsedValues: [item.product_code, item.quantity, item.title, item.description],
             builder,
@@ -244,25 +244,25 @@ export abstract class SupplierBaseSearchanise
 
         builder.setQuantity(quantity.quantity, quantity.uom);
 
-        console.log("item.shopify_variants", { item });
-        if ("shopify_variants" in item && Array.isArray(item.shopify_variants)) {
+        console.log('item.shopify_variants', { item });
+        if ('shopify_variants' in item && Array.isArray(item.shopify_variants)) {
           item.shopify_variants.forEach((variant) => {
             if (!isSearchaniseVariant(variant)) return;
 
             const variantQuantity = firstMap(parseQuantity, [
-              String(variant?.options?.Model ?? ""),
-              String(variant?.options?.Size ?? ""),
+              String(variant?.options?.Model ?? ''),
+              String(variant?.options?.Size ?? ''),
               variant.sku,
             ]);
 
-            console.log("variantQuantity", { variantQuantity, item });
+            console.log('variantQuantity', { variantQuantity, item });
 
             builder.addVariant({
               id: variant.variant_id,
               sku: variant.sku,
               //title: variant.title,
               price: variant.price,
-              title: String(variant?.options?.Model ?? ""),
+              title: String(variant?.options?.Model ?? ''),
               url: variant.link,
               ...variantQuantity,
             });

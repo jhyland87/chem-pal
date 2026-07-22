@@ -1,4 +1,4 @@
-import type { KeyBinding, ParsedBinding } from "./types";
+import type { KeyBinding, ParsedBinding } from './types';
 
 /**
  * Detects whether the current platform is macOS. Used to expand the `mod`
@@ -33,21 +33,21 @@ export function isMac(): boolean {
  * @source
  */
 export function resolveBinding(binding: KeyBinding): string {
-  if (typeof binding === "string") return binding;
+  if (typeof binding === 'string') return binding;
   return isMac() ? binding.mac : binding.other;
 }
 
-type ModifierFlag = "meta" | "ctrl" | "alt" | "shift";
+type ModifierFlag = 'meta' | 'ctrl' | 'alt' | 'shift';
 
 const MOD_ALIASES: Record<string, ModifierFlag> = {
-  meta: "meta",
-  cmd: "meta",
-  command: "meta",
-  ctrl: "ctrl",
-  control: "ctrl",
-  alt: "alt",
-  option: "alt",
-  shift: "shift",
+  meta: 'meta',
+  cmd: 'meta',
+  command: 'meta',
+  ctrl: 'ctrl',
+  control: 'ctrl',
+  alt: 'alt',
+  option: 'alt',
+  shift: 'shift',
 };
 
 /**
@@ -56,30 +56,30 @@ const MOD_ALIASES: Record<string, ModifierFlag> = {
  * matches its own lowercased token (e.g. `a` → `"a"`).
  */
 const KEY_ALIASES: Record<string, string> = {
-  up: "arrowup",
-  uparrow: "arrowup",
-  down: "arrowdown",
-  downarrow: "arrowdown",
-  left: "arrowleft",
-  leftarrow: "arrowleft",
-  right: "arrowright",
-  rightarrow: "arrowright",
-  esc: "escape",
-  enter: "enter",
-  return: "enter",
-  space: " ",
-  spacebar: " ",
+  up: 'arrowup',
+  uparrow: 'arrowup',
+  down: 'arrowdown',
+  downarrow: 'arrowdown',
+  left: 'arrowleft',
+  leftarrow: 'arrowleft',
+  right: 'arrowright',
+  rightarrow: 'arrowright',
+  esc: 'escape',
+  enter: 'enter',
+  return: 'enter',
+  space: ' ',
+  spacebar: ' ',
 };
 
 /** Display symbols for sequence keys that read better than the raw name. */
 const SEQUENCE_SYMBOLS: Record<string, string> = {
-  arrowup: "↑",
-  arrowdown: "↓",
-  arrowleft: "←",
-  arrowright: "→",
-  escape: "Esc",
-  enter: "Enter",
-  " ": "Space",
+  arrowup: '↑',
+  arrowdown: '↓',
+  arrowleft: '←',
+  arrowright: '→',
+  escape: 'Esc',
+  enter: 'Enter',
+  ' ': 'Space',
 };
 
 /**
@@ -98,7 +98,7 @@ const SEQUENCE_SYMBOLS: Record<string, string> = {
  */
 export function parseBinding(binding: string): ParsedBinding {
   const tokens = binding
-    .split("+")
+    .split('+')
     .map((t) => t.trim().toLowerCase())
     .filter(Boolean);
 
@@ -107,14 +107,14 @@ export function parseBinding(binding: string): ParsedBinding {
     ctrl: false,
     alt: false,
     shift: false,
-    key: "",
+    key: '',
   };
 
   const mac = isMac();
-  const last = tokens.pop() ?? "";
+  const last = tokens.pop() ?? '';
 
   for (const token of tokens) {
-    if (token === "mod") {
+    if (token === 'mod') {
       if (mac) parsed.meta = true;
       else parsed.ctrl = true;
       continue;
@@ -148,7 +148,7 @@ export function matches(event: KeyboardEvent, binding: ParsedBinding): boolean {
   if (event.altKey !== binding.alt) return false;
   // `?` is produced by Shift+/ — event.key is already "?", so don't require shift
   // separately. For other keys, enforce the shift flag strictly.
-  if (binding.key !== "?" && event.shiftKey !== binding.shift) return false;
+  if (binding.key !== '?' && event.shiftKey !== binding.shift) return false;
   return normalizeKey(event.key) === binding.key;
 }
 
@@ -186,7 +186,7 @@ export function normalizeKey(token: string): string {
  */
 export function parseSequence(binding: string): string[] {
   return binding
-    .split("+")
+    .split('+')
     .map((t) => t.trim())
     .filter(Boolean)
     .map(normalizeKey);
@@ -227,7 +227,7 @@ export function formatSequenceTokens(binding: string): string[] {
  */
 export function formatBinding(binding: KeyBinding): string {
   const tokens = formatBindingTokens(binding);
-  return isMac() ? tokens.join("") : tokens.join("+");
+  return isMac() ? tokens.join('') : tokens.join('+');
 }
 
 /**
@@ -248,31 +248,31 @@ export function formatBinding(binding: KeyBinding): string {
 export function formatBindingTokens(binding: KeyBinding): string[] {
   const mac = isMac();
   const resolved = resolveBinding(binding);
-  const tokens = resolved.split("+").map((t) => t.trim().toLowerCase());
-  const last = tokens.pop() ?? "";
+  const tokens = resolved.split('+').map((t) => t.trim().toLowerCase());
+  const last = tokens.pop() ?? '';
 
   const symbols: Record<string, string> = mac
     ? {
-        mod: "⌘",
-        meta: "⌘",
-        cmd: "⌘",
-        command: "⌘",
-        ctrl: "⌃",
-        control: "⌃",
-        alt: "⌥",
-        option: "⌥",
-        shift: "⇧",
+        mod: '⌘',
+        meta: '⌘',
+        cmd: '⌘',
+        command: '⌘',
+        ctrl: '⌃',
+        control: '⌃',
+        alt: '⌥',
+        option: '⌥',
+        shift: '⇧',
       }
     : {
-        mod: "Ctrl",
-        meta: "Meta",
-        cmd: "Cmd",
-        command: "Cmd",
-        ctrl: "Ctrl",
-        control: "Ctrl",
-        alt: "Alt",
-        option: "Alt",
-        shift: "Shift",
+        mod: 'Ctrl',
+        meta: 'Meta',
+        cmd: 'Cmd',
+        command: 'Cmd',
+        ctrl: 'Ctrl',
+        control: 'Ctrl',
+        alt: 'Alt',
+        option: 'Alt',
+        shift: 'Shift',
       };
 
   const modifiers = tokens.map((t) => symbols[t] ?? t);

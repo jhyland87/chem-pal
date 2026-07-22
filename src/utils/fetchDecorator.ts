@@ -44,12 +44,12 @@ function generateSimpleHash(str: string): string {
 export async function generateRequestHash(url: string, options: RequestInit): Promise<string> {
   const data = {
     url,
-    method: options.method || "GET",
+    method: options.method || 'GET',
     headers: options.headers || {},
-    body: options.body || "",
+    body: options.body || '',
     // headers may be a Headers instance or string[][]; only plain-object headers
     // expose content-type by index, matching the previous behavior.
-    contentType: (options.headers as Record<string, string> | undefined)?.["content-type"] || "",
+    contentType: (options.headers as Record<string, string> | undefined)?.['content-type'] || '',
   };
 
   const dataString = JSON.stringify(data);
@@ -96,14 +96,14 @@ export async function fetchDecorator(
     throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
   }
 
-  const contentType = response.headers.get("content-type") || "";
+  const contentType = response.headers.get('content-type') || '';
 
-  if (contentType.includes("application/json")) {
+  if (contentType.includes('application/json')) {
     const data = await response.json();
     return { ...response, data, requestHash };
   }
 
-  if (contentType.includes("text/")) {
+  if (contentType.includes('text/')) {
     const data = await response.text();
     return { ...response, data, requestHash };
   }

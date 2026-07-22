@@ -1,15 +1,15 @@
-import { UOM } from "@/constants/common";
-import { parsePrice } from "@/helpers/currency";
-import { parseQuantity } from "@/helpers/quantity";
-import { findFormulaInHtml } from "@/helpers/science";
-import { firstMap, mapDefined } from "@/helpers/utils";
-import searchProductsQuery from "@/queries/magento2-product-query.gql";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { extractAllPositiveTerms } from "@/utils/search-query/extractPositiveTerms";
-import { isQuantityObject } from "@/utils/typeGuards/common";
-import { isValidMagento2SearchResponse } from "@/utils/typeGuards/magento2";
-import { print } from "graphql";
-import { SupplierBase } from "./SupplierBase";
+import { UOM } from '@/constants/common';
+import { parsePrice } from '@/helpers/currency';
+import { parseQuantity } from '@/helpers/quantity';
+import { findFormulaInHtml } from '@/helpers/science';
+import { firstMap, mapDefined } from '@/helpers/utils';
+import searchProductsQuery from '@/queries/magento2-product-query.gql';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { extractAllPositiveTerms } from '@/utils/search-query/extractPositiveTerms';
+import { isQuantityObject } from '@/utils/typeGuards/common';
+import { isValidMagento2SearchResponse } from '@/utils/typeGuards/magento2';
+import { print } from 'graphql';
+import { SupplierBase } from './SupplierBase';
 
 /**
  * Internal shape used while normalizing a Magento 2 product's nested variants
@@ -66,10 +66,10 @@ export abstract class SupplierBaseMagento2
   implements ISupplier
 {
   /** Magento store code passed via the `Store` request header (selects locale/storefront) */
-  protected storeCode: string = "us_en";
+  protected storeCode: string = 'us_en';
 
   /** Path to the Magento 2 GraphQL endpoint, relative to {@link baseURL} */
-  protected graphQLPath: string = "/graphql";
+  protected graphQLPath: string = '/graphql';
 
   protected limit: number = 50;
 
@@ -112,7 +112,7 @@ export abstract class SupplierBaseMagento2
     if (url) {
       return url;
     }
-    return `${item.url_key}${item.url_suffix ?? ".html"}`;
+    return `${item.url_key}${item.url_suffix ?? '.html'}`;
   }
 
   /**
@@ -151,7 +151,7 @@ export abstract class SupplierBaseMagento2
   protected getGraphQLVariables(query: string, limit: number): Magento2QueryVariables {
     const parsed = this.getAst();
     const search = parsed.isAdvanced
-      ? extractAllPositiveTerms(parsed.ast).join(" ") || query
+      ? extractAllPositiveTerms(parsed.ast).join(' ') || query
       : query;
     return { search, pageSize: limit };
   }
@@ -187,16 +187,16 @@ export abstract class SupplierBaseMagento2
       path: this.graphQLPath,
       body: { query: graphQLQuery, variables: graphQLVariables },
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
 
         Store: this.storeCode,
       },
     });
 
-    this.logger.debug("searchRequest", { searchRequest });
+    this.logger.debug('searchRequest', { searchRequest });
     if (!isValidMagento2SearchResponse(searchRequest)) {
-      this.logger.error("Invalid Magento2 search response", { response: searchRequest });
-      throw new Error("Invalid Magento2 search response", {
+      this.logger.error('Invalid Magento2 search response', { response: searchRequest });
+      throw new Error('Invalid Magento2 search response', {
         cause: { searchRequest, query, supplier: this.supplierName },
       });
     }
@@ -204,14 +204,14 @@ export abstract class SupplierBaseMagento2
     const items = searchRequest.data.products.items;
 
     if (items.length === 0) {
-      this.logger.warn("Magento2 search returned no products", { query });
+      this.logger.warn('Magento2 search returned no products', { query });
       return;
     }
 
     this.logger.debug(`Query returned ${items.length} products`, { items });
 
     const fuzzResults = this.fuzzyFilterAst<Magento2ProductItem>(items);
-    this.logger.debug("fuzzResults", { query, items, fuzzResults });
+    this.logger.debug('fuzzResults', { query, items, fuzzResults });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));
   }
@@ -232,10 +232,10 @@ export abstract class SupplierBaseMagento2
    * @source
    */
   protected collectRawVariants(item: Magento2ProductItem): RawMagento2Variant[] {
-    if (item.__typename === "GroupedProduct" && Array.isArray(item.items)) {
+    if (item.__typename === 'GroupedProduct' && Array.isArray(item.items)) {
       return mapDefined(item.items, (sub) => {
         const money = sub.product.price_range.minimum_price.regular_price;
-        if (typeof money?.value !== "number") return;
+        if (typeof money?.value !== 'number') return;
         return {
           sku: sub.product.sku,
           name: sub.product.name,
@@ -245,10 +245,10 @@ export abstract class SupplierBaseMagento2
       });
     }
 
-    if (item.__typename === "ConfigurableProduct" && Array.isArray(item.variants)) {
+    if (item.__typename === 'ConfigurableProduct' && Array.isArray(item.variants)) {
       return mapDefined(item.variants, (variant) => {
         const money = variant.product.price_range.minimum_price.regular_price;
-        if (typeof money?.value !== "number") return;
+        if (typeof money?.value !== 'number') return;
         return {
           sku: variant.product.sku,
           name: variant.product.name,
@@ -259,7 +259,7 @@ export abstract class SupplierBaseMagento2
     }
 
     const money = item.price_range?.minimum_price?.regular_price;
-    if (typeof money?.value !== "number") return [];
+    if (typeof money?.value !== 'number') return [];
     return [
       {
         sku: item.sku,
@@ -298,7 +298,7 @@ export abstract class SupplierBaseMagento2
     return mapDefined(results, (item) => {
       const rawVariants = this.collectRawVariants(item);
       if (rawVariants.length === 0) {
-        this.logger.warn("Magento2 product had no parseable variants, skipping", { item });
+        this.logger.warn('Magento2 product had no parseable variants, skipping', { item });
         return;
       }
 
@@ -317,7 +317,7 @@ export abstract class SupplierBaseMagento2
       const primaryPrice =
         parsePrice(`$${primary.raw.price}`) ?? parsePrice(`${primary.raw.price}`);
       if (!primaryPrice) {
-        this.logger.warn("Failed to parse primary variant price, skipping product", {
+        this.logger.warn('Failed to parse primary variant price, skipping product', {
           item,
           primary,
         });
@@ -339,14 +339,14 @@ export abstract class SupplierBaseMagento2
         builder.setAvailability(item.stock_status);
       }
 
-      const descriptionHtml = item.description?.html ?? item.short_description?.html ?? "";
+      const descriptionHtml = item.description?.html ?? item.short_description?.html ?? '';
       // setDescription runs htmlToAscii itself, so pass the raw HTML straight through.
       builder.setDescription(descriptionHtml);
 
       if (isQuantityObject(primary.parsedQuantity)) {
         builder.setQuantity(primary.parsedQuantity.quantity, primary.parsedQuantity.uom);
       } else {
-        this.logger.warn("Failed to parse quantity from primary variant, defaulting to 1 EA", {
+        this.logger.warn('Failed to parse quantity from primary variant, defaulting to 1 EA', {
           primary,
           item,
         });
@@ -354,7 +354,7 @@ export abstract class SupplierBaseMagento2
       }
 
       builder.setCAS(
-        firstMap(findFormulaInHtml, [item.name, item.image?.label ?? "", descriptionHtml]),
+        firstMap(findFormulaInHtml, [item.name, item.image?.label ?? '', descriptionHtml]),
       );
 
       for (const { raw, parsedQuantity } of enriched.slice(1)) {

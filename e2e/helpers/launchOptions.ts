@@ -15,10 +15,10 @@
  * @module launchOptions
  */
 
-import type { LaunchOptions } from "playwright";
+import type { LaunchOptions } from 'playwright';
 
 /** Whether the caller asked for a visible browser via `E2E_HEADED=1`. */
-export const HEADED = process.env.E2E_HEADED === "1";
+export const HEADED = process.env.E2E_HEADED === '1';
 
 /**
  * Builds the launch options that load the built extension unpacked.
@@ -40,14 +40,14 @@ export function extensionLaunchOptions(
 ): LaunchOptions & { args: string[] } {
   return {
     // Chromium's new headless mode; the old one can't load extensions.
-    channel: "chromium",
+    channel: 'chromium',
     headless: !HEADED,
     args: [
       `--disable-extensions-except=${buildDir}`,
       `--load-extension=${buildDir}`,
-      "--no-first-run",
-      "--disable-gpu",
-      "--no-default-browser-check",
+      '--no-first-run',
+      '--disable-gpu',
+      '--no-default-browser-check',
       ...extraArgs,
     ],
   };

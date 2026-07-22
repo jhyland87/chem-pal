@@ -1,47 +1,47 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
 import {
   isPriceObject,
   isProductObject,
   isSearchResponseOk,
   isSearchResponseProduct,
   isValidSearchParams,
-} from "../laboratoriumdiscounter";
+} from '../laboratoriumdiscounter';
 
-describe("LaboratoriumDiscounter TypeGuards", () => {
-  describe("isSearchResponseOk", () => {
+describe('LaboratoriumDiscounter TypeGuards', () => {
+  describe('isSearchResponseOk', () => {
     const validResponse = {
       page: {
-        search: "sodium chloride",
-        session_id: "abc123",
-        key: "search_key",
-        title: "Search Results",
+        search: 'sodium chloride',
+        session_id: 'abc123',
+        key: 'search_key',
+        title: 'Search Results',
         status: 200,
       },
       request: {
-        url: "/en/search/sodium-chloride",
-        method: "GET",
-        get: { q: "sodium chloride" },
-        device: { platform: "osx", type: "webkit", mobile: false },
+        url: '/en/search/sodium-chloride',
+        method: 'GET',
+        get: { q: 'sodium chloride' },
+        device: { platform: 'osx', type: 'webkit', mobile: false },
       },
       collection: {
         products: {
-          "12345": {
+          '12345': {
             id: 12345,
             vid: 67890,
             image: 1,
             brand: false,
-            code: "CHEM-001",
-            ean: "1234567890123",
-            sku: "SKU-001",
+            code: 'CHEM-001',
+            ean: '1234567890123',
+            sku: 'SKU-001',
             score: 1.0,
             available: true,
             unit: true,
-            url: "/products/chemical-1",
-            title: "Sodium Chloride",
-            fulltitle: "Sodium Chloride 500g",
-            variant: "500g",
-            description: "High purity sodium chloride",
-            data_01: "Additional info",
+            url: '/products/chemical-1',
+            title: 'Sodium Chloride',
+            fulltitle: 'Sodium Chloride 500g',
+            variant: '500g',
+            description: 'High purity sodium chloride',
+            data_01: 'Additional info',
             price: {
               price: 29.99,
               price_incl: 29.99,
@@ -55,23 +55,23 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       },
     };
 
-    it("should return true for a valid search response", () => {
+    it('should return true for a valid search response', () => {
       expect(isSearchResponseOk(validResponse)).toBe(true);
     });
 
-    it("should return false for null", () => {
+    it('should return false for null', () => {
       expect(isSearchResponseOk(null)).toBe(false);
     });
 
-    it("should return false for non-object values", () => {
+    it('should return false for non-object values', () => {
       const nonObjectValues = [
-        "not an object",
+        'not an object',
         123,
         true,
         false,
         undefined,
         () => {},
-        Symbol("response"),
+        Symbol('response'),
         [],
       ];
 
@@ -80,7 +80,7 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       });
     });
 
-    it("should return false for objects missing required top-level properties", () => {
+    it('should return false for objects missing required top-level properties', () => {
       const missingProps = [
         {
           // Missing page
@@ -107,22 +107,22 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       });
     });
 
-    it("should return false for objects with non-object top-level properties", () => {
+    it('should return false for objects with non-object top-level properties', () => {
       const nonObjectProps = [
         {
-          page: "not an object",
+          page: 'not an object',
           request: validResponse.request,
           collection: validResponse.collection,
         },
         {
           page: validResponse.page,
-          request: "not an object",
+          request: 'not an object',
           collection: validResponse.collection,
         },
         {
           page: validResponse.page,
           request: validResponse.request,
-          collection: "not an object",
+          collection: 'not an object',
         },
       ];
 
@@ -131,14 +131,14 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       });
     });
 
-    it("should return false for objects with missing page properties", () => {
+    it('should return false for objects with missing page properties', () => {
       const missingPageProps = [
         {
           page: {
             // Missing search
-            session_id: "abc123",
-            key: "search_key",
-            title: "Search Results",
+            session_id: 'abc123',
+            key: 'search_key',
+            title: 'Search Results',
             status: 200,
           },
           request: validResponse.request,
@@ -146,10 +146,10 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
         },
         {
           page: {
-            search: "sodium chloride",
+            search: 'sodium chloride',
             // Missing session_id
-            key: "search_key",
-            title: "Search Results",
+            key: 'search_key',
+            title: 'Search Results',
             status: 200,
           },
           request: validResponse.request,
@@ -163,25 +163,25 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       });
     });
 
-    it("should return false for objects with missing request properties", () => {
+    it('should return false for objects with missing request properties', () => {
       const missingRequestProps = [
         {
           page: validResponse.page,
           request: {
             // Missing url
-            method: "GET",
-            get: { q: "sodium chloride" },
-            device: { platform: "osx", type: "webkit", mobile: false },
+            method: 'GET',
+            get: { q: 'sodium chloride' },
+            device: { platform: 'osx', type: 'webkit', mobile: false },
           },
           collection: validResponse.collection,
         },
         {
           page: validResponse.page,
           request: {
-            url: "/en/search/sodium-chloride",
+            url: '/en/search/sodium-chloride',
             // Missing method
-            get: { q: "sodium chloride" },
-            device: { platform: "osx", type: "webkit", mobile: false },
+            get: { q: 'sodium chloride' },
+            device: { platform: 'osx', type: 'webkit', mobile: false },
           },
           collection: validResponse.collection,
         },
@@ -193,7 +193,7 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       });
     });
 
-    it("should return false for objects with invalid collection structure", () => {
+    it('should return false for objects with invalid collection structure', () => {
       const invalidCollections = [
         {
           page: validResponse.page,
@@ -206,7 +206,7 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
           page: validResponse.page,
           request: validResponse.request,
           collection: {
-            products: "not an object", // Should be object
+            products: 'not an object', // Should be object
           },
         },
       ];
@@ -216,13 +216,13 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       });
     });
 
-    it("should return false for objects with invalid products", () => {
+    it('should return false for objects with invalid products', () => {
       const invalidProducts = {
         page: validResponse.page,
         request: validResponse.request,
         collection: {
           products: {
-            "12345": {
+            '12345': {
               // Invalid product (missing required properties)
               id: 12345,
             },
@@ -234,7 +234,7 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
     });
   });
 
-  describe("isPriceObject", () => {
+  describe('isPriceObject', () => {
     const validPrice = {
       price: 29.99,
       price_incl: 29.99,
@@ -244,23 +244,23 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       price_old_excl: 33.05,
     };
 
-    it("should return true for a valid price object", () => {
+    it('should return true for a valid price object', () => {
       expect(isPriceObject(validPrice)).toBe(true);
     });
 
-    it("should return false for null", () => {
+    it('should return false for null', () => {
       expect(isPriceObject(null)).toBe(false);
     });
 
-    it("should return false for non-object values", () => {
+    it('should return false for non-object values', () => {
       const nonObjectValues = [
-        "not an object",
+        'not an object',
         123,
         true,
         false,
         undefined,
         () => {},
-        Symbol("price"),
+        Symbol('price'),
         [],
       ];
 
@@ -269,7 +269,7 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       });
     });
 
-    it("should return false for objects missing required properties", () => {
+    it('should return false for objects missing required properties', () => {
       const missingProps = [
         {
           // Missing price
@@ -295,19 +295,19 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       });
     });
 
-    it("should return false for objects with wrong property types", () => {
+    it('should return false for objects with wrong property types', () => {
       const wrongTypes = [
         {
           ...validPrice,
-          price: "29.99", // Should be number
+          price: '29.99', // Should be number
         },
         {
           ...validPrice,
-          price_incl: "29.99", // Should be number
+          price_incl: '29.99', // Should be number
         },
         {
           ...validPrice,
-          price_excl: "24.79", // Should be number
+          price_excl: '24.79', // Should be number
         },
         // ... and so on for each property
       ];
@@ -318,24 +318,24 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
     });
   });
 
-  describe("isSearchResponseProduct", () => {
+  describe('isSearchResponseProduct', () => {
     const validProduct = {
       id: 12345,
       vid: 67890,
       image: 1,
       brand: false,
-      code: "CHEM-001",
-      ean: "1234567890123",
-      sku: "SKU-001",
+      code: 'CHEM-001',
+      ean: '1234567890123',
+      sku: 'SKU-001',
       score: 1.0,
       available: true,
       unit: true,
-      url: "/products/chemical-1",
-      title: "Sodium Chloride",
-      fulltitle: "Sodium Chloride 500g",
-      variant: "500g",
-      description: "High purity sodium chloride",
-      data_01: "Additional info",
+      url: '/products/chemical-1',
+      title: 'Sodium Chloride',
+      fulltitle: 'Sodium Chloride 500g',
+      variant: '500g',
+      description: 'High purity sodium chloride',
+      data_01: 'Additional info',
       price: {
         price: 29.99,
         price_incl: 29.99,
@@ -346,23 +346,23 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       },
     };
 
-    it("should return true for a valid search response product", () => {
+    it('should return true for a valid search response product', () => {
       expect(isSearchResponseProduct(validProduct)).toBe(true);
     });
 
-    it("should return false for null", () => {
+    it('should return false for null', () => {
       expect(isSearchResponseProduct(null)).toBe(false);
     });
 
-    it("should return false for non-object values", () => {
+    it('should return false for non-object values', () => {
       const nonObjectValues = [
-        "not an object",
+        'not an object',
         123,
         true,
         false,
         undefined,
         () => {},
-        Symbol("product"),
+        Symbol('product'),
         [],
       ];
 
@@ -371,25 +371,25 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       });
     });
 
-    it("should return false for objects missing required properties", () => {
+    it('should return false for objects missing required properties', () => {
       const missingProps = [
         {
           // Missing id
           vid: 67890,
           image: 1,
           brand: false,
-          code: "CHEM-001",
-          ean: "1234567890123",
-          sku: "SKU-001",
+          code: 'CHEM-001',
+          ean: '1234567890123',
+          sku: 'SKU-001',
           score: 1.0,
           available: true,
           unit: true,
-          url: "/products/chemical-1",
-          title: "Sodium Chloride",
-          fulltitle: "Sodium Chloride 500g",
-          variant: "500g",
-          description: "High purity sodium chloride",
-          data_01: "Additional info",
+          url: '/products/chemical-1',
+          title: 'Sodium Chloride',
+          fulltitle: 'Sodium Chloride 500g',
+          variant: '500g',
+          description: 'High purity sodium chloride',
+          data_01: 'Additional info',
           price: validProduct.price,
         },
         // ... and so on for each required property
@@ -400,11 +400,11 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       });
     });
 
-    it("should return false for objects with wrong property types", () => {
+    it('should return false for objects with wrong property types', () => {
       const wrongTypes = [
         {
           ...validProduct,
-          id: "12345", // Should be number
+          id: '12345', // Should be number
         },
         {
           ...validProduct,
@@ -412,7 +412,7 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
         },
         {
           ...validProduct,
-          available: "true", // Should be boolean
+          available: 'true', // Should be boolean
         },
         // ... and so on for each property
       ];
@@ -422,7 +422,7 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       });
     });
 
-    it("should return false for objects with invalid price object", () => {
+    it('should return false for objects with invalid price object', () => {
       const invalidPrice = {
         ...validProduct,
         price: {
@@ -435,24 +435,24 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
     });
   });
 
-  describe("isProductObject", () => {
+  describe('isProductObject', () => {
     const validProductObject = {
       id: 12345,
       vid: 67890,
       image: 1,
       brand: false,
-      code: "CHEM-001",
-      ean: "1234567890123",
-      sku: "SKU-001",
+      code: 'CHEM-001',
+      ean: '1234567890123',
+      sku: 'SKU-001',
       score: 1.0,
       available: true,
       unit: true,
-      url: "/products/chemical-1",
-      title: "Sodium Chloride",
-      fulltitle: "Sodium Chloride 500g",
-      variant: "500g",
-      description: "High purity sodium chloride",
-      data_01: "Additional info",
+      url: '/products/chemical-1',
+      title: 'Sodium Chloride',
+      fulltitle: 'Sodium Chloride 500g',
+      variant: '500g',
+      description: 'High purity sodium chloride',
+      data_01: 'Additional info',
       price: {
         price: 29.99,
         price_incl: 29.99,
@@ -462,30 +462,30 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
         price_old_excl: 33.05,
       },
       // Additional properties specific to product object
-      category: "Chemicals",
-      manufacturer: "Lab Supplies Inc",
+      category: 'Chemicals',
+      manufacturer: 'Lab Supplies Inc',
       stock: 100,
-      weight: "500g",
-      dimensions: "10x5x5cm",
+      weight: '500g',
+      dimensions: '10x5x5cm',
     };
 
-    it.skip("should return true for a valid product object", () => {
+    it.skip('should return true for a valid product object', () => {
       expect(isProductObject(validProductObject)).toBe(true);
     });
 
-    it("should return false for null", () => {
+    it('should return false for null', () => {
       expect(isProductObject(null)).toBe(false);
     });
 
-    it("should return false for non-object values", () => {
+    it('should return false for non-object values', () => {
       const nonObjectValues = [
-        "not an object",
+        'not an object',
         123,
         true,
         false,
         undefined,
         () => {},
-        Symbol("product"),
+        Symbol('product'),
         [],
       ];
 
@@ -494,31 +494,31 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       });
     });
 
-    it("should return false for objects missing required properties", () => {
+    it('should return false for objects missing required properties', () => {
       const missingProps = [
         {
           // Missing id
           vid: 67890,
           image: 1,
           brand: false,
-          code: "CHEM-001",
-          ean: "1234567890123",
-          sku: "SKU-001",
+          code: 'CHEM-001',
+          ean: '1234567890123',
+          sku: 'SKU-001',
           score: 1.0,
           available: true,
           unit: true,
-          url: "/products/chemical-1",
-          title: "Sodium Chloride",
-          fulltitle: "Sodium Chloride 500g",
-          variant: "500g",
-          description: "High purity sodium chloride",
-          data_01: "Additional info",
+          url: '/products/chemical-1',
+          title: 'Sodium Chloride',
+          fulltitle: 'Sodium Chloride 500g',
+          variant: '500g',
+          description: 'High purity sodium chloride',
+          data_01: 'Additional info',
           price: validProductObject.price,
-          category: "Chemicals",
-          manufacturer: "Lab Supplies Inc",
+          category: 'Chemicals',
+          manufacturer: 'Lab Supplies Inc',
           stock: 100,
-          weight: "500g",
-          dimensions: "10x5x5cm",
+          weight: '500g',
+          dimensions: '10x5x5cm',
         },
         // ... and so on for each required property
       ];
@@ -528,11 +528,11 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       });
     });
 
-    it("should return false for objects with wrong property types", () => {
+    it('should return false for objects with wrong property types', () => {
       const wrongTypes = [
         {
           ...validProductObject,
-          id: "12345", // Should be number
+          id: '12345', // Should be number
         },
         {
           ...validProductObject,
@@ -540,7 +540,7 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
         },
         {
           ...validProductObject,
-          available: "true", // Should be boolean
+          available: 'true', // Should be boolean
         },
         // ... and so on for each property
       ];
@@ -550,7 +550,7 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       });
     });
 
-    it("should return false for objects with invalid price object", () => {
+    it('should return false for objects with invalid price object', () => {
       const invalidPrice = {
         ...validProductObject,
         price: {
@@ -563,36 +563,36 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
     });
   });
 
-  describe("isValidSearchParams", () => {
+  describe('isValidSearchParams', () => {
     const validParams = {
-      q: "sodium chloride",
+      q: 'sodium chloride',
       page: 1,
       limit: 20,
-      sort: "price_asc",
+      sort: 'price_asc',
       filter: {
-        category: ["chemicals"],
-        brand: ["lab-supplies"],
+        category: ['chemicals'],
+        brand: ['lab-supplies'],
         price_range: [0, 100],
       },
     };
 
-    it.skip("should return true for valid search parameters", () => {
+    it.skip('should return true for valid search parameters', () => {
       expect(isValidSearchParams(validParams)).toBe(true);
     });
 
-    it("should return false for null", () => {
+    it('should return false for null', () => {
       expect(isValidSearchParams(null)).toBe(false);
     });
 
-    it("should return false for non-object values", () => {
+    it('should return false for non-object values', () => {
       const nonObjectValues = [
-        "not an object",
+        'not an object',
         123,
         true,
         false,
         undefined,
         () => {},
-        Symbol("params"),
+        Symbol('params'),
         [],
       ];
 
@@ -601,20 +601,20 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       });
     });
 
-    it("should return false for objects missing required properties", () => {
+    it('should return false for objects missing required properties', () => {
       const missingProps = [
         {
           // Missing q
           page: 1,
           limit: 20,
-          sort: "price_asc",
+          sort: 'price_asc',
           filter: validParams.filter,
         },
         {
-          q: "sodium chloride",
+          q: 'sodium chloride',
           // Missing page
           limit: 20,
-          sort: "price_asc",
+          sort: 'price_asc',
           filter: validParams.filter,
         },
         // ... and so on for each required property
@@ -625,7 +625,7 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       });
     });
 
-    it("should return false for objects with wrong property types", () => {
+    it('should return false for objects with wrong property types', () => {
       const wrongTypes = [
         {
           ...validParams,
@@ -633,11 +633,11 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
         },
         {
           ...validParams,
-          page: "1", // Should be number
+          page: '1', // Should be number
         },
         {
           ...validParams,
-          limit: "20", // Should be number
+          limit: '20', // Should be number
         },
         {
           ...validParams,
@@ -645,7 +645,7 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
         },
         {
           ...validParams,
-          filter: "invalid", // Should be object
+          filter: 'invalid', // Should be object
         },
       ];
 
@@ -654,22 +654,22 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
       });
     });
 
-    it("should return false for objects with invalid filter structure", () => {
+    it('should return false for objects with invalid filter structure', () => {
       const invalidFilters = [
         {
           ...validParams,
           filter: {
             // Invalid filter (wrong types)
-            category: "chemicals", // Should be array
-            brand: "lab-supplies", // Should be array
-            price_range: "0-100", // Should be array
+            category: 'chemicals', // Should be array
+            brand: 'lab-supplies', // Should be array
+            price_range: '0-100', // Should be array
           },
         },
         {
           ...validParams,
           filter: {
             // Invalid filter (missing properties)
-            category: ["chemicals"],
+            category: ['chemicals'],
             // Missing brand and price_range
           },
         },

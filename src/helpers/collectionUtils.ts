@@ -1,4 +1,4 @@
-import { isPlainContainer } from "@/utils/typeGuards/common";
+import { isPlainContainer } from '@/utils/typeGuards/common';
 
 /**
  * @category Collection Utilities
@@ -33,10 +33,10 @@ export function omit<T extends object, K extends keyof T>(
   if (!path) {
     return data;
   }
-  if (typeof path === "string") {
+  if (typeof path === 'string') {
     path = [path];
   } else if (!Array.isArray(path)) {
-    throw new Error("path must be a string or an array of strings");
+    throw new Error('path must be a string or an array of strings');
   }
 
   return Object.fromEntries(
@@ -47,9 +47,9 @@ export function omit<T extends object, K extends keyof T>(
 }
 
 type DiffChange =
-  | { type: "created"; path: (string | number)[]; value: unknown }
-  | { type: "deleted"; path: (string | number)[]; value: unknown }
-  | { type: "modified"; path: (string | number)[]; oldValue: unknown; newValue: unknown };
+  | { type: 'created'; path: (string | number)[]; value: unknown }
+  | { type: 'deleted'; path: (string | number)[]; value: unknown }
+  | { type: 'modified'; path: (string | number)[]; oldValue: unknown; newValue: unknown };
 
 /**
  * Deep-diffs two arbitrary values and returns the list of changes as a flat
@@ -102,24 +102,24 @@ export function diff(
 
   // Creation: old is missing, new exists
   if (oldObj == null) {
-    return [{ type: "created", path, value: newObj }];
+    return [{ type: 'created', path, value: newObj }];
   }
 
   // Deletion: new is missing, old exists
   if (newObj == null) {
-    return [{ type: "deleted", path, value: oldObj }];
+    return [{ type: 'deleted', path, value: oldObj }];
   }
 
   // Primitive comparison (or type mismatch between object and primitive)
   if (!isPlainContainer(oldObj) || !isPlainContainer(newObj)) {
     return Object.is(oldObj, newObj)
       ? []
-      : [{ type: "modified", path, oldValue: oldObj, newValue: newObj }];
+      : [{ type: 'modified', path, oldValue: oldObj, newValue: newObj }];
   }
 
   // Array/object type mismatch — treat as wholesale replacement
   if (Array.isArray(oldObj) !== Array.isArray(newObj)) {
-    return [{ type: "modified", path, oldValue: oldObj, newValue: newObj }];
+    return [{ type: 'modified', path, oldValue: oldObj, newValue: newObj }];
   }
 
   // Recurse into container

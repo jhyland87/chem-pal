@@ -1,20 +1,20 @@
-import { PANEL } from "@/constants/common";
-import { useAppContext } from "@/context";
-import { i18n } from "@/helpers/i18n";
-import AutoDeleteIcon from "@/icons/AutoDeleteIcon";
-import ClearIcon from "@/icons/ClearIcon";
-import ContrastIcon from "@/icons/ContrastIcon";
-import InfoOutlineIcon from "@/icons/InfoOutlineIcon";
-import { SupplierCache } from "@/utils/SupplierCache";
-import { clearSearchResults } from "@/utils/idbCache";
-import BarChartIcon from "@mui/icons-material/BarChart";
-import SpeedDial from "@mui/material/SpeedDial";
-import SpeedDialAction from "@mui/material/SpeedDialAction";
-import SpeedDialIcon from "@mui/material/SpeedDialIcon";
-import { MouseEvent, useState } from "react";
-import { useTheme } from "../themes";
-import AboutModal from "./AboutModal";
-import HelpTooltip from "./HelpTooltip";
+import { PANEL } from '@/constants/common';
+import { useAppContext } from '@/context';
+import { i18n } from '@/helpers/i18n';
+import AutoDeleteIcon from '@/icons/AutoDeleteIcon';
+import ClearIcon from '@/icons/ClearIcon';
+import ContrastIcon from '@/icons/ContrastIcon';
+import InfoOutlineIcon from '@/icons/InfoOutlineIcon';
+import { SupplierCache } from '@/utils/SupplierCache';
+import { clearSearchResults } from '@/utils/idbCache';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialAction from '@mui/material/SpeedDialAction';
+import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import { MouseEvent, useState } from 'react';
+import { useTheme } from '../themes';
+import AboutModal from './AboutModal';
+import HelpTooltip from './HelpTooltip';
 
 /**
  * SpeedDialMenu component that provides quick access to various application actions.
@@ -50,15 +50,15 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
     try {
       await clearSearchResults();
     } catch (error) {
-      console.warn("Failed to clear search results from IndexedDB:", error);
+      console.warn('Failed to clear search results from IndexedDB:', error);
     }
 
-    console.debug("[handleClearResults] Setting userSettings to:", { ...appContext.userSettings });
+    console.debug('[handleClearResults] Setting userSettings to:', { ...appContext.userSettings });
     appContext.setUserSettings({ ...appContext.userSettings });
 
     appContext.setSearchResults([]);
     // Reset the query text so the home search box doesn't keep the old query.
-    appContext.setSearchFilters({ ...appContext.searchFilters, titleQuery: "" });
+    appContext.setSearchFilters({ ...appContext.searchFilters, titleQuery: '' });
   };
 
   /**
@@ -73,9 +73,9 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
 
     try {
       await SupplierCache.clearAll();
-      console.debug("Supplier cache cleared");
+      console.debug('Supplier cache cleared');
     } catch (error) {
-      console.error("Failed to clear supplier cache:", { error });
+      console.error('Failed to clear supplier cache:', { error });
     }
   };
 
@@ -117,13 +117,13 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
    * @source
    */
   const actions = [
-    { icon: <ClearIcon />, name: i18n("speed_dial_clear_results"), onClick: handleClearResults },
-    { icon: <AutoDeleteIcon />, name: i18n("speed_dial_clear_cache"), onClick: handleClearCache },
-    { icon: <ContrastIcon />, name: i18n("speed_dial_toggle_theme"), onClick: handleToggleTheme },
+    { icon: <ClearIcon />, name: i18n('speed_dial_clear_results'), onClick: handleClearResults },
+    { icon: <AutoDeleteIcon />, name: i18n('speed_dial_clear_cache'), onClick: handleClearCache },
+    { icon: <ContrastIcon />, name: i18n('speed_dial_toggle_theme'), onClick: handleToggleTheme },
     ...(statsVisible
-      ? [{ icon: <BarChartIcon />, name: i18n("speed_dial_stats"), onClick: handleStatsOpen }]
+      ? [{ icon: <BarChartIcon />, name: i18n('speed_dial_stats'), onClick: handleStatsOpen }]
       : []),
-    { icon: <InfoOutlineIcon />, name: i18n("speed_dial_about"), onClick: handleAboutOpen },
+    { icon: <InfoOutlineIcon />, name: i18n('speed_dial_about'), onClick: handleAboutOpen },
   ];
 
   return (
@@ -131,12 +131,12 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
       <AboutModal aboutOpen={aboutOpen} setAboutOpen={setAboutOpen} />
       <SpeedDial
         id="speed-dial-menu"
-        className={speedDialVisibility ? "speed-dial-menu open" : "speed-dial-menu"}
-        FabProps={{ size: "small" }}
-        ariaLabel={i18n("speed_dial_aria")}
-        sx={{ position: "fixed", bottom: 6, right: 0 }}
+        className={speedDialVisibility ? 'speed-dial-menu open' : 'speed-dial-menu'}
+        FabProps={{ size: 'small' }}
+        ariaLabel={i18n('speed_dial_aria')}
+        sx={{ position: 'fixed', bottom: 6, right: 0 }}
         icon={
-          <HelpTooltip text={i18n("speed_dial_hint")}>
+          <HelpTooltip text={i18n('speed_dial_hint')}>
             <SpeedDialIcon />
           </HelpTooltip>
         }

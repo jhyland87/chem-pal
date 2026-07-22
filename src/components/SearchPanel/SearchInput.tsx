@@ -1,14 +1,14 @@
-import MenuIcon from "@/icons/MenuIcon";
-import ScienceIcon from "@/icons/ScienceIcon";
-import SearchIcon from "@/icons/SearchIcon";
-import Divider from "@mui/material/Divider";
-import IconButton from "@mui/material/IconButton";
-import Paper from "@mui/material/Paper";
-import { FormEvent, useCallback, useState } from "react";
-import HighlightedSearchInput from "./HighlightedSearchInput";
-import styles from "./SearchInput.module.scss";
-import { useDelayedError } from "./useDelayedError.hook";
-import { useSearchInput } from "./useSearchInput.hook";
+import MenuIcon from '@/icons/MenuIcon';
+import ScienceIcon from '@/icons/ScienceIcon';
+import SearchIcon from '@/icons/SearchIcon';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import Paper from '@mui/material/Paper';
+import { FormEvent, useCallback, useState } from 'react';
+import HighlightedSearchInput from './HighlightedSearchInput';
+import styles from './SearchInput.module.scss';
+import { useDelayedError } from './useDelayedError.hook';
+import { useSearchInput } from './useSearchInput.hook';
 
 /**
  * SearchInput component that provides a search interface with a text input and action buttons.
@@ -38,7 +38,7 @@ export default function SearchInput({ onSearch }: SearchInputStates) {
   const hintMessage = useDelayedError(searchError, searchInputValue, 200);
 
   const handleValidityChange = useCallback((blocked: boolean, message?: string) => {
-    setSearchError(blocked ? (message ?? "Invalid query.") : undefined);
+    setSearchError(blocked ? (message ?? 'Invalid query.') : undefined);
   }, []);
 
   const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -51,14 +51,14 @@ export default function SearchInput({ onSearch }: SearchInputStates) {
 
   return (
     <>
-      <div className={`${styles["search-input-container"]} ${styles.fullwidth}`}>
+      <div className={`${styles['search-input-container']} ${styles.fullwidth}`}>
         <Paper
-          className={`${styles.fullwidth} ${styles["search-query-input-form"]}`}
+          className={`${styles.fullwidth} ${styles['search-query-input-form']}`}
           component="form"
           onSubmit={handleFormSubmit}
           sx={{
             opacity: isLoading ? 0.7 : 1,
-            transition: "opacity 0.2s ease",
+            transition: 'opacity 0.2s ease',
           }}
         >
           <IconButton disabled={isLoading} aria-label="menu">
@@ -68,8 +68,8 @@ export default function SearchInput({ onSearch }: SearchInputStates) {
           <HighlightedSearchInput
             value={searchInputValue}
             onChange={handleSearchInputChange}
-            className={`${styles["search-query-input"]} ${styles.fullwidth}`}
-            placeholder={isLoading ? "Searching..." : "Search..."}
+            className={`${styles['search-query-input']} ${styles.fullwidth}`}
+            placeholder={isLoading ? 'Searching...' : 'Search...'}
             disabled={isLoading}
             ariaLabel="Search for chemicals"
             onValidityChange={handleValidityChange}
@@ -92,7 +92,7 @@ export default function SearchInput({ onSearch }: SearchInputStates) {
         </Paper>
 
         {hintMessage && (
-          <div role="alert" className={styles["search-error-hint"]}>
+          <div role="alert" className={styles['search-error-hint']}>
             {hintMessage}
           </div>
         )}
@@ -101,13 +101,13 @@ export default function SearchInput({ onSearch }: SearchInputStates) {
         {isLoading && (
           <div
             style={{
-              position: "absolute",
+              position: 'absolute',
               top: 0,
               left: 0,
               right: 0,
               height: 2,
-              backgroundColor: "#1976d2",
-              animation: "pulse 1s infinite",
+              backgroundColor: '#1976d2',
+              animation: 'pulse 1s infinite',
               zIndex: 1000,
             }}
           >

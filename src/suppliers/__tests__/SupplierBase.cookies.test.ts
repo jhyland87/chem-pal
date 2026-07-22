@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { SupplierBase } from "../SupplierBase";
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { SupplierBase } from '../SupplierBase';
 
 // Toggle-able cache stubs so each test can simulate hits / misses.
 const cacheState = {
@@ -10,7 +10,7 @@ const cacheState = {
   productHit: false as false | Record<string, unknown>,
 };
 
-vi.mock("@/utils/SupplierCache", () => {
+vi.mock('@/utils/SupplierCache', () => {
   return {
     SupplierCache: class MockSupplierCache {
       private supplierName: string;
@@ -41,7 +41,7 @@ vi.mock("@/utils/SupplierCache", () => {
   };
 });
 
-vi.mock("@/helpers/excludedProducts", () => ({
+vi.mock('@/helpers/excludedProducts', () => ({
   countExcludedProductsForSupplier: async () => 0,
   loadExcludedProductKeys: async () => new Set<string>(),
 }));
@@ -54,7 +54,7 @@ const callOrder: string[] = [];
 // Stub for chrome.cookies.set, which the real setCookie helper calls. Pushing
 // "seed" here lets us assert seeding happened and ran before setup().
 const cookieSetMock = vi.fn(async () => {
-  callOrder.push("seed");
+  callOrder.push('seed');
   return null;
 });
 
@@ -65,10 +65,10 @@ const cookieSetMock = vi.fn(async () => {
  * exercised.
  */
 class TestSupplier extends SupplierBase<unknown, Product> {
-  public readonly supplierName = "TestSupplier";
-  public readonly baseURL = "https://example.invalid";
-  public readonly shipping = "worldwide" as ShippingRange;
-  public readonly country = "US" as CountryCode;
+  public readonly supplierName = 'TestSupplier';
+  public readonly baseURL = 'https://example.invalid';
+  public readonly shipping = 'worldwide' as ShippingRange;
+  public readonly country = 'US' as CountryCode;
   public readonly paymentMethods = [] as PaymentMethod[];
 
   public setupCallCount = 0;
@@ -78,18 +78,18 @@ class TestSupplier extends SupplierBase<unknown, Product> {
   public readonly fetchersSawSetupDone: boolean[] = [];
 
   public override readonly requiredCookies: SupplierCookieSeed[] = [
-    { name: "currency", value: "2" },
+    { name: 'currency', value: '2' },
   ];
 
   // The last Request httpPost handed to fetch — inspected for credentials.
   public lastRequest?: Request;
 
   protected titleSelector(): Maybe<string> {
-    return "";
+    return '';
   }
 
   protected getUniqueProductKey(data: unknown): string {
-    return String((data as { id?: unknown })?.id ?? "");
+    return String((data as { id?: unknown })?.id ?? '');
   }
 
   // Capture the Request httpPost builds; return a minimal ok JSON response so
@@ -100,14 +100,14 @@ class TestSupplier extends SupplierBase<unknown, Product> {
     this.lastRequest = input as Request;
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
-      headers: { "content-type": "application/json" },
+      headers: { 'content-type': 'application/json' },
     }) as Response & { data: unknown; requestHash: string };
   }
 
   public callHttpPost() {
     return (this as unknown as { httpPost: (o: RequestOptions) => Promise<unknown> }).httpPost({
-      path: "/products",
-      body: { q: "x" },
+      path: '/products',
+      body: { q: 'x' },
     });
   }
 
@@ -123,13 +123,13 @@ class TestSupplier extends SupplierBase<unknown, Product> {
     this.setupCallCount++;
     await tick(this.setupDelayMs);
     this.setupDone = true;
-    callOrder.push("setup");
+    callOrder.push('setup');
   }
 
   public callQueryProductsWithCache() {
     return (
       this as unknown as { queryProductsWithCache: (q: string) => Promise<unknown> }
-    ).queryProductsWithCache("potassium");
+    ).queryProductsWithCache('potassium');
   }
 
   public callGetProductDataWithCache() {
@@ -153,26 +153,26 @@ class TestSupplier extends SupplierBase<unknown, Product> {
 // override fetch), so the 403 retry loop runs end to end. challengeRetryLimit
 // is configurable per test; the delay is 0 to keep tests fast.
 class RetryTestSupplier extends SupplierBase<unknown, Product> {
-  public readonly supplierName = "RetryTestSupplier";
-  public readonly baseURL = "https://example.invalid";
-  public readonly shipping = "worldwide" as ShippingRange;
-  public readonly country = "US" as CountryCode;
+  public readonly supplierName = 'RetryTestSupplier';
+  public readonly baseURL = 'https://example.invalid';
+  public readonly shipping = 'worldwide' as ShippingRange;
+  public readonly country = 'US' as CountryCode;
   public readonly paymentMethods = [] as PaymentMethod[];
 
   protected override readonly challengeRetryLimit: number;
   protected override readonly challengeRetryDelayMs = 0;
 
   constructor(retryLimit: number) {
-    super("q", 5, new AbortController());
+    super('q', 5, new AbortController());
     this.challengeRetryLimit = retryLimit;
   }
 
   protected titleSelector(): Maybe<string> {
-    return "";
+    return '';
   }
 
   protected getUniqueProductKey(data: unknown): string {
-    return String((data as { id?: unknown })?.id ?? "");
+    return String((data as { id?: unknown })?.id ?? '');
   }
 
   protected async queryProducts(): Promise<ProductBuilder<Product>[] | void> {
@@ -193,28 +193,28 @@ function makeFlakyFetch(forbiddenCount: number) {
   return vi.fn(async () => {
     call++;
     if (call <= forbiddenCount) {
-      return new Response("<html>reload</html>", {
+      return new Response('<html>reload</html>', {
         status: 403,
-        statusText: "Forbidden",
-        headers: { "content-type": "text/html" },
+        statusText: 'Forbidden',
+        headers: { 'content-type': 'text/html' },
       });
     }
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
-      headers: { "content-type": "application/json" },
+      headers: { 'content-type': 'application/json' },
     });
   });
 }
 
-describe("SupplierBase 403 challenge retry", () => {
+describe('SupplierBase 403 challenge retry', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
-  it("retries a 403 and succeeds once the cookie-handshake clears", async () => {
+  it('retries a 403 and succeeds once the cookie-handshake clears', async () => {
     const fetchMock = makeFlakyFetch(1);
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal('fetch', fetchMock);
 
     const supplier = new RetryTestSupplier(2);
     supplier.initCache();
@@ -225,37 +225,37 @@ describe("SupplierBase 403 challenge retry", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  it("gives up after exhausting challengeRetryLimit and throws", async () => {
+  it('gives up after exhausting challengeRetryLimit and throws', async () => {
     const fetchMock = makeFlakyFetch(Infinity);
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal('fetch', fetchMock);
 
     const supplier = new RetryTestSupplier(2);
     supplier.initCache();
 
-    await expect(supplier.callFetch()).rejects.toThrow("403");
+    await expect(supplier.callFetch()).rejects.toThrow('403');
     // 1 initial attempt + 2 retries.
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
-  it("does not retry when challengeRetryLimit is 0", async () => {
+  it('does not retry when challengeRetryLimit is 0', async () => {
     const fetchMock = makeFlakyFetch(Infinity);
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal('fetch', fetchMock);
 
     const supplier = new RetryTestSupplier(0);
     supplier.initCache();
 
-    await expect(supplier.callFetch()).rejects.toThrow("403");
+    await expect(supplier.callFetch()).rejects.toThrow('403');
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
 
-describe("SupplierBase cookie handling", () => {
+describe('SupplierBase cookie handling', () => {
   beforeEach(() => {
     cacheState.queryHit = false;
     cacheState.productHit = false;
     callOrder.length = 0;
     cookieSetMock.mockClear();
-    vi.stubGlobal("chrome", { cookies: { set: cookieSetMock } });
+    vi.stubGlobal('chrome', { cookies: { set: cookieSetMock } });
   });
 
   afterEach(() => {
@@ -276,33 +276,33 @@ describe("SupplierBase cookie handling", () => {
         Object.assign(this, init);
       }
     }
-    vi.stubGlobal("Request", FakeRequest);
+    vi.stubGlobal('Request', FakeRequest);
 
-    const supplier = new TestSupplier("q", 5, new AbortController());
+    const supplier = new TestSupplier('q', 5, new AbortController());
     supplier.initCache();
 
     await supplier.callHttpPost();
 
-    expect(supplier.lastRequest?.credentials).toBe("include");
+    expect(supplier.lastRequest?.credentials).toBe('include');
   });
 
-  it("seeds requiredCookies into the jar before setup() on a cache miss", async () => {
-    const supplier = new TestSupplier("q", 5, new AbortController());
+  it('seeds requiredCookies into the jar before setup() on a cache miss', async () => {
+    const supplier = new TestSupplier('q', 5, new AbortController());
     supplier.initCache();
 
     await supplier.callQueryProductsWithCache();
 
     expect(cookieSetMock).toHaveBeenCalledWith({
-      url: "https://example.invalid",
-      name: "currency",
-      value: "2",
+      url: 'https://example.invalid',
+      name: 'currency',
+      value: '2',
     });
     // Seeding must complete before setup runs.
-    expect(callOrder).toEqual(["seed", "setup"]);
+    expect(callOrder).toEqual(['seed', 'setup']);
   });
 
-  it("does not seed cookies when the query cache is hit", async () => {
-    const supplier = new TestSupplier("q", 5, new AbortController());
+  it('does not seed cookies when the query cache is hit', async () => {
+    const supplier = new TestSupplier('q', 5, new AbortController());
     supplier.initCache();
     cacheState.queryHit = { data: [], __cacheMetadata: { limit: 100 } };
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 /**
  * Debounces a search-box error message so it only surfaces after the user pauses typing.

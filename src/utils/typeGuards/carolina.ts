@@ -1,9 +1,9 @@
-import { StatusCodes } from "http-status-codes";
-import { z } from "zod";
+import { StatusCodes } from 'http-status-codes';
+import { z } from 'zod';
 
 const responseOkSchema = z.object({
   responseStatusCode: z.literal(StatusCodes.OK),
-  "@type": z.string(),
+  '@type': z.string(),
   contents: z.record(z.string(), z.unknown()),
 });
 
@@ -68,7 +68,7 @@ export function isResponseOk(response: unknown): response is CarolinaSearchRespo
 
 const validSearchResponseSchema = z.object({
   responseStatusCode: z.literal(StatusCodes.OK),
-  "@type": z.string(),
+  '@type': z.string(),
   contents: z.object({
     ContentFolderZone: z
       .array(
@@ -157,11 +157,11 @@ export function isValidSearchResponse(response: unknown): response is CarolinaSe
 }
 
 const searchResultItemSchema = z.object({
-  "product.productId": z.string(),
-  "product.productName": z.string(),
-  "product.shortDescription": z.string(),
+  'product.productId': z.string(),
+  'product.productName': z.string(),
+  'product.shortDescription': z.string(),
   itemPrice: z.string(),
-  "product.seoName": z.string(),
+  'product.seoName': z.string(),
   productUrl: z.string(),
   productName: z.string(),
   qtyDiscountAvailable: z.boolean(),
@@ -261,7 +261,7 @@ export function isValidProductResponse(obj: unknown): obj is CarolinaProductResp
 }
 
 const atgResponseSchema = z.object({
-  result: z.literal("success"),
+  result: z.literal('success'),
   response: z.object({
     response: z.object({
       displayName: z.string(),

@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
-import { isProductItem, isProductSelection, isValidSearchResponse, isWixProduct } from "../wix";
+import { describe, expect, it } from 'vitest';
+import { isProductItem, isProductSelection, isValidSearchResponse, isWixProduct } from '../wix';
 
-describe("Wix TypeGuards", () => {
-  describe("isValidSearchResponse", () => {
+describe('Wix TypeGuards', () => {
+  describe('isValidSearchResponse', () => {
     const validResponse = {
       data: {
         catalog: {
@@ -11,17 +11,17 @@ describe("Wix TypeGuards", () => {
               totalCount: 1,
               list: [
                 {
-                  id: "prod_123",
-                  name: "Sodium Chloride",
-                  description: "ACS reagent grade",
-                  sku: "NACL-500",
-                  urlPart: "sodium-chloride",
+                  id: 'prod_123',
+                  name: 'Sodium Chloride',
+                  description: 'ACS reagent grade',
+                  sku: 'NACL-500',
+                  urlPart: 'sodium-chloride',
                   price: 29.99,
-                  formattedPrice: "$29.99",
+                  formattedPrice: '$29.99',
                   productItems: [
                     {
-                      id: "item_123",
-                      formattedPrice: "$29.99",
+                      id: 'item_123',
+                      formattedPrice: '$29.99',
                       price: 29.99,
                       optionsSelections: [1],
                     },
@@ -30,10 +30,10 @@ describe("Wix TypeGuards", () => {
                     {
                       selections: [
                         {
-                          id: "opt_1",
-                          value: "500g",
-                          description: "500g Bottle",
-                          key: "size",
+                          id: 'opt_1',
+                          value: '500g',
+                          description: '500g Bottle',
+                          key: 'size',
                           inStock: true,
                         },
                       ],
@@ -47,33 +47,33 @@ describe("Wix TypeGuards", () => {
       },
     };
 
-    it("should return true for a valid search response", () => {
+    it('should return true for a valid search response', () => {
       expect(isValidSearchResponse(validResponse)).toBe(true);
     });
 
-    it("should return false for null", () => {
+    it('should return false for null', () => {
       expect(isValidSearchResponse(null)).toBe(false);
     });
 
-    it("should return false for non-object values", () => {
-      expect(isValidSearchResponse("not an object")).toBe(false);
+    it('should return false for non-object values', () => {
+      expect(isValidSearchResponse('not an object')).toBe(false);
       expect(isValidSearchResponse(123)).toBe(false);
       expect(isValidSearchResponse(undefined)).toBe(false);
     });
 
-    it("should return false for missing data property", () => {
+    it('should return false for missing data property', () => {
       const noData = {};
       expect(isValidSearchResponse(noData)).toBe(false);
     });
 
-    it("should return false for missing catalog property", () => {
+    it('should return false for missing catalog property', () => {
       const noCatalog = {
         data: {},
       };
       expect(isValidSearchResponse(noCatalog)).toBe(false);
     });
 
-    it("should return false for missing category property", () => {
+    it('should return false for missing category property', () => {
       const noCategory = {
         data: {
           catalog: {},
@@ -82,7 +82,7 @@ describe("Wix TypeGuards", () => {
       expect(isValidSearchResponse(noCategory)).toBe(false);
     });
 
-    it("should return false for missing productsWithMetaData property", () => {
+    it('should return false for missing productsWithMetaData property', () => {
       const noProducts = {
         data: {
           catalog: {
@@ -93,7 +93,7 @@ describe("Wix TypeGuards", () => {
       expect(isValidSearchResponse(noProducts)).toBe(false);
     });
 
-    it("should return false for missing required properties in productsWithMetaData", () => {
+    it('should return false for missing required properties in productsWithMetaData', () => {
       const missingProps = {
         data: {
           catalog: {
@@ -108,7 +108,7 @@ describe("Wix TypeGuards", () => {
       expect(isValidSearchResponse(missingProps)).toBe(false);
     });
 
-    it("should return false for invalid product list", () => {
+    it('should return false for invalid product list', () => {
       const invalidList = {
         data: {
           catalog: {
@@ -118,7 +118,7 @@ describe("Wix TypeGuards", () => {
                 list: [
                   {
                     // Invalid product object
-                    name: "Invalid Product",
+                    name: 'Invalid Product',
                   },
                 ],
               },
@@ -130,19 +130,19 @@ describe("Wix TypeGuards", () => {
     });
   });
 
-  describe("isWixProduct", () => {
+  describe('isWixProduct', () => {
     const validProduct = {
-      id: "prod_123",
-      name: "Sodium Chloride",
-      description: "ACS reagent grade",
-      sku: "NACL-500",
-      urlPart: "sodium-chloride",
+      id: 'prod_123',
+      name: 'Sodium Chloride',
+      description: 'ACS reagent grade',
+      sku: 'NACL-500',
+      urlPart: 'sodium-chloride',
       price: 29.99,
-      formattedPrice: "$29.99",
+      formattedPrice: '$29.99',
       productItems: [
         {
-          id: "item_123",
-          formattedPrice: "$29.99",
+          id: 'item_123',
+          formattedPrice: '$29.99',
           price: 29.99,
           optionsSelections: [1],
         },
@@ -151,10 +151,10 @@ describe("Wix TypeGuards", () => {
         {
           selections: [
             {
-              id: "opt_1",
-              value: "500g",
-              description: "500g Bottle",
-              key: "size",
+              id: 'opt_1',
+              value: '500g',
+              description: '500g Bottle',
+              key: 'size',
               inStock: true,
             },
           ],
@@ -162,21 +162,21 @@ describe("Wix TypeGuards", () => {
       ],
     };
 
-    it("should return true for a valid product object", () => {
+    it('should return true for a valid product object', () => {
       expect(isWixProduct(validProduct)).toBe(true);
     });
 
-    it("should return false for null", () => {
+    it('should return false for null', () => {
       expect(isWixProduct(null)).toBe(false);
     });
 
-    it("should return false for non-object values", () => {
-      expect(isWixProduct("not an object")).toBe(false);
+    it('should return false for non-object values', () => {
+      expect(isWixProduct('not an object')).toBe(false);
       expect(isWixProduct(123)).toBe(false);
       expect(isWixProduct(undefined)).toBe(false);
     });
 
-    it("should return false for missing required properties", () => {
+    it('should return false for missing required properties', () => {
       const missingName = { ...validProduct };
       delete (missingName as any).name;
       expect(isWixProduct(missingName)).toBe(false);
@@ -186,17 +186,17 @@ describe("Wix TypeGuards", () => {
       expect(isWixProduct(missingProductItems)).toBe(false);
     });
 
-    it("should return false for wrong property types", () => {
+    it('should return false for wrong property types', () => {
       const wrongTypes = {
         ...validProduct,
-        price: "29.99", // Should be number
+        price: '29.99', // Should be number
         name: 123, // Should be string
-        productItems: "invalid", // Should be array
+        productItems: 'invalid', // Should be array
       };
       expect(isWixProduct(wrongTypes)).toBe(false);
     });
 
-    it("should return false for invalid product items array", () => {
+    it('should return false for invalid product items array', () => {
       const invalidItems = {
         ...validProduct,
         productItems: [
@@ -210,29 +210,29 @@ describe("Wix TypeGuards", () => {
     });
   });
 
-  describe("isProductItem", () => {
+  describe('isProductItem', () => {
     const validItem = {
-      id: "item_123",
-      formattedPrice: "$29.99",
+      id: 'item_123',
+      formattedPrice: '$29.99',
       price: 29.99,
       optionsSelections: [1],
     };
 
-    it("should return true for a valid product item", () => {
+    it('should return true for a valid product item', () => {
       expect(isProductItem(validItem)).toBe(true);
     });
 
-    it("should return false for null", () => {
+    it('should return false for null', () => {
       expect(isProductItem(null)).toBe(false);
     });
 
-    it("should return false for non-object values", () => {
-      expect(isProductItem("not an object")).toBe(false);
+    it('should return false for non-object values', () => {
+      expect(isProductItem('not an object')).toBe(false);
       expect(isProductItem(123)).toBe(false);
       expect(isProductItem(undefined)).toBe(false);
     });
 
-    it("should return false for missing required properties", () => {
+    it('should return false for missing required properties', () => {
       const missingId = { ...validItem };
       delete (missingId as any).id;
       expect(isProductItem(missingId)).toBe(false);
@@ -242,17 +242,17 @@ describe("Wix TypeGuards", () => {
       expect(isProductItem(missingOptionsSelections)).toBe(false);
     });
 
-    it("should return false for wrong property types", () => {
+    it('should return false for wrong property types', () => {
       const wrongTypes = {
         ...validItem,
         id: 123, // Should be string
-        price: "29.99", // Should be number
-        optionsSelections: "invalid", // Should be array
+        price: '29.99', // Should be number
+        optionsSelections: 'invalid', // Should be array
       };
       expect(isProductItem(wrongTypes)).toBe(false);
     });
 
-    it("should return false for non-numeric options selections", () => {
+    it('should return false for non-numeric options selections', () => {
       const invalidSelections = {
         ...validItem,
         optionsSelections: [{ id: 123 }], // selection IDs must be numbers
@@ -260,7 +260,7 @@ describe("Wix TypeGuards", () => {
       expect(isProductItem(invalidSelections)).toBe(false);
     });
 
-    it("should return false for an empty options selections array", () => {
+    it('should return false for an empty options selections array', () => {
       const emptySelections = {
         ...validItem,
         optionsSelections: [],
@@ -269,30 +269,30 @@ describe("Wix TypeGuards", () => {
     });
   });
 
-  describe("isProductSelection", () => {
+  describe('isProductSelection', () => {
     const validSelection = {
-      id: "opt_1",
-      value: "500g",
-      description: "500g Bottle",
-      key: "size",
+      id: 'opt_1',
+      value: '500g',
+      description: '500g Bottle',
+      key: 'size',
       inStock: true,
     };
 
-    it("should return true for a valid product selection", () => {
+    it('should return true for a valid product selection', () => {
       expect(isProductSelection(validSelection)).toBe(true);
     });
 
-    it("should return false for null", () => {
+    it('should return false for null', () => {
       expect(isProductSelection(null)).toBe(false);
     });
 
-    it("should return false for non-object values", () => {
-      expect(isProductSelection("not an object")).toBe(false);
+    it('should return false for non-object values', () => {
+      expect(isProductSelection('not an object')).toBe(false);
       expect(isProductSelection(123)).toBe(false);
       expect(isProductSelection(undefined)).toBe(false);
     });
 
-    it("should return false for missing required properties", () => {
+    it('should return false for missing required properties', () => {
       const missingId = { ...validSelection };
       delete (missingId as any).id;
       expect(isProductSelection(missingId)).toBe(false);
@@ -302,27 +302,27 @@ describe("Wix TypeGuards", () => {
       expect(isProductSelection(missingValue)).toBe(false);
     });
 
-    it("should return false for wrong property types", () => {
+    it('should return false for wrong property types', () => {
       const wrongTypes = {
         ...validSelection,
         id: 123, // Should be string
         value: 500, // Should be string
-        inStock: "true", // Should be boolean
+        inStock: 'true', // Should be boolean
       };
       expect(isProductSelection(wrongTypes)).toBe(false);
     });
 
-    it("should accept id as either string or number", () => {
-      expect(isProductSelection({ ...validSelection, id: "opt_1" })).toBe(true);
+    it('should accept id as either string or number', () => {
+      expect(isProductSelection({ ...validSelection, id: 'opt_1' })).toBe(true);
       expect(isProductSelection({ ...validSelection, id: 1 })).toBe(true);
       expect(isProductSelection({ ...validSelection, id: true })).toBe(false);
     });
 
-    it("should accept inStock as boolean or null", () => {
+    it('should accept inStock as boolean or null', () => {
       expect(isProductSelection({ ...validSelection, inStock: true })).toBe(true);
       expect(isProductSelection({ ...validSelection, inStock: false })).toBe(true);
       expect(isProductSelection({ ...validSelection, inStock: null })).toBe(true);
-      expect(isProductSelection({ ...validSelection, inStock: "true" })).toBe(false);
+      expect(isProductSelection({ ...validSelection, inStock: 'true' })).toBe(false);
       expect(isProductSelection({ ...validSelection, inStock: 1 })).toBe(false);
     });
   });

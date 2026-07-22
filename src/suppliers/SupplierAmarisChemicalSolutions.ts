@@ -1,5 +1,5 @@
-import { ProductCategory as ACSProductCategory } from "@/constants/amarischemicalsolutions";
-import { SupplierBaseWoocommerce } from "./SupplierBaseWoocommerce";
+import { ProductCategory as ACSProductCategory } from '@/constants/amarischemicalsolutions';
+import { SupplierBaseWoocommerce } from './SupplierBaseWoocommerce';
 
 /**
  * Supplier class for Amaris Chemical Solutions, a chemical supplier using the WooCommerce platform.
@@ -43,19 +43,19 @@ export class SupplierAmarisChemicalSolutions extends SupplierBaseWoocommerce imp
    * ```
    * @source
    */
-  public readonly supplierName: string = "Amaris Chemical Solutions";
+  public readonly supplierName: string = 'Amaris Chemical Solutions';
 
   // The base URL for the supplier's website.
-  public readonly baseURL: string = "https://amarischemicalsolutions.com";
+  public readonly baseURL: string = 'https://amarischemicalsolutions.com';
 
   // Shipping scope for Alchemie Labs
-  public readonly shipping: ShippingRange = "international";
+  public readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "US";
+  public readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   public readonly productSearchFilters: WooCommerceProductSearchParams = {
     category: [
@@ -135,9 +135,9 @@ export class SupplierAmarisChemicalSolutions extends SupplierBaseWoocommerce imp
       ACSProductCategory.VULCANIZING_AGENTS,
       ACSProductCategory.WASTEWATER_TREATMENT_CHEMICALS,
       ACSProductCategory.WATER_TREATMENT_CHEMICALS,
-    ].join(","),
-    stock_status: ["instock", "onbackorder"],
-    orderby: "title",
+    ].join(','),
+    stock_status: ['instock', 'onbackorder'],
+    orderby: 'title',
   };
 
   // Amaris sits behind a WAF that 403s the first API hit while planting a

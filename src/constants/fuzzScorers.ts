@@ -8,7 +8,7 @@ import {
   token_similarity_sort_ratio,
   token_sort_ratio,
   WRatio,
-} from "fuzzball";
+} from 'fuzzball';
 
 /**
  * Fuzz-match scorer registry shared between `SupplierBase.fuzzyFilter` and the
@@ -45,15 +45,15 @@ export type FuzzScorerName = keyof typeof FUZZ_SCORERS;
  * @source
  */
 export const FUZZ_SCORER_NAMES: readonly FuzzScorerName[] = [
-  "ratio",
-  "partial_ratio",
-  "token_sort_ratio",
-  "token_set_ratio",
-  "token_similarity_sort_ratio",
-  "partial_token_sort_ratio",
-  "partial_token_set_ratio",
-  "partial_token_similarity_sort_ratio",
-  "WRatio",
+  'ratio',
+  'partial_ratio',
+  'token_sort_ratio',
+  'token_set_ratio',
+  'token_similarity_sort_ratio',
+  'partial_token_sort_ratio',
+  'partial_token_set_ratio',
+  'partial_token_similarity_sort_ratio',
+  'WRatio',
 ];
 
 /**
@@ -70,5 +70,5 @@ export const FUZZ_SCORER_NAMES: readonly FuzzScorerName[] = [
  * @source
  */
 export function isFuzzScorerName(name: unknown): name is FuzzScorerName {
-  return typeof name === "string" && name in FUZZ_SCORERS;
+  return typeof name === 'string' && name in FUZZ_SCORERS;
 }

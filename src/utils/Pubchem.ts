@@ -7,28 +7,28 @@
  * @source
  */
 function assertIsCIDResponse(data: unknown): asserts data is CIDResponse {
-  if (typeof data !== "object" || data === null) {
-    throw new Error("data is not an object");
+  if (typeof data !== 'object' || data === null) {
+    throw new Error('data is not an object');
   }
   if (
-    !("ConceptsAndCIDs" in data) ||
-    typeof data.ConceptsAndCIDs !== "object" ||
+    !('ConceptsAndCIDs' in data) ||
+    typeof data.ConceptsAndCIDs !== 'object' ||
     data.ConceptsAndCIDs === null
   ) {
-    throw new Error("data.ConceptsAndCIDs is not an object");
+    throw new Error('data.ConceptsAndCIDs is not an object');
   }
   if (
-    !("CID" in data.ConceptsAndCIDs) ||
+    !('CID' in data.ConceptsAndCIDs) ||
     !Array.isArray(data.ConceptsAndCIDs.CID) ||
     data.ConceptsAndCIDs.CID.length === 0
   ) {
-    throw new Error("data.ConceptsAndCIDs.CID is not an array");
+    throw new Error('data.ConceptsAndCIDs.CID is not an array');
   }
   if (data.ConceptsAndCIDs.CID.length === 0) {
-    throw new Error("data.ConceptsAndCIDs.CID is empty");
+    throw new Error('data.ConceptsAndCIDs.CID is empty');
   }
-  if (typeof data.ConceptsAndCIDs.CID[0] !== "number") {
-    throw new Error("data.ConceptsAndCIDs.CID[0] is not a number");
+  if (typeof data.ConceptsAndCIDs.CID[0] !== 'number') {
+    throw new Error('data.ConceptsAndCIDs.CID[0] is not a number');
   }
 }
 
@@ -38,30 +38,30 @@ function assertIsCIDResponse(data: unknown): asserts data is CIDResponse {
  * @source
  */
 function assertIsCompoundResponseResponse(data: unknown): asserts data is CompoundResponse {
-  if (typeof data !== "object" || data === null) {
-    throw new Error("data is not an object");
+  if (typeof data !== 'object' || data === null) {
+    throw new Error('data is not an object');
   }
-  if (!("status" in data) || typeof data.status !== "object") {
-    throw new Error("data.status is not an object");
+  if (!('status' in data) || typeof data.status !== 'object') {
+    throw new Error('data.status is not an object');
   }
-  if (!("total" in data) || typeof data.total !== "number") {
-    throw new Error("data.total is not a number");
+  if (!('total' in data) || typeof data.total !== 'number') {
+    throw new Error('data.total is not a number');
   }
   if (
-    !("dictionary_terms" in data) ||
-    typeof data.dictionary_terms !== "object" ||
+    !('dictionary_terms' in data) ||
+    typeof data.dictionary_terms !== 'object' ||
     data.dictionary_terms === null
   ) {
-    throw new Error("data.dictionary_terms is not an object");
+    throw new Error('data.dictionary_terms is not an object');
   }
-  if (!("compound" in data.dictionary_terms) || !Array.isArray(data.dictionary_terms.compound)) {
-    throw new Error("data.dictionary_terms.compound is not an array");
+  if (!('compound' in data.dictionary_terms) || !Array.isArray(data.dictionary_terms.compound)) {
+    throw new Error('data.dictionary_terms.compound is not an array');
   }
   if (data.dictionary_terms.compound.length === 0) {
-    throw new Error("data.dictionary_terms.compound is empty");
+    throw new Error('data.dictionary_terms.compound is empty');
   }
-  if (typeof data.dictionary_terms.compound[0] !== "string") {
-    throw new Error("data.dictionary_terms.compound[0] is not a string");
+  if (typeof data.dictionary_terms.compound[0] !== 'string') {
+    throw new Error('data.dictionary_terms.compound[0] is not a string');
   }
 }
 
@@ -71,11 +71,11 @@ function assertIsCompoundResponseResponse(data: unknown): asserts data is Compou
  * @source
  */
 function assertIsSdqAgentResponse(data: unknown): asserts data is SDQResponse {
-  if (typeof data !== "object" || data === null) {
-    throw new Error("data is not an object");
+  if (typeof data !== 'object' || data === null) {
+    throw new Error('data is not an object');
   }
-  if (!("SDQOutputSet" in data) || typeof data.SDQOutputSet !== "object") {
-    throw new Error("data.SDQOutputSet is not an object");
+  if (!('SDQOutputSet' in data) || typeof data.SDQOutputSet !== 'object') {
+    throw new Error('data.SDQOutputSet is not an object');
   }
 }
 
@@ -96,7 +96,7 @@ function assertIsSdqAgentResponse(data: unknown): asserts data is SDQResponse {
  */
 export class Pubchem {
   /** Base URL for PubChem API endpoints */
-  private readonly baseURL = "https://pubchem.ncbi.nlm.nih.gov";
+  private readonly baseURL = 'https://pubchem.ncbi.nlm.nih.gov';
 
   /**
    * Creates a new Pubchem instance for querying compound information
@@ -127,7 +127,7 @@ export class Pubchem {
       assertIsCompoundResponseResponse(data);
       return data.dictionary_terms.compound[0];
     } catch (error) {
-      console.error("Error fetching compound:", error);
+      console.error('Error fetching compound:', error);
     }
   }
 
@@ -154,7 +154,7 @@ export class Pubchem {
       assertIsCIDResponse(data);
       return data.ConceptsAndCIDs.CID[0];
     } catch (error) {
-      console.error("Error fetching CID:", error);
+      console.error('Error fetching CID:', error);
     }
   }
 
@@ -172,9 +172,9 @@ export class Pubchem {
   async querySdqAgent(sdqQuery: SDQQuery): Promise<SDQResponse | undefined> {
     try {
       const sdqAgentQuery = {
-        select: "*",
-        collection: "compound",
-        order: ["cid,asc"],
+        select: '*',
+        collection: 'compound',
+        order: ['cid,asc'],
         start: 1,
         limit: 10,
         where: { ands: [sdqQuery] },
@@ -182,7 +182,7 @@ export class Pubchem {
         listids: 0,
       };
       console.debug({ sdqAgentQuery });
-      const queryURL = JSON.stringify(sdqAgentQuery).replace(/"/g, "%22").replace(/ /g, "%20");
+      const queryURL = JSON.stringify(sdqAgentQuery).replace(/"/g, '%22').replace(/ /g, '%20');
 
       console.debug(
         `Querying URL: ${this.baseURL}/sdq/sdqagent.cgi?infmt=json&outfmt=json&query=${queryURL}`,
@@ -194,7 +194,7 @@ export class Pubchem {
       assertIsSdqAgentResponse(data);
       return data;
     } catch (error) {
-      console.error("Error querying SDQ agent:", error);
+      console.error('Error querying SDQ agent:', error);
     }
   }
 
@@ -217,7 +217,7 @@ export class Pubchem {
       if (!data) return undefined;
       return data.SDQOutputSet[0].rows[0].cmpdname;
     } catch (error) {
-      console.error("Error fetching simple name:", error);
+      console.error('Error fetching simple name:', error);
     }
   }
 
@@ -237,7 +237,7 @@ export class Pubchem {
       if (!data) return undefined;
       return data.SDQOutputSet[0].rows[0].cmpdname;
     } catch (error) {
-      console.error("Error fetching compound name from alias:", error);
+      console.error('Error fetching compound name from alias:', error);
     }
   }
 }

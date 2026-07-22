@@ -1,20 +1,20 @@
-import { defaultResultsLimit } from "@/../config.json";
-import { filterRestrictedProduct } from "@/helpers/purchaseRestriction";
+import { defaultResultsLimit } from '@/../config.json';
+import { filterRestrictedProduct } from '@/helpers/purchaseRestriction';
 import {
   looksLikeSmiles,
   parseStructurePrefix,
   resolveSmiles,
   type ResolvedStructure,
-} from "@/helpers/smiles";
-import { mapDefined, sleep } from "@/helpers/utils";
-import { Logger } from "@/utils/Logger";
-import { extractAllPositiveTerms } from "@/utils/search-query/extractPositiveTerms";
-import { parseSearchQuery } from "@/utils/search-query/parseSearchQuery";
-import type { ParsedSearchQuery } from "@/utils/search-query/types";
-import { incrementParseError } from "@/utils/SupplierStatsStore";
-import { Queue } from "async-await-queue";
-import * as suppliers from ".";
-import { SupplierBase } from "./SupplierBase";
+} from '@/helpers/smiles';
+import { mapDefined, sleep } from '@/helpers/utils';
+import { Logger } from '@/utils/Logger';
+import { extractAllPositiveTerms } from '@/utils/search-query/extractPositiveTerms';
+import { parseSearchQuery } from '@/utils/search-query/parseSearchQuery';
+import type { ParsedSearchQuery } from '@/utils/search-query/types';
+import { incrementParseError } from '@/utils/SupplierStatsStore';
+import { Queue } from 'async-await-queue';
+import * as suppliers from '.';
+import { SupplierBase } from './SupplierBase';
 
 /** Constructor signature for supplier classes used by the factory */
 type SupplierConstructor<P extends Product> = new (
@@ -196,8 +196,8 @@ export class SupplierFactory<P extends Product> {
       disabledSuppliers = [],
     } = options;
 
-    this.logger = new Logger("SupplierFactory");
-    this.logger.debug("initialized", {
+    this.logger = new Logger('SupplierFactory');
+    this.logger.debug('initialized', {
       query,
       limit,
       controller,
@@ -283,7 +283,7 @@ export class SupplierFactory<P extends Product> {
         // Trusted static supplier classes; the union of concrete constructors
         // isn't structurally assignable to the generic SupplierConstructor.
         const ConcreteClass = SupplierClass as unknown as SupplierConstructor<Product>;
-        const instance = new ConcreteClass("", 1, controller);
+        const instance = new ConcreteClass('', 1, controller);
         return [key, instance.supplierName];
       }),
     );
@@ -313,7 +313,7 @@ export class SupplierFactory<P extends Product> {
         // Trusted static supplier classes; the union of concrete constructors
         // isn't structurally assignable to the generic SupplierConstructor.
         const ConcreteClass = SupplierClass as unknown as SupplierConstructor<Product>;
-        const instance = new ConcreteClass("", 1, controller);
+        const instance = new ConcreteClass('', 1, controller);
         return [key, instance.shipsToCountry(location)];
       }),
     );
@@ -334,7 +334,7 @@ export class SupplierFactory<P extends Product> {
         // Trusted static supplier classes; the union of concrete constructors
         // isn't structurally assignable to the generic SupplierConstructor.
         const ConcreteClass = SupplierClass as unknown as SupplierConstructor<Product>;
-        const instance = new ConcreteClass("", 1, controller);
+        const instance = new ConcreteClass('', 1, controller);
         return [key, instance.requiredHosts];
       }),
     );
@@ -359,14 +359,14 @@ export class SupplierFactory<P extends Product> {
         try {
           const granted = await chrome.permissions.contains({ origins: instance.requiredHosts });
           if (!granted) {
-            this.logger.warn("Permission check failed for supplier", {
+            this.logger.warn('Permission check failed for supplier', {
               supplier: instance.supplierName,
               requiredHosts: instance.requiredHosts,
             });
           }
           return { instance, granted };
         } catch (e) {
-          this.logger.error("Permission check failed for supplier", {
+          this.logger.error('Permission check failed for supplier', {
             supplier: instance.supplierName,
             error: e,
           });
@@ -444,7 +444,7 @@ export class SupplierFactory<P extends Product> {
         continue;
       }
       const { mode, value } = parseStructurePrefix(term);
-      const isStructure = mode === "smiles" || (mode === "auto" && looksLikeSmiles(value));
+      const isStructure = mode === 'smiles' || (mode === 'auto' && looksLikeSmiles(value));
       if (!isStructure) {
         continue;
       }
@@ -454,7 +454,7 @@ export class SupplierFactory<P extends Product> {
           resolved.set(term, structure);
         }
       } catch (error) {
-        this.logger.warn("Failed to resolve structure term; skipping", { term, error });
+        this.logger.warn('Failed to resolve structure term; skipping', { term, error });
       }
     }
 
@@ -487,7 +487,7 @@ export class SupplierFactory<P extends Product> {
         if (this.disabledSuppliers.includes(supplierClassName)) return;
         if (!(this.suppliers.length === 0 || this.suppliers.includes(supplierClassName))) return;
 
-        this.logger.debug("Initializing supplier class:", supplierClassName);
+        this.logger.debug('Initializing supplier class:', supplierClassName);
         // Trusted static supplier classes; the union of concrete constructors
         // isn't structurally assignable to the generic SupplierConstructor<P>.
         const ConcreteSupplierClass = supplierClass as unknown as SupplierConstructor<P>;
@@ -528,7 +528,7 @@ export class SupplierFactory<P extends Product> {
             }
           }
         } catch (e) {
-          this.logger.error("Error executing supplier", { error: e, supplier });
+          this.logger.error('Error executing supplier', { error: e, supplier });
           incrementParseError(supplier.supplierName);
           errors.push({ error: e, supplier });
         }
@@ -566,7 +566,7 @@ export class SupplierFactory<P extends Product> {
         if (this.disabledSuppliers.includes(supplierClassName)) return;
         if (!(this.suppliers.length === 0 || this.suppliers.includes(supplierClassName))) return;
 
-        this.logger.debug("Initializing supplier class", { supplierClassName });
+        this.logger.debug('Initializing supplier class', { supplierClassName });
         // Trusted static supplier classes; the union of concrete constructors
         // isn't structurally assignable to the generic SupplierConstructor<P>.
         const ConcreteSupplierClass = supplierClass as unknown as SupplierConstructor<P>;
@@ -607,7 +607,7 @@ export class SupplierFactory<P extends Product> {
             }
           }
         } catch (e) {
-          this.logger.error("Error executing supplier", { error: e, supplier });
+          this.logger.error('Error executing supplier', { error: e, supplier });
           incrementParseError(supplier.supplierName);
         } finally {
           doneCount++;

@@ -1,14 +1,14 @@
-import { CACHE } from "@/constants/common";
-import { i18n } from "@/helpers/i18n";
-import { cstorage } from "@/utils/storage";
-import { Science as ScienceIcon, Search as SearchIcon } from "@mui/icons-material";
-import { Box, IconButton } from "@mui/material";
-import { FC, FormEvent, useEffect, useState } from "react";
-import { useAppContext } from "../context";
-import styles from "./SearchForm.module.scss";
-import HighlightedSearchInput from "./SearchPanel/HighlightedSearchInput";
-import { useDelayedError } from "./SearchPanel/useDelayedError.hook";
-import { SearchFormDivider, SearchFormPaper } from "./StyledComponents";
+import { CACHE } from '@/constants/common';
+import { i18n } from '@/helpers/i18n';
+import { cstorage } from '@/utils/storage';
+import { Science as ScienceIcon, Search as SearchIcon } from '@mui/icons-material';
+import { Box, IconButton } from '@mui/material';
+import { FC, FormEvent, useEffect, useState } from 'react';
+import { useAppContext } from '../context';
+import styles from './SearchForm.module.scss';
+import HighlightedSearchInput from './SearchPanel/HighlightedSearchInput';
+import { useDelayedError } from './SearchPanel/useDelayedError.hook';
+import { SearchFormDivider, SearchFormPaper } from './StyledComponents';
 
 /**
  * Props for {@link SearchForm}. Controls submit handling, the advanced-options
@@ -51,7 +51,7 @@ interface SearchFormProps {
 export const SearchForm: FC<SearchFormProps> = ({
   onSearch,
   onDrawerToggle,
-  placeholder = i18n("search_placeholder"),
+  placeholder = i18n('search_placeholder'),
 }) => {
   const appContext = useAppContext();
   const { searchFilters, setSearchFilters } = appContext;
@@ -72,11 +72,11 @@ export const SearchForm: FC<SearchFormProps> = ({
       try {
         const data = await cstorage.session.get([CACHE.SEARCH_INPUT]);
         const stored = data[CACHE.SEARCH_INPUT];
-        if (typeof stored === "string" && stored && stored !== searchFilters.titleQuery) {
+        if (typeof stored === 'string' && stored && stored !== searchFilters.titleQuery) {
           setSearchFilters({ ...searchFilters, titleQuery: stored });
         }
       } catch (error) {
-        console.warn("Failed to load search input from session storage:", { error });
+        console.warn('Failed to load search input from session storage:', { error });
       }
     };
     loadSearchInput();
@@ -88,7 +88,7 @@ export const SearchForm: FC<SearchFormProps> = ({
     try {
       await cstorage.session.set({ [CACHE.SEARCH_INPUT]: value });
     } catch (error) {
-      console.warn("Failed to persist search input to session storage:", { error });
+      console.warn('Failed to persist search input to session storage:', { error });
     }
   };
 
@@ -102,7 +102,7 @@ export const SearchForm: FC<SearchFormProps> = ({
       // Clear the live draft so re-opening the drawer doesn't show stale text
       // from the just-submitted query. The parent's onSearch handler is also
       // responsible for clearing CACHE.SEARCH_INPUT in session storage.
-      setSearchFilters({ ...searchFilters, titleQuery: "" });
+      setSearchFilters({ ...searchFilters, titleQuery: '' });
       onSearch(trimmed);
     }
   };
@@ -116,23 +116,23 @@ export const SearchForm: FC<SearchFormProps> = ({
   };
 
   return (
-    <Box className={styles["search-form-container"]} data-testid="search-form-container">
+    <Box className={styles['search-form-container']} data-testid="search-form-container">
       <SearchFormPaper onSubmit={handleSubmit}>
         <HighlightedSearchInput
           value={query}
           onChange={handleChange}
           placeholder={placeholder}
-          ariaLabel={i18n("search_form_aria")}
+          ariaLabel={i18n('search_form_aria')}
           onValidityChange={(blocked, message) =>
-            setSearchError(blocked ? (message ?? i18n("search_invalid_query")) : undefined)
+            setSearchError(blocked ? (message ?? i18n('search_invalid_query')) : undefined)
           }
-          style={{ marginLeft: 16, flex: 1, fontSize: "1.15rem" }}
+          style={{ marginLeft: 16, flex: 1, fontSize: '1.15rem' }}
         />
 
         <IconButton
-          className={styles["search-form-icon-button"]}
+          className={styles['search-form-icon-button']}
           type="submit"
-          aria-label={i18n("search_submit")}
+          aria-label={i18n('search_submit')}
           disabled={!query.trim() || Boolean(searchError)}
         >
           <SearchIcon />
@@ -140,10 +140,10 @@ export const SearchForm: FC<SearchFormProps> = ({
 
         <SearchFormDivider />
         <IconButton
-          className={styles["search-form-icon-button"]}
+          className={styles['search-form-icon-button']}
           type="button"
           //color="primary"
-          aria-label={i18n("search_advanced_options")}
+          aria-label={i18n('search_advanced_options')}
           onClick={handleDrawerToggle}
         >
           <ScienceIcon />
@@ -151,7 +151,7 @@ export const SearchForm: FC<SearchFormProps> = ({
       </SearchFormPaper>
 
       {hintMessage && (
-        <div role="alert" className={styles["search-error-hint"]}>
+        <div role="alert" className={styles['search-error-hint']}>
           {hintMessage}
         </div>
       )}

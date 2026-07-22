@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
 
 /**
  * Guards locale parity: `en` is the source of truth, and every other
@@ -17,9 +17,9 @@ interface Message {
 }
 type MessageTable = Record<string, Message>;
 
-const rawTables = import.meta.glob<MessageTable>("/src/_locales/*/messages.json", {
+const rawTables = import.meta.glob<MessageTable>('/src/_locales/*/messages.json', {
   eager: true,
-  import: "default",
+  import: 'default',
 });
 
 const tables = new Map<string, MessageTable>();
@@ -28,7 +28,7 @@ for (const [path, table] of Object.entries(rawTables)) {
   if (code) tables.set(code, table);
 }
 
-const SOURCE_LOCALE = "en";
+const SOURCE_LOCALE = 'en';
 const source = tables.get(SOURCE_LOCALE);
 const translations = [...tables.entries()].filter(([code]) => code !== SOURCE_LOCALE);
 
@@ -37,8 +37,8 @@ function messageTokens(message: string): string[] {
   return [...message.matchAll(/\$(\w+)\$/g)].map((m) => m[1].toLowerCase()).sort();
 }
 
-describe("locale message tables", () => {
-  it("loads the source locale and at least one translation", () => {
+describe('locale message tables', () => {
+  it('loads the source locale and at least one translation', () => {
     // Guards the glob itself: if the path or bundler behavior changed, every
     // it.each below would silently register zero cases and the suite would pass.
     expect(source).toBeDefined();
@@ -46,29 +46,29 @@ describe("locale message tables", () => {
     expect(translations.length).toBeGreaterThan(0);
   });
 
-  describe.each(translations)("%s", (code, table) => {
+  describe.each(translations)('%s', (code, table) => {
     const sourceKeys = Object.keys(source ?? {});
 
-    it("has no keys missing from en", () => {
+    it('has no keys missing from en', () => {
       const missing = sourceKeys.filter((key) => !(key in table));
       expect(missing, `${code} is missing ${missing.length} key(s) present in en`).toEqual([]);
     });
 
-    it("has no keys that en does not", () => {
+    it('has no keys that en does not', () => {
       // Catches a key that was renamed in en but left behind here, which would
       // otherwise linger as dead weight forever.
       const orphaned = Object.keys(table).filter((key) => !(key in (source ?? {})));
       expect(orphaned, `${code} has ${orphaned.length} key(s) not in en`).toEqual([]);
     });
 
-    it("has a non-empty message for every key", () => {
+    it('has a non-empty message for every key', () => {
       const blank = Object.entries(table)
-        .filter(([, entry]) => typeof entry?.message !== "string" || entry.message.trim() === "")
+        .filter(([, entry]) => typeof entry?.message !== 'string' || entry.message.trim() === '')
         .map(([key]) => key);
       expect(blank, `${code} has ${blank.length} blank message(s)`).toEqual([]);
     });
 
-    it("declares the same placeholders as en", () => {
+    it('declares the same placeholders as en', () => {
       // A translation that drops a placeholder declaration breaks substitution at
       // runtime — the value renders as a literal "$count$" or vanishes.
       const mismatched = sourceKeys
@@ -81,14 +81,14 @@ describe("locale message tables", () => {
       expect(mismatched, `${code} placeholder declarations differ from en`).toEqual([]);
     });
 
-    it("references the same placeholder tokens in its message text", () => {
+    it('references the same placeholder tokens in its message text', () => {
       // Declaring a placeholder isn't enough — the translated string has to actually
       // use it, or the interpolated value never appears.
       const mismatched = sourceKeys
         .filter((key) => key in table)
         .filter((key) => {
-          const expected = messageTokens(source?.[key]?.message ?? "");
-          const actual = messageTokens(table[key]?.message ?? "");
+          const expected = messageTokens(source?.[key]?.message ?? '');
+          const actual = messageTokens(table[key]?.message ?? '');
           return expected.join() !== actual.join();
         });
       expect(mismatched, `${code} message text uses different $tokens$ than en`).toEqual([]);

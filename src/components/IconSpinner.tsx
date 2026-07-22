@@ -1,7 +1,7 @@
-import { SPIN_SPEED } from "@/constants/common";
-import { isSpinSpeed } from "@/utils/typeGuards/common";
-import { keyframes, styled } from "@mui/material/styles";
-import { cloneElement, isValidElement, FC } from "react";
+import { SPIN_SPEED } from '@/constants/common';
+import { isSpinSpeed } from '@/utils/typeGuards/common';
+import { keyframes, styled } from '@mui/material/styles';
+import { cloneElement, isValidElement, FC } from 'react';
 
 const spin = keyframes`
   from {
@@ -15,10 +15,10 @@ const spin = keyframes`
 // Defined at module scope (not inside the component) so the styled component
 // keeps a stable identity across re-renders; otherwise a parent re-render —
 // e.g. an updating result count — remounts the node and restarts the animation.
-const SpinningWrapper = styled("div", {
-  shouldForwardProp: (prop) => prop !== "speed",
+const SpinningWrapper = styled('div', {
+  shouldForwardProp: (prop) => prop !== 'speed',
 })<{ speed: number }>(({ speed }) => ({
-  display: "inline-flex",
+  display: 'inline-flex',
   animation: `${spin} ${speed}s linear infinite`,
 }));
 
@@ -62,7 +62,7 @@ const SpinningWrapper = styled("div", {
 const IconSpinner: FC<IconSpinnerProps> = (props: IconSpinnerProps) => {
   let { speed = 2 } = props;
 
-  if (typeof speed === "string") {
+  if (typeof speed === 'string') {
     const key = speed.toUpperCase();
     speed = isSpinSpeed(key) ? SPIN_SPEED[key] : SPIN_SPEED.MEDIUM;
   }

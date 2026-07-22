@@ -1,12 +1,12 @@
-import { act, renderHook } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useDebouncedCallback } from "../useDebouncedCallback.hook";
+import { act, renderHook } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useDebouncedCallback } from '../useDebouncedCallback.hook';
 
-describe("useDebouncedCallback", () => {
+describe('useDebouncedCallback', () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
 
-  it("does not invoke the callback until the delay elapses", () => {
+  it('does not invoke the callback until the delay elapses', () => {
     const callback = vi.fn();
     const { result } = renderHook(() => useDebouncedCallback(callback, 200));
 
@@ -20,37 +20,37 @@ describe("useDebouncedCallback", () => {
     expect(callback).toHaveBeenCalledTimes(1);
   });
 
-  it("forwards the latest arguments to the trailing call", () => {
+  it('forwards the latest arguments to the trailing call', () => {
     const callback = vi.fn();
     const { result } = renderHook(() => useDebouncedCallback(callback, 200));
 
-    act(() => result.current("a", 1));
+    act(() => result.current('a', 1));
     act(() => vi.advanceTimersByTime(200));
 
     expect(callback).toHaveBeenCalledTimes(1);
-    expect(callback).toHaveBeenCalledWith("a", 1);
+    expect(callback).toHaveBeenCalledWith('a', 1);
   });
 
-  it("collapses rapid calls into a single trailing invocation", () => {
+  it('collapses rapid calls into a single trailing invocation', () => {
     const callback = vi.fn();
     const { result } = renderHook(() => useDebouncedCallback(callback, 200));
 
     act(() => {
-      result.current("first");
+      result.current('first');
       vi.advanceTimersByTime(100);
-      result.current("second");
+      result.current('second');
       vi.advanceTimersByTime(100);
-      result.current("third");
+      result.current('third');
     });
     // Only the last call's timer should still be pending.
     expect(callback).not.toHaveBeenCalled();
 
     act(() => vi.advanceTimersByTime(200));
     expect(callback).toHaveBeenCalledTimes(1);
-    expect(callback).toHaveBeenCalledWith("third");
+    expect(callback).toHaveBeenCalledWith('third');
   });
 
-  it("always uses the most recent callback reference", () => {
+  it('always uses the most recent callback reference', () => {
     const first = vi.fn();
     const second = vi.fn();
     const { result, rerender } = renderHook(({ cb }) => useDebouncedCallback(cb, 200), {
@@ -65,7 +65,7 @@ describe("useDebouncedCallback", () => {
     expect(second).toHaveBeenCalledTimes(1);
   });
 
-  it("clears any pending timer on unmount so the callback never fires", () => {
+  it('clears any pending timer on unmount so the callback never fires', () => {
     const callback = vi.fn();
     const { result, unmount } = renderHook(() => useDebouncedCallback(callback, 200));
 

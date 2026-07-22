@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import type { Page } from '@playwright/test';
 
 /** Options controlling how many synthetic points each series is padded to. */
 interface SeedOptions {
@@ -75,17 +75,17 @@ export async function seedPriceHistoryFromResults(
     const round2 = (n: number): number => Number(n.toFixed(2));
 
     return new Promise<{ series: number; points: number }>((resolve, reject) => {
-      const open = indexedDB.open("chempal");
+      const open = indexedDB.open('chempal');
       open.onerror = () => reject(open.error);
       open.onsuccess = () => {
         const db = open.result;
-        if (!db.objectStoreNames.contains("price_history")) {
+        if (!db.objectStoreNames.contains('price_history')) {
           db.close();
           resolve({ series: 0, points: 0 });
           return;
         }
-        const tx = db.transaction("price_history", "readwrite");
-        const store = tx.objectStore("price_history");
+        const tx = db.transaction('price_history', 'readwrite');
+        const store = tx.objectStore('price_history');
         const getAll = store.getAll();
         getAll.onerror = () => reject(getAll.error);
         getAll.onsuccess = () => {

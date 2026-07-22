@@ -1,12 +1,12 @@
-import { defaultSettings } from "@/../config.json";
-import { CACHE } from "@/constants/common";
-import { diff } from "@/helpers/collectionUtils";
-import { getCountryName } from "@/helpers/country";
-import { getCurrencyRate } from "@/helpers/currency";
-import { setLocale } from "@/helpers/i18n";
-import { cstorage } from "@/utils/storage";
-import { isValidUserSettings } from "@/utils/typeGuards/common";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { defaultSettings } from '@/../config.json';
+import { CACHE } from '@/constants/common';
+import { diff } from '@/helpers/collectionUtils';
+import { getCountryName } from '@/helpers/country';
+import { getCurrencyRate } from '@/helpers/currency';
+import { setLocale } from '@/helpers/i18n';
+import { cstorage } from '@/utils/storage';
+import { isValidUserSettings } from '@/utils/typeGuards/common';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // config.json is trusted static config; validate once so the JSON-inferred type
 // narrows to UserSettings without an `as` assertion. Falls back to an empty
@@ -62,7 +62,7 @@ export function useUserSettings(): UseUserSettings {
           setSettingsState({ ...DEFAULT_SETTINGS, ...stored });
         }
       } catch (error) {
-        console.error("Failed to load user settings:", { error });
+        console.error('Failed to load user settings:', { error });
       }
     };
     void load();
@@ -80,7 +80,7 @@ export function useUserSettings(): UseUserSettings {
       try {
         await cstorage.local.set({ [CACHE.USER_SETTINGS]: newSettings });
       } catch (error) {
-        console.error("Failed to save user settings:", { error });
+        console.error('Failed to save user settings:', { error });
       }
     })();
   }, []);
@@ -89,7 +89,7 @@ export function useUserSettings(): UseUserSettings {
   // full locale ("en-US"); the message tables are keyed by base code ("en").
   const language = userSettings.language;
   useEffect(() => {
-    if (language) setLocale(language.split("-")[0]);
+    if (language) setLocale(language.split('-')[0]);
   }, [language]);
 
   // Fetch the USD→currency rate whenever the currency changes and persist it, so
@@ -101,7 +101,7 @@ export function useUserSettings(): UseUserSettings {
     let cancelled = false;
     const loadRate = async () => {
       try {
-        const rate = await getCurrencyRate("USD", currency);
+        const rate = await getCurrencyRate('USD', currency);
         if (cancelled) return;
         const current = latestRef.current;
         if (current.currencyRate === rate) return;
@@ -109,7 +109,7 @@ export function useUserSettings(): UseUserSettings {
         setSettingsState(updated);
         await cstorage.local.set({ [CACHE.USER_SETTINGS]: updated });
       } catch (error) {
-        console.error("Failed to get currency rate:", { error });
+        console.error('Failed to get currency rate:', { error });
       }
     };
     void loadRate();
@@ -126,7 +126,7 @@ export function useUserSettings(): UseUserSettings {
       changes: Record<string, chrome.storage.StorageChange>,
       areaName: chrome.storage.AreaName,
     ) => {
-      if (areaName !== "local") return;
+      if (areaName !== 'local') return;
       const change = changes[CACHE.USER_SETTINGS];
       if (!change || !isValidUserSettings(change.newValue)) return;
       const incoming = change.newValue;

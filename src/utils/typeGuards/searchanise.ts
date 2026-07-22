@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 const validSearchResponseSchema = z.object({
   totalItems: z.number(),

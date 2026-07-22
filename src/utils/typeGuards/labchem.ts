@@ -1,9 +1,9 @@
-import { z } from "zod";
+import { z } from 'zod';
 import type {
   EpagesProductPage,
   EpagesSearchResponse,
   EpagesVariationsResponse,
-} from "@/types/labchem";
+} from '@/types/labchem';
 
 const epagesSearchResponseSchema = z.object({
   products: z.array(

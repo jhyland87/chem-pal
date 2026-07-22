@@ -1,9 +1,9 @@
-import { UOM } from "@/constants/common";
+import { UOM } from '@/constants/common';
 // Importing SupplierCache just so tsdoc comments work.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { SupplierCache } from "@/utils/SupplierCache";
-import type { ColumnMeta } from "@tanstack/react-table";
-import { Column, Row, RowData } from "@tanstack/react-table";
+import type { SupplierCache } from '@/utils/SupplierCache';
+import type { ColumnMeta } from '@tanstack/react-table';
+import { Column, Row, RowData } from '@tanstack/react-table';
 
 declare global {
   /**
@@ -39,13 +39,13 @@ declare global {
   }
 
   // Custom types for unit of measurements
-  type WeightUnit = "kg" | "g" | "mg" | "lb" | "oz";
-  type VolumeUnit = "L" | "mL" | "gal" | "qt" | "pt" | "fl oz";
-  type LengthUnit = "m" | "cm" | "mm" | "in" | "ft" | "yd";
-  type TemperatureUnit = "C" | "F" | "K";
-  type PressureUnit = "atm" | "bar" | "psi" | "mmHg" | "inHg";
-  type TimeUnit = "s" | "min" | "h" | "d";
-  type AmountUnit = "mol" | "mmol" | "mol/L" | "mmol/L";
+  type WeightUnit = 'kg' | 'g' | 'mg' | 'lb' | 'oz';
+  type VolumeUnit = 'L' | 'mL' | 'gal' | 'qt' | 'pt' | 'fl oz';
+  type LengthUnit = 'm' | 'cm' | 'mm' | 'in' | 'ft' | 'yd';
+  type TemperatureUnit = 'C' | 'F' | 'K';
+  type PressureUnit = 'atm' | 'bar' | 'psi' | 'mmHg' | 'inHg';
+  type TimeUnit = 's' | 'min' | 'h' | 'd';
+  type AmountUnit = 'mol' | 'mmol' | 'mol/L' | 'mmol/L';
 
   type WeightString = `${number}${WeightUnit}`;
   type VolumeString = `${number}${VolumeUnit}`;
@@ -166,7 +166,7 @@ declare global {
    * const shipping: ShippingRange = "worldwide";
    * ```
    */
-  type ShippingRange = "worldwide" | "domestic" | "international" | "local";
+  type ShippingRange = 'worldwide' | 'domestic' | 'international' | 'local';
 
   /**
    * Represents a payment method.
@@ -178,19 +178,19 @@ declare global {
    * ```
    */
   type PaymentMethod =
-    | "mastercard"
-    | "visa"
-    | "paypal"
-    | "ach"
-    | "cash"
-    | "check"
-    | "crypto"
-    | "moneyorder"
-    | "other"
-    | "ebay"
-    | "amazon"
-    | "ebayonly"
-    | "amazononly";
+    | 'mastercard'
+    | 'visa'
+    | 'paypal'
+    | 'ach'
+    | 'cash'
+    | 'check'
+    | 'crypto'
+    | 'moneyorder'
+    | 'other'
+    | 'ebay'
+    | 'amazon'
+    | 'ebayonly'
+    | 'amazononly';
 
   /**
    * Represents a base64 encoded string.
@@ -201,7 +201,7 @@ declare global {
    * const encoded: Base64String = "SGVsbG8gV29ybGQ=";
    * ```
    */
-  type Base64String = Brand<string, "base64">;
+  type Base64String = Brand<string, 'base64'>;
 
   /**
    * Interface defining the required properties for a history entry.
@@ -224,7 +224,7 @@ declare global {
     /** Epoch ms timestamp of when the search was executed */
     timestamp: number;
     /** The type of history entry */
-    type: "search";
+    type: 'search';
     /** The search query string */
     query: string;
     /** Number of results returned (updated live as results stream in) */
@@ -263,8 +263,8 @@ declare global {
    */
   interface ProductHistoryEntry {
     timestamp?: number;
-    type: "product";
-    data: Omit<Product, "variants">;
+    type: 'product';
+    data: Omit<Product, 'variants'>;
   }
 
   type HistoryEntry = SearchHistoryEntry | ProductHistoryEntry;

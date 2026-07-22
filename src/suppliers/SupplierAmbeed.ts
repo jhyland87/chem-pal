@@ -1,9 +1,9 @@
-import { AVAILABILITY, CACHE } from "@/constants/common";
-import { getCookie } from "@/helpers/cookies";
-import { getUserCountryName } from "@/helpers/country";
-import { parsePrice } from "@/helpers/currency";
-import { parseQuantity } from "@/helpers/quantity";
-import { looksLikeSmiles } from "@/helpers/smiles";
+import { AVAILABILITY, CACHE } from '@/constants/common';
+import { getCookie } from '@/helpers/cookies';
+import { getUserCountryName } from '@/helpers/country';
+import { parsePrice } from '@/helpers/currency';
+import { parseQuantity } from '@/helpers/quantity';
+import { looksLikeSmiles } from '@/helpers/smiles';
 import {
   base36Timestamp,
   base64EncodeUtf8,
@@ -12,107 +12,107 @@ import {
   mapDefined,
   md5sum,
   objectToQueryString,
-} from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { detectTermType } from "@/utils/search-query/detectTermType";
-import { scoreAstMatch } from "@/utils/search-query/evaluateAst";
-import { extractAllPositiveTerms } from "@/utils/search-query/extractPositiveTerms";
-import type { SearchAst } from "@/utils/search-query/types";
-import { cstorage } from "@/utils/storage";
+} from '@/helpers/utils';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { detectTermType } from '@/utils/search-query/detectTermType';
+import { scoreAstMatch } from '@/utils/search-query/evaluateAst';
+import { extractAllPositiveTerms } from '@/utils/search-query/extractPositiveTerms';
+import type { SearchAst } from '@/utils/search-query/types';
+import { cstorage } from '@/utils/storage';
 import {
   assertIsAmbeedGetSearchProductAndRecommendedProductsByCASResponse,
   assertIsAmbeedProductListResponse,
   isAmbeedGetPmsSdsByAmsResponse,
   isAmbeedProductPriceResponse,
   isAmbeedProductStockResponse,
-} from "@/utils/typeGuards/ambeed";
-import type { JsonValue } from "type-fest";
-import { SupplierBase } from "./SupplierBase";
+} from '@/utils/typeGuards/ambeed';
+import type { JsonValue } from 'type-fest';
+import { SupplierBase } from './SupplierBase';
 
 // Decoder for ambeed's am-new2.woff cmap-substitution font.
 // Source codepoint -> visible character. Verified: "łÇÊ¶ÊÊ" -> "$10.00".
 // NOTE: this table is specific to am-new2.woff; re-extract if the font is rotated.
 const AMBEED_FONT_MAP: Record<number, string> = {
-  0x00ca: "0",
-  0x00c7: "1",
-  0x00cb: "2",
-  0x00a7: "3",
-  0x00cd: "4",
-  0x00ff: "5",
-  0x00f2: "6",
-  0x010f: "7",
-  0x00f3: "8",
-  0x00ee: "9",
-  0x00e8: "a",
-  0x00df: "b",
-  0x00de: "c",
-  0x0119: "d",
-  0x0121: "e",
-  0x00d1: "f",
-  0x00d5: "g",
-  0x00d0: "h",
-  0x00db: "i",
-  0x00d9: "j",
-  0x00d2: "k",
-  0x0127: "m",
-  0x010b: "n",
-  0x0167: "n",
-  0x0109: "o",
-  0x0123: "p",
-  0x00c9: "q",
-  0x0104: "r",
-  0x00a2: "s",
-  0x00f0: "t",
-  0x00c8: "u",
-  0x00c5: "v",
-  0x0126: "w",
-  0x00fb: "x",
-  0x00c3: "y",
-  0x00c4: "z",
-  0x00d6: "A",
-  0x00d4: "B",
-  0x00dd: "C",
-  0x00d8: "D",
-  0x012d: "E",
-  0x0153: "F",
-  0x012b: "G",
-  0x0129: "H",
-  0x00f1: "J",
-  0x00ed: "K",
-  0x0105: "L",
-  0x00ef: "M",
-  0x00e0: "N",
-  0x00eb: "O",
-  0x010c: "P",
-  0x00e3: "Q",
-  0x00a4: "R",
-  0x00cf: "S",
-  0x00e1: "T",
-  0x00f6: "U",
-  0x00dc: "V",
-  0x00cc: "W",
-  0x00e7: "X",
-  0x00ec: "Y",
-  0x00e4: "Z",
-  0x00b6: ".",
-  0x0142: "$",
-  0x0100: "\u00A3",
-  0x0101: "\u00A3",
-  0x0102: "\u20AC",
-  0x0155: "%",
-  0x0193: ",",
-  0x0164: "-",
-  0x015b: "(",
-  0x01a5: ")",
-  0x01ab: "*",
-  0x00c6: "/",
-  0x00e9: "=",
-  0x00ea: "<",
-  0x00e2: ">",
-  0x00e5: "\u2264",
-  0x00a3: "\u2265",
-  0x00a1: "I",
-  0x0157: "l", // bare vertical stroke: I / l / 1 indistinguishable
+  0x00ca: '0',
+  0x00c7: '1',
+  0x00cb: '2',
+  0x00a7: '3',
+  0x00cd: '4',
+  0x00ff: '5',
+  0x00f2: '6',
+  0x010f: '7',
+  0x00f3: '8',
+  0x00ee: '9',
+  0x00e8: 'a',
+  0x00df: 'b',
+  0x00de: 'c',
+  0x0119: 'd',
+  0x0121: 'e',
+  0x00d1: 'f',
+  0x00d5: 'g',
+  0x00d0: 'h',
+  0x00db: 'i',
+  0x00d9: 'j',
+  0x00d2: 'k',
+  0x0127: 'm',
+  0x010b: 'n',
+  0x0167: 'n',
+  0x0109: 'o',
+  0x0123: 'p',
+  0x00c9: 'q',
+  0x0104: 'r',
+  0x00a2: 's',
+  0x00f0: 't',
+  0x00c8: 'u',
+  0x00c5: 'v',
+  0x0126: 'w',
+  0x00fb: 'x',
+  0x00c3: 'y',
+  0x00c4: 'z',
+  0x00d6: 'A',
+  0x00d4: 'B',
+  0x00dd: 'C',
+  0x00d8: 'D',
+  0x012d: 'E',
+  0x0153: 'F',
+  0x012b: 'G',
+  0x0129: 'H',
+  0x00f1: 'J',
+  0x00ed: 'K',
+  0x0105: 'L',
+  0x00ef: 'M',
+  0x00e0: 'N',
+  0x00eb: 'O',
+  0x010c: 'P',
+  0x00e3: 'Q',
+  0x00a4: 'R',
+  0x00cf: 'S',
+  0x00e1: 'T',
+  0x00f6: 'U',
+  0x00dc: 'V',
+  0x00cc: 'W',
+  0x00e7: 'X',
+  0x00ec: 'Y',
+  0x00e4: 'Z',
+  0x00b6: '.',
+  0x0142: '$',
+  0x0100: '\u00A3',
+  0x0101: '\u00A3',
+  0x0102: '\u20AC',
+  0x0155: '%',
+  0x0193: ',',
+  0x0164: '-',
+  0x015b: '(',
+  0x01a5: ')',
+  0x01ab: '*',
+  0x00c6: '/',
+  0x00e9: '=',
+  0x00ea: '<',
+  0x00e2: '>',
+  0x00e5: '\u2264',
+  0x00a3: '\u2265',
+  0x00a1: 'I',
+  0x0157: 'l', // bare vertical stroke: I / l / 1 indistinguishable
 };
 
 // Ambeed's SDS "type" maps, taken from their storefront. The selected type is
@@ -121,87 +121,87 @@ const AMBEED_FONT_MAP: Record<number, string> = {
 //
 // Non-European countries → `sdsJson` (keyed `SDS-<COUNTRY>`).
 const sdsJson = {
-  "SDS-US": { type: "am" }, // United States
-  "SDS-DE": { type: "am-de-de" }, // Germany
-  "SDS-UK": { type: "am-europe-uk" }, // United Kingdom
-  "SDS-CN": { type: "am-cn" }, // China
-  "SDS-CA": { type: "am-canada" }, // Canada
-  "SDS-EU": { type: "am-europe" }, // Europe
+  'SDS-US': { type: 'am' }, // United States
+  'SDS-DE': { type: 'am-de-de' }, // Germany
+  'SDS-UK': { type: 'am-europe-uk' }, // United Kingdom
+  'SDS-CN': { type: 'am-cn' }, // China
+  'SDS-CA': { type: 'am-canada' }, // Canada
+  'SDS-EU': { type: 'am-europe' }, // Europe
 } as const;
 
 // European countries → `sdsJsonEurope` (keyed `SDS-EU-<LANG>`).
 const sdsJsonEurope = {
-  "SDS-EU-EN": { type: "amgm-europe" },
-  "SDS-UK-EN": { type: "amgm-europe-uk" },
-  "SDS-EU-DE": { type: "amgm-de-de" },
-  "SDS-EU-FR": { type: "amgm-sds-fr-fr" },
-  "SDS-EU-ES": { type: "amgm-sds-es-es" },
-  "SDS-EU-IT": { type: "amgm-sds-it-it" },
-  "SDS-EU-DK": { type: "amgm-sds-da-dk" },
-  "SDS-EU-PT": { type: "amgm-sds-pt-pt" },
-  "SDS-EU-PL": { type: "amgm-sds-pl-pl" },
-  "SDS-EU-SE": { type: "amgm-sds-sv-se" },
-  "SDS-EU-NO": { type: "amgm-sds-no-no" },
-  "SDS-EU-NL": { type: "amgm-sds-nl-nl" },
+  'SDS-EU-EN': { type: 'amgm-europe' },
+  'SDS-UK-EN': { type: 'amgm-europe-uk' },
+  'SDS-EU-DE': { type: 'amgm-de-de' },
+  'SDS-EU-FR': { type: 'amgm-sds-fr-fr' },
+  'SDS-EU-ES': { type: 'amgm-sds-es-es' },
+  'SDS-EU-IT': { type: 'amgm-sds-it-it' },
+  'SDS-EU-DK': { type: 'amgm-sds-da-dk' },
+  'SDS-EU-PT': { type: 'amgm-sds-pt-pt' },
+  'SDS-EU-PL': { type: 'amgm-sds-pl-pl' },
+  'SDS-EU-SE': { type: 'amgm-sds-sv-se' },
+  'SDS-EU-NO': { type: 'amgm-sds-no-no' },
+  'SDS-EU-NL': { type: 'amgm-sds-nl-nl' },
 } as const;
 
 // English SDS type, the universal fallback always requested alongside the
 // user's preferred type.
-const SDS_TYPE_FALLBACK = "am";
+const SDS_TYPE_FALLBACK = 'am';
 
 // European country codes (the European subset of `shipsTo`). A user in one of
 // these gets a `sdsJsonEurope` (amgm-*) SDS; everyone else uses `sdsJson`.
 const EUROPEAN_COUNTRY_CODES = new Set([
-  "AT",
-  "BE",
-  "BG",
-  "HR",
-  "CY",
-  "CZ",
-  "DK",
-  "EE",
-  "FI",
-  "FR",
-  "DE",
-  "GR",
-  "HU",
-  "IE",
-  "IT",
-  "LV",
-  "LI",
-  "LT",
-  "LU",
-  "MT",
-  "NL",
-  "NO",
-  "PL",
-  "PT",
-  "RO",
-  "SK",
-  "SI",
-  "ES",
-  "SE",
-  "CH",
-  "TR",
-  "GB",
+  'AT',
+  'BE',
+  'BG',
+  'HR',
+  'CY',
+  'CZ',
+  'DK',
+  'EE',
+  'FI',
+  'FR',
+  'DE',
+  'GR',
+  'HU',
+  'IE',
+  'IT',
+  'LV',
+  'LI',
+  'LT',
+  'LU',
+  'MT',
+  'NL',
+  'NO',
+  'PL',
+  'PT',
+  'RO',
+  'SK',
+  'SI',
+  'ES',
+  'SE',
+  'CH',
+  'TR',
+  'GB',
 ]);
 
 // Maps a language's primary subtag to the `SDS-EU-<X>` suffix. Needed because
 // the suffixes are country-ish (DK/SE/NO) rather than language codes (da/sv/nb).
 const LANGUAGE_TO_EU_SDS_SUFFIX: Record<string, string> = {
-  en: "EN",
-  de: "DE",
-  fr: "FR",
-  es: "ES",
-  it: "IT",
-  da: "DK",
-  pt: "PT",
-  pl: "PL",
-  sv: "SE",
-  nb: "NO",
-  nn: "NO",
-  no: "NO",
-  nl: "NL",
+  en: 'EN',
+  de: 'DE',
+  fr: 'FR',
+  es: 'ES',
+  it: 'IT',
+  da: 'DK',
+  pt: 'PT',
+  pl: 'PL',
+  sv: 'SE',
+  nb: 'NO',
+  nn: 'NO',
+  no: 'NO',
+  nl: 'NL',
 };
 
 /**
@@ -226,79 +226,79 @@ export class SupplierAmbeed
   implements ISupplier
 {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = "Ambeed";
+  public readonly supplierName: string = 'Ambeed';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = "https://www.ambeed.com";
+  public readonly baseURL: string = 'https://www.ambeed.com';
 
   // Shipping scope for Ambeed
-  public readonly shipping: ShippingRange = "international";
+  public readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "CN";
+  public readonly country: CountryCode = 'CN';
 
   // The countries to which the supplier ships.
   public readonly shipsTo: CountryCode[] = [
-    "AR",
-    "BR",
-    "CA",
-    "MX",
-    "US",
-    "AT",
-    "BE",
-    "BG",
-    "HR",
-    "CY",
-    "CZ",
-    "DK",
-    "EE",
-    "FI",
-    "FR",
-    "DE",
-    "GR",
-    "HU",
-    "IE",
-    "IT",
-    "LV",
-    "LI",
-    "LT",
-    "LU",
-    "MT",
-    "NL",
-    "NO",
-    "PL",
-    "PT",
-    "RO",
-    "SK",
-    "SI",
-    "ES",
-    "SE",
-    "CH",
-    "TR",
-    "GB",
-    "AU",
-    "CN",
-    "IN",
-    "ID",
-    "JP",
-    "KR",
-    "MY",
-    "NZ",
-    "PH",
-    "SG",
-    "TH",
-    "VN",
-    "EG",
-    "IL",
+    'AR',
+    'BR',
+    'CA',
+    'MX',
+    'US',
+    'AT',
+    'BE',
+    'BG',
+    'HR',
+    'CY',
+    'CZ',
+    'DK',
+    'EE',
+    'FI',
+    'FR',
+    'DE',
+    'GR',
+    'HU',
+    'IE',
+    'IT',
+    'LV',
+    'LI',
+    'LT',
+    'LU',
+    'MT',
+    'NL',
+    'NO',
+    'PL',
+    'PT',
+    'RO',
+    'SK',
+    'SI',
+    'ES',
+    'SE',
+    'CH',
+    'TR',
+    'GB',
+    'AU',
+    'CN',
+    'IN',
+    'ID',
+    'JP',
+    'KR',
+    'MY',
+    'NZ',
+    'PH',
+    'SG',
+    'TH',
+    'VN',
+    'EG',
+    'IL',
   ] as const;
 
   // The payment methods accepted by the supplier.
   public readonly paymentMethods: PaymentMethod[] = [
-    "mastercard",
-    "visa",
-    "ach",
-    "moneyorder",
-    "check",
+    'mastercard',
+    'visa',
+    'ach',
+    'moneyorder',
+    'check',
   ] as const;
 
   // Override the type of queryResults to use our specific type
@@ -311,23 +311,23 @@ export class SupplierAmbeed
   protected signSecret: string = this.calculateSignSecret();
 
   /** The XSRF token for the Ambeed API. */
-  protected xsrfToken: string = "";
+  protected xsrfToken: string = '';
 
   // HTTP headers used as a basis for all queries.
   protected headers: HeadersInit = {
     accept: [
-      "text/html",
-      "application/xhtml+xml",
-      "application/xml;q=0.9",
-      "image/avif",
-      "image/webp",
-      "image/apng",
-      "*/*;q=0.8",
-    ].join(","),
-    "accept-language": "en-US,en;q=0.6",
-    "cache-control": "no-cache",
-    pragma: "no-cache",
-    "x-requested-with": "XMLHttpRequest",
+      'text/html',
+      'application/xhtml+xml',
+      'application/xml;q=0.9',
+      'image/avif',
+      'image/webp',
+      'image/apng',
+      '*/*;q=0.8',
+    ].join(','),
+    'accept-language': 'en-US,en;q=0.6',
+    'cache-control': 'no-cache',
+    pragma: 'no-cache',
+    'x-requested-with': 'XMLHttpRequest',
   };
 
   /**
@@ -381,19 +381,19 @@ export class SupplierAmbeed
    */
   protected calculateSignSecret(): string {
     /** Obfuscation alphabet constants from Ambeed's `f1()` signer. */
-    const forwardAlphabet = "abcdefghijklmnopqrstuvwxyz";
-    const reversedAlphabet = "zyxwvutsrqponmlkjihgfedcba";
-    const embeddedFragmentA = "7ab544f2"; // RC4 0x6a, key "&$SR"
-    const embeddedFragmentB = "fe4a5f64a41531b"; // RC4 0x80, key "W61u"
+    const forwardAlphabet = 'abcdefghijklmnopqrstuvwxyz';
+    const reversedAlphabet = 'zyxwvutsrqponmlkjihgfedcba';
+    const embeddedFragmentA = '7ab544f2'; // RC4 0x6a, key "&$SR"
+    const embeddedFragmentB = 'fe4a5f64a41531b'; // RC4 0x80, key "W61u"
     return (
-      String(forwardAlphabet.indexOf("g")) + // "6"
-      String(forwardAlphabet.indexOf("f")) + // "5"
-      String(reversedAlphabet.indexOf("y") * 8) + // "8"
+      String(forwardAlphabet.indexOf('g')) + // "6"
+      String(forwardAlphabet.indexOf('f')) + // "5"
+      String(reversedAlphabet.indexOf('y') * 8) + // "8"
       embeddedFragmentA +
-      String(Math.pow(reversedAlphabet.indexOf("t"), 2) + 18) + // "54"
+      String(Math.pow(reversedAlphabet.indexOf('t'), 2) + 18) + // "54"
       embeddedFragmentB +
-      String(Math.pow(forwardAlphabet.indexOf("k"), 2) - 5) + // "95"
-      "b2"
+      String(Math.pow(forwardAlphabet.indexOf('k'), 2) - 5) + // "95"
+      'b2'
     );
   }
 
@@ -414,23 +414,23 @@ export class SupplierAmbeed
       return;
     }
 
-    let cookie = await getCookie(this.baseURL, "_xsrf");
+    let cookie = await getCookie(this.baseURL, '_xsrf');
     if (cookie) {
       this.xsrfToken = cookie.value;
       return;
     }
 
     await this.httpGetHtml({
-      path: "/",
+      path: '/',
     });
 
-    cookie = await getCookie(this.baseURL, "_xsrf");
+    cookie = await getCookie(this.baseURL, '_xsrf');
     if (cookie) {
       this.xsrfToken = cookie.value;
       return;
     }
 
-    this.xsrfToken = "";
+    this.xsrfToken = '';
     return;
   }
 
@@ -469,20 +469,20 @@ export class SupplierAmbeed
     const stored = await cstorage.local.get([CACHE.USER_SETTINGS]);
     const settings = (stored[CACHE.USER_SETTINGS] ?? {}) as Partial<UserSettings>;
 
-    const country = (settings.location ?? "").toUpperCase();
-    const language = (settings.language ?? getUserLanguage()).split("-")[0].toLowerCase();
+    const country = (settings.location ?? '').toUpperCase();
+    const language = (settings.language ?? getUserLanguage()).split('-')[0].toLowerCase();
 
     if (EUROPEAN_COUNTRY_CODES.has(country)) {
-      if (country === "GB") {
-        return sdsJsonEurope["SDS-UK-EN"].type;
+      if (country === 'GB') {
+        return sdsJsonEurope['SDS-UK-EN'].type;
       }
-      const suffix = LANGUAGE_TO_EU_SDS_SUFFIX[language] ?? "EN";
+      const suffix = LANGUAGE_TO_EU_SDS_SUFFIX[language] ?? 'EN';
       const key = `SDS-EU-${suffix}` as keyof typeof sdsJsonEurope;
-      return (sdsJsonEurope[key] ?? sdsJsonEurope["SDS-EU-EN"]).type;
+      return (sdsJsonEurope[key] ?? sdsJsonEurope['SDS-EU-EN']).type;
     }
 
     const key = `SDS-${country}` as keyof typeof sdsJson;
-    return (sdsJson[key] ?? sdsJson["SDS-US"]).type;
+    return (sdsJson[key] ?? sdsJson['SDS-US']).type;
   }
 
   /**
@@ -516,21 +516,21 @@ export class SupplierAmbeed
     let response: unknown;
     try {
       response = await this.httpPostJson({
-        path: "webapi/v1/getPmsSdsByAms",
+        path: 'webapi/v1/getPmsSdsByAms',
         params: {
           params: btoa(JSON.stringify(reqBody)),
         },
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
         },
       });
     } catch (error) {
-      this.logger.warn("Ambeed SDS request failed; continuing without SDS URLs", { error, amNos });
+      this.logger.warn('Ambeed SDS request failed; continuing without SDS URLs', { error, amNos });
       return {};
     }
 
     if (!isAmbeedGetPmsSdsByAmsResponse(response)) {
-      this.logger.warn("Invalid Ambeed SDS response", { amNos, response });
+      this.logger.warn('Invalid Ambeed SDS response', { amNos, response });
       return {};
     }
 
@@ -622,12 +622,12 @@ export class SupplierAmbeed
    */
   protected getSign(data: Record<string, unknown> | string, mode: 0 | 1): string {
     if (mode === 1) {
-      if (typeof data === "string") {
-        throw new Error("getSign mode 1 requires a plain object");
+      if (typeof data === 'string') {
+        throw new Error('getSign mode 1 requires a plain object');
       }
 
       let query = objectToQueryString(data);
-      query += (query ? "&sign=" : "sign=") + this.signSecret;
+      query += (query ? '&sign=' : 'sign=') + this.signSecret;
       return base64EncodeUtf8(md5sum(query));
     }
 
@@ -667,11 +667,11 @@ export class SupplierAmbeed
   // }
 
   protected decodeAmbeedFont(str: string): string {
-    if (!str || typeof str !== "string") {
+    if (!str || typeof str !== 'string') {
       return str;
     }
 
-    let out = "";
+    let out = '';
     for (const ch of str) {
       const cp = ch.codePointAt(0);
       out += cp !== undefined ? (AMBEED_FONT_MAP[cp] ?? ch) : ch;
@@ -762,11 +762,11 @@ export class SupplierAmbeed
     }
     return {
       ...product,
-      p_bd: product.p_bd ?? "",
-      p_id: product.p_id ?? "",
-      p_name_en: product.p_name_en?.replace(/<\/?em>/g, ""),
-      p_proper_name3: product.p_proper_name3?.replace(/<\/?em>/g, ""),
-      p_cas: product.p_cas?.replace(/<\/?em>/g, ""),
+      p_bd: product.p_bd ?? '',
+      p_id: product.p_id ?? '',
+      p_name_en: product.p_name_en?.replace(/<\/?em>/g, ''),
+      p_proper_name3: product.p_proper_name3?.replace(/<\/?em>/g, ''),
+      p_cas: product.p_cas?.replace(/<\/?em>/g, ''),
     };
   }
 
@@ -798,7 +798,7 @@ export class SupplierAmbeed
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     const searchRequest: unknown = await this.httpGetJson({
-      path: "webapi/v1/productlistbykeyword",
+      path: 'webapi/v1/productlistbykeyword',
       params: {
         params: this.makeQueryParams(query),
       },
@@ -822,8 +822,8 @@ export class SupplierAmbeed
     const sdsByAm = await this.getSdsUrls(mapDefined(slice, (product) => product.p_am));
     const builders = this.initProductBuilders(slice);
     for (const builder of builders) {
-      const pAm = builder.get("uuid");
-      builder.setSDSUrl(typeof pAm === "string" ? sdsByAm[pAm] : undefined);
+      const pAm = builder.get('uuid');
+      builder.setSDSUrl(typeof pAm === 'string' ? sdsByAm[pAm] : undefined);
     }
 
     return builders;
@@ -858,7 +858,7 @@ export class SupplierAmbeed
   ): AmbeedProductListResponseResultItem[] {
     const parsed = this.getAst();
     const isStructured = extractAllPositiveTerms(parsed.ast).some(
-      (term) => detectTermType(term) !== "string" || looksLikeSmiles(term),
+      (term) => detectTermType(term) !== 'string' || looksLikeSmiles(term),
     );
 
     // Plain name queries keep today's fuzzy behavior untouched.
@@ -900,11 +900,11 @@ export class SupplierAmbeed
       item.p_proper_name3,
       item.p_name_en,
       item.p_cas,
-      item.p_moleform ? htmlToAscii(item.p_moleform) : "",
+      item.p_moleform ? htmlToAscii(item.p_moleform) : '',
       item.p_inchikey,
     ]
-      .filter((part): part is string => typeof part === "string" && part.length > 0)
-      .join(" ");
+      .filter((part): part is string => typeof part === 'string' && part.length > 0)
+      .join(' ');
   }
 
   /**
@@ -919,34 +919,34 @@ export class SupplierAmbeed
    */
   private rewriteStructureLeaves(ast: SearchAst): SearchAst {
     switch (ast.type) {
-      case "term": {
-        if (ast.value === "" || !looksLikeSmiles(ast.value)) {
+      case 'term': {
+        if (ast.value === '' || !looksLikeSmiles(ast.value)) {
           return ast;
         }
         const resolved = this.resolvedStructures?.get(ast.value);
         const identifiers = [...(resolved?.cas ?? []), ...(resolved?.name ? [resolved.name] : [])];
         if (identifiers.length === 0) {
-          this.logger.warn("No resolved structure for SMILES term; matching raw term", {
+          this.logger.warn('No resolved structure for SMILES term; matching raw term', {
             term: ast.value,
           });
           return ast;
         }
         return this.orTerms(identifiers);
       }
-      case "and":
+      case 'and':
         return {
-          type: "and",
+          type: 'and',
           left: this.rewriteStructureLeaves(ast.left),
           right: this.rewriteStructureLeaves(ast.right),
         };
-      case "or":
+      case 'or':
         return {
-          type: "or",
+          type: 'or',
           left: this.rewriteStructureLeaves(ast.left),
           right: this.rewriteStructureLeaves(ast.right),
         };
-      case "not":
-        return { type: "not", operand: this.rewriteStructureLeaves(ast.operand) };
+      case 'not':
+        return { type: 'not', operand: this.rewriteStructureLeaves(ast.operand) };
       default:
         return ast;
     }
@@ -966,8 +966,8 @@ export class SupplierAmbeed
    */
   private orTerms(values: string[]): SearchAst {
     return values
-      .map((value): SearchAst => ({ type: "term", value, phrase: false }))
-      .reduce((left, right) => ({ type: "or", left, right }));
+      .map((value): SearchAst => ({ type: 'term', value, phrase: false }))
+      .reduce((left, right) => ({ type: 'or', left, right }));
   }
 
   /**
@@ -977,7 +977,7 @@ export class SupplierAmbeed
    * @source
    */
   protected titleSelector(data: AmbeedProductListResponseResultItem): string {
-    return (data.p_proper_name3?.trim() || data.p_name_en?.trim()) ?? "";
+    return (data.p_proper_name3?.trim() || data.p_name_en?.trim()) ?? '';
   }
 
   /**
@@ -1020,12 +1020,12 @@ export class SupplierAmbeed
       const productBuilder = new ProductBuilder(this.baseURL);
 
       const productTitle = this.titleSelector(product);
-      if (typeof product.priceList?.[0]?.pr_usd !== "string") {
+      if (typeof product.priceList?.[0]?.pr_usd !== 'string') {
         this.logger.warn(`Ambeed product ${productTitle} has no price`, product);
         return;
       }
 
-      if (typeof product.priceList?.[0]?.pr_size !== "string") {
+      if (typeof product.priceList?.[0]?.pr_size !== 'string') {
         this.logger.warn(`Ambeed product ${productTitle} has no size`, product);
         return;
       }
@@ -1090,14 +1090,14 @@ export class SupplierAmbeed
    * @returns The country cookie
    * @source
    */
-  protected async setCountryCookie(country: string = "United States"): Promise<void> {
+  protected async setCountryCookie(country: string = 'United States'): Promise<void> {
     await this.httpPostJson({
-      path: "/webapi/v1/countrycookie",
+      path: '/webapi/v1/countrycookie',
       params: {
         params: btoa(JSON.stringify({ country })),
       },
       headers: {
-        "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
       },
     });
   }
@@ -1115,7 +1115,7 @@ export class SupplierAmbeed
    */
   protected async getCountryCookie(): Promise<Maybe<JsonValue>> {
     const countryCookie = await this.httpGetJson({
-      path: "/webapi/v1/countrycookie",
+      path: '/webapi/v1/countrycookie',
     });
 
     return countryCookie;
@@ -1142,7 +1142,7 @@ export class SupplierAmbeed
     value: AmbeedProductPriceResponseValue,
   ): AmbeedProductPriceResponseVariantItem[] {
     for (const [key, entry] of Object.entries(value)) {
-      if (key === "proInfo" || !Array.isArray(entry)) {
+      if (key === 'proInfo' || !Array.isArray(entry)) {
         continue;
       }
       return entry;
@@ -1161,7 +1161,7 @@ export class SupplierAmbeed
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     // /webapi/v1/product_price?params=btoa(JSON.stringify({ proid: "P000640099" }))
-    const proid = String(product.get("id"));
+    const proid = String(product.get('id'));
     const productPriceParams = this.makeSignedParams({ proid });
 
     const productPriceResponse = await this.httpPostJson({
@@ -1170,7 +1170,7 @@ export class SupplierAmbeed
         num: this.getEncodedDate(),
       },
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
       },
       body: new URLSearchParams({
         params: productPriceParams,
@@ -1179,7 +1179,7 @@ export class SupplierAmbeed
     });
 
     if (!isAmbeedProductPriceResponse(productPriceResponse)) {
-      this.logger.warn("Invalid Ambeed product price response", {
+      this.logger.warn('Invalid Ambeed product price response', {
         productPriceParams,
         productPriceResponse,
       });
@@ -1187,9 +1187,9 @@ export class SupplierAmbeed
     }
 
     const variants = this.getPriceVariants(productPriceResponse.value);
-    this.logger.log("Ambeed product price variants", variants);
+    this.logger.log('Ambeed product price variants', variants);
 
-    const stock = await this.getProductStock(proid, String(product.get("sku")));
+    const stock = await this.getProductStock(proid, String(product.get('sku')));
     if (stock) {
       this.applyStockAvailability(product, stock);
     }
@@ -1216,15 +1216,15 @@ export class SupplierAmbeed
   private async getProductStock(
     proid: string,
     bd: string,
-  ): Promise<AmbeedProductStockResponse["value"] | undefined> {
+  ): Promise<AmbeedProductStockResponse['value'] | undefined> {
     const productStockParams = this.makeSignedParams({ bd }, { proid });
 
     let response: unknown;
     try {
       response = await this.httpPostJson({
-        path: "/webapi/product_stock",
+        path: '/webapi/product_stock',
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
         },
         body: new URLSearchParams({
           params: productStockParams,
@@ -1232,7 +1232,7 @@ export class SupplierAmbeed
         }).toString(),
       });
     } catch (error) {
-      this.logger.warn("Ambeed stock request failed; continuing without stock", {
+      this.logger.warn('Ambeed stock request failed; continuing without stock', {
         error,
         proid,
         bd,
@@ -1241,7 +1241,7 @@ export class SupplierAmbeed
     }
 
     if (!isAmbeedProductStockResponse(response)) {
-      this.logger.warn("Invalid Ambeed product stock response", {
+      this.logger.warn('Invalid Ambeed product stock response', {
         productStockParams,
         response,
       });
@@ -1268,11 +1268,11 @@ export class SupplierAmbeed
    */
   private applyStockAvailability(
     product: ProductBuilder<Product>,
-    stock: AmbeedProductStockResponse["value"],
+    stock: AmbeedProductStockResponse['value'],
   ): ProductBuilder<Product> {
     const inStockSizes = new Set<string>();
     for (const row of stock) {
-      if (typeof row.has_stock === "number" && row.has_stock > 0) {
+      if (typeof row.has_stock === 'number' && row.has_stock > 0) {
         const parsed = parseQuantity(row.size);
         if (parsed) {
           inStockSizes.add(`${parsed.quantity}${parsed.uom}`);
@@ -1280,7 +1280,7 @@ export class SupplierAmbeed
       }
     }
 
-    const variants = product.get("variants");
+    const variants = product.get('variants');
     if (!Array.isArray(variants)) {
       return product;
     }
@@ -1317,12 +1317,12 @@ export class SupplierAmbeed
     cas: string,
   ): Promise<AmbeedGetSearchProductAndRecommendedProductsByCASResponse> {
     const response = await this.httpPostJson({
-      path: "/webapi/v1/get_search_product_and_recommended_products_by_cas",
+      path: '/webapi/v1/get_search_product_and_recommended_products_by_cas',
       params: {
         params: btoa(JSON.stringify({ cas })),
       },
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
       },
     });
 

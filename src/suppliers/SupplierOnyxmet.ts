@@ -1,11 +1,11 @@
-import { findCAS } from "@/helpers/cas";
-import { parsePrice } from "@/helpers/currency";
-import { parseQuantity } from "@/helpers/quantity";
-import { findFormulaInText, formatFormula, parsePurity } from "@/helpers/science";
-import { firstMap, mapDefined } from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { isSearchResultItem } from "@/utils/typeGuards/onyxmet";
-import { SupplierBase } from "./SupplierBase";
+import { findCAS } from '@/helpers/cas';
+import { parsePrice } from '@/helpers/currency';
+import { parseQuantity } from '@/helpers/quantity';
+import { findFormulaInText, formatFormula, parsePurity } from '@/helpers/science';
+import { firstMap, mapDefined } from '@/helpers/utils';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { isSearchResultItem } from '@/utils/typeGuards/onyxmet';
+import { SupplierBase } from './SupplierBase';
 
 /**
  * Supplier implementation for Onyxmet chemical supplier.
@@ -29,20 +29,20 @@ export class SupplierOnyxmet
   implements ISupplier
 {
   // Display name of the supplier used for UI and logging
-  public readonly supplierName: string = "Onyxmet";
+  public readonly supplierName: string = 'Onyxmet';
 
   // Base URL for all API and web requests to Onyxmet
-  public readonly baseURL: string = "https://onyxmet.com";
+  public readonly baseURL: string = 'https://onyxmet.com';
 
   // Shipping scope for Onyxmet
-  public readonly shipping: ShippingRange = "international";
+  public readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
   // This is used to determine the currency and other country-specific information.
-  public readonly country: CountryCode = "CA";
+  public readonly country: CountryCode = 'CA';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   // Cached search results from the last query execution
   protected queryResults: OnyxMetSearchResultResponse[] = [];
@@ -63,7 +63,7 @@ export class SupplierOnyxmet
    * @source
    */
   protected async setup(): Promise<void> {
-    localStorage.setItem("display", "list");
+    localStorage.setItem('display', 'list');
   }
 
   /**
@@ -81,11 +81,11 @@ export class SupplierOnyxmet
    * @source
    */
   protected getUniqueProductKey(data: OnyxMetSearchResultItem): string {
-    const productId = new URL(data.href).searchParams.get("product_id");
+    const productId = new URL(data.href).searchParams.get('product_id');
 
     if (!productId) {
-      this.logger.warn("Product ID not found in href", { data });
-      return "";
+      this.logger.warn('Product ID not found in href', { data });
+      return '';
     }
     return productId;
   }
@@ -114,24 +114,24 @@ export class SupplierOnyxmet
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    this.logger.log("query:", query);
+    this.logger.log('query:', query);
 
     const searchResponse = await this.httpGetHtml({
-      path: "index.php",
+      path: 'index.php',
       params: {
         term: query,
-        route: "product/search/json",
+        route: 'product/search/json',
       },
     });
 
     if (!searchResponse) {
-      this.logger.error("No search response");
+      this.logger.error('No search response');
       return;
     }
 
     const data = JSON.parse(searchResponse);
 
-    this.logger.debug("all search results:", data);
+    this.logger.debug('all search results:', data);
 
     const fuzzResults = this.fuzzyFilterAst<OnyxMetSearchResultItem>(data);
 
@@ -169,13 +169,13 @@ export class SupplierOnyxmet
   protected initProductBuilders(data: OnyxMetSearchResultItem[]): ProductBuilder<Product>[] {
     return mapDefined(data, (item) => {
       if (!isSearchResultItem(item)) {
-        this.logger.warn("Invalid search result item:", item);
+        this.logger.warn('Invalid search result item:', item);
         return;
       }
 
       const productId = this.getUniqueProductKey(item);
       if (!productId) {
-        this.logger.warn("Product ID not found in href - Skipping", { item });
+        this.logger.warn('Product ID not found in href - Skipping', { item });
         return;
       }
 
@@ -184,7 +184,7 @@ export class SupplierOnyxmet
         .setCAS(findCAS(item.description))
         .setImage(item.image)
         .setID(productId)
-        .setDescription(item.description.split("\r\n").at(0) || item.label)
+        .setDescription(item.description.split('\r\n').at(0) || item.label)
         .setCacheKey(productId);
     });
   }
@@ -220,35 +220,35 @@ export class SupplierOnyxmet
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     return this.getProductDataWithCache(product, async (builder) => {
-      this.logger.debug("Querying data for partialproduct:", { builder, product });
+      this.logger.debug('Querying data for partialproduct:', { builder, product });
 
       const productResponse = await this.httpGetHtml({
-        path: builder.get("url"),
+        path: builder.get('url'),
       });
 
       if (!productResponse) {
-        this.logger.warn("No product response", { builder });
+        this.logger.warn('No product response', { builder });
         return;
       }
 
       const parser = new DOMParser();
-      const parsedHTML = parser.parseFromString(productResponse, "text/html");
-      const content = parsedHTML.querySelector("#content");
-      this.logger.debug("Products parsedHTML:", parsedHTML);
+      const parsedHTML = parser.parseFromString(productResponse, 'text/html');
+      const content = parsedHTML.querySelector('#content');
+      this.logger.debug('Products parsedHTML:', parsedHTML);
 
       if (!content) {
-        this.logger.warn("No content for product", { builder });
+        this.logger.warn('No content for product', { builder });
         return;
       }
 
-      const productData = Array.from(content.querySelectorAll(".desc"))
-        .find((element: Element) => element.textContent?.includes("Availability"))
-        ?.closest("ul")
-        ?.querySelectorAll("li");
+      const productData = Array.from(content.querySelectorAll('.desc'))
+        .find((element: Element) => element.textContent?.includes('Availability'))
+        ?.closest('ul')
+        ?.querySelectorAll('li');
 
       const productInfo = Array.from(productData || []).reduce<Record<string, string>>(
         (acc, element) => {
-          const [key, value] = element.textContent?.split(": ") || [];
+          const [key, value] = element.textContent?.split(': ') || [];
           if (key && value) {
             acc[key] = value;
           }
@@ -257,23 +257,23 @@ export class SupplierOnyxmet
         {},
       );
 
-      const title = content.querySelector("h3.product-title")?.textContent?.trim() || "";
+      const title = content.querySelector('h3.product-title')?.textContent?.trim() || '';
 
       const productCode =
-        Array.from(content?.querySelectorAll(".product-right > ul > li") ?? [])
-          .find((e) => e.textContent?.includes("Product Code"))
+        Array.from(content?.querySelectorAll('.product-right > ul > li') ?? [])
+          .find((e) => e.textContent?.includes('Product Code'))
           ?.textContent?.trim()
-          .replace(/product\s*code:\s*/i, "") ?? "";
+          .replace(/product\s*code:\s*/i, '') ?? '';
 
-      const statusTxt = productInfo.Availability || "";
-      const productPrice = content.querySelector(".product-price")?.textContent?.trim() || "";
+      const statusTxt = productInfo.Availability || '';
+      const productPrice = content.querySelector('.product-price')?.textContent?.trim() || '';
 
       // Radio labels for the "Available Options" sizes (e.g. "10g (5.00€)"). Used as a
       // fallback source for the base product's price/quantity; each is also parsed into
       // its own variant below when there is more than one.
       const productOptions = Array.from(
-        content?.querySelectorAll("#product div label:has(input)") ?? [],
-      ).map((e) => e.textContent?.trim().replaceAll(/\s+/g, " ") ?? "");
+        content?.querySelectorAll('#product div label:has(input)') ?? [],
+      ).map((e) => e.textContent?.trim().replaceAll(/\s+/g, ' ') ?? '');
 
       // Array.from(document.querySelectorAll('#product div label:has(input)'))
       const price = firstMap(parsePrice, [productPrice, ...productOptions]);
@@ -282,7 +282,7 @@ export class SupplierOnyxmet
         // @todo If this fails, the price can be retrieved from the product page via:
         /// document.querySelectorAll('#product > .form-group > div > div > label')
         //    .forEach(e => console.log(e.textContent.trim().replace(/\s+/, ' ')))
-        this.logger.warn("No price for product", {
+        this.logger.warn('No price for product', {
           builder,
           parsed: { productPrice, productOptions },
         });
@@ -293,14 +293,14 @@ export class SupplierOnyxmet
       if (!quantity) {
         // @todo if this fails, retrieve the quantity the from the product page via same
         // JS used for price.
-        this.logger.warn("No quantity for product", {
+        this.logger.warn('No quantity for product', {
           builder,
           parsed: { title, productCode, productOptions },
         });
         return;
       }
 
-      const productTitleSibling = content.querySelector(".product-title + p");
+      const productTitleSibling = content.querySelector('.product-title + p');
       if (productTitleSibling && productTitleSibling.textContent) {
         const formula = findFormulaInText(productTitleSibling.textContent);
         if (formula) {
@@ -309,20 +309,20 @@ export class SupplierOnyxmet
 
         const purity = firstMap(parsePurity, [
           productTitleSibling.textContent,
-          content.querySelector(".product-title")?.textContent ?? "",
+          content.querySelector('.product-title')?.textContent ?? '',
         ]);
         if (purity) {
           builder.setPurity(purity);
         }
       }
 
-      const images = Array.from(content.querySelectorAll("a.elevatezoom-gallery > img") ?? [])
-        .map((i: Element) => i.getAttribute("src"))
+      const images = Array.from(content.querySelectorAll('a.elevatezoom-gallery > img') ?? [])
+        .map((i: Element) => i.getAttribute('src'))
         .filter(Boolean);
 
       const metaDesc = content
         .querySelector("meta[name='description']")
-        ?.getAttribute("content")
+        ?.getAttribute('content')
         ?.trim();
 
       if (metaDesc) {
@@ -333,13 +333,13 @@ export class SupplierOnyxmet
         .addImages(images)
         .setPricing(price.price, price.currencyCode, price.currencySymbol)
         .setQuantity(quantity.quantity, quantity.uom)
-        .setAvailability(statusTxt ?? "");
+        .setAvailability(statusTxt ?? '');
 
       // More than one "Available Options" radio means the product is sold in several
       // sizes — expose each as a variant. A single option is just the base product.
       const variants = this.parseVariants(content);
       if (variants.length > 1) {
-        this.logger.debug("Onyxmet variants found", { builder, variants });
+        this.logger.debug('Onyxmet variants found', { builder, variants });
         builder.setVariants(variants);
       }
 
@@ -372,18 +372,18 @@ export class SupplierOnyxmet
     );
 
     return mapDefined(optionLabels, (label) => {
-      const fullText = label.textContent?.replaceAll(/\s+/g, " ").trim() ?? "";
-      const priceText = fullText.match(/\(([^)]*)\)/)?.at(1) ?? "";
-      const amountText = fullText.replace(/\s*\([^)]*\)\s*/, " ").trim();
+      const fullText = label.textContent?.replaceAll(/\s+/g, ' ').trim() ?? '';
+      const priceText = fullText.match(/\(([^)]*)\)/)?.at(1) ?? '';
+      const amountText = fullText.replace(/\s*\([^)]*\)\s*/, ' ').trim();
 
       const quantity = parseQuantity(amountText);
       const price = parsePrice(priceText);
       if (!quantity || !price) {
-        this.logger.warn("Skipping Onyxmet option, missing quantity or price", { fullText });
+        this.logger.warn('Skipping Onyxmet option, missing quantity or price', { fullText });
         return;
       }
 
-      const id = label.querySelector("input")?.getAttribute("value") ?? undefined;
+      const id = label.querySelector('input')?.getAttribute('value') ?? undefined;
 
       return {
         id,

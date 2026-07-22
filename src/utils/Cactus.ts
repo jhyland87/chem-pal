@@ -1,5 +1,5 @@
-import { StatusCodes } from "http-status-codes";
-import { LRUCache } from "lru-cache";
+import { StatusCodes } from 'http-status-codes';
+import { LRUCache } from 'lru-cache';
 
 /**
  * Configuration options for the Cactus client cache.
@@ -21,35 +21,35 @@ interface CactusCacheOptions {
  * @source
  */
 type CactusEndpoint =
-  | "inchi"
-  | "stdinchikey"
-  | "stdinchi"
-  | "smiles"
-  | "ficts"
-  | "ficus"
-  | "uuuuu"
-  | "hashisy"
-  | "file?format=sdf"
-  | "names"
-  | "iupac_name"
-  | "cas"
-  | "chemspider_id"
-  | "image"
-  | "twirl"
-  | "mw"
-  | "formula"
-  | "h_bond_donor_count"
-  | "h_bond_acceptor_count"
-  | "h_bond_center_count"
-  | "rule_of_5_violation_count"
-  | "rotor_count"
-  | "effective_rotor_count"
-  | "ring_count"
-  | "ringsys_count"
-  | "inchikey";
+  | 'inchi'
+  | 'stdinchikey'
+  | 'stdinchi'
+  | 'smiles'
+  | 'ficts'
+  | 'ficus'
+  | 'uuuuu'
+  | 'hashisy'
+  | 'file?format=sdf'
+  | 'names'
+  | 'iupac_name'
+  | 'cas'
+  | 'chemspider_id'
+  | 'image'
+  | 'twirl'
+  | 'mw'
+  | 'formula'
+  | 'h_bond_donor_count'
+  | 'h_bond_acceptor_count'
+  | 'h_bond_center_count'
+  | 'rule_of_5_violation_count'
+  | 'rotor_count'
+  | 'effective_rotor_count'
+  | 'ring_count'
+  | 'ringsys_count'
+  | 'inchikey';
 
 function assertIsStringResponse(response: unknown): asserts response is string {
-  if (typeof response !== "string") {
+  if (typeof response !== 'string') {
     throw new Error(`Invalid response: ${response}`, { cause: response });
   }
 }
@@ -91,7 +91,7 @@ export class Cactus {
   private cacheEnabled: boolean = true;
 
   /** Base URL */
-  private readonly baseURL: string = "https://cactus.nci.nih.gov/chemical/structure";
+  private readonly baseURL: string = 'https://cactus.nci.nih.gov/chemical/structure';
 
   /** Whether to return responses in XML format */
   private formatXML: boolean = false;
@@ -123,7 +123,7 @@ export class Cactus {
    */
   constructor(name: string, formatXML: boolean = false, cacheOptions: CactusCacheOptions = {}) {
     if (!name) {
-      throw new Error("Chemical name is required");
+      throw new Error('Chemical name is required');
     }
     this.name = name;
     this.formatXML = formatXML;
@@ -265,15 +265,15 @@ export class Cactus {
 
     const resp = response.clone();
     const headers = resp.headers;
-    const contentType = headers.get("content-type") || "text/plain";
+    const contentType = headers.get('content-type') || 'text/plain';
 
-    if (response.status !== StatusCodes.OK) return "";
+    if (response.status !== StatusCodes.OK) return '';
 
     let result: string | Blob | undefined;
 
-    if (contentType.startsWith("image/")) {
+    if (contentType.startsWith('image/')) {
       result = await response.blob();
-    } else if (contentType.startsWith("text/plain") || contentType.startsWith("text/xml")) {
+    } else if (contentType.startsWith('text/plain') || contentType.startsWith('text/xml')) {
       result = await response.text();
     }
 
@@ -285,7 +285,7 @@ export class Cactus {
       Cactus.globalCache.set(url, result as string);
     }
 
-    return result ?? "";
+    return result ?? '';
   }
 
   /**
@@ -309,9 +309,9 @@ export class Cactus {
    * @source
    */
   async getNames(): Promise<string[] | undefined> {
-    const result = await this.queryEndpoint("names");
+    const result = await this.queryEndpoint('names');
     assertIsStringResponse(result);
-    const results = result.split("\n").filter((name) => !!name);
+    const results = result.split('\n').filter((name) => !!name);
     if (results.length === 0) {
       return undefined;
     }
@@ -356,8 +356,8 @@ export class Cactus {
     // simple name isn't discarded just because it carries a trailing tag.
     const cleaned = names.map((name) =>
       name
-        .replace(/\([^)]*\)|\[[^\]]*\]/g, "")
-        .replace(/\s+/g, " ")
+        .replace(/\([^)]*\)|\[[^\]]*\]/g, '')
+        .replace(/\s+/g, ' ')
         .trim(),
     );
     const simpleNames = cleaned.filter((name) => /^([a-zA-Z][a-z\s]*)$/.test(name));
@@ -381,7 +381,7 @@ export class Cactus {
    * @source
    */
   async getSmiles(): Promise<string> {
-    const result = await this.queryEndpoint("smiles");
+    const result = await this.queryEndpoint('smiles');
     assertIsStringResponse(result);
     return result;
   }
@@ -400,7 +400,7 @@ export class Cactus {
    * @source
    */
   async getInchi(): Promise<string> {
-    const result = await this.queryEndpoint("inchi");
+    const result = await this.queryEndpoint('inchi');
     assertIsStringResponse(result);
     return result;
   }
@@ -419,7 +419,7 @@ export class Cactus {
    * @source
    */
   async getInchiKey(): Promise<string> {
-    const result = await this.queryEndpoint("inchikey");
+    const result = await this.queryEndpoint('inchikey');
     assertIsStringResponse(result);
     return result;
   }
@@ -438,7 +438,7 @@ export class Cactus {
    * @source
    */
   async getFicts(): Promise<string> {
-    const result = await this.queryEndpoint("ficts");
+    const result = await this.queryEndpoint('ficts');
     assertIsStringResponse(result);
     return result;
   }
@@ -457,7 +457,7 @@ export class Cactus {
    * @source
    */
   async getFicus(): Promise<string> {
-    const result = await this.queryEndpoint("ficus");
+    const result = await this.queryEndpoint('ficus');
     assertIsStringResponse(result);
     return result;
   }
@@ -479,7 +479,7 @@ export class Cactus {
    * @source
    */
   async getUuuuu(): Promise<string> {
-    const result = await this.queryEndpoint("uuuuu");
+    const result = await this.queryEndpoint('uuuuu');
     assertIsStringResponse(result);
     return result;
   }
@@ -501,7 +501,7 @@ export class Cactus {
    * @source
    */
   async getHASHISY(): Promise<string> {
-    const result = await this.queryEndpoint("hashisy");
+    const result = await this.queryEndpoint('hashisy');
     assertIsStringResponse(result);
     return result;
   }
@@ -538,7 +538,7 @@ export class Cactus {
 
     const response = await fetch(url);
 
-    if (response.status !== StatusCodes.OK) return "";
+    if (response.status !== StatusCodes.OK) return '';
 
     const result = await response.text();
 
@@ -565,7 +565,7 @@ export class Cactus {
    * @source
    */
   async getFileSDF(): Promise<string> {
-    return this.getFile("sdf");
+    return this.getFile('sdf');
   }
 
   /**
@@ -582,7 +582,7 @@ export class Cactus {
    * @source
    */
   async getFileJME(): Promise<string> {
-    return this.getFile("jme");
+    return this.getFile('jme');
   }
 
   /**
@@ -599,9 +599,9 @@ export class Cactus {
    * @source
    */
   async getIUPACName(): Promise<string | undefined> {
-    const result = await this.queryEndpoint("iupac_name");
+    const result = await this.queryEndpoint('iupac_name');
     assertIsStringResponse(result);
-    return result === "" ? undefined : result;
+    return result === '' ? undefined : result;
   }
 
   /**
@@ -625,9 +625,9 @@ export class Cactus {
    * @source
    */
   async getCAS(): Promise<string[]> {
-    const result = await this.queryEndpoint("cas");
+    const result = await this.queryEndpoint('cas');
     assertIsStringResponse(result);
-    return result.split("\n");
+    return result.split('\n');
   }
 
   /**
@@ -644,7 +644,7 @@ export class Cactus {
    * @source
    */
   async getChemspiderID(): Promise<string> {
-    const result = await this.queryEndpoint("chemspider_id");
+    const result = await this.queryEndpoint('chemspider_id');
     assertIsStringResponse(result);
     return result;
   }
@@ -663,7 +663,7 @@ export class Cactus {
    * @source
    */
   async getStdinchiKey(): Promise<string> {
-    const result = await this.queryEndpoint("stdinchikey");
+    const result = await this.queryEndpoint('stdinchikey');
     assertIsStringResponse(result);
     return result;
   }
@@ -682,7 +682,7 @@ export class Cactus {
    * @source
    */
   async getStdinchi(): Promise<string> {
-    const result = await this.queryEndpoint("stdinchi");
+    const result = await this.queryEndpoint('stdinchi');
     assertIsStringResponse(result);
     return result;
   }
@@ -701,8 +701,8 @@ export class Cactus {
    * @source
    */
   async getImage(): Promise<Blob | undefined> {
-    const result = await this.queryEndpoint("image");
-    if (result && typeof result === "object" && result instanceof Blob) {
+    const result = await this.queryEndpoint('image');
+    if (result && typeof result === 'object' && result instanceof Blob) {
       return result;
     }
     return undefined;
@@ -722,7 +722,7 @@ export class Cactus {
    * @source
    */
   async getTwirl(): Promise<string> {
-    const result = await this.queryEndpoint("twirl");
+    const result = await this.queryEndpoint('twirl');
     assertIsStringResponse(result);
     return result;
   }
@@ -741,7 +741,7 @@ export class Cactus {
    * @source
    */
   async getMW(): Promise<string> {
-    const result = await this.queryEndpoint("mw");
+    const result = await this.queryEndpoint('mw');
     assertIsStringResponse(result);
     return result;
   }
@@ -760,7 +760,7 @@ export class Cactus {
    * @source
    */
   async getFormula(): Promise<string> {
-    const result = await this.queryEndpoint("formula");
+    const result = await this.queryEndpoint('formula');
     assertIsStringResponse(result);
     return result;
   }
@@ -779,7 +779,7 @@ export class Cactus {
    * @source
    */
   async getHbondDonorCount(): Promise<string> {
-    const result = await this.queryEndpoint("h_bond_donor_count");
+    const result = await this.queryEndpoint('h_bond_donor_count');
     assertIsStringResponse(result);
     return result;
   }
@@ -798,7 +798,7 @@ export class Cactus {
    * @source
    */
   async getHbondAcceptorCount(): Promise<string> {
-    const result = await this.queryEndpoint("h_bond_acceptor_count");
+    const result = await this.queryEndpoint('h_bond_acceptor_count');
     assertIsStringResponse(result);
     return result;
   }
@@ -817,7 +817,7 @@ export class Cactus {
    * @source
    */
   async getHbondCenterCount(): Promise<string> {
-    const result = await this.queryEndpoint("h_bond_center_count");
+    const result = await this.queryEndpoint('h_bond_center_count');
     assertIsStringResponse(result);
     return result;
   }
@@ -836,7 +836,7 @@ export class Cactus {
    * @source
    */
   async getRuleOf5ViolationCount(): Promise<string> {
-    const result = await this.queryEndpoint("rule_of_5_violation_count");
+    const result = await this.queryEndpoint('rule_of_5_violation_count');
     assertIsStringResponse(result);
     return result;
   }
@@ -855,7 +855,7 @@ export class Cactus {
    * @source
    */
   async getRotorCount(): Promise<string> {
-    const result = await this.queryEndpoint("rotor_count");
+    const result = await this.queryEndpoint('rotor_count');
     assertIsStringResponse(result);
     return result;
   }
@@ -874,7 +874,7 @@ export class Cactus {
    * @source
    */
   async getEffectiveRotorCount(): Promise<string> {
-    const result = await this.queryEndpoint("effective_rotor_count");
+    const result = await this.queryEndpoint('effective_rotor_count');
     assertIsStringResponse(result);
     return result;
   }
@@ -893,7 +893,7 @@ export class Cactus {
    * @source
    */
   async getRingCount(): Promise<string> {
-    const result = await this.queryEndpoint("ring_count");
+    const result = await this.queryEndpoint('ring_count');
     assertIsStringResponse(result);
     return result;
   }
@@ -912,7 +912,7 @@ export class Cactus {
    * @source
    */
   async getRingsysCount(): Promise<string> {
-    const result = await this.queryEndpoint("ringsys_count");
+    const result = await this.queryEndpoint('ringsys_count');
     assertIsStringResponse(result);
     return result;
   }

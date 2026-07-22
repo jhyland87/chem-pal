@@ -1,5 +1,5 @@
-import { StatusCodes } from "http-status-codes";
-import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "@/constants/currency";
+import { StatusCodes } from 'http-status-codes';
+import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from '@/constants/currency';
 
 declare global {
   /**

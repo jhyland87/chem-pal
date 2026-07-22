@@ -160,7 +160,7 @@ declare global {
   /** A document/certificate asset reference for a VWR base product. */
   interface VWRAssetReference {
     /** Asset category. */
-    assetType?: "MSDS" | "CERTIFICATE_OF_ANALYSIS" | "CERTIFICATE_OF_QUALITY";
+    assetType?: 'MSDS' | 'CERTIFICATE_OF_ANALYSIS' | 'CERTIFICATE_OF_QUALITY';
     /** Absolute URL to the downloadable asset. */
     url: string;
     /** Languages the asset is available in, e.g. `["en_US", "en_CA"]`. */

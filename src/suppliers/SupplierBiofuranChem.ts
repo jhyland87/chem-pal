@@ -1,4 +1,4 @@
-import { SupplierBaseWix } from "./SupplierBaseWix";
+import { SupplierBaseWix } from './SupplierBaseWix';
 
 /**
  * The SupplierBioFuranChem module is meant to perform searches and retrieve product details from the
@@ -14,20 +14,20 @@ import { SupplierBaseWix } from "./SupplierBaseWix";
  */
 export class SupplierBioFuranChem extends SupplierBaseWix implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = "BioFuran Chem";
+  public readonly supplierName: string = 'BioFuran Chem';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = "https://www.biofuranchem.com";
+  public readonly baseURL: string = 'https://www.biofuranchem.com';
 
   // Shipping scope for Biofuran Chem
-  public readonly shipping: ShippingRange = "international";
+  public readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
   // This is used to determine the currency and other country-specific information.
-  public readonly country: CountryCode = "US";
+  public readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   // Pure-search supplier: the initial search returns every field and
   // getProductData is a passthrough, so there's no per-product detail to cache.
