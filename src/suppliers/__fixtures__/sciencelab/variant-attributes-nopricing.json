@@ -1,0 +1,11 @@
+{
+  "content": "",
+  "data": {
+    "sku": "SLP6605",
+    "mpn": "6605",
+    "instock": false,
+    "purchasable": false,
+    "stock_message": "Out of stock",
+    "call_for_price_message": "Call for price"
+  }
+}

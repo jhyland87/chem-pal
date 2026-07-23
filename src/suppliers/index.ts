@@ -59,6 +59,7 @@ export { SupplierMacklin } from './SupplierMacklin';
 export { SupplierOnyxmet } from './SupplierOnyxmet';
 export { SupplierOrbitNaturalProductDerivatives } from './SupplierOrbitNaturalProductDerivatives';
 export { SupplierS3Chemicals } from './SupplierS3Chemicals';
+export { SupplierScienceLab } from './SupplierScienceLab';
 export { SupplierSynthetika } from './SupplierSynthetika';
 export { SupplierTheLabStockroom } from './SupplierTheLabStockroom';
 export { SupplierVWR } from './SupplierVWR';

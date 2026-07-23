@@ -1,0 +1,30 @@
+{
+  "content": "",
+  "data": {
+      "sku": "SLP6604",
+      "upc": null,
+      "mpn": "6604",
+      "gtin": null,
+      "weight": null,
+      "base": true,
+      "image": null,
+      "price": {
+          "without_tax": {
+              "formatted": "$109.00",
+              "value": 109,
+              "currency": "USD"
+          },
+          "tax_label": "Tax"
+      },
+      "stock": null,
+      "instock": true,
+      "stock_message": null,
+      "purchasable": true,
+      "purchasing_message": null,
+      "call_for_price_message": null,
+      "disabled_option_values": [],
+      "bulk_discount_rates": [],
+      "selected_picklist_options": [],
+      "picklist_products_details": []
+  }
+}
