@@ -13,6 +13,10 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+### Added
+
+- New supplier: ScienceLab.
+
 ## [1.4.0] - 2026-07-21
 
 ### Added

@@ -70,7 +70,7 @@ function serviceWorkerBuildPlugin(options: {
         define: buildDefines(pkg, { isAggregate, isProd, isAnalyze }),
         resolve: { alias: { '@': _resolve('./src') } },
         esbuild: {
-          pure: isProd ? ['console.log', 'console.info', 'console.debug', 'console.trace'] : [],
+          //pure: isProd ? ['console.log', 'console.info', 'console.debug', 'console.trace'] : [],
           drop: isProd ? ['debugger'] : [],
         },
         build: {
@@ -135,7 +135,7 @@ export default ({ mode }: { mode: string }) => {
     // doesn't ship to the store — including calls that bypass Logger. warn/error
     // are kept so genuine problems still surface; `debugger` is stripped too.
     esbuild: {
-      pure: isProd ? ['console.log', 'console.info', 'console.debug', 'console.trace'] : [],
+      //pure: isProd ? ['console.log', 'console.info', 'console.debug', 'console.trace'] : [],
       drop: isProd ? ['debugger'] : [],
     },
     resolve: {
