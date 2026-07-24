@@ -242,6 +242,77 @@ export const getCidByName: (name: string) => Promise<PubChemCID | undefined> = w
 );
 
 /**
+ * Network implementation for {@link getCidByFormula}; see it for details.
+ * @param formula - The molecular formula to look up
+ * @returns The best-matching CID, or undefined
+ * @source
+ */
+async function getCidByFormulaUncached(formula: string): Promise<PubChemCID | undefined> {
+  try {
+    const response = await fetch(
+      `${PUG_REST_BASE}/compound/fastformula/${encodeURIComponent(formula)}/cids/JSON?MaxRecords=1`,
+    );
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    const first = extractCids(data)?.[0];
+    return isPubChemCID(first) ? first : undefined;
+  } catch (error) {
+    console.error('Error fetching PubChem CID by formula:', error);
+    return undefined;
+  }
+}
+
+/**
+ * Resolves a molecular formula to its best-matching PubChem CID via the PUG-REST `fastformula`
+ * search (the plain name endpoint 404s on most formulas). Returns the first CID PubChem reports.
+ * Cached for three days.
+ * @category Science Helpers
+ * @param formula - The molecular formula to look up (e.g. `"Na6O18P6"`)
+ * @returns The best-matching CID, or undefined if PubChem has no match
+ * @example
+ * ```typescript
+ * await getCidByFormula("Na6O18P6"); // 24968
+ * ```
+ * @source
+ */
+export const getCidByFormula: (formula: string) => Promise<PubChemCID | undefined> = withTtlCache(
+  getCidByFormulaUncached,
+  { namespace: 'cidByFormula' },
+);
+
+/**
+ * Resolves a chemical identifier (CAS number or molecular formula) to a human-readable chemical
+ * name via PubChem — the compound's Title (e.g. `"Hexasodium hexametaphosphate"`). Used to let
+ * suppliers that can only search by name still answer identifier queries: the identifier is
+ * converted to a name, and that name is searched instead. SMILES is handled separately by
+ * `resolveSmiles` in `@/helpers/smiles`.
+ * @category Science Helpers
+ * @param term - The raw identifier (a CAS number or a molecular formula)
+ * @param termType - Which kind of identifier `term` is
+ * @returns The resolved name (and the CAS, for a CAS query), or undefined when unresolved
+ * @example
+ * ```typescript
+ * await resolveIdentifierName("10124-56-8", "cas"); // { name: "Hexasodium hexametaphosphate", cas: ["10124-56-8"] }
+ * await resolveIdentifierName("Na6O18P6", "formula"); // { name: "Hexasodium hexametaphosphate" }
+ * ```
+ * @source
+ */
+export async function resolveIdentifierName(
+  term: string,
+  termType: 'cas' | 'formula',
+): Promise<{ name: string; cas?: string[] } | undefined> {
+  const cid = termType === 'formula' ? await getCidByFormula(term) : await getCidByName(term);
+  if (cid === undefined) {
+    return undefined;
+  }
+  const name = (await getCompoundProperties(cid))?.title;
+  if (!name) {
+    return undefined;
+  }
+  return termType === 'cas' ? { name, cas: [term] } : { name };
+}
+
+/**
  * Network implementation for {@link getCompoundProperties}; see it for details.
  * @param cid - The compound's CID
  * @returns The normalized properties, or undefined

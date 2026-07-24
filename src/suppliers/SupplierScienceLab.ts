@@ -577,9 +577,9 @@ export class SupplierScienceLab extends SupplierBase<ScienceLabItem, Product> im
   /**
    * Fetches and parses a ScienceLab product page: the ld+json Product block
    * (real title, sku, image, price, availability), the spec table (CAS,
-   * molecular formula, special-considerations restriction), the grade and
-   * concentration (from the title), and each size variant (priced via the
-   * product-attributes endpoint).
+   * molecular formula, molecular weight, special-considerations restriction), the
+   * grade and concentration (from the title), and each size variant (priced via
+   * the product-attributes endpoint).
    * @param product - The basic product builder from `queryProducts`
    * @returns The enriched builder, or void when the page can't be fetched
    * @example
@@ -726,8 +726,8 @@ export class SupplierScienceLab extends SupplierBase<ScienceLabItem, Product> im
 
   /**
    * Applies the product-page spec table to the builder: CAS number, molecular
-   * formula, and "Special Considerations" (kept as an informational restriction
-   * note).
+   * formula, molecular weight, and "Special Considerations" (kept as an
+   * informational restriction note).
    *
    * The spec table is the only trustworthy source for CAS and formula. When the
    * molecular-formula row is absent, the ld+json *description* is a safe fallback
@@ -765,6 +765,8 @@ export class SupplierScienceLab extends SupplierBase<ScienceLabItem, Product> im
         // Format digit runs into subscripts (Na6O18P6 -> Na₆O₁₈P₆).
         builder.setFormula(formatFormula(value));
         formulaSet = true;
+      } else if (name.includes('molecular weight')) {
+        builder.setMoleweight(value);
       } else if (name.includes('special considerations')) {
         builder.setPurchaseRestriction({ note: value });
       }

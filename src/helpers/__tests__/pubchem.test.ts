@@ -3,6 +3,7 @@ import {
   setupChromeStorageMock,
 } from '@/__fixtures__/helpers/chrome/storageMock';
 import {
+  getCidByFormula,
   getCidByName,
   getCidsByCas,
   getCompoundDescription,
@@ -13,6 +14,7 @@ import {
   pubchemCasSearchUrl,
   pubchemCompoundUrl,
   pubchemStructureImageUrl,
+  resolveIdentifierName,
   suggestAlternativeSearch,
 } from '@/helpers/pubchem';
 import {
@@ -74,6 +76,62 @@ describe('PubChem Helpers', () => {
       ['a', false],
       ['this is an extremely long technical chemical name', false],
     ])('should return %s for: %s', (input, output) => expect(isSimpleName(input)).toBe(output));
+  });
+
+  describe('getCidByFormula', () => {
+    beforeAll(() => {
+      global.fetch = vi.fn() as Mock;
+    });
+    afterEach(() => {
+      (global.fetch as Mock).mockReset();
+    });
+
+    it('returns the first CID from a fastformula search', async () => {
+      (global.fetch as Mock).mockResolvedValue(jsonOk({ IdentifierList: { CID: [24968] } }));
+      expect(await getCidByFormula('Na6O18P6')).toBe(24968);
+      expect((global.fetch as Mock).mock.calls[0][0]).toContain('/fastformula/Na6O18P6/');
+    });
+
+    it('returns undefined when the formula has no match', async () => {
+      (global.fetch as Mock).mockResolvedValue(notOk());
+      expect(await getCidByFormula('Zz9')).toBeUndefined();
+    });
+  });
+
+  describe('resolveIdentifierName', () => {
+    beforeAll(() => {
+      global.fetch = vi.fn() as Mock;
+    });
+    afterEach(() => {
+      (global.fetch as Mock).mockReset();
+    });
+
+    const cidThenTitle = (cid: number, title: string) =>
+      (global.fetch as Mock)
+        .mockResolvedValueOnce(jsonOk({ IdentifierList: { CID: [cid] } }))
+        .mockResolvedValueOnce(
+          jsonOk({ PropertyTable: { Properties: [{ CID: cid, Title: title }] } }),
+        );
+
+    it('resolves a CAS to the compound title, echoing the CAS', async () => {
+      cidThenTitle(24968, 'Hexasodium hexametaphosphate');
+      expect(await resolveIdentifierName('10124-56-8', 'cas')).toEqual({
+        name: 'Hexasodium hexametaphosphate',
+        cas: ['10124-56-8'],
+      });
+    });
+
+    it('resolves a formula to the compound title (no CAS)', async () => {
+      cidThenTitle(24968, 'Hexasodium hexametaphosphate');
+      expect(await resolveIdentifierName('Na6O18P6', 'formula')).toEqual({
+        name: 'Hexasodium hexametaphosphate',
+      });
+    });
+
+    it('returns undefined when the identifier does not resolve', async () => {
+      (global.fetch as Mock).mockResolvedValue(notOk());
+      expect(await resolveIdentifierName('Zz9', 'formula')).toBeUndefined();
+    });
   });
 
   describe('getRankedNamesByName', () => {

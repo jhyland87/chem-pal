@@ -17,6 +17,7 @@ import { deleteSupplierQueryCacheEntry } from '@/utils/idbCache';
 import { IS_DEV_BUILD } from '@/utils/isDevBuild';
 import { Logger } from '@/utils/Logger';
 import { ProductBuilder } from '@/utils/ProductBuilder';
+import { detectTermType } from '@/utils/search-query/detectTermType';
 import { scoreAstMatch } from '@/utils/search-query/evaluateAst';
 import { extractOrGroups } from '@/utils/search-query/extractPositiveTerms';
 import { parseSearchQuery } from '@/utils/search-query/parseSearchQuery';
@@ -124,6 +125,24 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * that filter by structure (currently Ambeed) read this; others ignore it.
    */
   protected resolvedStructures?: ReadonlyMap<string, ResolvedStructure>;
+
+  /**
+   * Whether this supplier can search its own site by a CAS number / molecular
+   * formula / SMILES directly. Default false: the supplier matches product names,
+   * not identifiers, so when the query is one of these identifier types (see
+   * {@link detectTermType}) the base swaps it for the chemical name the factory
+   * resolved (see {@link effectiveQuery}). Set the relevant flag true on a
+   * supplier whose search natively accepts that identifier (e.g. Ambeed), so it
+   * receives the raw identifier unchanged.
+   */
+  protected readonly supportsCAS: boolean = false;
+  /** See {@link supportsCAS}. */
+  protected readonly supportsFormula: boolean = false;
+  /** See {@link supportsCAS}. */
+  protected readonly supportsSMILES: boolean = false;
+
+  /** Memoized {@link effectiveQuery}; cleared when {@link setResolvedStructures} runs. */
+  private effectiveQueryCache?: string;
 
   /**
    * Runtime flag resolved from `userSettings.fuzzyFilteringDisabled`. When true,
@@ -745,12 +764,59 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    */
   public setResolvedStructures(resolved: ReadonlyMap<string, ResolvedStructure> | undefined): void {
     this.resolvedStructures = resolved;
+    this.effectiveQueryCache = undefined;
   }
 
   /**
-   * Returns the parsed query for this instance, lazily parsing `this.query` when
-   * `SupplierFactory` did not set one (e.g. in unit tests that construct a
-   * supplier directly).
+   * The query this supplier actually matches against. Normally the raw query, but
+   * when the query is a single CAS/formula/SMILES identifier the supplier can't
+   * search for itself (per {@link supportsCAS}/{@link supportsFormula}/
+   * {@link supportsSMILES}) and the factory resolved it to a chemical name, that
+   * name is used instead — so a name-only supplier can answer "Na6O18P6" by
+   * searching "Hexasodium hexametaphosphate". Falls back to the raw query when the
+   * type is supported, the query is a plain name, or nothing was resolved.
+   * @returns The effective search query.
+   * @example
+   * ```typescript
+   * // this.query === "10124-56-8", supportsCAS === false, resolved name available
+   * this.effectiveQuery; // "Hexasodium hexametaphosphate"
+   * ```
+   * @source
+   */
+  protected get effectiveQuery(): string {
+    if (this.effectiveQueryCache === undefined) {
+      this.effectiveQueryCache = this.resolveEffectiveQuery();
+    }
+    return this.effectiveQueryCache;
+  }
+
+  /**
+   * Computes {@link effectiveQuery} (uncached).
+   * @returns The resolved name for an unsupported identifier query, else `this.query`.
+   * @source
+   */
+  private resolveEffectiveQuery(): string {
+    const raw = this.query.trim();
+    if (raw === '') {
+      return this.query;
+    }
+    const termType = detectTermType(raw);
+    const supported =
+      termType === 'string' ||
+      (termType === 'cas' && this.supportsCAS) ||
+      (termType === 'formula' && this.supportsFormula) ||
+      (termType === 'smiles' && this.supportsSMILES);
+    if (supported) {
+      return this.query;
+    }
+    return this.resolvedStructures?.get(raw)?.name ?? this.query;
+  }
+
+  /**
+   * Returns the parsed query for this instance. Uses the {@link effectiveQuery}, so
+   * an identifier query the supplier can't search is parsed as its resolved name.
+   * Otherwise lazily parses `this.query` when `SupplierFactory` did not set a
+   * parsed query (e.g. in unit tests that construct a supplier directly).
    * @returns The parsed search query.
    * @example
    * ```typescript
@@ -759,6 +825,10 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * @source
    */
   protected getAst(): ParsedSearchQuery {
+    const effective = this.effectiveQuery;
+    if (effective !== this.query) {
+      return parseSearchQuery(effective);
+    }
     return this.parsedQuery ?? parseSearchQuery(this.query);
   }
 
@@ -1304,7 +1374,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    */
   protected fuzzyScore(text: string): number {
     const activeScorer = this.fuzzScorerOverride ?? this.fuzzScorer;
-    return activeScorer(this.query, text);
+    return activeScorer(this.effectiveQuery, text);
   }
 
   /**

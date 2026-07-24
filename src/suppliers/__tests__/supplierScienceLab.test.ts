@@ -171,6 +171,46 @@ describe('SupplierScienceLab queryProducts', () => {
   });
 });
 
+describe('SupplierScienceLab identifier search', () => {
+  const mockCatalog = (supplier: SupplierScienceLab) =>
+    vi
+      .spyOn(supplier as never, 'fetchSitemapPage')
+      .mockResolvedValueOnce(sitemapXml as never)
+      .mockResolvedValue(undefined as never);
+
+  // ScienceLab can't search by identifier (supportsCAS/Formula/SMILES default
+  // false), so a CAS/formula query must be matched by the factory-resolved name.
+  it.each(['Na6O18P6', '10124-56-8'])(
+    'matches the resolved chemical name for identifier query %s',
+    async (raw) => {
+      const supplier = new SupplierScienceLab(raw);
+      // Stand in for SupplierFactory's PubChem resolution.
+      supplier.setResolvedStructures(new Map([[raw, { name: 'Hexasodium hexametaphosphate' }]]));
+      mockCatalog(supplier);
+
+      const results = await (supplier as unknown as ScienceLabInternals).queryProducts(raw, 15);
+
+      expect(results?.[0]?.dump().title).toBe('sodium hexametaphosphate anhydrous');
+    },
+  );
+
+  it('ignores the resolved map for a plain name query', async () => {
+    const supplier = new SupplierScienceLab('sodium hexametaphosphate');
+    // A bogus resolution must not be used — a name query is searched as typed.
+    supplier.setResolvedStructures(
+      new Map([['sodium hexametaphosphate', { name: 'totally unrelated compound' }]]),
+    );
+    mockCatalog(supplier);
+
+    const results = await (supplier as unknown as ScienceLabInternals).queryProducts(
+      'sodium hexametaphosphate',
+      15,
+    );
+
+    expect(results?.[0]?.dump().title).toBe('sodium hexametaphosphate anhydrous');
+  });
+});
+
 describe('SupplierScienceLab constructor', () => {
   it('floors the results limit at 15, honoring a larger explicit limit', () => {
     const asLimit = (s: SupplierScienceLab) => (s as unknown as { limit: number }).limit;
@@ -199,6 +239,7 @@ describe('SupplierScienceLab getProductData', () => {
       price: 108,
       cas: '10124-56-8',
       formula: 'Na₆O₁₈P₆',
+      moleweight: 611.77,
       grade: 'Ungraded',
       restriction: true,
       baseSize: '500g',
@@ -218,6 +259,7 @@ describe('SupplierScienceLab getProductData', () => {
       price: 36,
       cas: '6834-92-0',
       formula: 'Na₂SiO₃',
+      moleweight: 122.06,
       grade: 'Lab Grade',
       restriction: true,
       baseSize: '500g',
@@ -236,6 +278,7 @@ describe('SupplierScienceLab getProductData', () => {
       price: 67,
       cas: undefined,
       formula: undefined,
+      moleweight: undefined,
       grade: 'Ungraded',
       restriction: true,
       baseSize: '500ml',
@@ -254,6 +297,7 @@ describe('SupplierScienceLab getProductData', () => {
       price: 52,
       cas: undefined,
       formula: undefined,
+      moleweight: undefined,
       grade: 'Ungraded',
       restriction: true,
       baseSize: '1L',
@@ -269,6 +313,7 @@ describe('SupplierScienceLab getProductData', () => {
       price: 47,
       cas: undefined,
       formula: undefined,
+      moleweight: undefined,
       grade: 'Ungraded',
       restriction: true,
       baseSize: '1L',
@@ -293,6 +338,7 @@ describe('SupplierScienceLab getProductData', () => {
       expect(dump.price).toBe(c.price);
       expect(dump.cas).toBe(c.cas);
       expect(dump.formula).toBe(c.formula);
+      expect(dump.moleweight).toBe(c.moleweight);
       expect(dump.grade).toBe(c.grade);
       expect(dump.concentration).toBe(c.concentration);
       // "Special Considerations" is captured as an informational note only —

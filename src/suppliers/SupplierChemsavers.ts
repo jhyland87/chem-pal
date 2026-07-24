@@ -63,6 +63,10 @@ export class SupplierChemsavers
   // cache. Products are still keyed for exclusions via getUniqueProductKey.
   protected readonly skipProductDetailCache: boolean = true;
 
+  protected readonly supportsCAS: boolean = true;
+  // protected readonly supportsFormula: boolean = true;
+  // protected readonly supportsSMILES: boolean = true;
+
   /**
    * Derives the unique product key from a Chemsavers product object: its `id`
    * (the same value passed to `.setID`), stable across query and detail.

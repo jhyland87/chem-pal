@@ -68,6 +68,10 @@ export abstract class SupplierBaseWoocommerce
    */
   protected apiKey: string = '';
 
+  protected readonly supportsCAS: boolean = true;
+  // protected readonly supportsFormula: boolean = true;
+  // protected readonly supportsSMILES: boolean = true;
+
   /**
    * The maximum number of objects to fetch in a single request.
    * This is used to limit the number of objects fetched in a single request
