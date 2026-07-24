@@ -3,7 +3,7 @@
 # these are the likely causes of GQL_QUERY_ANALYSIS_ERROR on an anonymous session.
 # Re-add commented blocks one at a time to confirm which your session is allowed.
 
-query getFilteredProductsWithHasDiscount(
+query getProducts(
   $mainCollectionId: String!
   $filters: ProductFilters
   $sort: ProductSort
