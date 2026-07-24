@@ -1,9 +1,13 @@
 import {
+  flattenProductVariants,
   getExportableProductData,
   hasExpandableDetail,
+  isParentPurchasableUnit,
   isPresent,
+  resolveDisplayedVariants,
   resolveProductImages,
   samePurchasableUnit,
+  variantRowTitle,
 } from '@/helpers/product';
 import { describe, expect, it } from 'vitest';
 
@@ -243,5 +247,120 @@ describe('getExportableProductData', () => {
     expect('cacheKey' in result).toBe(false);
     expect('_id' in result).toBe(false);
     expect('baseQuantity' in result).toBe(false);
+  });
+});
+
+/** A product whose variants exercise the ungrouped-row flattening. */
+const variantProduct = {
+  supplier: 'LiMac',
+  title: 'Sodium borohydride, min 95%',
+  url: 'https://example.com/nabh4',
+  cas: '16940-66-2',
+  price: 106.57,
+  currencyCode: 'USD',
+  currencySymbol: '$',
+  quantity: 50,
+  uom: 'g',
+} as Product;
+
+describe('isParentPurchasableUnit', () => {
+  it('matches a variant of the same size as the parent', () => {
+    expect(isParentPurchasableUnit(variantProduct, { quantity: 50, uom: 'g' })).toBe(true);
+  });
+
+  it('does not match a variant of a different size', () => {
+    expect(isParentPurchasableUnit(variantProduct, { quantity: 100, uom: 'g' })).toBe(false);
+  });
+});
+
+describe('resolveDisplayedVariants', () => {
+  it('returns the product itself when it has no variants', () => {
+    expect(resolveDisplayedVariants(variantProduct)).toEqual([variantProduct]);
+  });
+
+  it('does not prepend the parent when a variant is the same purchasable unit', () => {
+    const variants: Variant[] = [
+      { title: 'Sodium borohydride, min 95%', quantity: 50, uom: 'g' },
+      { title: '100g', quantity: 100, uom: 'g' },
+    ];
+    const product = { ...variantProduct, variants } as Product;
+    expect(resolveDisplayedVariants(product)).toEqual(variants);
+  });
+});
+
+describe('variantRowTitle', () => {
+  it('prepends the product name when the variant title is just a quantity', () => {
+    expect(variantRowTitle(variantProduct, { title: '100g' })).toBe(
+      'Sodium borohydride, min 95% 100g',
+    );
+  });
+
+  it('leaves the title alone when it already contains the product name', () => {
+    const parent = { ...variantProduct, title: 'Some Product 10g' } as Product;
+    expect(variantRowTitle(parent, { title: 'Some Product 100g' })).toBe('Some Product 100g');
+  });
+
+  it('does not prepend when the variant equals the parent name', () => {
+    expect(variantRowTitle(variantProduct, { title: 'Sodium borohydride, min 95%' })).toBe(
+      'Sodium borohydride, min 95%',
+    );
+  });
+
+  it('falls back to the product title when the variant has no title', () => {
+    expect(variantRowTitle(variantProduct, { quantity: 100, uom: 'g' })).toBe(
+      'Sodium borohydride, min 95%',
+    );
+  });
+});
+
+describe('flattenProductVariants', () => {
+  it('passes variantless products through unchanged', () => {
+    expect(flattenProductVariants([variantProduct])).toEqual([variantProduct]);
+  });
+
+  it('emits a parent row plus one row per non-parent variant', () => {
+    const variants: Variant[] = [
+      { title: 'Sodium borohydride, min 95%', quantity: 50, uom: 'g', price: 106.57 },
+      {
+        title: '100g',
+        quantity: 100,
+        uom: 'g',
+        price: 195.99,
+        url: 'https://example.com/nabh4-100g',
+      },
+      { title: '((!)) 10kg', quantity: 10, uom: 'kg', price: 4818.48 },
+    ];
+    const product = { ...variantProduct, variants } as Product;
+    const rows = flattenProductVariants([product]);
+
+    // parent (50 g, same unit as the first variant → not duplicated) + 100 g + 10 kg
+    expect(rows).toHaveLength(3);
+
+    // parent row keeps its variants for the detail panel and has no back-reference
+    expect(rows[0]).toBe(product);
+    expect(rows[0].parentProduct).toBeUndefined();
+    expect(rows[0].variants).toHaveLength(3);
+
+    // variant rows drop the nested variants, inherit shared fields, link to parent
+    for (const row of rows.slice(1)) {
+      expect(row.variants).toBeUndefined();
+      expect(row.cas).toBe('16940-66-2');
+      expect(row.parentProduct?.title).toBe('Sodium borohydride, min 95%');
+      expect(row.parentProduct?.url).toBe('https://example.com/nabh4');
+    }
+
+    // variant-specific fields are overlaid and the title is disambiguated
+    expect(rows[1].price).toBe(195.99);
+    expect(rows[1].quantity).toBe(100);
+    expect(rows[1].title).toBe('Sodium borohydride, min 95% 100g');
+    expect(rows[2].title).toBe('Sodium borohydride, min 95% ((!)) 10kg');
+  });
+
+  it('does not mutate the input products', () => {
+    const variants: Variant[] = [{ title: '100g', quantity: 100, uom: 'g' }];
+    const product = { ...variantProduct, variants } as Product;
+    flattenProductVariants([product]);
+    expect(product.variants).toBe(variants);
+    expect(product.parentProduct).toBeUndefined();
   });
 });

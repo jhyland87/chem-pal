@@ -597,6 +597,14 @@
     "message": "Piilota automaattisesti tulossarakkeet, joissa ei ole tietoja nykyiselle haulle.",
     "description": "Setting description."
   },
+  "settings_group_product_variants": {
+    "message": "Ryhmittele tuotevariantit",
+    "description": "Setting label."
+  },
+  "settings_group_product_variants_desc": {
+    "message": "Kun tämä on käytössä, tuotteen variantit ryhmitellään sen rivin alle. Poista käytöstä, jotta jokainen variantti saa oman rivinsä, jolloin lajittelu ja suodatus koskevat kaikkia variantteja.",
+    "description": "Setting description."
+  },
   "settings_excluded_empty": {
     "message": "Ei poissuljettuja tuotteita.",
     "description": "Empty-state text."
@@ -862,6 +870,10 @@
   "product_detail_variants_currency": {
     "message": "Variantit ($currency$)",
     "placeholders": { "currency": { "content": "$1" } }
+  },
+  "product_detail_parent_product": {
+    "message": "Päätuote",
+    "description": "Label linking an ungrouped variant row back to its main product."
   },
   "product_detail_store_only_ebay": {
     "message": "Toimittaa eBay-kaupastaan pienemmin rajoituksin kuin omalta verkkosivustoltaan.",

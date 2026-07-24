@@ -184,6 +184,9 @@ export class ProductBuilder<T extends Product> {
       _id: (v) => {
         if (typeof v === 'number') this.product._id = v;
       },
+      // Display-only back-reference set by the ungrouped table view, never sourced
+      // from supplier or cached data — dropped here so it can't round-trip in.
+      parentProduct: () => {},
     };
 
     // `Object.entries` widens each key to `string`; narrow it back to a dispatch

@@ -597,6 +597,14 @@
     "message": "Ergebnisspalten ohne Daten für die aktuelle Suche automatisch ausblenden.",
     "description": "Setting description."
   },
+  "settings_group_product_variants": {
+    "message": "Produktvarianten gruppieren",
+    "description": "Setting label."
+  },
+  "settings_group_product_variants_desc": {
+    "message": "Wenn aktiviert, werden die Varianten eines Produkts unter dessen Zeile gruppiert. Deaktivieren Sie die Option, damit jede Variante eine eigene Zeile erhält, sodass Sortierung und Filterung für alle Varianten gelten.",
+    "description": "Setting description."
+  },
   "settings_excluded_empty": {
     "message": "Keine ausgeschlossenen Produkte.",
     "description": "Empty-state text."
@@ -859,6 +867,10 @@
   "product_detail_variants_currency": {
     "message": "Varianten ($currency$)",
     "placeholders": { "currency": { "content": "$1" } }
+  },
+  "product_detail_parent_product": {
+    "message": "Übergeordnetes Produkt",
+    "description": "Label linking an ungrouped variant row back to its main product."
   },
   "product_detail_store_only_ebay": {
     "message": "Versendet aus seinem eBay-Shop mit weniger Einschränkungen als über die eigene Website.",

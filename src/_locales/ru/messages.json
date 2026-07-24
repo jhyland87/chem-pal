@@ -780,6 +780,14 @@
     "message": "Автоматически скрывать столбцы результатов, в которых нет данных для текущего поиска.",
     "description": "Setting description."
   },
+  "settings_group_product_variants": {
+    "message": "Группировать варианты товара",
+    "description": "Setting label."
+  },
+  "settings_group_product_variants_desc": {
+    "message": "Когда включено, варианты товара группируются под его строкой. Отключите, чтобы каждый вариант получил свою строку, и сортировка и фильтрация применялись ко всем вариантам.",
+    "description": "Setting description."
+  },
   "settings_excluded_empty": {
     "message": "Нет исключённых товаров.",
     "description": "Empty-state text."
@@ -1123,6 +1131,10 @@
   "product_detail_variants_currency": {
     "message": "Варианты ($currency$)",
     "placeholders": { "currency": { "content": "$1" } }
+  },
+  "product_detail_parent_product": {
+    "message": "Основной товар",
+    "description": "Label linking an ungrouped variant row back to its main product."
   },
   "product_detail_store_only_ebay": {
     "message": "Отправляет из своего магазина на eBay с меньшими ограничениями, чем с собственного сайта.",

@@ -12,11 +12,11 @@ import {
   parseLocalizedNumber,
   parsePurity,
   pickBroadestName,
-  subscriptToAscii,
   purityGradeToPercentage,
   sortablePurityGrade,
   subscript,
   subscriptGlyph,
+  subscriptToAscii,
   superscript,
   superscriptGlyph,
 } from '../science';
@@ -515,15 +515,24 @@ describe('science helpers', () => {
       }
     });
 
-    it("should fall through to 'Ungraded' for every near-miss", () => {
-      // The per-grade assertion above only says "not this grade". This is the stronger
-      // claim: no near-miss lands on some *other* grade by accident.
-      for (const { unsuccessful } of Object.values(GRADE_CORPUS)) {
-        for (const input of unsuccessful) {
-          expect(parseGrade(input)).toBe('Ungraded');
-        }
-      }
+    const nearMisses = Object.entries(GRADE_CORPUS).flatMap(([grade, { unsuccessful }]) =>
+      unsuccessful.map((input) => ({ grade, input })),
+    );
+
+    // The per-grade assertions only say "not this grade". This is the stronger claim:
+    // no near-miss lands on some *other* grade by accident.
+    it.for(nearMisses)('$input (near-miss for $grade) falls through to Ungraded', ({ input }) => {
+      expect(parseGrade(input)).toBe('Ungraded');
     });
+
+    // 'Ungraded' is exempt by construction — a near-miss for it would be a string that
+    // should parse as some grade but doesn't, which is a different claim.
+    it.for(Object.entries(GRADE_CORPUS).filter(([grade]) => grade !== 'Ungraded'))(
+      '%s has near-miss coverage',
+      ([, { unsuccessful }]) => {
+        expect(unsuccessful.length).toBeGreaterThan(0);
+      },
+    );
 
     describe.each(LABEL_TOKENS)('labeled field: %s', (token, expected) => {
       it.each([`Grade: ${token}`, `Purity: ${token}`, `Quality: ${token}`, `Grade - ${token}`])(
@@ -538,40 +547,81 @@ describe('science helpers', () => {
       });
     });
 
-    it('should find the grade inside a full product title', () => {
-      expect(parseGrade('SODIUM, REAGENT (ACS) - 500 G')).toBe('ACS Grade');
-      expect(parseGrade('SODIUM CHLORITE, 80% TECHNICAL - 2.5 KG')).toBe('Technical Grade');
-      expect(parseGrade('SODIUM CHLORITE, 90% Technical Grade - 2.5 KG')).toBe('Technical Grade');
-      expect(parseGrade('Acetonitrile HPLC - 1 L')).toBe('HPLC Grade');
-      expect(parseGrade('Magnesium stearate NF, 1 kg')).toBe('NF Grade');
-      expect(parseGrade('Caffeine, British Pharmacopoeia')).toBe('BP Grade');
+    // it('should find the grade inside a full product title', () => {
+    //   expect(parseGrade('SODIUM, REAGENT (ACS) - 500 G')).toBe('ACS Grade');
+    //   expect(parseGrade('SODIUM CHLORITE, 80% TECHNICAL - 2.5 KG')).toBe('Technical Grade');
+    //   expect(parseGrade('SODIUM CHLORITE, 90% Technical Grade - 2.5 KG')).toBe('Technical Grade');
+    //   expect(parseGrade('Acetonitrile HPLC - 1 L')).toBe('HPLC Grade');
+    //   expect(parseGrade('Magnesium stearate NF, 1 kg')).toBe('NF Grade');
+    //   expect(parseGrade('Caffeine, British Pharmacopoeia')).toBe('BP Grade');
+    // });
+
+    // it('should accept dotted acronyms', () => {
+    //   expect(parseGrade('A.C.S.')).toBe('ACS Grade');
+    //   expect(parseGrade('A.R.')).toBe('AR Grade');
+    //   expect(parseGrade('U.S.P.')).toBe('USP Grade');
+    //   expect(parseGrade('N.F.')).toBe('NF Grade');
+    //   expect(parseGrade('B.P./U.S.P.')).toBe('USP Grade');
+    // });
+
+    // it("should reject an acronym that is really an abbreviation ('ACS.')", () => {
+    //   expect(parseGrade('ACS.')).toBe('Ungraded');
+    // });
+
+    // it('should prefer the specific standard when several are present', () => {
+    //   // "Reagent (ACS)" is ACS, not the generic Reagent Grade.
+    //   expect(parseGrade('SODIUM, REAGENT (ACS) - 500 G')).toBe('ACS Grade');
+    //   // BP declines when "/USP" follows, so the combo routes to USP.
+    //   expect(parseGrade('Citric acid, BP/USP')).toBe('USP Grade');
+    //   expect(parseGrade('Citric acid, USP/BP')).toBe('USP Grade');
+    //   // ...but a standalone BP is still BP.
+    //   expect(parseGrade('Caffeine, BP')).toBe('BP Grade');
+    // });
+
+    // it("should not read 'Impure' as 'Pure'", () => {
+    //   expect(parseGrade('Impure')).toBe('Impure');
+    //   expect(parseGrade('Impure sample')).toBe('Impure');
+    // });
+
+    it.for([
+      ['SODIUM, REAGENT (ACS) - 500 G', 'ACS Grade'],
+      ['SODIUM CHLORITE, 80% TECHNICAL - 2.5 KG', 'Technical Grade'],
+      ['SODIUM CHLORITE, 90% Technical Grade - 2.5 KG', 'Technical Grade'],
+      ['Acetonitrile HPLC - 1 L', 'HPLC Grade'],
+      ['Magnesium stearate NF, 1 kg', 'NF Grade'],
+      ['Caffeine, British Pharmacopoeia', 'BP Grade'],
+    ])('finds the grade inside a full product title: %s -> %s', ([input, expected]) => {
+      expect(parseGrade(input)).toBe(expected);
     });
 
-    it('should accept dotted acronyms', () => {
-      expect(parseGrade('A.C.S.')).toBe('ACS Grade');
-      expect(parseGrade('A.R.')).toBe('AR Grade');
-      expect(parseGrade('U.S.P.')).toBe('USP Grade');
-      expect(parseGrade('N.F.')).toBe('NF Grade');
-      expect(parseGrade('B.P./U.S.P.')).toBe('USP Grade');
+    it.for([
+      ['A.C.S.', 'ACS Grade'],
+      ['A.R.', 'AR Grade'],
+      ['U.S.P.', 'USP Grade'],
+      ['N.F.', 'NF Grade'],
+      ['B.P./U.S.P.', 'USP Grade'],
+    ])('accepts dotted acronyms: %s -> %s', ([input, expected]) => {
+      expect(parseGrade(input)).toBe(expected);
     });
 
     it("should reject an acronym that is really an abbreviation ('ACS.')", () => {
       expect(parseGrade('ACS.')).toBe('Ungraded');
     });
 
-    it('should prefer the specific standard when several are present', () => {
-      // "Reagent (ACS)" is ACS, not the generic Reagent Grade.
-      expect(parseGrade('SODIUM, REAGENT (ACS) - 500 G')).toBe('ACS Grade');
-      // BP declines when "/USP" follows, so the combo routes to USP.
-      expect(parseGrade('Citric acid, BP/USP')).toBe('USP Grade');
-      expect(parseGrade('Citric acid, USP/BP')).toBe('USP Grade');
-      // ...but a standalone BP is still BP.
-      expect(parseGrade('Caffeine, BP')).toBe('BP Grade');
+    it.for([
+      ['SODIUM, REAGENT (ACS) - 500 G', 'ACS Grade', '"Reagent (ACS)" is ACS, not generic Reagent'],
+      ['Citric acid, BP/USP', 'USP Grade', 'BP declines when /USP follows'],
+      ['Citric acid, USP/BP', 'USP Grade', 'order does not matter'],
+      ['Caffeine, BP', 'BP Grade', 'standalone BP is still BP'],
+    ])('prefers the specific standard: %s -> %s (%s)', ([input, expected]) => {
+      expect(parseGrade(input)).toBe(expected);
     });
 
-    it("should not read 'Impure' as 'Pure'", () => {
-      expect(parseGrade('Impure')).toBe('Impure');
-      expect(parseGrade('Impure sample')).toBe('Impure');
+    it.for([
+      ['Impure', 'Impure'],
+      ['Impure sample', 'Impure'],
+    ])("does not read 'Impure' as 'Pure': %s -> %s", ([input, expected]) => {
+      expect(parseGrade(input)).toBe(expected);
     });
 
     it.each([
@@ -633,77 +683,76 @@ describe('science helpers', () => {
       expect(purityGradeToPercentage('Impure')).not.toBeUndefined();
     });
 
-    it.each(['Ungraded', '', 'Nonsense Grade'])('should return undefined for %j', (grade) => {
+    it.for(['Ungraded', '', 'Nonsense Grade'])('returns undefined for %j', (grade) => {
       expect(purityGradeToPercentage(grade)).toBeUndefined();
     });
 
-    it('should match exactly, so a differently-cased label is unrecognised', () => {
-      expect(purityGradeToPercentage('acs grade')).toBeUndefined();
-      expect(purityGradeToPercentage('ACS GRADE')).toBeUndefined();
+    it.for(['acs grade', 'ACS GRADE'])('matches exactly, so %j is unrecognised', (grade) => {
+      expect(purityGradeToPercentage(grade)).toBeUndefined();
     });
 
-    it('should rank the grades in the documented hierarchy order', () => {
-      const hierarchy = [
-        'HPLC Grade',
-        'ACS Grade',
-        'Reagent Grade',
-        'AR Grade',
-        'Guaranteed Grade',
-        'USP Grade',
-        'BP Grade',
-        'JP Grade',
-        'NF Grade',
-        'Pharma Grade',
-        'FCC Grade',
-        'Cosmetic Grade',
-        'Extraction Grade',
-        'Lab Grade',
-        'Pure Grade',
-        'Practical Grade',
-        'Technical Grade',
-        'Industrial Grade',
-        'Low Grade',
-        'Impure',
-      ];
-      const percentages = hierarchy.map((grade) => purityGradeToPercentage(grade));
+    const HIERARCHY = [
+      'HPLC Grade',
+      'ACS Grade',
+      'Reagent Grade',
+      'AR Grade',
+      'Guaranteed Grade',
+      'USP Grade',
+      'BP Grade',
+      'JP Grade',
+      'NF Grade',
+      'Pharma Grade',
+      'FCC Grade',
+      'Cosmetic Grade',
+      'Extraction Grade',
+      'Lab Grade',
+      'Pure Grade',
+      'Practical Grade',
+      'Technical Grade',
+      'Industrial Grade',
+      'Low Grade',
+      'Impure',
+    ];
 
-      expect(percentages).not.toContain(undefined);
-      for (let i = 1; i < percentages.length; i++) {
-        expect(percentages[i]).toBeLessThanOrEqual(Number(percentages[i - 1]));
-      }
+    const DESCENDING_PAIRS = HIERARCHY.slice(1).map((lower, i) => [HIERARCHY[i], lower]);
+
+    it.for(HIERARCHY)('%s has a percentage', (grade) => {
+      expect(purityGradeToPercentage(grade)).toBeTypeOf('number');
     });
 
-    it('should recognise every label parseGrade can produce', () => {
-      // The seam most likely to break silently: parseGrade renames its group
-      // ("ACS_Grade" -> "ACS Grade") and the switch keys on the result. A new group
-      // in science.ts with no matching case would surface here.
-      const inputs = [
-        'ACS',
-        'AR',
-        'HPLC',
-        'USP',
-        'BP',
-        'JP',
-        'NF',
-        'FCC',
-        'LR',
-        'Technical Grade',
-        'Industrial Grade',
-        'Practical Grade',
-        'Cosmetic Grade',
-        'Extraction Grade',
-        'Guaranteed Grade',
-        'Reagent Grade',
-        'Lab Grade',
-        'Pure Grade',
-        'Pharma Grade',
-        'Low Grade',
-        'Impure',
-      ];
-      for (const input of inputs) {
-        expect(purityGradeToPercentage(parseGrade(input))).toBeTypeOf('number');
-      }
-      // "Ungraded" is the one label that intentionally has no percentage.
+    it.for(DESCENDING_PAIRS)('%s ranks at or above %s', ([higher, lower]) => {
+      expect(Number(purityGradeToPercentage(lower))).toBeLessThanOrEqual(
+        Number(purityGradeToPercentage(higher)),
+      );
+    });
+
+    it.for([
+      'ACS',
+      'AR',
+      'HPLC',
+      'USP',
+      'BP',
+      'JP',
+      'NF',
+      'FCC',
+      'LR',
+      'Technical Grade',
+      'Industrial Grade',
+      'Practical Grade',
+      'Cosmetic Grade',
+      'Extraction Grade',
+      'Guaranteed Grade',
+      'Reagent Grade',
+      'Lab Grade',
+      'Pure Grade',
+      'Pharma Grade',
+      'Low Grade',
+      'Impure',
+    ])('recognises the label parseGrade produces for %j', (input) => {
+      expect(purityGradeToPercentage(parseGrade(input))).toBeTypeOf('number');
+    });
+
+    it("should return undefined for 'Ungraded', the one label with no percentage", () => {
       expect(purityGradeToPercentage(parseGrade('Sodium nitrate 50 g'))).toBeUndefined();
     });
   });

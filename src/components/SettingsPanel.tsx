@@ -153,6 +153,7 @@ export default function SettingsPanel() {
             fontSize: 'medium',
             openInTab: false,
             autoHideEmptyColumns: true,
+            groupProductVariants: true,
             disabledSuppliers: [],
             hideColumns: [
               'description',
@@ -760,6 +761,28 @@ export default function SettingsPanel() {
                     checked={currentSettings.autoHideEmptyColumns ?? true}
                     onChange={handleSwitchChange}
                     name="autoHideEmptyColumns"
+                    disabled={isPending}
+                  />
+                }
+                labelPlacement="start"
+                label=""
+              />
+            </ListItem>
+
+            {/* Group product variants — when on, variants live under a single
+                product row; when off, each variant becomes its own table row so
+                sorting/filtering apply across all variants (see ResultsTable). */}
+            <ListItem className={styles['settings-panel__helper-on-hover']}>
+              <ListItemText
+                primary={i18n('settings_group_product_variants')}
+                secondary={i18n('settings_group_product_variants_desc')}
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={currentSettings.groupProductVariants ?? true}
+                    onChange={handleSwitchChange}
+                    name="groupProductVariants"
                     disabled={isPending}
                   />
                 }

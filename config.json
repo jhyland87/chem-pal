@@ -13,6 +13,7 @@
     "fontSize": "medium",
     "openInTab": true,
     "autoHideEmptyColumns": true,
+    "groupProductVariants": true,
     "theme": "light",
     "excludeNonShippingSuppliers": true,
     "hideRestrictedProducts": true,

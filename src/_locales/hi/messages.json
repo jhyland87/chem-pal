@@ -573,6 +573,14 @@
     "message": "वर्तमान खोज के लिए जिन परिणाम कॉलमों में कोई डेटा नहीं है, उन्हें स्वचालित रूप से छिपाएँ।",
     "description": "Setting description."
   },
+  "settings_group_product_variants": {
+    "message": "उत्पाद वेरिएंट समूहित करें",
+    "description": "Setting label."
+  },
+  "settings_group_product_variants_desc": {
+    "message": "चालू होने पर, किसी उत्पाद के वेरिएंट उसकी पंक्ति के अंतर्गत समूहित होते हैं। इसे बंद करें ताकि प्रत्येक वेरिएंट को अपनी अलग पंक्ति मिले, जिससे छँटाई और फ़िल्टरिंग सभी वेरिएंट पर लागू हो।",
+    "description": "Setting description."
+  },
   "settings_excluded_empty": {
     "message": "कोई बहिष्कृत उत्पाद नहीं।",
     "description": "Empty-state text."
@@ -827,6 +835,10 @@
   "product_detail_variants_currency": {
     "message": "विकल्प ($currency$)",
     "placeholders": { "currency": { "content": "$1" } }
+  },
+  "product_detail_parent_product": {
+    "message": "मूल उत्पाद",
+    "description": "Label linking an ungrouped variant row back to its main product."
   },
   "product_detail_store_only_ebay": {
     "message": "अपनी वेबसाइट की तुलना में अपने eBay स्टोर से कम प्रतिबंधों के साथ शिपिंग करता है।",

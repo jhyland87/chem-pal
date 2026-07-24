@@ -420,6 +420,15 @@ declare global {
      * @example 0
      */
     _id?: number;
+
+    /**
+     * Display-only back-reference to the main product, set on flattened variant
+     * rows when the "group product variants" setting is off (see
+     * `flattenProductVariants`). Lets the detail panel link back to the parent
+     * instead of listing variants. Never set by suppliers, never persisted or
+     * exported.
+     */
+    parentProduct?: { title: string; url: string; permalink?: string };
   };
 
   /**

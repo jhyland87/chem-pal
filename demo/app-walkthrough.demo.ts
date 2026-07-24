@@ -33,6 +33,25 @@ const ABORT_AFTER_RESULTS = 10;
 const UNIVERSAL_CLICK_DELAY = 200;
 
 /**
+ * Opens the options drawer and expands its Display settings section. The drawer
+ * remounts on each open, so the Display accordion always starts collapsed and a
+ * single click expands it. Shared by the variant-grouping demo's off/on toggles.
+ * @param page - The Playwright page driving the demo.
+ * @returns Resolves once the Display section is expanded.
+ * @source
+ */
+async function openDisplaySettings(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Open options' }).click({ delay: UNIVERSAL_CLICK_DELAY });
+  await page.waitForTimeout(UNIVERSAL_CLICK_DELAY);
+  const displaySection = page
+    .locator('#drawer-tabpanel-2')
+    .getByRole('button', { name: 'Display' });
+  await expect(displaySection, 'Display section should be visible').toBeVisible({ timeout: 5_000 });
+  await displaySection.click({ delay: UNIVERSAL_CLICK_DELAY });
+  await page.waitForTimeout(700);
+}
+
+/**
  * Polls the loading backdrop's status line ("Found N results from M suppliers")
  * until it reports at least `target` results, so the demo's abort fires on real
  * progress rather than a fixed wait. Gives up quietly once `timeoutMs` elapses —
@@ -289,7 +308,7 @@ test(
     await fireHotkeyEvent(page, 'chempal:collapse-all-rows', ['⌘', '⇧', 'C']);
     await page.waitForTimeout(1500);
 
-    // --- Column visibility: make sure PubChem + CAS are shown, then point them out ---
+    // --- Column visibility: make sure PubChem + CAS + Unit Price are shown ---
     const columnsButton = page.getByRole('button', { name: 'Show or hide columns' });
     await highlight(columnsButton);
     await showDemoPopover(page, columnsButton, 'Show or hide any column');
@@ -298,8 +317,9 @@ test(
     await clearHighlight(columnsButton);
     await columnsButton.click({ delay: UNIVERSAL_CLICK_DELAY });
 
-    // Ensure the PubChem and CAS columns are visible (check them if unchecked).
-    for (const col of ['PubChem', 'CAS', 'Purity']) {
+    // Ensure the PubChem, CAS, Purity, and Unit Price columns are visible (check
+    // them if unchecked). Unit Price is used by the variant-ungrouping demo below.
+    for (const col of ['PubChem', 'CAS', 'Purity', 'Unit Price']) {
       const toggle = page.getByRole('checkbox', { name: col, exact: true });
       if ((await toggle.count()) > 0 && !(await toggle.first().isChecked())) {
         await toggle.first().click({ delay: UNIVERSAL_CLICK_DELAY });
@@ -370,6 +390,73 @@ test(
       console.warn('[demo] no CAS cell to highlight:', error);
       await closeDemoPopover(page);
     }
+
+    // --- Ungroup variants, then sort by unit price ---
+    // Variants normally nest under one product row (shown in the detail panel).
+    // Turning off "Group product variants" gives each variant its own row, so a
+    // Unit Price sort ranks every size across every supplier at once. Grouping is
+    // restored at the end so the variant-detail walkthrough below still applies.
+    await openDisplaySettings(page);
+    const groupVariantsSwitch = page
+      .locator('#drawer-tabpanel-2 li')
+      .filter({ hasText: 'Group product variants' })
+      .getByRole('checkbox');
+    await expect(groupVariantsSwitch, 'Group-variants switch should be visible').toBeVisible({
+      timeout: 5_000,
+    });
+    await groupVariantsSwitch.scrollIntoViewIfNeeded();
+    await highlight(groupVariantsSwitch);
+    await showDemoPopover(
+      page,
+      groupVariantsSwitch,
+      'Turn off grouping to give every variant its own row',
+    );
+    await page.waitForTimeout(1600);
+    await groupVariantsSwitch.click({ delay: UNIVERSAL_CLICK_DELAY });
+    await page.waitForTimeout(1200);
+    await closeDemoPopover(page);
+    await clearHighlight(groupVariantsSwitch);
+    // Close the drawer, back to the table (now one row per variant).
+    await page.mouse.click(30, 400, { button: 'left', delay: UNIVERSAL_CLICK_DELAY });
+    await page.waitForTimeout(800);
+
+    // Sort by Unit Price — every variant is its own row, so this ranks all sizes.
+    const unitPriceHeader = page.getByRole('columnheader', { name: 'Unit Price', exact: true });
+    await expect(unitPriceHeader, 'Unit Price column header should be visible').toBeVisible({
+      timeout: 5_000,
+    });
+    await unitPriceHeader.scrollIntoViewIfNeeded();
+    await highlight(unitPriceHeader);
+    await showDemoPopover(
+      page,
+      unitPriceHeader,
+      'Sort by unit price to compare every size across suppliers',
+    );
+    await page.waitForTimeout(1400);
+    await closeDemoPopover(page);
+    await page.waitForTimeout(UNIVERSAL_CLICK_DELAY);
+    // Click twice: the first click sorts unit price highest-first, the second
+    // flips it to lowest-first so the cheapest per-unit options rise to the top.
+    await unitPriceHeader.click({ delay: UNIVERSAL_CLICK_DELAY });
+    await page.waitForTimeout(UNIVERSAL_CLICK_DELAY);
+    await unitPriceHeader.click({ delay: UNIVERSAL_CLICK_DELAY });
+    await page.waitForTimeout(UNIVERSAL_CLICK_DELAY);
+    await clearHighlight(unitPriceHeader);
+    await page.screenshot({
+      path: path.join(screenshotDir, 'walkthrough-ungrouped-unit-price.png'),
+    });
+    await page.waitForTimeout(800);
+
+    // Restore grouping so the variant-detail walkthrough below shows nested variants.
+    await openDisplaySettings(page);
+    await page
+      .locator('#drawer-tabpanel-2 li')
+      .filter({ hasText: 'Group product variants' })
+      .getByRole('checkbox')
+      .click({ delay: UNIVERSAL_CLICK_DELAY });
+    await page.waitForTimeout(1000);
+    await page.mouse.click(30, 400, { button: 'left', delay: UNIVERSAL_CLICK_DELAY });
+    await page.waitForTimeout(800);
 
     // --- Column filters ---
     const filterButton = page.getByRole('button', { name: 'Toggle column filters' });
