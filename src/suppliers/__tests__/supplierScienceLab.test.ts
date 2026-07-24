@@ -179,20 +179,50 @@ describe('SupplierScienceLab identifier search', () => {
       .mockResolvedValue(undefined as never);
 
   // ScienceLab can't search by identifier (supportsCAS/Formula/SMILES default
-  // false), so a CAS/formula query must be matched by the factory-resolved name.
+  // false), so a CAS/formula query must be matched by the factory-resolved names.
   it.each(['Na6O18P6', '10124-56-8'])(
     'matches the resolved chemical name for identifier query %s',
     async (raw) => {
       const supplier = new SupplierScienceLab(raw);
-      // Stand in for SupplierFactory's PubChem resolution.
-      supplier.setResolvedStructures(new Map([[raw, { name: 'Hexasodium hexametaphosphate' }]]));
+      // Stand in for SupplierFactory's PubChem resolution — the PubChem Title
+      // ("Hexasodium…") is a mediocre match, but a cleaned synonym is a perfect one.
+      supplier.setResolvedStructures(
+        new Map([
+          [
+            raw,
+            {
+              name: 'Hexasodium hexametaphosphate',
+              names: ['Hexasodium hexametaphosphate', 'Sodium hexametaphosphate'],
+            },
+          ],
+        ]),
+      );
       mockCatalog(supplier);
 
       const results = await (supplier as unknown as ScienceLabInternals).queryProducts(raw, 15);
 
-      expect(results?.[0]?.dump().title).toBe('sodium hexametaphosphate anhydrous');
+      const top = results?.[0]?.dump();
+      expect(top?.title).toBe('sodium hexametaphosphate anhydrous');
+      // Multi-candidate scoring picks the best-matching name ("Sodium
+      // hexametaphosphate" → 100), not the marginal Title ("Hexasodium…" → 81).
+      expect(top?.matchPercentage ?? 0).toBeGreaterThanOrEqual(95);
     },
   );
+
+  it('still matches with only a single resolved name (no synonyms)', async () => {
+    const supplier = new SupplierScienceLab('Na6O18P6');
+    supplier.setResolvedStructures(
+      new Map([['Na6O18P6', { name: 'Hexasodium hexametaphosphate' }]]),
+    );
+    mockCatalog(supplier);
+
+    const results = await (supplier as unknown as ScienceLabInternals).queryProducts(
+      'Na6O18P6',
+      15,
+    );
+
+    expect(results?.[0]?.dump().title).toBe('sodium hexametaphosphate anhydrous');
+  });
 
   it('ignores the resolved map for a plain name query', async () => {
     const supplier = new SupplierScienceLab('sodium hexametaphosphate');

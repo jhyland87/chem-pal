@@ -104,10 +104,13 @@ export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> im
     this.logger.log('queryProducts:', { query, limit });
     localStorage.setItem('display', 'list');
 
+    // Loudwolf's storefront only does keyword search and can't understand a CAS/formula/
+    // SMILES identifier (all its supports* flags are off), so search by the resolved
+    // chemical name; effectiveQuery is the raw query for a plain name.
     const searchResponse = await this.httpGetHtml({
       path: '/storefront/index.php',
       params: {
-        search: encodeURIComponent(query),
+        search: encodeURIComponent(this.effectiveQuery),
         route: 'product/search',
         limit: 100,
       },

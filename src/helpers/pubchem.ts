@@ -248,9 +248,13 @@ export const getCidByName: (name: string) => Promise<PubChemCID | undefined> = w
  * @source
  */
 async function getCidByFormulaUncached(formula: string): Promise<PubChemCID | undefined> {
+  // PubChem's fastformula search wants plain digits, but a display-formatted formula may use
+  // subscripts (Na₆O₁₈P₆ → Na6O18P6). Inlined rather than importing `subscriptToAscii` from
+  // `@/helpers/science` to avoid a pubchem→science→smiles→pubchem import cycle.
+  const ascii = formula.replace(/[₀-₉]/g, (c) => String(c.charCodeAt(0) - 0x2080));
   try {
     const response = await fetch(
-      `${PUG_REST_BASE}/compound/fastformula/${encodeURIComponent(formula)}/cids/JSON?MaxRecords=1`,
+      `${PUG_REST_BASE}/compound/fastformula/${encodeURIComponent(ascii)}/cids/JSON?MaxRecords=1`,
     );
     if (!response.ok) return undefined;
     const data = await response.json();
@@ -281,35 +285,108 @@ export const getCidByFormula: (formula: string) => Promise<PubChemCID | undefine
 );
 
 /**
- * Resolves a chemical identifier (CAS number or molecular formula) to a human-readable chemical
- * name via PubChem — the compound's Title (e.g. `"Hexasodium hexametaphosphate"`). Used to let
- * suppliers that can only search by name still answer identifier queries: the identifier is
- * converted to a name, and that name is searched instead. SMILES is handled separately by
- * `resolveSmiles` in `@/helpers/smiles`.
- * @category Science Helpers
- * @param term - The raw identifier (a CAS number or a molecular formula)
- * @param termType - Which kind of identifier `term` is
- * @returns The resolved name (and the CAS, for a CAS query), or undefined when unresolved
+ * How many candidate names {@link resolveIdentifierNames} keeps. Enough to reach a common
+ * name even when brand/registry synonyms rank above it, without ballooning the per-item
+ * fuzzy-scoring cost.
+ * @source
+ */
+const MAX_CANDIDATE_NAMES = 12;
+
+/**
+ * Cleans a PubChem synonym into a usable search-name candidate, or rejects it. Strips a
+ * trailing parenthetical formula/registry suffix (so `Sodium hexametaphosphate (Na6P6O18)`
+ * becomes `Sodium hexametaphosphate`) and drops registry-style codes — a CAS number, or an
+ * all-caps/no-lowercase token such as `EINECS 233-343-1` or `N40N91DW96` — along with
+ * anything too short, too long, or lacking a letter.
+ * @param raw - A raw PubChem synonym or Title
+ * @returns The cleaned name, or undefined when it isn't a usable common name
  * @example
  * ```typescript
- * await resolveIdentifierName("10124-56-8", "cas"); // { name: "Hexasodium hexametaphosphate", cas: ["10124-56-8"] }
- * await resolveIdentifierName("Na6O18P6", "formula"); // { name: "Hexasodium hexametaphosphate" }
+ * cleanCandidateName("Sodium hexametaphosphate (Na6P6O18)"); // "Sodium hexametaphosphate"
+ * cleanCandidateName("EINECS 233-343-1"); // undefined
  * ```
  * @source
  */
-export async function resolveIdentifierName(
+function cleanCandidateName(raw: string): string | undefined {
+  const name = raw.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  if (name.length < 3 || name.length > 60) {
+    return undefined;
+  }
+  // A registry code (EINECS/UNII/HSDB/FEMA/EC numbers, "N40N91DW96", …) has no lowercase
+  // letter; a real common name does. Also reject bare CAS numbers and leading-digit tokens.
+  if (!/[a-z]/.test(name) || isCAS(name) || /^\d/.test(name)) {
+    return undefined;
+  }
+  return name;
+}
+
+/**
+ * Builds the ranked, deduped list of candidate search names from a compound's Title and its
+ * popularity-ranked synonyms (each via {@link cleanCandidateName}), capped at
+ * {@link MAX_CANDIDATE_NAMES}. The Title leads; synonyms follow in popularity order.
+ * @param title - The compound Title (may be undefined)
+ * @param synonyms - The compound's popularity-ranked synonyms (may be undefined)
+ * @returns The candidate names, best first (empty when none are usable)
+ * @example
+ * ```typescript
+ * buildCandidateNames("Hexasodium hexametaphosphate", ["Calgon S", "Sodium hexametaphosphate (Na6P6O18)"]);
+ * // ["Hexasodium hexametaphosphate", "Calgon S", "Sodium hexametaphosphate"]
+ * ```
+ * @source
+ */
+function buildCandidateNames(title: string | undefined, synonyms: string[] | undefined): string[] {
+  const names: string[] = [];
+  const seen = new Set<string>();
+  for (const raw of [title, ...(synonyms ?? [])]) {
+    if (names.length >= MAX_CANDIDATE_NAMES) {
+      break;
+    }
+    const cleaned = raw ? cleanCandidateName(raw) : undefined;
+    if (!cleaned || seen.has(cleaned.toLowerCase())) {
+      continue;
+    }
+    seen.add(cleaned.toLowerCase());
+    names.push(cleaned);
+  }
+  return names;
+}
+
+/**
+ * Resolves a chemical identifier (CAS number or molecular formula) to a ranked list of
+ * human-readable chemical-name candidates via PubChem — the compound's Title plus its cleaned
+ * popularity-ranked synonyms. Used to let suppliers that can only search by name answer
+ * identifier queries: the identifier is converted to names, and a product is matched against
+ * whichever candidate scores best (so e.g. "Sodium hexametaphosphate" is reached even when the
+ * Title is "Hexasodium hexametaphosphate"). SMILES is handled separately by `resolveSmiles` in
+ * `@/helpers/smiles`.
+ * @category Science Helpers
+ * @param term - The raw identifier (a CAS number or a molecular formula)
+ * @param termType - Which kind of identifier `term` is
+ * @returns The candidate names (and the CAS, for a CAS query), or undefined when unresolved
+ * @example
+ * ```typescript
+ * await resolveIdentifierNames("10124-56-8", "cas");
+ * // { names: ["Hexasodium hexametaphosphate", "Sodium hexametaphosphate", …], cas: ["10124-56-8"] }
+ * ```
+ * @source
+ */
+export async function resolveIdentifierNames(
   term: string,
   termType: 'cas' | 'formula',
-): Promise<{ name: string; cas?: string[] } | undefined> {
+): Promise<{ names: string[]; cas?: string[] } | undefined> {
   const cid = termType === 'formula' ? await getCidByFormula(term) : await getCidByName(term);
   if (cid === undefined) {
     return undefined;
   }
-  const name = (await getCompoundProperties(cid))?.title;
-  if (!name) {
+  const [properties, synonyms] = await Promise.all([
+    getCompoundProperties(cid),
+    getSynonymsByCid(cid),
+  ]);
+  const names = buildCandidateNames(properties?.title, synonyms);
+  if (names.length === 0) {
     return undefined;
   }
-  return termType === 'cas' ? { name, cas: [term] } : { name };
+  return termType === 'cas' ? { names, cas: [term] } : { names };
 }
 
 /**
