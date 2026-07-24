@@ -3,7 +3,8 @@ Common questions and quick fixes. If none of these help, see
 
 ## Questions
 
-**Why is this a browser extension?**
+_**Why is this a browser extension?**_
+
 There are several benefits to running the search from your browser via a browser
 extension as opposed to a downloadable app, server side app or hosted web page.
 1. A hosted web page would be limited by CORS (Cross-Origin Resource Sharing)
@@ -24,13 +25,15 @@ extension as opposed to a downloadable app, server side app or hosted web page.
 
 ## Searching
 
-**My search returned no results.**
+_**My search returned no results.**_
+
 Try a different form of the query. Names vary between suppliers, so searching by
 **CAS number** often finds products a name misses. When a search is empty, ChemPal
 may also suggest a term — click the suggestion to try it. See
 [Search Types](Search-Types).
 
-**A product I know exists isn't showing up.**
+_**A product I know exists isn't showing up.**_
+
 A few possibilities:
 - The supplier that carries it might be **disabled** — check **Settings → Supplier
   Status** and the **Search Suppliers** filter.
@@ -40,12 +43,14 @@ A few possibilities:
 - The **Results Limit** (in the [Search Filters](Search-Filters) panel) may be low;
   raise it to pull more results per supplier.
 
-**My advanced query won't run / the search button is greyed out.**
+_**My advanced query won't run / the search button is greyed out.**_
+
 ChemPal shows a message under the bar explaining why — usually unbalanced
 parentheses or invalid boolean syntax. See
 [Advanced Search](Advanced-Search#when-a-query-isnt-valid).
 
-**Searches feel slow.**
+_**Searches feel slow.**_
+
 ChemPal queries many suppliers live and some sites are slower than others. To speed
 things up: lower the **Results Limit**, search **fewer suppliers**, keep
 [caching](Caching) on, or lower **Settings → Advanced → Max search time**. Results
@@ -54,33 +59,38 @@ before every supplier finishes.
 
 ## Prices & data
 
-**A price looks wrong or out of date.**
+_**A price looks wrong or out of date.**_
+
 Prices come straight from suppliers and can change anytime. You may also be seeing a
 [cached](Caching) result — click **Clear cache** (or set a **Cache TTL**) to refresh.
 Always confirm the price on the supplier's own page before buying.
 
-**A converted price seems off.**
+_**A converted price seems off.**_
+
 Currency conversion uses live exchange rates and is an estimate; you pay the
 supplier's price in their currency at checkout. See
 [Prices & Currency](Prices-and-Currency).
 
 ## Firefox
 
-**ChemPal disappeared after I restarted Firefox.**
+_**ChemPal disappeared after I restarted Firefox.**_
+
 Temporary add-ons are removed when Firefox restarts. Re-load the `.zip` via
 `about:debugging` to use it again. See [Installation](Installation). A permanently
 installable signed version isn't available yet.
 
 ## Managing your data
 
-**How do I clear things?**
+_**How do I clear things?**_
+
 - Cached results → **Settings → Cache → Clear cache** ([Caching](Caching))
 - Price history → **Settings → Price History → Clear price history** ([Price Tracking](Price-Tracking))
 - Search history → **History tab → trash icon** ([Search History](Search-History))
 - Ignored products → **Settings → Excluded Products → Clear All**
 - Everything to defaults → **Settings → Actions → Restore Defaults**
 
-**Where is my data stored? Does the developer see it?**
+_**Where is my data stored? Does the developer see it?**_
+
 It's all stored locally in your browser and never sent to the developer. See
 [Privacy](Privacy).
 
