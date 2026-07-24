@@ -43,18 +43,15 @@ describe('Pubchem', () => {
       expect(result).toBeUndefined();
     });
 
-    it('returns undefined for each distinct invalid-compound shape', async () => {
-      const badBodies = [
-        null,
-        { status: {}, total: 1 }, // missing dictionary_terms
-        { status: {}, total: 1, dictionary_terms: { compound: [] } }, // empty array
-        { status: {}, total: 1, dictionary_terms: { compound: [42] } }, // non-string entry
-        { status: {} }, // missing total
-      ];
-      for (const body of badBodies) {
-        global.fetch = vi.fn().mockResolvedValue(jsonResponse(body));
-        expect(await new Pubchem('x').getCompound()).toBeUndefined();
-      }
+    it.each([
+      null,
+      { status: {}, total: 1 }, // missing dictionary_terms
+      { status: {}, total: 1, dictionary_terms: { compound: [] } }, // empty array
+      { status: {}, total: 1, dictionary_terms: { compound: [42] } }, // non-string entry
+      { status: {} }, // missing total
+    ])('returns undefined for invalid-compound shape %j', async (body) => {
+      global.fetch = vi.fn().mockResolvedValue(jsonResponse(body));
+      expect(await new Pubchem('x').getCompound()).toBeUndefined();
     });
   });
 
@@ -84,20 +81,17 @@ describe('Pubchem', () => {
       expect(console.error).toHaveBeenCalledWith('Error fetching CID:', expect.any(Error));
     });
 
-    it('returns undefined for each distinct invalid-CID shape', async () => {
-      const badBodies = [
-        null,
-        { foo: 1 }, // missing ConceptsAndCIDs
-        { ConceptsAndCIDs: { CID: 'nope' } }, // CID not an array
-        { ConceptsAndCIDs: { CID: ['x'] } }, // non-number entry
-      ];
-      for (const body of badBodies) {
-        global.fetch = vi
-          .fn()
-          .mockResolvedValueOnce(jsonResponse(compoundBody))
-          .mockResolvedValueOnce(jsonResponse(body));
-        expect(await new Pubchem('x').getCID()).toBeUndefined();
-      }
+    it.each([
+      null,
+      { foo: 1 }, // missing ConceptsAndCIDs
+      { ConceptsAndCIDs: { CID: 'nope' } }, // CID not an array
+      { ConceptsAndCIDs: { CID: ['x'] } }, // non-number entry
+    ])('returns undefined for invalid-CID shape %j', async (body) => {
+      global.fetch = vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse(compoundBody))
+        .mockResolvedValueOnce(jsonResponse(body));
+      expect(await new Pubchem('x').getCID()).toBeUndefined();
     });
   });
 
@@ -125,13 +119,13 @@ describe('Pubchem', () => {
       expect(console.error).toHaveBeenCalledWith('Error querying SDQ agent:', expect.any(Error));
     });
 
-    it('returns undefined for each distinct invalid-SDQ shape', async () => {
-      const badBodies = [null, { foo: 1 }, { SDQOutputSet: 'nope' }];
-      for (const body of badBodies) {
+    it.each([null, { foo: 1 }, { SDQOutputSet: 'nope' }])(
+      'returns undefined for invalid-SDQ shape %j',
+      async (body) => {
         global.fetch = vi.fn().mockResolvedValue(jsonResponse(body));
         expect(await new Pubchem('x').querySdqAgent({ cid: 1 })).toBeUndefined();
-      }
-    });
+      },
+    );
   });
 
   describe('getSimpleName', () => {

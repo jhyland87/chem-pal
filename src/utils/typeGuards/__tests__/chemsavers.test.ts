@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, it } from 'vitest';
 import { isValidSearchResponse, isValidSearchResponseItem } from '../chemsavers';
 
-describe('Chemsavers TypeGuards', () => {
+describe.concurrent('Chemsavers TypeGuards', () => {
   describe('isValidSearchResponseItem', () => {
     const validProduct = {
       document: {
@@ -19,32 +19,28 @@ describe('Chemsavers TypeGuards', () => {
       },
     };
 
-    it('should return true for a valid product object', () => {
+    it('should return true for a valid product object', ({ expect }) => {
       expect(isValidSearchResponseItem(validProduct)).toBe(true);
     });
 
-    it('should return false for null', () => {
+    it('should return false for null', ({ expect }) => {
       expect(isValidSearchResponseItem(null)).toBe(false);
     });
 
-    it('should return false for non-object values', () => {
-      const nonObjectValues = [
-        'not an object',
-        123,
-        true,
-        false,
-        undefined,
-        () => {},
-        Symbol('product'),
-        [],
-      ];
-
-      nonObjectValues.forEach((value) => {
-        expect(isValidSearchResponseItem(value)).toBe(false);
-      });
+    it.for([
+      'not an object',
+      123,
+      true,
+      false,
+      undefined,
+      () => {},
+      Symbol('product'),
+      [],
+    ])('should return false for non-object value %#: %j', (value, { expect }) => {
+      expect(isValidSearchResponseItem(value)).toBe(false);
     });
 
-    it('should return false for objects missing document property', () => {
+    it('should return false for objects missing document property', ({ expect }) => {
       const noDocument = {
         // Missing document property
         CAS: '7647-14-5',
@@ -54,7 +50,7 @@ describe('Chemsavers TypeGuards', () => {
       expect(isValidSearchResponseItem(noDocument)).toBe(false);
     });
 
-    it('should return false for objects with non-object document property', () => {
+    it('should return false for objects with non-object document property', ({ expect }) => {
       const nonObjectDocument = {
         document: 'not an object',
       };
@@ -62,7 +58,7 @@ describe('Chemsavers TypeGuards', () => {
       expect(isValidSearchResponseItem(nonObjectDocument)).toBe(false);
     });
 
-    it('should return false for objects with undefined document property', () => {
+    it('should return false for objects with undefined document property', ({ expect }) => {
       const undefinedDocument = {
         document: undefined,
       };
@@ -70,119 +66,114 @@ describe('Chemsavers TypeGuards', () => {
       expect(isValidSearchResponseItem(undefinedDocument)).toBe(false);
     });
 
-    it('should return false for objects missing required document properties', () => {
-      const missingProps = [
-        {
-          document: {
-            id: 'prod_123',
-            inventoryLevel: 100,
-            name: 'Sodium Chloride',
-            product_id: 12345,
-            retailPrice: 29.99,
-            salePrice: 24.99,
-            price: 24.99,
-            sku: 'SC-500G',
-            upc: '123456789012',
-            //url: "/products/sodium-chloride",
-          },
+    it.for([
+      {
+        document: {
+          id: 'prod_123',
+          inventoryLevel: 100,
+          name: 'Sodium Chloride',
+          product_id: 12345,
+          retailPrice: 29.99,
+          salePrice: 24.99,
+          price: 24.99,
+          sku: 'SC-500G',
+          upc: '123456789012',
+          //url: "/products/sodium-chloride",
         },
-        {
-          document: {
-            CAS: '7647-14-5',
-            // Missing id
-            inventoryLevel: 100,
-            name: 'Sodium Chloride',
-            product_id: 12345,
-            retailPrice: 29.99,
-            salePrice: 24.99,
-            //price: 24.99,
-            sku: 'SC-500G',
-            upc: '123456789012',
-            url: '/products/sodium-chloride',
-          },
+      },
+      {
+        document: {
+          CAS: '7647-14-5',
+          // Missing id
+          inventoryLevel: 100,
+          name: 'Sodium Chloride',
+          product_id: 12345,
+          retailPrice: 29.99,
+          salePrice: 24.99,
+          //price: 24.99,
+          sku: 'SC-500G',
+          upc: '123456789012',
+          url: '/products/sodium-chloride',
         },
-        // ... and so on for each required property
-      ];
-
-      missingProps.forEach((product) => {
+      },
+      // ... and so on for each required property
+    ])(
+      'should return false for objects missing required document properties %#',
+      (product, { expect }) => {
         expect(isValidSearchResponseItem(product)).toBe(false);
-      });
-    });
+      },
+    );
 
-    it('should return false for objects with wrong property types', () => {
-      const wrongTypes = [
-        {
-          document: {
-            ...validProduct.document,
-            //CAS: 7647145, // Should be string
-            id: undefined,
-          },
+    it.for([
+      {
+        document: {
+          ...validProduct.document,
+          //CAS: 7647145, // Should be string
+          id: undefined,
         },
-        {
-          document: {
-            ...validProduct.document,
-            id: 123, // Should be string
-          },
+      },
+      {
+        document: {
+          ...validProduct.document,
+          id: 123, // Should be string
         },
-        {
-          document: {
-            ...validProduct.document,
-            inventoryLevel: '100', // Should be number
-          },
+      },
+      {
+        document: {
+          ...validProduct.document,
+          inventoryLevel: '100', // Should be number
         },
-        {
-          document: {
-            ...validProduct.document,
-            name: 123, // Should be string
-          },
+      },
+      {
+        document: {
+          ...validProduct.document,
+          name: 123, // Should be string
         },
-        {
-          document: {
-            ...validProduct.document,
-            product_id: '12345', // Should be number
-          },
+      },
+      {
+        document: {
+          ...validProduct.document,
+          product_id: '12345', // Should be number
         },
-        {
-          document: {
-            ...validProduct.document,
-            retailPrice: '29.99', // Should be number
-          },
+      },
+      {
+        document: {
+          ...validProduct.document,
+          retailPrice: '29.99', // Should be number
         },
-        {
-          document: {
-            ...validProduct.document,
-            salePrice: '24.99', // Should be number
-          },
+      },
+      {
+        document: {
+          ...validProduct.document,
+          salePrice: '24.99', // Should be number
         },
-        {
-          document: {
-            ...validProduct.document,
-            price: '24.99', // Should be number
-          },
+      },
+      {
+        document: {
+          ...validProduct.document,
+          price: '24.99', // Should be number
         },
-        {
-          document: {
-            ...validProduct.document,
-            sku: 123, // Should be string
-          },
+      },
+      {
+        document: {
+          ...validProduct.document,
+          sku: 123, // Should be string
         },
-        {
-          document: {
-            ...validProduct.document,
-            upc: 123456789012, // Should be string
-          },
+      },
+      {
+        document: {
+          ...validProduct.document,
+          upc: 123456789012, // Should be string
         },
-        {
-          document: {
-            ...validProduct.document,
-            url: 123, // Should be string
-          },
+      },
+      {
+        document: {
+          ...validProduct.document,
+          url: 123, // Should be string
         },
-      ];
-
-      wrongTypes.forEach((product) => {
-        expect(isValidSearchResponseItem(product)).toBe(false);
-      });
+      },
+    ])('should return false for objects with wrong property types %#', (product, { expect }) => {
+      expect(isValidSearchResponseItem(product)).toBe(false);
     });
   });
 
@@ -211,32 +202,28 @@ describe('Chemsavers TypeGuards', () => {
       ],
     };
 
-    it('should return true for a valid search response', () => {
+    it('should return true for a valid search response', ({ expect }) => {
       expect(isValidSearchResponse(validResponse)).toBe(true);
     });
 
-    it('should return false for null', () => {
+    it('should return false for null', ({ expect }) => {
       expect(isValidSearchResponse(null)).toBe(false);
     });
 
-    it('should return false for non-object values', () => {
-      const nonObjectValues = [
-        'not an object',
-        123,
-        true,
-        false,
-        undefined,
-        () => {},
-        Symbol('response'),
-        [],
-      ];
-
-      nonObjectValues.forEach((value) => {
-        expect(isValidSearchResponse(value)).toBe(false);
-      });
+    it.for([
+      'not an object',
+      123,
+      true,
+      false,
+      undefined,
+      () => {},
+      Symbol('response'),
+      [],
+    ])('should return false for non-object value %#: %j', (value, { expect }) => {
+      expect(isValidSearchResponse(value)).toBe(false);
     });
 
-    it('should return false for objects missing results property', () => {
+    it('should return false for objects missing results property', ({ expect }) => {
       const noResults = {
         // Missing results property
       };
@@ -244,7 +231,7 @@ describe('Chemsavers TypeGuards', () => {
       expect(isValidSearchResponse(noResults)).toBe(false);
     });
 
-    it('should return false for objects with non-array results', () => {
+    it('should return false for objects with non-array results', ({ expect }) => {
       const nonArrayResults = {
         results: 'not an array',
       };
@@ -252,7 +239,7 @@ describe('Chemsavers TypeGuards', () => {
       expect(isValidSearchResponse(nonArrayResults)).toBe(false);
     });
 
-    it('should return false for objects with empty results array', () => {
+    it('should return false for objects with empty results array', ({ expect }) => {
       const emptyResults = {
         results: [],
       };
@@ -260,7 +247,7 @@ describe('Chemsavers TypeGuards', () => {
       expect(isValidSearchResponse(emptyResults)).toBe(false);
     });
 
-    it('should return false for objects with missing hits property', () => {
+    it('should return false for objects with missing hits property', ({ expect }) => {
       const noHits = {
         results: [
           {
@@ -272,7 +259,7 @@ describe('Chemsavers TypeGuards', () => {
       expect(isValidSearchResponse(noHits)).toBe(false);
     });
 
-    it('should return false for objects with non-array hits', () => {
+    it('should return false for objects with non-array hits', ({ expect }) => {
       const nonArrayHits = {
         results: [
           {
@@ -284,65 +271,61 @@ describe('Chemsavers TypeGuards', () => {
       expect(isValidSearchResponse(nonArrayHits)).toBe(false);
     });
 
-    it('should return false for objects with invalid hits', () => {
-      const invalidHits = [
-        {
-          results: [
-            {
-              hits: [
-                {
-                  // Invalid hit (missing document)
+    it.for([
+      {
+        results: [
+          {
+            hits: [
+              {
+                // Invalid hit (missing document)
+              },
+            ],
+          },
+        ],
+      },
+      {
+        results: [
+          {
+            hits: [
+              {
+                document: {
+                  // Invalid document (missing required properties)
+                  name: 'Sodium Chloride',
                 },
-              ],
-            },
-          ],
-        },
-        {
-          results: [
-            {
-              hits: [
-                {
-                  document: {
-                    // Invalid document (missing required properties)
-                    name: 'Sodium Chloride',
-                  },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        results: [
+          {
+            hits: [
+              {
+                document: {
+                  // Invalid document (wrong property types)
+                  CAS: 7647145,
+                  id: 'prod_123',
+                  inventoryLevel: 100,
+                  name: 'Sodium Chloride',
+                  productId: 12345,
+                  retailPrice: 29.99,
+                  salePrice: 24.99,
+                  price: 24.99,
+                  sku: 'SC-500G',
+                  upc: '123456789012',
+                  url: '/products/sodium-chloride',
                 },
-              ],
-            },
-          ],
-        },
-        {
-          results: [
-            {
-              hits: [
-                {
-                  document: {
-                    // Invalid document (wrong property types)
-                    CAS: 7647145,
-                    id: 'prod_123',
-                    inventoryLevel: 100,
-                    name: 'Sodium Chloride',
-                    productId: 12345,
-                    retailPrice: 29.99,
-                    salePrice: 24.99,
-                    price: 24.99,
-                    sku: 'SC-500G',
-                    upc: '123456789012',
-                    url: '/products/sodium-chloride',
-                  },
-                },
-              ],
-            },
-          ],
-        },
-      ];
-
-      invalidHits.forEach((response) => {
-        expect(isValidSearchResponse(response)).toBe(false);
-      });
+              },
+            ],
+          },
+        ],
+      },
+    ])('should return false for objects with invalid hits %#', (response, { expect }) => {
+      expect(isValidSearchResponse(response)).toBe(false);
     });
 
-    it('should handle multiple valid hits in the response', () => {
+    it('should handle multiple valid hits in the response', ({ expect }) => {
       const multipleHits = {
         results: [
           {
@@ -385,7 +368,7 @@ describe('Chemsavers TypeGuards', () => {
       expect(isValidSearchResponse(multipleHits)).toBe(true);
     });
 
-    it('should return false if any hit in the response is invalid', () => {
+    it('should return false if any hit in the response is invalid', ({ expect }) => {
       const mixedHits = {
         results: [
           {

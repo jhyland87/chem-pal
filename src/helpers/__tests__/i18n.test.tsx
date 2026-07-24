@@ -70,40 +70,52 @@ describe('reactive i18n', () => {
   });
 });
 
-describe('locale key parity', () => {
-  it('ships more than one locale to compare', () => {
+// Pure, read-only checks over the statically loaded locale tables — no rendering
+// and no shared mutable state, so this block is safe to run concurrently.
+describe.concurrent('locale key parity', () => {
+  it('ships more than one locale to compare', ({ expect }) => {
     expect(otherLocales.length).toBeGreaterThan(0);
     expect(getAvailableLocales()).toEqual(
       expect.arrayContaining([REFERENCE_LOCALE, ...otherLocales]),
     );
   });
 
-  it.each(otherLocales)('%s defines exactly the same keys as en (no missing, no extra)', (code) => {
-    const keys = Object.keys(localeTables[code]).sort();
-    const missing = referenceKeys.filter((key) => !(key in localeTables[code]));
-    const extra = keys.filter((key) => !(key in localeTables[REFERENCE_LOCALE]));
+  // Object rows so `.for` exposes the TestContext (and its `expect`) as the
+  // second arg — `.each` does not pass context, which concurrent tests need.
+  const localeRows = otherLocales.map((code) => ({ code }));
 
-    expect({ locale: code, missing, extra }).toEqual({ locale: code, missing: [], extra: [] });
-    expect(keys).toEqual(referenceKeys);
-  });
+  it.for(localeRows)(
+    '$code defines exactly the same keys as en (no missing, no extra)',
+    ({ code }, { expect }) => {
+      const keys = Object.keys(localeTables[code]).sort();
+      const missing = referenceKeys.filter((key) => !(key in localeTables[code]));
+      const extra = keys.filter((key) => !(key in localeTables[REFERENCE_LOCALE]));
 
-  it.each(otherLocales)('%s has non-empty messages for every key', (code) => {
+      expect({ locale: code, missing, extra }).toEqual({ locale: code, missing: [], extra: [] });
+      expect(keys).toEqual(referenceKeys);
+    },
+  );
+
+  it.for(localeRows)('$code has non-empty messages for every key', ({ code }, { expect }) => {
     const empty = referenceKeys.filter((key) => !localeTables[code][key]?.message?.trim());
     expect({ locale: code, empty }).toEqual({ locale: code, empty: [] });
   });
 
-  it.each(otherLocales)("%s keeps each key's placeholders block identical to en", (code) => {
-    const mismatched = referenceKeys.filter(
-      (key) =>
-        JSON.stringify(localeTables[REFERENCE_LOCALE][key].placeholders ?? null) !==
-        JSON.stringify(localeTables[code][key].placeholders ?? null),
-    );
-    expect({ locale: code, mismatched }).toEqual({ locale: code, mismatched: [] });
-  });
+  it.for(localeRows)(
+    "$code keeps each key's placeholders block identical to en",
+    ({ code }, { expect }) => {
+      const mismatched = referenceKeys.filter(
+        (key) =>
+          JSON.stringify(localeTables[REFERENCE_LOCALE][key].placeholders ?? null) !==
+          JSON.stringify(localeTables[code][key].placeholders ?? null),
+      );
+      expect({ locale: code, mismatched }).toEqual({ locale: code, mismatched: [] });
+    },
+  );
 
-  it.each(otherLocales)(
-    "%s only uses $tokens$ that are declared in that key's placeholders",
-    (code) => {
+  it.for(localeRows)(
+    "$code only uses placeholder tokens declared in that key's placeholders",
+    ({ code }, { expect }) => {
       const orphans: string[] = [];
       for (const key of referenceKeys) {
         const entry = localeTables[code][key];

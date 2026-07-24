@@ -59,7 +59,7 @@ describe('SupplierFactory.supplierShipsTo', () => {
     const map = SupplierFactory.supplierShipsTo('US');
     expect(Object.keys(map)).toEqual(Object.keys(suppliers));
     for (const value of Object.values(map)) {
-      expect(typeof value).toBe('boolean');
+      expect(value).toBeTypeOf('boolean');
     }
   });
 

@@ -29,8 +29,9 @@ describe('requiredHosts', () => {
       expect(instance.requiredHosts).toContain(`${instance.baseURL}/*`);
     });
 
-    it('always returns at least one entry (the baseURL)', () => {
-      for (const SupplierClass of Object.values(suppliers)) {
+    it.each(Object.entries(suppliers))(
+      '%s always returns at least one entry (the baseURL)',
+      (_name, SupplierClass) => {
         const Cls = SupplierClass as unknown as new (
           query: string,
           limit: number,
@@ -38,11 +39,12 @@ describe('requiredHosts', () => {
         ) => SupplierBase<unknown, Product>;
         const instance = new Cls('', 1, controller);
         expect(instance.requiredHosts.length).toBeGreaterThanOrEqual(1);
-      }
-    });
+      },
+    );
 
-    it('every entry is a valid chrome origin pattern', () => {
-      for (const SupplierClass of Object.values(suppliers)) {
+    it.each(Object.entries(suppliers))(
+      '%s every entry is a valid chrome origin pattern',
+      (_name, SupplierClass) => {
         const Cls = SupplierClass as unknown as new (
           query: string,
           limit: number,
@@ -52,8 +54,8 @@ describe('requiredHosts', () => {
         for (const host of instance.requiredHosts) {
           expect(host).toMatch(/^https:\/\/.+\/\*$/);
         }
-      }
-    });
+      },
+    );
   });
 
   describe('auto-detects apiURL property', () => {
@@ -120,7 +122,7 @@ describe('SupplierFactory.supplierRequiredHosts', () => {
       expect(Array.isArray(hosts), `${name} hosts should be an array`).toBe(true);
       expect(hosts.length, `${name} should have at least one host`).toBeGreaterThanOrEqual(1);
       for (const host of hosts) {
-        expect(typeof host).toBe('string');
+        expect(host).toBeTypeOf('string');
       }
     }
   });

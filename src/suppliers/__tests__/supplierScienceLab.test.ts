@@ -84,14 +84,14 @@ const runGetProductData = async (pageFixture: string, url: string) => {
   return builder.dump();
 };
 
-describe('SupplierScienceLab slugFromUrl', () => {
-  it('returns the root-level slug for a product URL', () => {
+describe.concurrent('SupplierScienceLab slugFromUrl', () => {
+  it('returns the root-level slug for a product URL', ({ expect }) => {
     expect(slugFromUrl('https://sciencelab.com/isopropyl-alcohol-70-v-v/')).toBe(
       'isopropyl-alcohol-70-v-v',
     );
   });
 
-  it('rejects nested (category/CMS) URLs', () => {
+  it('rejects nested (category/CMS) URLs', ({ expect }) => {
     expect(slugFromUrl('https://sciencelab.com/brands/acme/')).toBeNull();
     expect(slugFromUrl('not a url')).toBeNull();
   });
@@ -354,45 +354,43 @@ describe('SupplierScienceLab getProductData', () => {
     },
   ];
 
-  for (const c of cases) {
-    it(`parses ${c.name}`, async () => {
-      const dump = await runGetProductData(c.fixture, c.url);
+  it.for(cases)('parses $name', async (c) => {
+    const dump = await runGetProductData(c.fixture, c.url);
 
-      // Real store title replaces the humanized guess.
-      expect(dump.title).toBe(c.title);
-      expect(dump.sku).toBe(c.sku);
-      expect(dump.currencyCode).toBe('USD');
-      expect(dump.currencySymbol).toBe('$');
-      expect(dump.availability).toBeTruthy();
-      // Base price is the smallest size (ld+json minPrice / price), never clobbered.
-      expect(dump.price).toBe(c.price);
-      expect(dump.cas).toBe(c.cas);
-      expect(dump.formula).toBe(c.formula);
-      expect(dump.moleweight).toBe(c.moleweight);
-      expect(dump.grade).toBe(c.grade);
-      expect(dump.concentration).toBe(c.concentration);
-      // "Special Considerations" is captured as an informational note only —
-      // never restrictedDelivery/buyerRestricted, which would hide the product
-      // via canUserBuy.
-      expect(dump.purchaseRestriction?.restrictedDelivery).toBeUndefined();
-      expect(dump.purchaseRestriction?.buyerRestricted).toBeUndefined();
-      if (c.restriction) {
-        expect(dump.purchaseRestriction?.note).toContain('hazmat');
-      }
-      // Base quantity anchored to the smallest size variant.
-      const baseQty = parseQuantity(c.baseSize);
-      expect(dump.quantity).toBe(baseQty?.quantity);
-      expect(dump.uom?.toLowerCase()).toBe(baseQty?.uom?.toLowerCase());
-      // Every size variant, priced via the product-attributes endpoint.
-      expect(dump.variants?.map((v) => v.title)).toEqual(c.variants.map((v) => v.title));
-      expect(dump.variants?.map((v) => v.price)).toEqual(c.variants.map((v) => v.price));
-      expect(isMinimalProduct(dump)).toBe(true);
-      // Regression guard: the Special Considerations note must not make the
-      // product un-buyable — otherwise canUserBuy hides every ScienceLab product.
-      expect(canUserBuy(dump as unknown as Variant, 'US')).toBe(true);
-      expect(canUserBuy(dump as unknown as Variant, undefined)).toBe(true);
-    });
-  }
+    // Real store title replaces the humanized guess.
+    expect(dump.title).toBe(c.title);
+    expect(dump.sku).toBe(c.sku);
+    expect(dump.currencyCode).toBe('USD');
+    expect(dump.currencySymbol).toBe('$');
+    expect(dump.availability).toBeTruthy();
+    // Base price is the smallest size (ld+json minPrice / price), never clobbered.
+    expect(dump.price).toBe(c.price);
+    expect(dump.cas).toBe(c.cas);
+    expect(dump.formula).toBe(c.formula);
+    expect(dump.moleweight).toBe(c.moleweight);
+    expect(dump.grade).toBe(c.grade);
+    expect(dump.concentration).toBe(c.concentration);
+    // "Special Considerations" is captured as an informational note only —
+    // never restrictedDelivery/buyerRestricted, which would hide the product
+    // via canUserBuy.
+    expect(dump.purchaseRestriction?.restrictedDelivery).toBeUndefined();
+    expect(dump.purchaseRestriction?.buyerRestricted).toBeUndefined();
+    if (c.restriction) {
+      expect(dump.purchaseRestriction?.note).toContain('hazmat');
+    }
+    // Base quantity anchored to the smallest size variant.
+    const baseQty = parseQuantity(c.baseSize);
+    expect(dump.quantity).toBe(baseQty?.quantity);
+    expect(dump.uom?.toLowerCase()).toBe(baseQty?.uom?.toLowerCase());
+    // Every size variant, priced via the product-attributes endpoint.
+    expect(dump.variants?.map((v) => v.title)).toEqual(c.variants.map((v) => v.title));
+    expect(dump.variants?.map((v) => v.price)).toEqual(c.variants.map((v) => v.price));
+    expect(isMinimalProduct(dump)).toBe(true);
+    // Regression guard: the Special Considerations note must not make the
+    // product un-buyable — otherwise canUserBuy hides every ScienceLab product.
+    expect(canUserBuy(dump as unknown as Variant, 'US')).toBe(true);
+    expect(canUserBuy(dump as unknown as Variant, undefined)).toBe(true);
+  });
 
   it('falls back to the product:price:amount meta tag when the offer has no price', async () => {
     const supplier = makeSupplier() as unknown as ScienceLabInternals;

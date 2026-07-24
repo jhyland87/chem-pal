@@ -44,7 +44,7 @@ describe('Tanstack Mixins', () => {
       // the call and fall back to a string label instead of crashing.
       const column = createMockColumn('price', ({ table }: { table: { id: string } }) => table.id);
       expect(() => getHeaderText(column)).not.toThrow();
-      expect(typeof getHeaderText(column)).toBe('string');
+      expect(getHeaderText(column)).toBeTypeOf('string');
     });
   });
 

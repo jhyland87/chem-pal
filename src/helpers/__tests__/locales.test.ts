@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, it } from 'vitest';
 
 /**
  * Guards locale parity: `en` is the source of truth, and every other
@@ -37,8 +37,8 @@ function messageTokens(message: string): string[] {
   return [...message.matchAll(/\$(\w+)\$/g)].map((m) => m[1].toLowerCase()).sort();
 }
 
-describe('locale message tables', () => {
-  it('loads the source locale and at least one translation', () => {
+describe.concurrent('locale message tables', () => {
+  it('loads the source locale and at least one translation', ({ expect }) => {
     // Guards the glob itself: if the path or bundler behavior changed, every
     // it.each below would silently register zero cases and the suite would pass.
     expect(source).toBeDefined();
@@ -49,26 +49,26 @@ describe('locale message tables', () => {
   describe.each(translations)('%s', (code, table) => {
     const sourceKeys = Object.keys(source ?? {});
 
-    it('has no keys missing from en', () => {
+    it('has no keys missing from en', ({ expect }) => {
       const missing = sourceKeys.filter((key) => !(key in table));
       expect(missing, `${code} is missing ${missing.length} key(s) present in en`).toEqual([]);
     });
 
-    it('has no keys that en does not', () => {
+    it('has no keys that en does not', ({ expect }) => {
       // Catches a key that was renamed in en but left behind here, which would
       // otherwise linger as dead weight forever.
       const orphaned = Object.keys(table).filter((key) => !(key in (source ?? {})));
       expect(orphaned, `${code} has ${orphaned.length} key(s) not in en`).toEqual([]);
     });
 
-    it('has a non-empty message for every key', () => {
+    it('has a non-empty message for every key', ({ expect }) => {
       const blank = Object.entries(table)
         .filter(([, entry]) => typeof entry?.message !== 'string' || entry.message.trim() === '')
         .map(([key]) => key);
       expect(blank, `${code} has ${blank.length} blank message(s)`).toEqual([]);
     });
 
-    it('declares the same placeholders as en', () => {
+    it('declares the same placeholders as en', ({ expect }) => {
       // A translation that drops a placeholder declaration breaks substitution at
       // runtime — the value renders as a literal "$count$" or vanishes.
       const mismatched = sourceKeys
@@ -81,7 +81,7 @@ describe('locale message tables', () => {
       expect(mismatched, `${code} placeholder declarations differ from en`).toEqual([]);
     });
 
-    it('references the same placeholder tokens in its message text', () => {
+    it('references the same placeholder tokens in its message text', ({ expect }) => {
       // Declaring a placeholder isn't enough — the translated string has to actually
       // use it, or the interpolated value never appears.
       const mismatched = sourceKeys

@@ -35,7 +35,7 @@ describe('BadgeAnimator', () => {
     }
     expect(calls[callIndex][0]).toEqual({ text: expectedText });
     if (expectCallback) {
-      expect(typeof calls[callIndex][1]).toBe('function');
+      expect(calls[callIndex][1]).toBeTypeOf('function');
     }
   };
 
@@ -209,19 +209,19 @@ describe('BadgeAnimator', () => {
   });
 
   describe('charsets', () => {
-    it('should have all predefined charsets available', () => {
-      expect(BadgeAnimator.charsets).toHaveProperty('hourglass');
-      expect(BadgeAnimator.charsets).toHaveProperty('ellipsis');
-      expect(BadgeAnimator.charsets).toHaveProperty('clock');
-      expect(BadgeAnimator.charsets).toHaveProperty('arch');
-      expect(BadgeAnimator.charsets).toHaveProperty('ball_wave');
-    });
+    it.each(['hourglass', 'ellipsis', 'clock', 'arch', 'ball_wave'])(
+      'has the %s charset available',
+      (name) => {
+        expect(BadgeAnimator.charsets).toHaveProperty(name);
+      },
+    );
 
-    it('should have non-empty arrays for each charset', () => {
-      Object.values(BadgeAnimator.charsets).forEach((charset) => {
+    it.each(Object.entries(BadgeAnimator.charsets))(
+      '%s is a non-empty array',
+      (_name, charset) => {
         expect(Array.isArray(charset)).toBe(true);
         expect(charset.length).toBeGreaterThan(0);
-      });
-    });
+      },
+    );
   });
 });

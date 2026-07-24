@@ -55,27 +55,27 @@ describe('exposeDebugApi', () => {
   it('attaches the chempal helper object to window', () => {
     exposeDebugApi();
     expect(window.chempal).toBeDefined();
-    expect(typeof window.chempal?.resolveSmiles).toBe('function');
-    expect(typeof window.chempal?.help).toBe('function');
+    expect(window.chempal?.resolveSmiles).toBeTypeOf('function');
+    expect(window.chempal?.help).toBeTypeOf('function');
     expect(window.chempal?.Cactus).toBeDefined();
   });
 
   it('exposes the IndexedDB inspection helpers', () => {
     exposeDebugApi();
-    expect(typeof window.chempal?.getProductById).toBe('function');
-    expect(typeof window.chempal?.getProductPriceHistory).toBe('function');
-    expect(typeof window.chempal?.getProductCache).toBe('function');
-    expect(typeof window.chempal?.getQueryCache).toBe('function');
-    expect(typeof window.chempal?.getSearchResults).toBe('function');
-    expect(typeof window.chempal?.getSearchHistory).toBe('function');
-    expect(typeof window.chempal?.getExcludedProducts).toBe('function');
+    expect(window.chempal?.getProductById).toBeTypeOf('function');
+    expect(window.chempal?.getProductPriceHistory).toBeTypeOf('function');
+    expect(window.chempal?.getProductCache).toBeTypeOf('function');
+    expect(window.chempal?.getQueryCache).toBeTypeOf('function');
+    expect(window.chempal?.getSearchResults).toBeTypeOf('function');
+    expect(window.chempal?.getSearchHistory).toBeTypeOf('function');
+    expect(window.chempal?.getExcludedProducts).toBeTypeOf('function');
   });
 
   it('exposes the fuzzy-filter probes', () => {
     exposeDebugApi();
-    expect(typeof window.chempal?.fuzzTest).toBe('function');
-    expect(typeof window.chempal?.astTest).toBe('function');
-    expect(typeof window.chempal?.getCachedTitles).toBe('function');
+    expect(window.chempal?.fuzzTest).toBeTypeOf('function');
+    expect(window.chempal?.astTest).toBeTypeOf('function');
+    expect(window.chempal?.getCachedTitles).toBeTypeOf('function');
   });
 
   describe('update-prompt simulation', () => {
@@ -85,9 +85,9 @@ describe('exposeDebugApi', () => {
 
     it('exposes the update helpers', () => {
       exposeDebugApi();
-      expect(typeof window.chempal?.simulateUpdate).toBe('function');
-      expect(typeof window.chempal?.simulateWebstoreUpdate).toBe('function');
-      expect(typeof window.chempal?.resetUpdatePrompt).toBe('function');
+      expect(window.chempal?.simulateUpdate).toBeTypeOf('function');
+      expect(window.chempal?.simulateWebstoreUpdate).toBeTypeOf('function');
+      expect(window.chempal?.resetUpdatePrompt).toBeTypeOf('function');
     });
 
     it('seeds update_check inside the throttle window so no poll fires', async () => {
