@@ -5,7 +5,7 @@ import { SUPPLIER_COUNTRY_OPTIONS } from '@/constants/countries';
 import { omit } from '@/helpers/collectionUtils';
 import { getCountryName } from '@/helpers/country';
 import { i18n } from '@/helpers/i18n';
-import { formatDisplayPrice } from '@/helpers/price';
+import { formatDisplayPrice, formatUnitPrice, getUnitPrice } from '@/helpers/price';
 import { availabilityLabel, shippingLabel } from '@/helpers/productLabels';
 import { pubchemCasSearchUrl, pubchemCompoundUrl } from '@/helpers/pubchem';
 import { formatUomForDisplay } from '@/helpers/quantity';
@@ -35,8 +35,8 @@ import styles from './TableColumns.module.scss';
  * // columns.map(c => c.id) →
  * //   ["expander", "title", "supplier", "country", "shipping",
  * //    "availability", "description", "price", "quantity", "uom",
- * //    "sds", "specs", "coa", "cas", "pubchem", "formula", "moleweight",
- * //    "purity", "concentration"]
+ * //    "unitPrice", "sds", "specs", "coa", "cas", "pubchem", "formula",
+ * //    "moleweight", "purity", "concentration"]
  * // columns.filter(c => c.meta?.drawer).map(c => c.id) →
  * //   ["supplier", "country", "shipping", "availability", "price"]
  * ```
@@ -284,6 +284,24 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         filterPlaceholder: i18n('filter_placeholder_unit'),
         filterVariant: 'select',
         renderSelectOption: (value) => formatUomForDisplay(value),
+        style: {
+          textAlign: 'left',
+        },
+      },
+    },
+    {
+      id: 'unitPrice',
+      header: i18n('column_unit_price'),
+      // Numeric value (per base unit) so the column sorts/filters/auto-hides on
+      // the amount; the cell renders the "$0.08/g" display string.
+      accessorFn: (product) => getUnitPrice(product),
+      cell: ({ row, table }: CellContext<Product, unknown>) =>
+        formatUnitPrice(row.original, table.options.meta?.userSettings),
+      sortingFn: 'unitPriceSortingFn',
+      filterFn: 'inNumberRangeHierarchy',
+      meta: {
+        filterPlaceholder: i18n('filter_placeholder_unit_price'),
+        filterVariant: 'range',
         style: {
           textAlign: 'left',
         },

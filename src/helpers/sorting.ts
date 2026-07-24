@@ -1,3 +1,4 @@
+import { getUnitPrice } from '@/helpers/price';
 import { sortablePurityGrade } from '@/helpers/science';
 import type { Row } from '@tanstack/react-table';
 
@@ -66,6 +67,28 @@ export function matchPercentageSortingFn(rowA: Row<Product>, rowB: Row<Product>)
 export function priceSortingFn(rowA: Row<Product>, rowB: Row<Product>) {
   const a = rowA.original.usdPrice ?? rowA.original.price ?? 0;
   const b = rowB.original.usdPrice ?? rowB.original.price ?? 0;
+  return a > b ? 1 : a < b ? -1 : 0;
+}
+
+/**
+ * TanStack sorting comparator that orders two product rows by their price per
+ * base unit ({@link getUnitPrice}). Rows whose unit price can't be computed
+ * (missing price/quantity or an unconvertible unit) sort to the bottom rather
+ * than appearing as the cheapest.
+ * @category Tanstack Sorting Functions
+ * @param rowA - The first row to compare.
+ * @param rowB - The second row to compare.
+ * @returns `1` if rowA ranks after rowB, `-1` if before, `0` if equal.
+ * @example
+ * ```ts
+ * useReactTable({ sortingFns: { unitPriceSortingFn }, ... });
+ * // A row at $0.10/g sorts after one at $0.02/g.
+ * ```
+ * @source
+ */
+export function unitPriceSortingFn(rowA: Row<Product>, rowB: Row<Product>) {
+  const a = getUnitPrice(rowA.original) ?? Number.POSITIVE_INFINITY;
+  const b = getUnitPrice(rowB.original) ?? Number.POSITIVE_INFINITY;
   return a > b ? 1 : a < b ? -1 : 0;
 }
 
