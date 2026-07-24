@@ -13,6 +13,8 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-07-24
+
 ### Added
 
 - New **Unit Price** column in the results table showing the price per base unit (e.g.
@@ -24,6 +26,12 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
   search by product name: the identifier is looked up on PubChem and the resulting chemical
   name is searched instead, so e.g. "Na6O18P6" or "10124-56-8" now finds Sodium
   Hexametaphosphate.
+
+### Changed
+
+- Clicking a product image now opens an in-page gallery — a larger view with next/previous
+  arrows and a thumbnail strip to jump between photos — instead of opening the image in a new
+  browser tab.
 
 ## [1.4.0] - 2026-07-21
 
