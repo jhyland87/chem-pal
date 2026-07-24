@@ -59,6 +59,12 @@ const MAX_SMILES_LENGTH = 500;
 export interface ResolvedStructure {
   /** Best human-readable name to feed the supplier search, if one was found. */
   name?: string;
+  /**
+   * Ranked candidate names to match a supplier's products against, best first (the first is
+   * {@link name}). A CAS/formula resolves to several (Title + cleaned synonyms) so a product
+   * is matched by whichever scores best; SMILES resolution sets only {@link name}.
+   */
+  names?: string[];
   /** Valid CAS number(s) resolved from the structure, shortest/best first. */
   cas?: string[];
   /** Canonical standard InChIKey — the structure fingerprint, useful for later verification. */

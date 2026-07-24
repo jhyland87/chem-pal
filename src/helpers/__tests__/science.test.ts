@@ -11,6 +11,8 @@ import {
   parseGrade,
   parseLocalizedNumber,
   parsePurity,
+  pickBroadestName,
+  subscriptToAscii,
   purityGradeToPercentage,
   sortablePurityGrade,
   subscript,
@@ -39,6 +41,20 @@ describe('science helpers', () => {
 
     it('should handle string without numbers', () => {
       expect(subscript('ABC')).toBe('ABC');
+    });
+  });
+
+  describe('subscriptToAscii', () => {
+    it('converts subscript digits in a formula back to ASCII', () => {
+      expect(subscriptToAscii('Na₆O₁₈P₆')).toBe('Na6O18P6');
+      expect(subscriptToAscii('H₂O')).toBe('H2O');
+      expect(subscriptToAscii('C₁₂H₂₂O₁₁')).toBe('C12H22O11');
+    });
+
+    it('leaves plain text and ASCII digits unchanged', () => {
+      expect(subscriptToAscii('acetone')).toBe('acetone');
+      expect(subscriptToAscii('Na6O18P6')).toBe('Na6O18P6');
+      expect(subscriptToAscii('')).toBe('');
     });
   });
 
@@ -128,6 +144,30 @@ describe('science helpers', () => {
 
     it('handles an empty string', () => {
       expect(formatFormula('')).toBe('');
+    });
+  });
+
+  describe('pickBroadestName', () => {
+    it('prefers a shorter synonym that keeps the primary name’s core word', () => {
+      expect(
+        pickBroadestName(['Hexasodium hexametaphosphate', 'Calgon', 'Sodium hexametaphosphate']),
+      ).toBe('Sodium hexametaphosphate');
+    });
+
+    it('keeps the primary when no shorter candidate shares its core word', () => {
+      // "Acetone"’s core is "acetone"; the shorter-looking systematic names don’t contain it.
+      expect(pickBroadestName(['Acetone', 'propan-2-one', 'dimethyl ketone'])).toBe('Acetone');
+    });
+
+    it('ignores short unrelated synonyms (brand names) that lack the core word', () => {
+      expect(pickBroadestName(['Potassium permanganate', 'Condy’s crystals'])).toBe(
+        'Potassium permanganate',
+      );
+    });
+
+    it('returns the sole candidate, or undefined for an empty list', () => {
+      expect(pickBroadestName(['Acetone'])).toBe('Acetone');
+      expect(pickBroadestName([])).toBeUndefined();
     });
   });
 

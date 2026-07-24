@@ -1,3 +1,4 @@
+import { subscriptToAscii } from '@/helpers/science';
 import { isCAS } from '@/utils/typeGuards/common';
 
 /**
@@ -162,6 +163,9 @@ function hasSmilesSignal(value: string): boolean {
  * @source
  */
 function isChemicalFormula(value: string): boolean {
+  // A display-formatted formula uses subscript digits (Na₆O₁₈P₆); normalize them to ASCII
+  // so it's recognized the same as the plain-digit form (Na6O18P6).
+  value = subscriptToAscii(value);
   if (!/^[A-Za-z0-9()[\]+\-·•∙⋅.*/xn]+$/.test(value)) return false;
 
   let i = 0;

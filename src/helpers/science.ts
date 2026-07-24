@@ -101,6 +101,27 @@ export const subscript = (str: string) => {
 };
 
 /**
+ * Converts subscript Unicode digits back to regular ASCII numbers — the inverse of
+ * {@link subscript}. Turns a display-formatted formula like `"Na₆O₁₈P₆"` back into
+ * `"Na6O18P6"` before a lookup that only understands plain digits (e.g. a PubChem query, or
+ * formula detection). Non-subscript characters pass through unchanged.
+ * @group Formatters
+ * @category Science Helpers
+ * @param str - The string that may contain subscript digits
+ * @returns The string with subscript digits converted to ASCII digits
+ * @example
+ * ```typescript
+ * subscriptToAscii("Na₆O₁₈P₆") // "Na6O18P6"
+ * subscriptToAscii("H₂O") // "H2O"
+ * ```
+ * @source
+ */
+export const subscriptToAscii = (str: string) => {
+  // Subscript digits are contiguous from U+2080 (₀), so the digit is codePoint − 0x2080.
+  return str.replace(/[₀-₉]/g, (c) => String(c.charCodeAt(0) - 0x2080));
+};
+
+/**
  * Converts regular numbers in a string to superscript Unicode characters.
  * @group Formatters
  * @category Science Helpers
@@ -1151,6 +1172,44 @@ export function formatFormula(formula: string): string {
       //    coefficients, so their preceding char isn't a letter/bracket → skipped.
       .replace(/(?<=[A-Za-z)\]])\d+/g, subscript)
   );
+}
+
+/**
+ * Picks the best single search term from a list of candidate chemical names for the same
+ * compound — the broadest form, which tends to yield the most store results (precision is
+ * recovered later by scoring each result against every candidate). Chooses the shortest
+ * candidate that still contains the primary name's longest word (the compound's distinctive
+ * token), so a general synonym like `"Sodium hexametaphosphate"` beats the more specific
+ * primary `"Hexasodium hexametaphosphate"`, while unrelated short synonyms (brand names like
+ * `"Calgon"`) are ignored. A one-name (or empty-after-filter) list returns its primary.
+ * @category Science Helpers
+ * @group Core Utilities
+ * @param candidates - Candidate names for one compound, primary first (e.g. the PubChem Title).
+ * @returns The broadest search name, or undefined when `candidates` is empty.
+ * @example
+ * ```typescript
+ * pickBroadestName(["Hexasodium hexametaphosphate", "Calgon", "Sodium hexametaphosphate"]);
+ * // "Sodium hexametaphosphate"
+ * pickBroadestName(["Acetone", "propan-2-one", "dimethyl ketone"]); // "Acetone"
+ * ```
+ * @source
+ */
+export function pickBroadestName(candidates: readonly string[]): string | undefined {
+  const primary = candidates[0];
+  if (primary === undefined) {
+    return undefined;
+  }
+  const core = primary
+    .split(/\s+/)
+    .reduce((longest, token) => (token.length > longest.length ? token : longest), '')
+    .toLowerCase();
+  let best = primary;
+  for (const candidate of candidates) {
+    if (candidate.length < best.length && candidate.toLowerCase().includes(core)) {
+      best = candidate;
+    }
+  }
+  return best;
 }
 
 /**

@@ -14,7 +14,7 @@ import {
   pubchemCasSearchUrl,
   pubchemCompoundUrl,
   pubchemStructureImageUrl,
-  resolveIdentifierName,
+  resolveIdentifierNames,
   suggestAlternativeSearch,
 } from '@/helpers/pubchem';
 import {
@@ -96,9 +96,15 @@ describe('PubChem Helpers', () => {
       (global.fetch as Mock).mockResolvedValue(notOk());
       expect(await getCidByFormula('Zz9')).toBeUndefined();
     });
+
+    it('normalizes subscript digits to ASCII before querying', async () => {
+      (global.fetch as Mock).mockResolvedValue(jsonOk({ IdentifierList: { CID: [24968] } }));
+      expect(await getCidByFormula('Na₆O₁₈P₆')).toBe(24968);
+      expect((global.fetch as Mock).mock.calls[0][0]).toContain('/fastformula/Na6O18P6/');
+    });
   });
 
-  describe('resolveIdentifierName', () => {
+  describe('resolveIdentifierNames', () => {
     beforeAll(() => {
       global.fetch = vi.fn() as Mock;
     });
@@ -106,31 +112,61 @@ describe('PubChem Helpers', () => {
       (global.fetch as Mock).mockReset();
     });
 
-    const cidThenTitle = (cid: number, title: string) =>
-      (global.fetch as Mock)
-        .mockResolvedValueOnce(jsonOk({ IdentifierList: { CID: [cid] } }))
-        .mockResolvedValueOnce(
-          jsonOk({ PropertyTable: { Properties: [{ CID: cid, Title: title }] } }),
-        );
+    // Route each PubChem endpoint by URL so the parallel property/synonym fetches don't
+    // depend on call order. Mirrors the real CID 24968 (sodium hexametaphosphate).
+    const mockCompound = (title: string, synonyms: string[]) =>
+      (global.fetch as Mock).mockImplementation((url: string) => {
+        if (url.includes('/cids/')) {
+          return Promise.resolve(jsonOk({ IdentifierList: { CID: [24968] } }));
+        }
+        if (url.includes('/property/')) {
+          return Promise.resolve(
+            jsonOk({ PropertyTable: { Properties: [{ CID: 24968, Title: title }] } }),
+          );
+        }
+        if (url.includes('/synonyms/')) {
+          return Promise.resolve(
+            jsonOk({ InformationList: { Information: [{ Synonym: synonyms }] } }),
+          );
+        }
+        return Promise.resolve(notOk());
+      });
 
-    it('resolves a CAS to the compound title, echoing the CAS', async () => {
-      cidThenTitle(24968, 'Hexasodium hexametaphosphate');
-      expect(await resolveIdentifierName('10124-56-8', 'cas')).toEqual({
-        name: 'Hexasodium hexametaphosphate',
+    // Title leads; a brand synonym is kept; a registry code (no lowercase) is dropped; a
+    // parenthetical formula suffix is stripped (recovering the clean common name).
+    const SYNONYMS = [
+      'Hexasodium hexametaphosphate',
+      'Calgon S',
+      'EINECS 233-343-1',
+      'N40N91DW96',
+      'Sodium hexametaphosphate (Na6P6O18)',
+    ];
+
+    it('resolves a CAS to ranked, cleaned name candidates, echoing the CAS', async () => {
+      mockCompound('Hexasodium hexametaphosphate', SYNONYMS);
+      expect(await resolveIdentifierNames('10124-56-8', 'cas')).toEqual({
+        names: ['Hexasodium hexametaphosphate', 'Calgon S', 'Sodium hexametaphosphate'],
         cas: ['10124-56-8'],
       });
     });
 
-    it('resolves a formula to the compound title (no CAS)', async () => {
-      cidThenTitle(24968, 'Hexasodium hexametaphosphate');
-      expect(await resolveIdentifierName('Na6O18P6', 'formula')).toEqual({
-        name: 'Hexasodium hexametaphosphate',
+    it('resolves a formula to name candidates (no CAS)', async () => {
+      mockCompound('Hexasodium hexametaphosphate', SYNONYMS);
+      expect(await resolveIdentifierNames('Na6O18P6', 'formula')).toEqual({
+        names: ['Hexasodium hexametaphosphate', 'Calgon S', 'Sodium hexametaphosphate'],
+      });
+    });
+
+    it('falls back to just the Title when there are no usable synonyms', async () => {
+      mockCompound('Hexasodium hexametaphosphate', ['EINECS 233-343-1', 'UNII-N40N91DW96']);
+      expect(await resolveIdentifierNames('Na6O18P6', 'formula')).toEqual({
+        names: ['Hexasodium hexametaphosphate'],
       });
     });
 
     it('returns undefined when the identifier does not resolve', async () => {
       (global.fetch as Mock).mockResolvedValue(notOk());
-      expect(await resolveIdentifierName('Zz9', 'formula')).toBeUndefined();
+      expect(await resolveIdentifierNames('Zz9', 'formula')).toBeUndefined();
     });
   });
 

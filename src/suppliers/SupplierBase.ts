@@ -10,6 +10,7 @@ import {
 } from '@/helpers/excludedProducts';
 import { fetchDecorator, type FetchDecoratorResponse } from '@/helpers/fetch';
 import { stripQuantityFromString } from '@/helpers/quantity';
+import { pickBroadestName } from '@/helpers/science';
 import type { ResolvedStructure } from '@/helpers/smiles';
 import { sleep } from '@/helpers/utils';
 import { getSupplierColor } from '@/theme/colors';
@@ -141,8 +142,8 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   /** See {@link supportsCAS}. */
   protected readonly supportsSMILES: boolean = false;
 
-  /** Memoized {@link effectiveQuery}; cleared when {@link setResolvedStructures} runs. */
-  private effectiveQueryCache?: string;
+  /** Memoized {@link effectiveQueryCandidates}; cleared when {@link setResolvedStructures} runs. */
+  private effectiveQueryCandidatesCache?: string[];
 
   /**
    * Runtime flag resolved from `userSettings.fuzzyFilteringDisabled`. When true,
@@ -764,41 +765,68 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    */
   public setResolvedStructures(resolved: ReadonlyMap<string, ResolvedStructure> | undefined): void {
     this.resolvedStructures = resolved;
-    this.effectiveQueryCache = undefined;
+    this.effectiveQueryCandidatesCache = undefined;
   }
 
   /**
-   * The query this supplier actually matches against. Normally the raw query, but
-   * when the query is a single CAS/formula/SMILES identifier the supplier can't
-   * search for itself (per {@link supportsCAS}/{@link supportsFormula}/
-   * {@link supportsSMILES}) and the factory resolved it to a chemical name, that
-   * name is used instead — so a name-only supplier can answer "Na6O18P6" by
-   * searching "Hexasodium hexametaphosphate". Falls back to the raw query when the
-   * type is supported, the query is a plain name, or nothing was resolved.
+   * The single query term this supplier should search by. Normally the raw query,
+   * but when the query is a CAS/formula/SMILES identifier the supplier can't search
+   * for itself (per {@link supportsCAS}/{@link supportsFormula}/{@link supportsSMILES})
+   * and the factory resolved it, it's the broadest resolved name — the one likely to
+   * yield the most store results — so a name-only supplier can answer "Na6O18P6" by
+   * searching "Sodium hexametaphosphate". Matching then scores results against every
+   * candidate (see {@link effectiveQueryCandidates}/{@link fuzzyScore}). Falls back to
+   * the raw query when the type is supported, the query is a plain name, or nothing
+   * was resolved.
    * @returns The effective search query.
    * @example
    * ```typescript
-   * // this.query === "10124-56-8", supportsCAS === false, resolved name available
-   * this.effectiveQuery; // "Hexasodium hexametaphosphate"
+   * // this.query === "10124-56-8", supportsCAS === false, resolved names available
+   * this.effectiveQuery; // "Sodium hexametaphosphate"
    * ```
    * @source
    */
   protected get effectiveQuery(): string {
-    if (this.effectiveQueryCache === undefined) {
-      this.effectiveQueryCache = this.resolveEffectiveQuery();
-    }
-    return this.effectiveQueryCache;
+    // The single search term: for a resolved identifier query, the broadest of the
+    // candidate names (most store results); precision is recovered by scoring results
+    // against every candidate. A plain query has one candidate (itself).
+    const candidates = this.effectiveQueryCandidates();
+    return pickBroadestName(candidates) ?? candidates[0];
   }
 
   /**
-   * Computes {@link effectiveQuery} (uncached).
-   * @returns The resolved name for an unsupported identifier query, else `this.query`.
+   * The candidate queries this supplier matches against. Normally just
+   * `[this.query]`, but when the query is a CAS/formula/SMILES identifier the
+   * supplier can't search itself (per {@link supportsCAS}/{@link supportsFormula}/
+   * {@link supportsSMILES}), it's the factory-resolved chemical-name candidates —
+   * the compound Title plus cleaned synonyms — so a product can be matched by
+   * whichever name scores best (see {@link fuzzyScore}). Falls back to
+   * `[this.query]` when the type is supported, the query is a plain name, or
+   * nothing was resolved. Memoized.
+   * @returns The candidate queries, best first (never empty).
+   * @example
+   * ```typescript
+   * // this.query === "10124-56-8", supportsCAS === false, resolution available
+   * this.effectiveQueryCandidates(); // ["Hexasodium hexametaphosphate", "Sodium hexametaphosphate", …]
+   * ```
    * @source
    */
-  private resolveEffectiveQuery(): string {
+  protected effectiveQueryCandidates(): string[] {
+    if (this.effectiveQueryCandidatesCache === undefined) {
+      this.effectiveQueryCandidatesCache = this.resolveEffectiveQueryCandidates();
+    }
+    return this.effectiveQueryCandidatesCache;
+  }
+
+  /**
+   * Computes {@link effectiveQueryCandidates} (uncached).
+   * @returns The resolved name candidates for an unsupported identifier query, else `[this.query]`.
+   * @source
+   */
+  private resolveEffectiveQueryCandidates(): string[] {
     const raw = this.query.trim();
     if (raw === '') {
-      return this.query;
+      return [this.query];
     }
     const termType = detectTermType(raw);
     const supported =
@@ -807,9 +835,11 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       (termType === 'formula' && this.supportsFormula) ||
       (termType === 'smiles' && this.supportsSMILES);
     if (supported) {
-      return this.query;
+      return [this.query];
     }
-    return this.resolvedStructures?.get(raw)?.name ?? this.query;
+    const resolved = this.resolvedStructures?.get(raw);
+    const names = resolved?.names ?? (resolved?.name ? [resolved.name] : undefined);
+    return names && names.length > 0 ? names : [this.query];
   }
 
   /**
@@ -1374,7 +1404,17 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    */
   protected fuzzyScore(text: string): number {
     const activeScorer = this.fuzzScorerOverride ?? this.fuzzScorer;
-    return activeScorer(this.effectiveQuery, text);
+    // Score against every effective-query candidate and keep the best — for an
+    // identifier query these are the resolved name + synonyms, so a product
+    // matches whichever name it names. A plain query has a single candidate.
+    let best = 0;
+    for (const candidate of this.effectiveQueryCandidates()) {
+      const score = activeScorer(candidate, text);
+      if (score > best) {
+        best = score;
+      }
+    }
+    return best;
   }
 
   /**
@@ -1538,10 +1578,16 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     const parsed = this.getAst();
 
     if (!parsed.isAdvanced) {
-      // Plain query: either the legacy fuzzy path, or no filtering when disabled.
-      return this.fuzzyFilteringDisabled
-        ? data
-        : this.fuzzyFilter(parsed.raw.trim(), data, minMatchPercentage);
+      // Plain query: no filtering when disabled; the multi-candidate path for a
+      // resolved identifier query (several candidate names); else the legacy
+      // single-query fuzzy path.
+      if (this.fuzzyFilteringDisabled) {
+        return data;
+      }
+      if (this.effectiveQueryCandidates().length > 1) {
+        return this.fuzzyFilterCandidates(data, minMatchPercentage);
+      }
+      return this.fuzzyFilter(parsed.raw.trim(), data, minMatchPercentage);
     }
 
     const scorer = this.fuzzScorerOverride ?? this.fuzzScorer;
@@ -1568,6 +1614,31 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     if (!this.fuzzyFilteringDisabled) {
       matched.sort((a, b) => (b.matchPercentage ?? 0) - (a.matchPercentage ?? 0));
     }
+    return matched;
+  }
+
+  /**
+   * Plain-query fuzzy filter for a resolved identifier query with several candidate
+   * names: scores each item against its best candidate (via {@link fuzzyScore}, which
+   * takes the max over {@link effectiveQueryCandidates}), keeps those at/above the
+   * cutoff (or all when {@link fuzzyFilterRankOnly}), and ranks by score. Kept separate
+   * from {@link fuzzyFilter}'s single-query `extract()` path so plain name queries are
+   * untouched, and it avoids `extract`'s score-misassignment on large lists.
+   * @param data - The candidate items to filter.
+   * @param minMatchPercentage - The minimum match score to keep an item.
+   * @returns The surviving items, tagged with `_fuzz`/`matchPercentage`, ranked best first.
+   * @source
+   */
+  private fuzzyFilterCandidates<X>(data: X[], minMatchPercentage: number): X[] {
+    const threshold = this.fuzzyFilterRankOnly ? 0 : minMatchPercentage;
+    const matched: FuzzyMatchResult<X>[] = [];
+    data.forEach((obj, idx) => {
+      const score = this.fuzzyScore(String(this.titleSelector(obj) ?? ''));
+      if (score >= threshold) {
+        matched.push(this.attachFuzz(obj, score, idx));
+      }
+    });
+    matched.sort((a, b) => (b.matchPercentage ?? 0) - (a.matchPercentage ?? 0));
     return matched;
   }
 

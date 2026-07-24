@@ -1,6 +1,6 @@
 import { defaultResultsLimit } from '@/../config.json';
 import { filterRestrictedProduct } from '@/helpers/purchaseRestriction';
-import { resolveIdentifierName } from '@/helpers/pubchem';
+import { resolveIdentifierNames } from '@/helpers/pubchem';
 import {
   looksLikeSmiles,
   parseStructurePrefix,
@@ -425,7 +425,7 @@ export class SupplierFactory<P extends Product> {
    * Only positive (non-negated) identifier leaf terms are resolved: a structure
    * (via {@link looksLikeSmiles} or an explicit `smiles:`/`inchikey:` prefix) via
    * {@link resolveSmiles}, or a CAS/formula (via {@link detectTermType}) via
-   * {@link resolveIdentifierName}. Plain name queries resolve nothing and make no
+   * {@link resolveIdentifierNames}. Plain name queries resolve nothing and make no
    * network calls. Each unique term is resolved once; failures are logged and
    * skipped so a dead resolver never blocks the search. Every supplier then swaps
    * an identifier it can't search for the resolved name (see
@@ -461,10 +461,11 @@ export class SupplierFactory<P extends Product> {
         }
         const termType = detectTermType(value);
         if (termType === 'cas' || termType === 'formula') {
-          const identifier = await resolveIdentifierName(value, termType);
+          const identifier = await resolveIdentifierNames(value, termType);
           if (identifier) {
             resolved.set(term, {
-              name: identifier.name,
+              name: identifier.names[0],
+              names: identifier.names,
               cas: identifier.cas,
               source: termType === 'cas' ? 'pubchem-cas' : 'pubchem-formula',
             });

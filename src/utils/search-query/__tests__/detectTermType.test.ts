@@ -23,6 +23,12 @@ describe('detectTermType', () => {
     expect(detectTermType('Na')).toBe('formula');
   });
 
+  it('detects a display-formatted formula with subscript digits', () => {
+    expect(detectTermType('Na₆O₁₈P₆')).toBe('formula');
+    expect(detectTermType('H₂O')).toBe('formula');
+    expect(detectTermType('C₆H₁₂O₆')).toBe('formula');
+  });
+
   it('detects SMILES via bond/bracket/aromatic signals', () => {
     for (const smiles of [
       'O=C=O',
