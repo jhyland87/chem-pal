@@ -64,7 +64,7 @@ export interface ResolvedStructure {
   /** Canonical standard InChIKey — the structure fingerprint, useful for later verification. */
   inchikey?: string;
   /** Which resolver produced the usable identifier. */
-  source?: 'cactus-name' | 'cactus-cas' | 'pubchem-inchikey';
+  source?: 'cactus-name' | 'cactus-cas' | 'pubchem-inchikey' | 'pubchem-cas' | 'pubchem-formula';
 }
 
 /** The mode parsed from an optional query prefix. */

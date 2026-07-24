@@ -20,6 +20,7 @@ type VWRInternals = {
   initProductBuilders(results: unknown[]): ProductBuilder<Product>[];
   getProductData(builder: ProductBuilder<Product>): Promise<ProductBuilder<Product> | void>;
   queryProducts(query: string, limit: number): Promise<ProductBuilder<Product>[] | void>;
+  searchQueryParam(query: string): string;
 };
 
 const makeSupplier = () => new SupplierVWR('sulfuric acid', 3);
@@ -80,6 +81,19 @@ describe('SupplierVWR', () => {
     it('returns the product displayName', () => {
       const supplier = makeSupplier() as unknown as VWRInternals;
       expect(supplier.titleSelector(firstProduct())).toBe(firstProduct().displayName);
+    });
+  });
+
+  describe('searchQueryParam', () => {
+    it.each([
+      ['7757-83-7', 'cas_number=7757-83-7'], // CAS
+      ['Na2SO3', 'chemical_formula_adv=Na2SO3'], // formula
+      ['sulfuric acid', 'chemical_name=sulfuric acid'], // name (multi-word)
+      ['acetone', 'chemical_name=acetone'], // name (single word)
+      ['O=S(=O)(O)O', 'O=S(=O)(O)O'], // SMILES → raw
+    ])('routes %s to the right VWR search field', (query, expected) => {
+      const supplier = makeSupplier() as unknown as VWRInternals;
+      expect(supplier.searchQueryParam(query)).toBe(expected);
     });
   });
 

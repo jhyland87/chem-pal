@@ -16,6 +16,10 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 ### Added
 
 - New supplier: ScienceLab.
+- Improved the search by CAS number, molecular formula, or SMILES on suppliers that only
+  search by product name: the identifier is looked up on PubChem and the resulting chemical
+  name is searched instead, so e.g. "Na6O18P6" or "10124-56-8" now finds Sodium
+  Hexametaphosphate.
 
 ## [1.4.0] - 2026-07-21
 

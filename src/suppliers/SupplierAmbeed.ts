@@ -228,6 +228,13 @@ export class SupplierAmbeed
   // Name of supplier (for display purposes)
   public readonly supplierName: string = 'Ambeed';
 
+  // Ambeed's search natively accepts CAS numbers, molecular formulas, and SMILES
+  // (it resolves them itself via resolvedStructures), so the base must not swap an
+  // identifier query for a resolved name.
+  protected readonly supportsCAS: boolean = true;
+  protected readonly supportsFormula: boolean = true;
+  protected readonly supportsSMILES: boolean = true;
+
   // Base URL for HTTP(s) requests
   public readonly baseURL: string = 'https://www.ambeed.com';
 

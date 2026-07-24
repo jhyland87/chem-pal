@@ -1,5 +1,6 @@
 import { AVAILABILITY } from '@/constants/common';
 import { parseQuantity } from '@/helpers/quantity';
+import { detectTermType } from '@/utils/search-query/detectTermType';
 import { ProductBuilder } from '@/utils/ProductBuilder';
 import {
   isVWRAssetReferencesResponse,
@@ -52,6 +53,9 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
   // Cached bearer token and its absolute expiry (epoch ms).
   private accessToken?: string;
   private accessTokenExpiresAt?: number;
+
+  protected readonly supportsCAS: boolean = true;
+  protected readonly supportsFormula: boolean = true;
 
   // Refresh the token this many ms before it actually expires.
   private readonly tokenSafetyMarginMs: number = 30_000;
@@ -230,6 +234,38 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
   }
 
   /**
+   * Builds VWR's `query` search-param value, routing the term to the field VWR's
+   * search indexes it under: a CAS number to `cas_number`, a molecular formula to
+   * `chemical_formula_adv`, and a plain name to `chemical_name`. Anything else
+   * (e.g. a SMILES string) is passed through as the raw term. The identifier is
+   * used verbatim here so VWR runs a native identifier search; the base still
+   * fuzzy-matches the returned products against the factory-resolved chemical
+   * name (VWR leaves `supportsCAS`/`supportsFormula` false), so CAS/formula hits
+   * survive filtering.
+   * @param query - The raw search term
+   * @returns The `query` param value, e.g. `cas_number=7757-83-7`
+   * @example
+   * ```typescript
+   * this.searchQueryParam('7757-83-7'); // "cas_number=7757-83-7"
+   * this.searchQueryParam('Na2SO3'); // "chemical_formula_adv=Na2SO3"
+   * this.searchQueryParam('acetone'); // "chemical_name=acetone"
+   * ```
+   * @source
+   */
+  private searchQueryParam(query: string): string {
+    switch (detectTermType(query)) {
+      case 'cas':
+        return `cas_number=${query}`;
+      case 'formula':
+        return `chemical_formula_adv=${query}`;
+      case 'string':
+        return `chemical_name=${query}`;
+      default:
+        return query;
+    }
+  }
+
+  /**
    * Fetches and validates a single page of VWR search results.
    * @param query - The search term
    * @param page - Zero-based page index (sent as `currentPage`)
@@ -244,10 +280,7 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
       headers: { 'content-type': 'application/json' },
       params: {
         fields: 'FULL',
-        // Search via formula: chemical_formula_adv=Na2SO3
-        // Search via CAS: cas_number=7757-83-7
-        // Search via Keyword: keyword=sodium
-        query: `chemical_name=${query}`,
+        query: this.searchQueryParam(query),
         pageSize: 10,
         currentPage: page,
         lang: 'en_US',

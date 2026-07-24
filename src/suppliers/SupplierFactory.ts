@@ -1,11 +1,13 @@
 import { defaultResultsLimit } from '@/../config.json';
 import { filterRestrictedProduct } from '@/helpers/purchaseRestriction';
+import { resolveIdentifierName } from '@/helpers/pubchem';
 import {
   looksLikeSmiles,
   parseStructurePrefix,
   resolveSmiles,
   type ResolvedStructure,
 } from '@/helpers/smiles';
+import { detectTermType } from '@/utils/search-query/detectTermType';
 import { mapDefined, sleep } from '@/helpers/utils';
 import { Logger } from '@/utils/Logger';
 import { extractAllPositiveTerms } from '@/utils/search-query/extractPositiveTerms';
@@ -415,20 +417,25 @@ export class SupplierFactory<P extends Product> {
   }
 
   /**
-   * Resolves every SMILES/structure term in the query to its chemical identifiers
-   * (name, CAS, InChIKey) exactly once, memoizing the result on the factory so it
-   * is shared with every supplier instead of each supplier re-hitting the network.
+   * Resolves every chemical-identifier term in the query — SMILES/structure, CAS
+   * number, or molecular formula — to its chemical identifiers (name, CAS,
+   * InChIKey) exactly once, memoizing the result on the factory so it is shared
+   * with every supplier instead of each supplier re-hitting the network.
    *
-   * Only positive (non-negated) leaf terms that look like a structure (via
-   * {@link looksLikeSmiles} or an explicit `smiles:`/`inchikey:` prefix) are
-   * resolved, so plain/CAS/formula/name queries make no network calls at all.
-   * Each unique term is resolved once; failures are logged and skipped so a
-   * dead resolver never blocks the search.
+   * Only positive (non-negated) identifier leaf terms are resolved: a structure
+   * (via {@link looksLikeSmiles} or an explicit `smiles:`/`inchikey:` prefix) via
+   * {@link resolveSmiles}, or a CAS/formula (via {@link detectTermType}) via
+   * {@link resolveIdentifierName}. Plain name queries resolve nothing and make no
+   * network calls. Each unique term is resolved once; failures are logged and
+   * skipped so a dead resolver never blocks the search. Every supplier then swaps
+   * an identifier it can't search for the resolved name (see
+   * `SupplierBase.effectiveQuery`).
    *
    * @returns A map of raw search term → resolved structure (empty when none apply).
    * @example
    * ```typescript
-   * // query "CCO" -> Map { "CCO" => { name: "ethanol", cas: ["64-17-5"], ... } }
+   * // query "CCO"      -> Map { "CCO"      => { name: "ethanol", cas: ["64-17-5"], ... } }
+   * // query "Na6O18P6" -> Map { "Na6O18P6" => { name: "Hexasodium hexametaphosphate", ... } }
    * await factory.resolveStructuresOnce();
    * ```
    * @source
@@ -444,17 +451,27 @@ export class SupplierFactory<P extends Product> {
         continue;
       }
       const { mode, value } = parseStructurePrefix(term);
-      const isStructure = mode === 'smiles' || (mode === 'auto' && looksLikeSmiles(value));
-      if (!isStructure) {
-        continue;
-      }
       try {
-        const structure = await resolveSmiles(value);
-        if (structure) {
-          resolved.set(term, structure);
+        if (mode === 'smiles' || (mode === 'auto' && looksLikeSmiles(value))) {
+          const structure = await resolveSmiles(value);
+          if (structure) {
+            resolved.set(term, structure);
+          }
+          continue;
+        }
+        const termType = detectTermType(value);
+        if (termType === 'cas' || termType === 'formula') {
+          const identifier = await resolveIdentifierName(value, termType);
+          if (identifier) {
+            resolved.set(term, {
+              name: identifier.name,
+              cas: identifier.cas,
+              source: termType === 'cas' ? 'pubchem-cas' : 'pubchem-formula',
+            });
+          }
         }
       } catch (error) {
-        this.logger.warn('Failed to resolve structure term; skipping', { term, error });
+        this.logger.warn('Failed to resolve identifier term; skipping', { term, error });
       }
     }
 
