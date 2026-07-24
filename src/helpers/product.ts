@@ -5,6 +5,9 @@
  * @source
  */
 
+import { omit } from '@/helpers/collectionUtils';
+import { variantSeriesKey } from '@/helpers/priceHistory';
+import { stripQuantityFromString } from '@/helpers/quantity';
 import { mapDefined } from './utils';
 /** Base URL for NCI CACTUS chemical structure resolver (also used in `cas.ts`). */
 const CACTUS_STRUCTURE_BASE = 'https://cactus.nci.nih.gov/chemical/structure';
@@ -167,11 +170,13 @@ export function resolveProductImages(product: Product): ResolvedProductImage[] {
 export function hasExpandableDetail(product: Product): boolean {
   if (resolveProductImages(product).length > 0) return true;
   if ((product.variants?.length ?? 0) > 0) return true;
+  // Flattened variant rows (ungrouped mode) always have at least a parent link.
+  if (product.parentProduct !== undefined) return true;
   return EXPANDABLE_DETAIL_KEYS.some((key) => isPresent(product[key]));
 }
 
 /** Keys stripped from copied product info — internal/derived noise. */
-const NON_EXPORTED_PRODUCT_KEYS = ['currencySymbol', 'baseQuantity', 'cacheKey', '_id'];
+const NON_EXPORTED_PRODUCT_KEYS = ['currencySymbol', 'baseQuantity', 'cacheKey', '_id', 'parentProduct'];
 
 /**
  * Splits a flat {@link ProductImage} list into separate `images` and
@@ -257,4 +262,139 @@ export function getExportableProductData(product: Product): Record<string, unkno
     cleaned.variants = product.variants.map(cleanProductFields);
   }
   return cleaned;
+}
+
+/** Leading/trailing separator punctuation left behind after stripping a quantity. */
+const EDGE_SEPARATORS = /^[\s,\-–—:;|]+|[\s,\-–—:;|]+$/g;
+
+/**
+ * Reports whether a variant represents the same purchasable unit as its parent
+ * product — i.e. the supplier lists the parent among its own variants. Matches on
+ * price-history identity first ({@link variantSeriesKey} folds in the genuine vs.
+ * inherited id, then title/quantity/sku); some suppliers give the parent its own
+ * id/sku that differs from the matching variant's, so it also matches when the two
+ * are the same purchasable unit (see {@link samePurchasableUnit}).
+ * @category Helpers
+ * @param product - The parent product.
+ * @param variant - The variant to test against the parent.
+ * @returns `true` when the variant is the parent's own purchasable unit.
+ * @example
+ * ```ts
+ * isParentPurchasableUnit(
+ *   { title: "NaBH4", quantity: 50, uom: "g" } as Product,
+ *   { quantity: 50, uom: "g" },
+ * ); // => true
+ * ```
+ * @source
+ */
+export function isParentPurchasableUnit(product: Product, variant: Variant): boolean {
+  const parentKey = variantSeriesKey(product, product);
+  return (
+    (parentKey !== undefined && variantSeriesKey(product, variant) === parentKey) ||
+    samePurchasableUnit(product, variant)
+  );
+}
+
+/**
+ * Resolves the distinct purchasable units to show for a product: its variants,
+ * with the parent product prepended unless a variant already represents the same
+ * unit (see {@link isParentPurchasableUnit}), avoiding a duplicate row.
+ * @category Helpers
+ * @param product - The parent product.
+ * @param variants - The variant list to consider, defaulting to `product.variants`.
+ *   Callers with an active filter pass the filtered sub-row set instead.
+ * @returns The parent-plus-variants list, deduplicated, in display order.
+ * @example
+ * ```ts
+ * resolveDisplayedVariants({ title: "NaCl", quantity: 1, uom: "kg" } as Product);
+ * // => [the product] (no variants)
+ * ```
+ * @source
+ */
+export function resolveDisplayedVariants(
+  product: Product,
+  variants: readonly Variant[] = product.variants ?? [],
+): Variant[] {
+  const parentAlreadyListed = variants.some((v) => isParentPurchasableUnit(product, v));
+  return parentAlreadyListed ? [...variants] : [product, ...variants];
+}
+
+/**
+ * Builds the display title for a flattened variant row. Some suppliers name a
+ * variant with the full product name plus size (`"NaBH4, min 95%"`), others with
+ * just the size (`"100g"`), which is meaningless as a standalone row title. When
+ * the variant title doesn't already contain the product name, the product name
+ * (with its own quantity stripped) is prepended. Both titles have their quantity
+ * removed before the containment check, so `"Some Product 10g"` (parent) and
+ * `"Some Product 100g"` (variant) still count as already-named and aren't doubled
+ * up into `"Some Product 10g Some Product 100g"`.
+ * @category Helpers
+ * @param product - The parent product.
+ * @param variant - The variant whose row title to build.
+ * @returns The row title, with the product name prepended only when needed.
+ * @example
+ * ```ts
+ * variantRowTitle({ title: "NaBH4, min 95%" } as Product, { title: "100g" });
+ * // => "NaBH4, min 95% 100g"
+ * variantRowTitle({ title: "Some Product 10g" } as Product, { title: "Some Product 100g" });
+ * // => "Some Product 100g"
+ * ```
+ * @source
+ */
+export function variantRowTitle(product: Product, variant: Variant): string {
+  const variantTitle = typeof variant.title === 'string' ? variant.title.trim() : '';
+  const productTitle = typeof product.title === 'string' ? product.title.trim() : '';
+  if (!variantTitle) return productTitle;
+
+  const strippedParent = stripQuantityFromString(productTitle).replace(EDGE_SEPARATORS, '');
+  if (!strippedParent) return variantTitle;
+
+  const strippedVariant = stripQuantityFromString(variantTitle).replace(EDGE_SEPARATORS, '');
+  if (strippedVariant.toLowerCase().includes(strippedParent.toLowerCase())) return variantTitle;
+
+  return `${strippedParent} ${variantTitle}`;
+}
+
+/**
+ * Flattens each product into standalone {@link Product} rows for the results
+ * table's ungrouped display mode. Every product yields a **parent row** (the
+ * product itself, keeping its `variants` so the detail panel can still list them)
+ * plus one **variant row** per variant that isn't the parent's own purchasable
+ * unit. Each variant row inherits the product's shared fields (CAS, formula,
+ * images…) with the variant's own price/quantity/identity overlaid, carries a
+ * {@link Product.parentProduct} back-reference, gets a disambiguated title (see
+ * {@link variantRowTitle}), and drops the nested `variants` array so it stays a
+ * leaf. Products without variants pass through unchanged. This is a presentational
+ * transform only — it never mutates the inputs or the stored product data.
+ * @category Helpers
+ * @param products - The grouped product rows.
+ * @returns The parent row plus one row per non-parent variant, per product.
+ * @example
+ * ```ts
+ * flattenProductVariants([
+ *   { title: "NaBH4", quantity: 50, uom: "g",
+ *     variants: [{ quantity: 50, uom: "g" }, { title: "100g", quantity: 100, uom: "g" }] },
+ * ] as Product[]);
+ * // => [parent NaBH4 50g (with variants), variant "NaBH4 100g" (parentProduct set)]
+ * ```
+ * @source
+ */
+export function flattenProductVariants(products: readonly Product[]): Product[] {
+  return products.flatMap((product) => {
+    const variants = product.variants ?? [];
+    if (variants.length === 0) return [product];
+
+    const parentProduct = { title: product.title, url: product.url, permalink: product.permalink };
+    const rows: Product[] = [product];
+    for (const variant of variants) {
+      if (isParentPurchasableUnit(product, variant)) continue;
+      rows.push(
+        omit(
+          { ...product, ...variant, title: variantRowTitle(product, variant), parentProduct },
+          'variants',
+        ),
+      );
+    }
+    return rows;
+  });
 }

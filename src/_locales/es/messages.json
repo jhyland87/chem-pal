@@ -588,6 +588,14 @@
     "message": "Ocultar automáticamente las columnas de resultados que no tienen datos para la búsqueda actual.",
     "description": "Setting description."
   },
+  "settings_group_product_variants": {
+    "message": "Agrupar variantes de producto",
+    "description": "Setting label."
+  },
+  "settings_group_product_variants_desc": {
+    "message": "Cuando está activado, las variantes de un producto se agrupan bajo su fila. Desactívalo para que cada variante tenga su propia fila, de modo que la ordenación y el filtrado se apliquen a todas las variantes.",
+    "description": "Setting description."
+  },
   "settings_excluded_empty": {
     "message": "No hay productos excluidos.",
     "description": "Empty-state text."
@@ -850,6 +858,10 @@
   "product_detail_variants_currency": {
     "message": "Variantes ($currency$)",
     "placeholders": { "currency": { "content": "$1" } }
+  },
+  "product_detail_parent_product": {
+    "message": "Producto principal",
+    "description": "Label linking an ungrouped variant row back to its main product."
   },
   "product_detail_store_only_ebay": {
     "message": "Envía con menos restricciones desde su tienda de eBay que desde su propio sitio web.",

@@ -21,6 +21,10 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
   `$0.08/g`, `$0.005/mL`, `$19.99/pcs`), so listings of different sizes can be compared at a
   glance. Always uses the same base unit per measure (grams, millilitres) so the column
   sorts correctly.
+- New **Group product variants** display setting (on by default). Turn it off to give each
+  product variant its own row in the results table, so sorting or filtering by price,
+  quantity, or unit price ranks every variant across all suppliers at once — expanding a
+  variant row links back to its main product.
 - New supplier: ScienceLab.
 - Improved the search by CAS number, molecular formula, or SMILES on suppliers that only
   search by product name: the identifier is looked up on PubChem and the resulting chemical

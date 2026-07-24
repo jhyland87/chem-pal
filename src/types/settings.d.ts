@@ -159,6 +159,16 @@ declare global {
     autoHideEmptyColumns?: boolean;
 
     /**
+     * When true (the default), a product's variants are grouped under its single
+     * results-table row and surfaced in the expanded detail panel. Set to false to
+     * give each variant its own top-level row, so the table's column sorting and
+     * filtering (price, quantity, unit price) apply across every variant rather
+     * than only the primary one.
+     * @example true
+     */
+    groupProductVariants?: boolean;
+
+    /**
      * List of supplier class names that are enabled for searching
      * @example ["SupplierCarolina", "SupplierLaballey"]
      */

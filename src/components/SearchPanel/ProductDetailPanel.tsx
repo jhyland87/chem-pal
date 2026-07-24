@@ -28,7 +28,7 @@ import {
   productSeriesKey,
   variantSeriesKey,
 } from '@/helpers/priceHistory';
-import { isPresent, resolveProductImages, samePurchasableUnit } from '@/helpers/product';
+import { isPresent, resolveDisplayedVariants, resolveProductImages } from '@/helpers/product';
 import { formatTimestamp, preloadImages } from '@/helpers/utils';
 import COAIcon from '@/icons/COAIcon';
 import SDSIcon from '@/icons/SDSIcon';
@@ -595,19 +595,10 @@ export function ProductDetailPanel({ row, table }: ProductDetailPanelProps): Rea
   const variants: Variant[] =
     row.subRows.length > 0 ? row.subRows.map((sub) => sub.original) : (product.variants ?? []);
 
-  // Always include the parent product itself as a row, unless a supplier already
-  // lists it as a variant. Match on identity first (variantSeriesKey folds in the
-  // genuine-vs-inherited id, then title/quantity/sku); but some suppliers (e.g.
-  // Ambeed) give the parent its own product-level id/sku that differs from the
-  // matching variant's, so also treat a variant as the parent when it's the same
-  // purchasable unit (quantity + uom, or price when size is unknown).
-  const parentKey = variantSeriesKey(product, product);
-  const parentAlreadyListed = variants.some(
-    (v) =>
-      (parentKey !== undefined && variantSeriesKey(product, v) === parentKey) ||
-      samePurchasableUnit(product, v),
-  );
-  const displayedVariants: Variant[] = parentAlreadyListed ? variants : [product, ...variants];
+  // Include the parent product itself as a row unless a supplier already lists it
+  // as a variant. Shared with the table's ungrouped display mode so the two never
+  // drift; see resolveDisplayedVariants for the identity/purchasable-unit dedup.
+  const displayedVariants = resolveDisplayedVariants(product, variants);
 
   // Resolve a row's recorded series: the parent's history lives under the base
   // productKey, every other variant under its own variant key.
@@ -659,9 +650,21 @@ export function ProductDetailPanel({ row, table }: ProductDetailPanelProps): Rea
             <ProductPriceHistory points={aggregatePoints} userSettings={userSettings} />
           </ProductDetailFieldsColumn>
 
-          {hasVariants && (
+          {product.parentProduct ? (
             <ProductDetailVariantsColumn>
-              <ProductDetailVariantsGrid>
+              <ProductDetailFieldRow>
+                <span className="detail-label">{i18n('product_detail_parent_product')}</span>
+                <span className="detail-value">
+                  <Link href={product.parentProduct.permalink ?? product.parentProduct.url}>
+                    {product.parentProduct.title}
+                  </Link>
+                </span>
+              </ProductDetailFieldRow>
+            </ProductDetailVariantsColumn>
+          ) : (
+            hasVariants && (
+              <ProductDetailVariantsColumn>
+                <ProductDetailVariantsGrid>
                 <Typography
                   className="variant-header"
                   variant="caption"
@@ -715,8 +718,9 @@ export function ProductDetailPanel({ row, table }: ProductDetailPanelProps): Rea
                     </Fragment>
                   );
                 })}
-              </ProductDetailVariantsGrid>
-            </ProductDetailVariantsColumn>
+                </ProductDetailVariantsGrid>
+              </ProductDetailVariantsColumn>
+            )
           )}
         </ProductDetailBody>
       </ProductDetailContent>
