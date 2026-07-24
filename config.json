@@ -127,6 +127,12 @@
       "flash": "Column filters cleared"
     },
     {
+      "id": "toggleGroupVariants",
+      "keys": "mod+shift+g",
+      "description": "Toggle grouping of product variants",
+      "group": "Results"
+    },
+    {
       "id": "konami",
       "keys": "upArrow+upArrow+downArrow+downArrow+leftArrow+rightArrow",
       "description": "Toggle advanced settings",

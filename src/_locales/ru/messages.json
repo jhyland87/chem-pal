@@ -1413,6 +1413,10 @@
     "message": "Очистить все фильтры столбцов",
     "description": "Hotkey description."
   },
+  "hotkeys_desc_togglegroupvariants": {
+    "message": "Переключить группировку вариантов товара",
+    "description": "Hotkey description."
+  },
   "hotkeys_desc_konami": {
     "message": "Поздороваться",
     "description": "Hotkey description."
@@ -1427,6 +1431,14 @@
   },
   "hotkeys_flash_advanced_off": {
     "message": "Расширенный режим выключен",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_group_variants_on": {
+    "message": "Группировка вариантов включена",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_group_variants_off": {
+    "message": "Группировка вариантов выключена",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_openhistory": {

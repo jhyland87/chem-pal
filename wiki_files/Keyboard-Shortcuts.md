@@ -41,6 +41,7 @@ shortcut by name, category, or keys.
 | `mod`+`Shift`+`↑` | Scroll the results table to the top |
 | `mod`+`Shift`+`A` | Show all rows on one page (no pagination) |
 | `mod`+`Shift`+`Backspace` | Clear all column filters |
+| `mod`+`Shift`+`G` | Toggle grouping of product variants |
 
 ## Sequential shortcuts
 

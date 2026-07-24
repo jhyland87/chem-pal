@@ -1046,6 +1046,10 @@
     "message": "Alle Spaltenfilter löschen",
     "description": "Hotkey description."
   },
+  "hotkeys_desc_togglegroupvariants": {
+    "message": "Gruppierung von Produktvarianten umschalten",
+    "description": "Hotkey description."
+  },
   "hotkeys_desc_konami": { "message": "Hallo sagen", "description": "Hotkey description." },
   "hotkeys_flash_clearandretrysearch": {
     "message": "Cache geleert, Suche erneut ausgelöst",
@@ -1057,6 +1061,14 @@
   },
   "hotkeys_flash_advanced_off": {
     "message": "Erweiterter Modus deaktiviert",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_group_variants_on": {
+    "message": "Variantengruppierung ein",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_group_variants_off": {
+    "message": "Variantengruppierung aus",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_openhistory": {

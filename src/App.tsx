@@ -151,7 +151,7 @@ type AppAction =
  */
 function HotkeyLayer({ handlers }: { handlers: HotkeyHandlers }) {
   const { flashStatusText } = useStatusBar();
-  const { advancedMode, setAdvancedMode } = useAppContext();
+  const { advancedMode, setAdvancedMode, userSettings, setUserSettings } = useAppContext();
 
   const allHandlers = useMemo(
     () => ({
@@ -162,8 +162,18 @@ function HotkeyLayer({ handlers }: { handlers: HotkeyHandlers }) {
         flashStatusText(i18n(next ? 'hotkeys_flash_advanced_on' : 'hotkeys_flash_advanced_off'));
         void playAdvancedModeSound(next);
       },
+      // Toggles the persisted `groupProductVariants` setting through the same
+      // reducer the Settings switch uses; flash text depends on the new state,
+      // so it lives here rather than in the plain handler map.
+      toggleGroupVariants: () => {
+        const next = !(userSettings.groupProductVariants ?? true);
+        setUserSettings({ ...userSettings, groupProductVariants: next });
+        flashStatusText(
+          i18n(next ? 'hotkeys_flash_group_variants_on' : 'hotkeys_flash_group_variants_off'),
+        );
+      },
     }),
-    [handlers, advancedMode, setAdvancedMode, flashStatusText],
+    [handlers, advancedMode, setAdvancedMode, userSettings, setUserSettings, flashStatusText],
   );
 
   useHotkeys(allHandlers, {

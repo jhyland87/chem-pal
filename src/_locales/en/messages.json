@@ -1063,6 +1063,10 @@
     "message": "Clear all column filters",
     "description": "Hotkey description."
   },
+  "hotkeys_desc_togglegroupvariants": {
+    "message": "Toggle grouping of product variants",
+    "description": "Hotkey description."
+  },
   "hotkeys_desc_konami": { "message": "Say hello", "description": "Hotkey description." },
   "hotkeys_flash_clearandretrysearch": {
     "message": "Cache cleared, search re-triggered",
@@ -1074,6 +1078,14 @@
   },
   "hotkeys_flash_advanced_off": {
     "message": "Advanced mode off",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_group_variants_on": {
+    "message": "Variant grouping on",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_group_variants_off": {
+    "message": "Variant grouping off",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_openhistory": {

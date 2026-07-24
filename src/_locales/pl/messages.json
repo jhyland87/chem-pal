@@ -1412,6 +1412,10 @@
     "message": "Wyczyść wszystkie filtry kolumn",
     "description": "Hotkey description."
   },
+  "hotkeys_desc_togglegroupvariants": {
+    "message": "Przełącz grupowanie wariantów produktu",
+    "description": "Hotkey description."
+  },
   "hotkeys_desc_konami": {
     "message": "Przywitaj się",
     "description": "Hotkey description."
@@ -1426,6 +1430,14 @@
   },
   "hotkeys_flash_advanced_off": {
     "message": "Tryb zaawansowany wyłączony",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_group_variants_on": {
+    "message": "Grupowanie wariantów włączone",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_group_variants_off": {
+    "message": "Grupowanie wariantów wyłączone",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_openhistory": {

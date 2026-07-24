@@ -1016,6 +1016,10 @@
     "message": "सभी स्तंभ फ़िल्टर साफ़ करें",
     "description": "Hotkey description."
   },
+  "hotkeys_desc_togglegroupvariants": {
+    "message": "उत्पाद वेरिएंट के समूहन को टॉगल करें",
+    "description": "Hotkey description."
+  },
   "hotkeys_desc_konami": { "message": "नमस्ते कहें", "description": "Hotkey description." },
   "hotkeys_flash_clearandretrysearch": {
     "message": "कैश साफ़ किया गया, खोज पुनः शुरू की गई",
@@ -1027,6 +1031,14 @@
   },
   "hotkeys_flash_advanced_off": {
     "message": "उन्नत मोड बंद",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_group_variants_on": {
+    "message": "वेरिएंट समूहन चालू",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_group_variants_off": {
+    "message": "वेरिएंट समूहन बंद",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_openhistory": {
