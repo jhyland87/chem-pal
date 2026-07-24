@@ -534,6 +534,167 @@ export const ProductDetailImageColumn = styled('div')(({ theme }) => ({
   flexShrink: 0,
 }));
 
+// Clickable wrapper around the carousel thumbnail that opens the image-gallery
+// modal. A real button (not an anchor) so Enter/Space activate it and it takes
+// focus; fills the image box and scales the nested img to fit.
+export const ProductImageTrigger = styled('button')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '100%',
+  height: '100%',
+  padding: 0,
+  border: 'none',
+  background: 'transparent',
+  cursor: 'pointer',
+  '& img': {
+    maxWidth: '100%',
+    maxHeight: '100%',
+    objectFit: 'contain',
+  },
+  '&:focus-visible': {
+    outline: `2px solid ${theme.palette.primary.main}`,
+    outlineOffset: 2,
+  },
+}));
+
+// Centered modal surface for the image gallery, sized to the viewport so the
+// enlarged image and thumbnail strip stack without overflowing the screen.
+export const ProductImageModalBox = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  outline: 'none',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1.5),
+  width: 'min(760px, 92vw)',
+  maxHeight: '90vh',
+  padding: theme.spacing(2),
+  borderRadius: Number(theme.shape.borderRadius) * 2,
+  backgroundColor: theme.palette.background.paper,
+  color: theme.palette.text.primary,
+  boxShadow: theme.shadows[24],
+  overflow: 'hidden',
+}));
+
+// Header row of the gallery modal: the title on the left, close button on the right.
+export const ProductImageModalHeader = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 8,
+});
+
+// Small icon button that closes the gallery modal.
+export const ProductImageModalClose = styled('button')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 32,
+  height: 32,
+  padding: 0,
+  border: 'none',
+  borderRadius: '50%',
+  cursor: 'pointer',
+  color: 'inherit',
+  background: 'transparent',
+  transition: 'background-color 120ms ease',
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+  },
+  '&:focus-visible': {
+    outline: `2px solid ${theme.palette.primary.main}`,
+  },
+}));
+
+// The enlarged-image area of the gallery modal, a positioning context for the
+// overlaid prev/next arrows. The image scales to fit within the viewport height.
+export const ProductImageModalStage = styled('div')({
+  position: 'relative',
+  flex: 1,
+  minHeight: 0,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  '& img': {
+    maxWidth: '100%',
+    maxHeight: '62vh',
+    objectFit: 'contain',
+  },
+});
+
+// Prev/next arrow overlaid on the enlarged image. Like ProductImageNavButton but
+// always visible (the modal isn't hover-driven) and larger for a bigger target.
+export const ProductImageModalNavButton = styled('button')(({ theme }) => ({
+  position: 'absolute',
+  top: '50%',
+  transform: 'translateY(-50%)',
+  zIndex: 1,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 40,
+  height: 40,
+  padding: 0,
+  border: 'none',
+  borderRadius: '50%',
+  cursor: 'pointer',
+  color: '#fff',
+  backgroundColor: 'rgba(0, 0, 0, 0.45)',
+  transition: 'background-color 120ms ease',
+  '&:hover': {
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+  },
+  '&:focus-visible': {
+    outline: `2px solid ${theme.palette.primary.main}`,
+  },
+  '&.prev': {
+    left: theme.spacing(1),
+  },
+  '&.next': {
+    right: theme.spacing(1),
+  },
+}));
+
+// Horizontal, scrollable row of thumbnails beneath the enlarged image.
+export const ProductImageThumbStrip = styled('div')(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(1),
+  padding: theme.spacing(0.5),
+  overflowX: 'auto',
+  flexShrink: 0,
+  scrollSnapType: 'x proximity',
+}));
+
+// A single gallery thumbnail button; the active one gets a primary-colored border.
+export const ProductImageThumb = styled('button')(({ theme }) => ({
+  flexShrink: 0,
+  width: 56,
+  height: 56,
+  padding: 0,
+  cursor: 'pointer',
+  overflow: 'hidden',
+  scrollSnapAlign: 'start',
+  background: 'transparent',
+  borderRadius: theme.shape?.borderRadius ?? 4,
+  border: '2px solid transparent',
+  transition: 'border-color 120ms ease',
+  '& img': {
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain',
+  },
+  '&.active': {
+    borderColor: theme.palette.primary.main,
+  },
+  '&:focus-visible': {
+    outline: `2px solid ${theme.palette.primary.main}`,
+    outlineOffset: 1,
+  },
+}));
+
 // Row of document icon links (SDS / TDS / COA) shown under the image.
 export const ProductDetailDocLinks = styled('div')(({ theme }) => ({
   display: 'flex',

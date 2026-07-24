@@ -784,6 +784,22 @@
     "message": "अगली छवि",
     "description": "Accessible label for the next-image button."
   },
+  "product_detail_view_images": {
+    "message": "$title$ के लिए छवियाँ देखें",
+    "placeholders": { "title": { "content": "$1" } }
+  },
+  "product_image_modal_title": {
+    "message": "$title$ के लिए छवियाँ",
+    "placeholders": { "title": { "content": "$1" } }
+  },
+  "product_image_modal_thumbnail": {
+    "message": "छवि $number$ दिखाएँ",
+    "placeholders": { "number": { "content": "$1" } }
+  },
+  "product_image_modal_close": {
+    "message": "बंद करें",
+    "description": "Accessible label for the button that closes the image gallery modal."
+  },
   "product_detail_sparkline_aria": {
     "message": "मूल्य इतिहास स्पार्कलाइन",
     "description": "Accessible label for the price-history sparkline."

@@ -819,6 +819,22 @@
     "message": "Seuraava kuva",
     "description": "Accessible label for the next-image button."
   },
+  "product_detail_view_images": {
+    "message": "Näytä kohteen $title$ kuvat",
+    "placeholders": { "title": { "content": "$1" } }
+  },
+  "product_image_modal_title": {
+    "message": "Kuvat: $title$",
+    "placeholders": { "title": { "content": "$1" } }
+  },
+  "product_image_modal_thumbnail": {
+    "message": "Näytä kuva $number$",
+    "placeholders": { "number": { "content": "$1" } }
+  },
+  "product_image_modal_close": {
+    "message": "Sulje",
+    "description": "Accessible label for the button that closes the image gallery modal."
+  },
   "product_detail_sparkline_aria": {
     "message": "Hintahistorian sparkline-kaavio",
     "description": "Accessible label for the price-history sparkline."

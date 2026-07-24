@@ -13,8 +13,10 @@ import {
   ProductDetailVariantsColumn,
   ProductDetailVariantsGrid,
   ProductImageNavButton,
+  ProductImageTrigger,
 } from '@/components/StyledComponents';
 import { default as Link } from '@/components/TabLink';
+import { ProductImageModal } from '@/components/SearchPanel/ProductImageModal';
 import { SupplierStoreNotice } from '@/components/SearchPanel/SupplierStoreNotice';
 import { omit } from '@/helpers/collectionUtils';
 import { i18n } from '@/helpers/i18n';
@@ -206,6 +208,7 @@ export function ProductImageCarousel({
   title,
 }: ProductImageCarouselProps): ReactElement | null {
   const [broken, setBroken] = useState<ReadonlySet<number>>(new Set());
+  const [modalOpen, setModalOpen] = useState(false);
   // URLs already handed to the preloader, so we never fetch the same one twice.
   const preloadedRef = useRef<Set<string>>(new Set());
 
@@ -233,7 +236,7 @@ export function ProductImageCarousel({
 
   const current = available[Math.min(position, available.length - 1)];
   const hasMultiple = available.length > 1;
-  // Cycle without letting the click bubble to the image's open-in-new-tab link.
+  // Cycle without letting the click bubble to the trigger that opens the modal.
   const navigate = (event: MouseEvent, step: () => void) => {
     event.preventDefault();
     event.stopPropagation();
@@ -241,38 +244,48 @@ export function ProductImageCarousel({
   };
 
   return (
-    <ProductDetailImageBox>
-      <Link
-        href={current.image.fullSrc}
-        aria-label={i18n('product_detail_open_full_image', [title])}
-      >
-        <img
-          src={current.image.thumbSrc}
-          alt={current.image.altText ?? title}
-          onError={() => setBroken((brokenSet) => new Set(brokenSet).add(current.index))}
-        />
-      </Link>
-      {hasMultiple && (
-        <>
-          <ProductImageNavButton
-            type="button"
-            className="image-nav prev"
-            aria-label={i18n('product_detail_prev_image')}
-            onClick={(event) => navigate(event, prev)}
-          >
-            <ArrowBackIosNewIcon fontSize="small" />
-          </ProductImageNavButton>
-          <ProductImageNavButton
-            type="button"
-            className="image-nav next"
-            aria-label={i18n('product_detail_next_image')}
-            onClick={(event) => navigate(event, next)}
-          >
-            <ArrowForwardIosIcon fontSize="small" />
-          </ProductImageNavButton>
-        </>
-      )}
-    </ProductDetailImageBox>
+    <Fragment>
+      <ProductDetailImageBox>
+        <ProductImageTrigger
+          type="button"
+          aria-label={i18n('product_detail_view_images', [title])}
+          onClick={() => setModalOpen(true)}
+        >
+          <img
+            src={current.image.thumbSrc}
+            alt={current.image.altText ?? title}
+            onError={() => setBroken((brokenSet) => new Set(brokenSet).add(current.index))}
+          />
+        </ProductImageTrigger>
+        {hasMultiple && (
+          <>
+            <ProductImageNavButton
+              type="button"
+              className="image-nav prev"
+              aria-label={i18n('product_detail_prev_image')}
+              onClick={(event) => navigate(event, prev)}
+            >
+              <ArrowBackIosNewIcon fontSize="small" />
+            </ProductImageNavButton>
+            <ProductImageNavButton
+              type="button"
+              className="image-nav next"
+              aria-label={i18n('product_detail_next_image')}
+              onClick={(event) => navigate(event, next)}
+            >
+              <ArrowForwardIosIcon fontSize="small" />
+            </ProductImageNavButton>
+          </>
+        )}
+      </ProductDetailImageBox>
+      <ProductImageModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        images={available.map(({ image }) => image)}
+        title={title}
+        initialIndex={position}
+      />
+    </Fragment>
   );
 }
 

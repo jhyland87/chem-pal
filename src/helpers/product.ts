@@ -31,13 +31,14 @@ const EXPANDABLE_DETAIL_KEYS = [
 
 /**
  * A resolved image for a product's detail panel: the source shown in the
- * thumbnail box and the (usually larger) source opened when it's clicked.
+ * thumbnail box and the (usually larger) source shown enlarged in the gallery
+ * modal when the thumbnail is clicked.
  * @source
  */
-interface ResolvedProductImage {
+export interface ResolvedProductImage {
   /** Image URL to render in the fixed-size thumbnail box. */
   thumbSrc: string;
-  /** Image URL to open in a new tab when the thumbnail is clicked. */
+  /** Image URL shown enlarged in the gallery modal when the thumbnail is clicked. */
   fullSrc: string;
   /** Alt text for the image, when the source provided one. */
   altText?: string;

@@ -809,6 +809,22 @@
     "message": "Next image",
     "description": "Accessible label for the next-image button."
   },
+  "product_detail_view_images": {
+    "message": "View images for $title$",
+    "placeholders": { "title": { "content": "$1" } }
+  },
+  "product_image_modal_title": {
+    "message": "Images for $title$",
+    "placeholders": { "title": { "content": "$1" } }
+  },
+  "product_image_modal_thumbnail": {
+    "message": "Show image $number$",
+    "placeholders": { "number": { "content": "$1" } }
+  },
+  "product_image_modal_close": {
+    "message": "Close",
+    "description": "Accessible label for the button that closes the image gallery modal."
+  },
   "product_detail_sparkline_aria": {
     "message": "Price history sparkline",
     "description": "Accessible label for the price-history sparkline."

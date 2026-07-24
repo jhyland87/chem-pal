@@ -1076,6 +1076,22 @@
     "message": "Следующее изображение",
     "description": "Accessible label for the next-image button."
   },
+  "product_detail_view_images": {
+    "message": "Просмотреть изображения для $title$",
+    "placeholders": { "title": { "content": "$1" } }
+  },
+  "product_image_modal_title": {
+    "message": "Изображения для $title$",
+    "placeholders": { "title": { "content": "$1" } }
+  },
+  "product_image_modal_thumbnail": {
+    "message": "Показать изображение $number$",
+    "placeholders": { "number": { "content": "$1" } }
+  },
+  "product_image_modal_close": {
+    "message": "Закрыть",
+    "description": "Accessible label for the button that closes the image gallery modal."
+  },
   "product_detail_sparkline_aria": {
     "message": "График истории цен",
     "description": "Accessible label for the price-history sparkline."
