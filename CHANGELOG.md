@@ -15,6 +15,10 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ### Added
 
+- New **Unit Price** column in the results table showing the price per base unit (e.g.
+  `$0.08/g`, `$0.005/mL`, `$19.99/pcs`), so listings of different sizes can be compared at a
+  glance. Always uses the same base unit per measure (grams, millilitres) so the column
+  sorts correctly.
 - New supplier: ScienceLab.
 - Improved the search by CAS number, molecular formula, or SMILES on suppliers that only
   search by product name: the identifier is looked up on PubChem and the resulting chemical

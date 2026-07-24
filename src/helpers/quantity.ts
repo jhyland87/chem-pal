@@ -286,6 +286,96 @@ export function toMetricQuantity(input: QuantityObject): QuantityObject {
 }
 
 /**
+ * The broad category a unit of measure belongs to. Mass and volume units each
+ * share a common base scale ({@link toBaseQuantity}); countable units don't
+ * convert.
+ * @group Quantity
+ */
+type UomKind = 'mass' | 'volume' | 'count';
+
+/**
+ * Classifies a unit of measure as mass, volume, or countable. Standardizes the
+ * input first (via {@link standardizeUom}), so aliases like `"grams"` or `"lbs"`
+ * are accepted. Returns `undefined` for unrecognized units.
+ * @category Helpers
+ * @group Quantity
+ * @param uom - The unit of measure to classify (canonical or alias form).
+ * @returns The unit's kind, or `undefined` if the unit isn't recognized.
+ * @example
+ * ```typescript
+ * getUomKind("kg")   // Returns "mass"
+ * getUomKind("floz") // Returns "volume"
+ * getUomKind("pcs")  // Returns "count"
+ * getUomKind("xyz")  // Returns undefined
+ * ```
+ * @source
+ */
+export function getUomKind(uom: string): UomKind | undefined {
+  const standardized = standardizeUom(uom);
+  if (!standardized) return undefined;
+
+  switch (standardized) {
+    case UOM.MG:
+    case UOM.G:
+    case UOM.KG:
+    case UOM.LB:
+    case UOM.OZ:
+      return 'mass';
+    case UOM.ML:
+    case UOM.L:
+    case UOM.QT:
+    case UOM.GAL:
+    case UOM.FLOZ:
+      return 'volume';
+    case UOM.PCS:
+    case UOM.EA:
+      return 'count';
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Normalizes a quantity to the base unit used for per-unit cost comparison:
+ * grams for mass, millilitres for volume, and the unchanged countable unit for
+ * pieces/each. Unlike {@link toBaseQuantity} (which returns milligrams for mass),
+ * this steps mass up to grams so a cost-per-gram reads naturally. Returns
+ * `undefined` for an unrecognized unit or a non-positive quantity, so callers can
+ * safely divide by the result.
+ * @category Helpers
+ * @group Quantity
+ * @param quantity - The quantity to convert.
+ * @param uom - The unit of measure of the quantity (canonical or alias form).
+ * @returns The quantity in its cost base unit (`g` / `ml` / countable), or `undefined`.
+ * @example
+ * ```typescript
+ * toCostBaseQuantity(1, "kg")  // Returns { quantity: 1000, uom: "g" }
+ * toCostBaseQuantity(2, "l")   // Returns { quantity: 2000, uom: "ml" }
+ * toCostBaseQuantity(5, "pcs") // Returns { quantity: 5, uom: "pcs" }
+ * toCostBaseQuantity(0, "g")   // Returns undefined
+ * ```
+ * @source
+ */
+export function toCostBaseQuantity(quantity: number, uom: string): QuantityObject | undefined {
+  if (typeof quantity !== 'number' || quantity <= 0) return undefined;
+
+  const standardized = standardizeUom(uom);
+  if (!standardized) return undefined;
+
+  switch (getUomKind(standardized)) {
+    case 'mass':
+      // toBaseQuantity returns milligrams for mass; step up to grams.
+      return { quantity: toBaseQuantity(quantity, standardized) / 1000, uom: UOM.G };
+    case 'volume':
+      return { quantity: toBaseQuantity(quantity, standardized), uom: UOM.ML };
+    case 'count':
+      return { quantity, uom: standardized };
+    default:
+      return undefined;
+  }
+}
+
+/**
  * Formats a unit of measure (UOM) for display.
  * @category Helpers
  * @group Quantity

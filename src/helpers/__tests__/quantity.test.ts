@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import { UOM_ALIASES } from '@/constants/common';
-import { parseQuantity, standardizeUom, toMetricQuantity } from '@/helpers/quantity';
+import {
+  getUomKind,
+  parseQuantity,
+  standardizeUom,
+  toCostBaseQuantity,
+  toMetricQuantity,
+} from '@/helpers/quantity';
 
 // Cases are objects rather than bare strings: `it.each` infers the tuple
 // overload for a plain `string[]`. The group types are declared explicitly
@@ -149,4 +155,57 @@ describe('toMetricQuantity', () => {
       expect(toMetricQuantity(input)).toEqual(expected);
     },
   );
+});
+
+describe('getUomKind', () => {
+  it.each([
+    { uom: 'mg', kind: 'mass' },
+    { uom: 'g', kind: 'mass' },
+    { uom: 'kg', kind: 'mass' },
+    { uom: 'lb', kind: 'mass' },
+    { uom: 'oz', kind: 'mass' },
+    { uom: 'ml', kind: 'volume' },
+    { uom: 'l', kind: 'volume' },
+    { uom: 'gal', kind: 'volume' },
+    { uom: 'floz', kind: 'volume' },
+    { uom: 'pcs', kind: 'count' },
+    { uom: 'ea', kind: 'count' },
+  ])('classifies $uom as $kind', ({ uom, kind }) => {
+    expect(getUomKind(uom)).toBe(kind);
+  });
+
+  it('accepts aliases', () => {
+    expect(getUomKind('kilograms')).toBe('mass');
+    expect(getUomKind('milliliters')).toBe('volume');
+  });
+
+  it('returns undefined for an unrecognized unit', () => {
+    expect(getUomKind('xyz')).toBeUndefined();
+  });
+});
+
+describe('toCostBaseQuantity', () => {
+  it.each([
+    // Mass normalizes to grams (not milligrams).
+    { quantity: 500, uom: 'g', expected: { quantity: 500, uom: 'g' } },
+    { quantity: 1, uom: 'kg', expected: { quantity: 1000, uom: 'g' } },
+    { quantity: 1000, uom: 'mg', expected: { quantity: 1, uom: 'g' } },
+    // Volume normalizes to millilitres.
+    { quantity: 250, uom: 'ml', expected: { quantity: 250, uom: 'ml' } },
+    { quantity: 2, uom: 'l', expected: { quantity: 2000, uom: 'ml' } },
+    // Countable units are unchanged.
+    { quantity: 5, uom: 'pcs', expected: { quantity: 5, uom: 'pcs' } },
+    { quantity: 3, uom: 'ea', expected: { quantity: 3, uom: 'ea' } },
+  ])('normalizes $quantity $uom', ({ quantity, uom, expected }) => {
+    expect(toCostBaseQuantity(quantity, uom)).toEqual(expected);
+  });
+
+  it('returns undefined for a non-positive quantity', () => {
+    expect(toCostBaseQuantity(0, 'g')).toBeUndefined();
+    expect(toCostBaseQuantity(-1, 'g')).toBeUndefined();
+  });
+
+  it('returns undefined for an unrecognized unit', () => {
+    expect(toCostBaseQuantity(10, 'xyz')).toBeUndefined();
+  });
 });

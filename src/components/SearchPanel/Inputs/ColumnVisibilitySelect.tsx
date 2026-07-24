@@ -37,7 +37,7 @@ export default function ColumnVisibilitySelect({
   handleColumnVisibilityChange: (event: SelectChangeEvent<string[]>) => void;
 }) {
   // Default columns to show when "defaults" is checked - these should match the actual column keys
-  const defaultColumns = ['supplier', 'country', 'shipping', 'quantity', 'price'];
+  const defaultColumns = ['supplier', 'country', 'shipping', 'quantity', 'price', 'unitPrice'];
 
   // Get the actual column keys that exist and match our default column names
   const availableDefaultKeys = defaultColumns.filter((defaultCol) =>

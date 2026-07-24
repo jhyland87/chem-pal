@@ -298,6 +298,10 @@
     "message": "Unit",
     "description": "Placeholder for the Unit column filter."
   },
+  "filter_placeholder_unit_price": {
+    "message": "0.01 - 100.00",
+    "description": "Placeholder for the Unit Price column filter."
+  },
   "filter_placeholder_cas": {
     "message": "CAS...",
     "description": "Placeholder for the CAS column filter."
@@ -351,6 +355,7 @@
   },
   "column_quantity": { "message": "Qty", "description": "Table column header." },
   "column_unit": { "message": "Unit", "description": "Table column header." },
+  "column_unit_price": { "message": "Unit Price", "description": "Table column header for price per base unit." },
   "column_sds": { "message": "SDS", "description": "Table column header." },
   "column_specs": { "message": "Specs", "description": "Table column header." },
   "column_coa": { "message": "COA", "description": "Table column header." },

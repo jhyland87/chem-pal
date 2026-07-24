@@ -325,6 +325,10 @@
     "message": "Единица",
     "description": "Placeholder for the Unit column filter."
   },
+  "filter_placeholder_unit_price": {
+    "message": "0.01 - 100.00",
+    "description": "Placeholder for the Unit Price column filter."
+  },
   "filter_placeholder_cas": {
     "message": "CAS...",
     "description": "Placeholder for the CAS column filter."
@@ -384,6 +388,10 @@
   "column_unit": {
     "message": "Ед.",
     "description": "Table column header."
+  },
+  "column_unit_price": {
+    "message": "Цена/ед.",
+    "description": "Table column header for price per base unit."
   },
   "column_sds": {
     "message": "SDS",

@@ -188,6 +188,7 @@ declare module '@tanstack/react-table' {
     priceSortingFn: SortingFn<RowData>;
     puritySortingFn: SortingFn<RowData>;
     quantitySortingFn: SortingFn<RowData>;
+    unitPriceSortingFn: SortingFn<RowData>;
   }
 
   // Register our custom filter functions by augmenting the `FilterFns`

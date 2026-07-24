@@ -6,9 +6,13 @@
  */
 
 import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
+import { formatUomForDisplay, toCostBaseQuantity } from '@/helpers/quantity';
 
 /** The product/variant price fields {@link formatDisplayPrice} needs to format a value. */
 type PriceFields = Pick<Variant, 'price' | 'usdPrice' | 'currencyCode'>;
+
+/** The product/variant fields {@link getUnitPrice} and {@link formatUnitPrice} read. */
+type UnitPriceFields = Pick<Variant, 'price' | 'usdPrice' | 'currencyCode' | 'quantity' | 'uom'>;
 
 /** The user settings {@link formatDisplayPrice} reads for currency conversion. */
 type PriceSettings = Pick<UserSettings, 'currency' | 'currencyRate'>;
@@ -22,19 +26,22 @@ type PriceSettings = Pick<UserSettings, 'currency' | 'currencyRate'>;
  * when no symbol is known.
  * @param currency - The ISO currency code (e.g. `"ANG"`).
  * @param amount - The numeric amount to format.
+ * @param maximumFractionDigits - Upper bound on decimal places (default 2). Raise it
+ *   for small per-unit prices so `$0.0042` doesn't collapse to `$0.00`.
  * @returns The symbol-prefixed amount, e.g. `"€18.00"`.
  * @example
  * ```ts
  * formatWithSymbol("USD", 19.99); // => "$19.99"
  * formatWithSymbol("ANG", 43.5); // => "ƒ43.50"
+ * formatWithSymbol("USD", 0.0042, 4); // => "$0.0042"
  * ```
  * @source
  */
-function formatWithSymbol(currency: string, amount: number): string {
+function formatWithSymbol(currency: string, amount: number, maximumFractionDigits = 2): string {
   const symbol = CURRENCY_SYMBOL_MAP[currency] ?? currency;
   const formatted = new Intl.NumberFormat(undefined, {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    maximumFractionDigits,
   }).format(amount);
   return `${symbol}${formatted}`;
 }
@@ -89,4 +96,93 @@ export function formatDisplayPrice(
   const priceInUsd = usdPrice ?? Number(rawPrice);
 
   return formatWithSymbol(currency, priceInUsd * currencyRate);
+}
+
+/** Max decimal places for a per-unit price, so small values stay readable. */
+const UNIT_PRICE_MAX_FRACTION_DIGITS = 4;
+
+/**
+ * Computes a product's price per base unit as a currency-stable number for
+ * sorting and filtering — the USD price (or raw price when there's no USD anchor)
+ * divided by the quantity normalized to its cost base unit (grams for mass,
+ * millilitres for volume, pieces for countable units; see
+ * {@link toCostBaseQuantity}). Returns `undefined` when there's no price, no
+ * quantity, or the unit can't be converted, so the value never becomes `NaN`.
+ *
+ * Uses `usdPrice` (mirroring the price column's sort) so per-unit values compare
+ * across currencies; {@link formatUnitPrice} handles display-currency conversion
+ * separately.
+ * @category Helpers
+ * @group Formatters
+ * @param product - The product/variant `price`, `usdPrice`, `quantity`, and `uom` fields.
+ * @returns The numeric price per base unit, or `undefined` when it can't be computed.
+ * @example
+ * ```ts
+ * getUnitPrice({ usdPrice: 40, price: 40, quantity: 500, uom: "g" }); // => 0.08
+ * getUnitPrice({ usdPrice: 20, price: 20, quantity: 1, uom: "kg" });  // => 0.02
+ * getUnitPrice({ price: 10, quantity: 0, uom: "g" });                 // => undefined
+ * ```
+ * @source
+ */
+export function getUnitPrice(product: UnitPriceFields): number | undefined {
+  const { usdPrice, price, quantity, uom } = product;
+
+  const priceValue = usdPrice ?? price;
+  if (priceValue === undefined || quantity === undefined || uom === undefined) return undefined;
+
+  const base = toCostBaseQuantity(quantity, uom);
+  if (!base) return undefined;
+
+  return priceValue / base.quantity;
+}
+
+/**
+ * Formats a product's price per base unit for display, e.g. `"$0.08/g"` or
+ * `"$19.99/pcs"`. Mirrors {@link formatDisplayPrice}'s currency handling —
+ * converts the USD anchor into the user's currency (falling back to the native
+ * price when a non-USD product has no anchor) — then divides by the quantity
+ * normalized to its cost base unit and appends `/{unit}`. Small values keep up to
+ * four decimal places so a fraction-of-a-cent unit price stays legible. Returns
+ * `""` when there's no price or the quantity/unit can't be converted.
+ * @category Helpers
+ * @group Formatters
+ * @param product - The product/variant `price`, `usdPrice`, `currencyCode`, `quantity`, and `uom` fields.
+ * @param userSettings - The user's `currency` and `currencyRate`; defaults to USD at rate 1 when undefined.
+ * @returns A localized `"{price}/{unit}"` string, or `""` when no unit price is available.
+ * @example
+ * ```ts
+ * formatUnitPrice({ price: 40, usdPrice: 40, currencyCode: "USD", quantity: 500, uom: "g" }, undefined);
+ * // => "$0.08/g"
+ * formatUnitPrice({ price: 5, usdPrice: 5, currencyCode: "USD", quantity: 1, uom: "kg" }, { currency: "EUR", currencyRate: 0.9 });
+ * // => "€0.0045/g"
+ * ```
+ * @source
+ */
+export function formatUnitPrice(
+  product: UnitPriceFields,
+  userSettings: PriceSettings | undefined,
+): string {
+  const { usdPrice, price: rawPrice, currencyCode, quantity, uom } = product;
+
+  if (usdPrice === undefined && rawPrice === undefined) return '';
+  if (quantity === undefined || uom === undefined) return '';
+
+  const base = toCostBaseQuantity(quantity, uom);
+  if (!base) return '';
+
+  const unitLabel = formatUomForDisplay(base.uom);
+  const currency = userSettings?.currency ?? 'USD';
+  const currencyRate = userSettings?.currencyRate ?? 1;
+
+  // Non-USD product without a USD anchor: render the native per-unit price as-is.
+  if (currencyCode !== 'USD' && usdPrice === undefined) {
+    const fallbackCurrency = currencyCode ?? 'USD';
+    const perUnit = Number(rawPrice) / base.quantity;
+    return `${formatWithSymbol(fallbackCurrency, perUnit, UNIT_PRICE_MAX_FRACTION_DIGITS)}/${unitLabel}`;
+  }
+
+  const priceInUsd = usdPrice ?? Number(rawPrice);
+  const perUnit = (priceInUsd * currencyRate) / base.quantity;
+
+  return `${formatWithSymbol(currency, perUnit, UNIT_PRICE_MAX_FRACTION_DIGITS)}/${unitLabel}`;
 }

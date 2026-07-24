@@ -304,6 +304,10 @@
     "message": "Yksikkö",
     "description": "Placeholder for the Unit column filter."
   },
+  "filter_placeholder_unit_price": {
+    "message": "0.01 - 100.00",
+    "description": "Placeholder for the Unit Price column filter."
+  },
   "filter_placeholder_cas": {
     "message": "CAS...",
     "description": "Placeholder for the CAS column filter."
@@ -341,6 +345,7 @@
   },
   "column_quantity": { "message": "Määrä", "description": "Table column header." },
   "column_unit": { "message": "Yksikkö", "description": "Table column header." },
+  "column_unit_price": { "message": "Yksikköhinta", "description": "Table column header for price per base unit." },
   "column_sds": { "message": "KTT", "description": "Table column header." },
   "column_specs": { "message": "Tekn. tiedot", "description": "Table column header." },
   "column_coa": { "message": "COA", "description": "Table column header." },
