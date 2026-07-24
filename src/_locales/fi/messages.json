@@ -1052,6 +1052,10 @@
     "message": "Tyhjennä kaikki sarakesuodattimet",
     "description": "Hotkey description."
   },
+  "hotkeys_desc_togglegroupvariants": {
+    "message": "Vaihda tuotevarianttien ryhmittelyä",
+    "description": "Hotkey description."
+  },
   "hotkeys_desc_konami": { "message": "Sano hei", "description": "Hotkey description." },
   "hotkeys_flash_clearandretrysearch": {
     "message": "Välimuisti tyhjennetty, haku käynnistetty uudelleen",
@@ -1063,6 +1067,14 @@
   },
   "hotkeys_flash_advanced_off": {
     "message": "Edistynyt tila pois käytöstä",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_group_variants_on": {
+    "message": "Varianttien ryhmittely käytössä",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_group_variants_off": {
+    "message": "Varianttien ryhmittely pois käytöstä",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_openhistory": {

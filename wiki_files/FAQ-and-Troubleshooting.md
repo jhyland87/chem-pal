@@ -1,6 +1,27 @@
 Common questions and quick fixes. If none of these help, see
 [reporting an issue](#reporting-a-problem).
 
+## Questions
+
+**Why is this a browser extension?**
+There are several benefits to running the search from your browser via a browser
+extension as opposed to a downloadable app, server side app or hosted web page.
+1. A hosted web page would be limited by CORS (Cross-Origin Resource Sharing)
+   violations that would prevent the vast majority of the supplier requests
+   from going through.
+2. A server side application would mean all the traffic would be coming from
+   one location, which would certainly look suspicious to services such as
+   DataDome and Cloudflare, making web requests more complicated. Plus, this
+   is a free and open source application, there was no desire to pay for hosting
+   services if there's no goal to monetize the extension.
+3. The initial POC for ChemPal was actually a Python application that you would
+   download/setup locally, called [ChemPare](https://github.com/jhyland87/ChemPare).
+   This was more feasible than a server side app or hosted client side app, but
+   when we tested using a browser extension, we realized that the web requests
+   getting sent from your browser actually resolves the majority of the issues
+   we were encountering like setting up the right cookies, dealing with Cloudflare
+   or DataDome, saving session data, etc.
+
 ## Searching
 
 **My search returned no results.**
