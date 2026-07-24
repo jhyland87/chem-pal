@@ -1075,6 +1075,22 @@
     "message": "Następny obraz",
     "description": "Accessible label for the next-image button."
   },
+  "product_detail_view_images": {
+    "message": "Zobacz obrazy dla $title$",
+    "placeholders": { "title": { "content": "$1" } }
+  },
+  "product_image_modal_title": {
+    "message": "Obrazy dla $title$",
+    "placeholders": { "title": { "content": "$1" } }
+  },
+  "product_image_modal_thumbnail": {
+    "message": "Pokaż obraz $number$",
+    "placeholders": { "number": { "content": "$1" } }
+  },
+  "product_image_modal_close": {
+    "message": "Zamknij",
+    "description": "Accessible label for the button that closes the image gallery modal."
+  },
   "product_detail_sparkline_aria": {
     "message": "Wykres historii cen",
     "description": "Accessible label for the price-history sparkline."
