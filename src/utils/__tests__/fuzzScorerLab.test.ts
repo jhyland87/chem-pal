@@ -132,19 +132,13 @@ describe('listSuppliers', () => {
 });
 
 describe('collectCachedTitles source aliases', () => {
-  it('accepts results/cache/both without touching the other store', async () => {
-    // No IDB seeded here, so every source resolves to an empty corpus rather than throwing.
-    for (const source of [
-      'both',
-      'cache',
-      'results',
-      'all',
-      'queryCache',
-      'searchResults',
-    ] as const) {
+  // No IDB seeded here, so every source resolves to an empty corpus rather than throwing.
+  it.each(['both', 'cache', 'results', 'all', 'queryCache', 'searchResults'] as const)(
+    'accepts %j without touching the other store',
+    async (source) => {
       expect(Array.isArray(await collectCachedTitles(source))).toBe(true);
-    }
-  });
+    },
+  );
 });
 
 describe('renderAst', () => {

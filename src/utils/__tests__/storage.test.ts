@@ -276,7 +276,7 @@ describe('cstorage adapter', () => {
         };
       };
       const inner = addListenerMock.mock.calls[addListenerMock.mock.calls.length - 1][0];
-      expect(typeof inner).toBe('function');
+      expect(inner).toBeTypeOf('function');
 
       // Simulate chrome firing a change with envelope-wrapped values.
       inner(

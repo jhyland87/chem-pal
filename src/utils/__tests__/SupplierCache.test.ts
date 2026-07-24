@@ -44,7 +44,7 @@ describe('SupplierCache', () => {
       expect(entry.__cacheMetadata.query).toBe('acetone');
       expect(entry.__cacheMetadata.limit).toBe(50);
       expect(entry.__cacheMetadata.resultCount).toBe(1);
-      expect(typeof entry.__cacheMetadata.version).toBe('number');
+      expect(entry.__cacheMetadata.version).toBeTypeOf('number');
     });
 
     it('no-ops when the cache is disabled', async () => {

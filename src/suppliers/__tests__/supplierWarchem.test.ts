@@ -59,19 +59,17 @@ describe('SupplierWarchem parseVariants', () => {
     expect(supplier.parseVariants(html, createDOM(html))).toEqual([]);
   });
 
-  it('parses opcje whether the inline script uses single or double quotes', () => {
+  it.each(["'", '"'])('parses opcje whether the inline script uses %s quotes', (q) => {
     const supplier = makeSupplier() as unknown as WarchemInternals;
     const radio =
       '<div class="CechaWyboru"><label>' +
       '<input type="radio" data-id-cechy="1" data-id="7" aria-label="Opakowanie:: 25g" />' +
       '</label></div>';
 
-    for (const q of ["'", '"']) {
-      const html = `<script>opcje[${q}x1-7${q}] = ${q}6.50;8.00;0;0;0.00${q};</script>${radio}`;
-      const variants = supplier.parseVariants(html, createDOM(html));
-      expect(variants).toHaveLength(1);
-      expect(variants[0]).toMatchObject({ id: '7', price: 8, quantity: 25, uom: 'g' });
-    }
+    const html = `<script>opcje[${q}x1-7${q}] = ${q}6.50;8.00;0;0;0.00${q};</script>${radio}`;
+    const variants = supplier.parseVariants(html, createDOM(html));
+    expect(variants).toHaveLength(1);
+    expect(variants[0]).toMatchObject({ id: '7', price: 8, quantity: 25, uom: 'g' });
   });
 });
 

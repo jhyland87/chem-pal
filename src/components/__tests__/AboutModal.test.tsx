@@ -44,15 +44,19 @@ describe('AboutModal', () => {
     expect(mockSetAboutOpen).not.toHaveBeenCalled();
   });
 
-  it('renders all contributor links with correct hrefs', () => {
-    render(<AboutModal aboutOpen={true} setAboutOpen={mockSetAboutOpen} />);
-
+  it('ships at least one contributor to render', () => {
     expect(contributors.length).toBeGreaterThan(0);
-    for (const { name, github } of contributors) {
+  });
+
+  it.runIf(contributors.length > 0).for(contributors)(
+    'renders the $name contributor link with correct href',
+    ({ name, github }) => {
+      render(<AboutModal aboutOpen={true} setAboutOpen={mockSetAboutOpen} />);
+
       const link = screen.getByText(name).closest('a');
       expect(link).toHaveAttribute('href', github);
-    }
-  });
+    },
+  );
 
   it('renders Homepage link with correct attributes', () => {
     render(<AboutModal aboutOpen={true} setAboutOpen={mockSetAboutOpen} />);

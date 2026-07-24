@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, it } from 'vitest';
 import sdsFixture from '@/suppliers/__fixtures__/ambeed/sds-response.json';
 import {
   assertIsAmbeedGetPmsSdsByAmsResponse,
@@ -13,9 +13,9 @@ import {
   isAmbeedSearchResponseProduct,
 } from '../ambeed';
 
-describe('Ambeed Type Guards', () => {
+describe.concurrent('Ambeed Type Guards', () => {
   describe('isAmbeedProductListResponse', () => {
-    it('should return true for valid AmbeedProductListResponse', () => {
+    it('should return true for valid AmbeedProductListResponse', ({ expect }) => {
       const validResponse = {
         source: 1,
         code: 200,
@@ -38,24 +38,20 @@ describe('Ambeed Type Guards', () => {
       expect(isAmbeedProductListResponse(validResponse)).toBe(true);
     });
 
-    it('should return false for invalid AmbeedProductListResponse', () => {
-      const invalidResponses = [
-        null,
-        undefined,
-        {},
-        { source: '1' }, // wrong type
-        { source: 1, code: '200' }, // wrong type
-        { source: 1, code: 200 }, // missing required fields
-      ];
-
-      invalidResponses.forEach((response) => {
-        expect(isAmbeedProductListResponse(response)).toBe(false);
-      });
+    it.for([
+      null,
+      undefined,
+      {},
+      { source: '1' }, // wrong type
+      { source: 1, code: '200' }, // wrong type
+      { source: 1, code: 200 }, // missing required fields
+    ])('should return false for invalid input %#: %j', (response, { expect }) => {
+      expect(isAmbeedProductListResponse(response)).toBe(false);
     });
   });
 
   describe('assertIsAmbeedProductListResponse', () => {
-    it('should not throw for valid AmbeedProductListResponse', () => {
+    it('should not throw for valid AmbeedProductListResponse', ({ expect }) => {
       const validResponse = {
         source: 1,
         code: 200,
@@ -78,14 +74,14 @@ describe('Ambeed Type Guards', () => {
       expect(() => assertIsAmbeedProductListResponse(validResponse)).not.toThrow();
     });
 
-    it('should throw for invalid AmbeedProductListResponse', () => {
+    it('should throw for invalid AmbeedProductListResponse', ({ expect }) => {
       const invalidResponse = { source: '1' };
       expect(() => assertIsAmbeedProductListResponse(invalidResponse)).toThrow();
     });
   });
 
   describe('isAmbeedProductListResponseValue', () => {
-    it('should return true for valid AmbeedProductListResponseValue', () => {
+    it('should return true for valid AmbeedProductListResponseValue', ({ expect }) => {
       const validValue = {
         total: 100,
         pagenum: 1,
@@ -102,24 +98,20 @@ describe('Ambeed Type Guards', () => {
       expect(isAmbeedProductListResponseValue(validValue)).toBe(true);
     });
 
-    it('should return false for invalid AmbeedProductListResponseValue', () => {
-      const invalidValues = [
-        null,
-        undefined,
-        {},
-        { total: '100' }, // wrong type
-        { total: 100, pagenum: '1' }, // wrong type
-        { total: 100 }, // missing required fields
-      ];
-
-      invalidValues.forEach((value) => {
-        expect(isAmbeedProductListResponseValue(value)).toBe(false);
-      });
+    it.for([
+      null,
+      undefined,
+      {},
+      { total: '100' }, // wrong type
+      { total: 100, pagenum: '1' }, // wrong type
+      { total: 100 }, // missing required fields
+    ])('should return false for invalid input %#: %j', (value, { expect }) => {
+      expect(isAmbeedProductListResponseValue(value)).toBe(false);
     });
   });
 
   describe('isAmbeedProductListResponseResultItem', () => {
-    it('should return true for valid AmbeedProductListResponseResultItem', () => {
+    it('should return true for valid AmbeedProductListResponseResultItem', ({ expect }) => {
       const validItem = {
         p_id: '123',
         priceList: [],
@@ -132,24 +124,20 @@ describe('Ambeed Type Guards', () => {
       expect(isAmbeedProductListResponseResultItem(validItem)).toBe(true);
     });
 
-    it('should return false for invalid AmbeedProductListResponseResultItem', () => {
-      const invalidItems = [
-        null,
-        undefined,
-        {},
-        { p_id: 123 }, // wrong type
-        { p_id: '123', priceList: 'not-an-array' }, // wrong type
-        { p_id: '123' }, // missing required fields
-      ];
-
-      invalidItems.forEach((item) => {
-        expect(isAmbeedProductListResponseResultItem(item)).toBe(false);
-      });
+    it.for([
+      null,
+      undefined,
+      {},
+      { p_id: 123 }, // wrong type
+      { p_id: '123', priceList: 'not-an-array' }, // wrong type
+      { p_id: '123' }, // missing required fields
+    ])('should return false for invalid input %#: %j', (item, { expect }) => {
+      expect(isAmbeedProductListResponseResultItem(item)).toBe(false);
     });
   });
 
   describe('isAmbeedProductListResponsePriceList', () => {
-    it('should return true for valid AmbeedProductListResponsePriceList', () => {
+    it('should return true for valid AmbeedProductListResponsePriceList', ({ expect }) => {
       const validPriceList = {
         pr_am: '100',
         pr_usd: '1.00',
@@ -162,24 +150,20 @@ describe('Ambeed Type Guards', () => {
       expect(isAmbeedProductListResponsePriceList(validPriceList)).toBe(true);
     });
 
-    it('should return false for invalid AmbeedProductListResponsePriceList', () => {
-      const invalidPriceLists = [
-        null,
-        undefined,
-        {},
-        { pr_am: 100 }, // wrong type
-        { pr_am: '100', pr_usd: 1.0 }, // wrong type
-        { pr_am: '100' }, // missing required fields
-      ];
-
-      invalidPriceLists.forEach((priceList) => {
-        expect(isAmbeedProductListResponsePriceList(priceList)).toBe(false);
-      });
+    it.for([
+      null,
+      undefined,
+      {},
+      { pr_am: 100 }, // wrong type
+      { pr_am: '100', pr_usd: 1.0 }, // wrong type
+      { pr_am: '100' }, // missing required fields
+    ])('should return false for invalid input %#: %j', (priceList, { expect }) => {
+      expect(isAmbeedProductListResponsePriceList(priceList)).toBe(false);
     });
   });
 
   describe('isAmbeedSearchResponseProduct', () => {
-    it('should return true for valid AmbeedSearchResponseProduct', () => {
+    it('should return true for valid AmbeedSearchResponseProduct', ({ expect }) => {
       const validResponse = {
         source: 1,
         code: 200,
@@ -192,42 +176,35 @@ describe('Ambeed Type Guards', () => {
       expect(isAmbeedSearchResponseProduct(validResponse)).toBe(true);
     });
 
-    it('should return false for invalid AmbeedSearchResponseProduct', () => {
-      const invalidResponses = [
-        null,
-        undefined,
-        {},
-        { source: '1' }, // wrong type
-        { source: 1, code: '200' }, // wrong type
-        { source: 1, code: 200 }, // missing required fields
-      ];
-
-      invalidResponses.forEach((response) => {
-        expect(isAmbeedSearchResponseProduct(response)).toBe(false);
-      });
+    it.for([
+      null,
+      undefined,
+      {},
+      { source: '1' }, // wrong type
+      { source: 1, code: '200' }, // wrong type
+      { source: 1, code: 200 }, // missing required fields
+    ])('should return false for invalid input %#: %j', (response, { expect }) => {
+      expect(isAmbeedSearchResponseProduct(response)).toBe(false);
     });
   });
 
   describe('isAmbeedGetPmsSdsByAmsResponse', () => {
-    it('should return true for the real SDS response fixture', () => {
+    it('should return true for the real SDS response fixture', ({ expect }) => {
       expect(isAmbeedGetPmsSdsByAmsResponse(sdsFixture)).toBe(true);
     });
 
-    it('should return false for invalid SDS responses', () => {
-      const invalidResponses = [
-        null,
-        undefined,
-        {},
-        { value: {} }, // missing sds_list/isokk/errmsg
-        { value: { isokk: true, errmsg: '', sds_list: { A1: { am: { url: 'x' } } } } }, // entry missing status
-        { value: { isokk: true, errmsg: '', sds_list: { A1: { am: { status: true } } } } }, // entry missing url
-      ];
-      invalidResponses.forEach((response) => {
-        expect(isAmbeedGetPmsSdsByAmsResponse(response)).toBe(false);
-      });
+    it.for([
+      null,
+      undefined,
+      {},
+      { value: {} }, // missing sds_list/isokk/errmsg
+      { value: { isokk: true, errmsg: '', sds_list: { A1: { am: { url: 'x' } } } } }, // entry missing status
+      { value: { isokk: true, errmsg: '', sds_list: { A1: { am: { status: true } } } } }, // entry missing url
+    ])('should return false for invalid SDS response %#: %j', (response, { expect }) => {
+      expect(isAmbeedGetPmsSdsByAmsResponse(response)).toBe(false);
     });
 
-    it('assert throws on invalid input and narrows on valid', () => {
+    it('assert throws on invalid input and narrows on valid', ({ expect }) => {
       expect(() => assertIsAmbeedGetPmsSdsByAmsResponse({})).toThrow();
       expect(() => assertIsAmbeedGetPmsSdsByAmsResponse(sdsFixture)).not.toThrow();
     });
@@ -245,29 +222,26 @@ describe('Ambeed Type Guards', () => {
       ],
     };
 
-    it('should return true for a valid product stock response', () => {
+    it('should return true for a valid product stock response', ({ expect }) => {
       expect(isAmbeedProductStockResponse(validResponse)).toBe(true);
     });
 
-    it('should return true when value is an empty array', () => {
+    it('should return true when value is an empty array', ({ expect }) => {
       expect(isAmbeedProductStockResponse({ ...validResponse, value: [] })).toBe(true);
     });
 
-    it('should return false for invalid product stock responses', () => {
-      const invalidResponses = [
-        null,
-        undefined,
-        {},
-        { source: 1000, code: 200, lang: 'zh_CN', time: 'x' }, // missing value
-        { ...validResponse, value: {} }, // value not an array
-        { ...validResponse, value: [{ has_stock: 2 }] }, // row missing size
-      ];
-      invalidResponses.forEach((response) => {
-        expect(isAmbeedProductStockResponse(response)).toBe(false);
-      });
+    it.for([
+      null,
+      undefined,
+      {},
+      { source: 1000, code: 200, lang: 'zh_CN', time: 'x' }, // missing value
+      { ...validResponse, value: {} }, // value not an array
+      { ...validResponse, value: [{ has_stock: 2 }] }, // row missing size
+    ])('should return false for invalid input %#: %j', (response, { expect }) => {
+      expect(isAmbeedProductStockResponse(response)).toBe(false);
     });
 
-    it('assert throws on invalid input and narrows on valid', () => {
+    it('assert throws on invalid input and narrows on valid', ({ expect }) => {
       expect(() => assertIsAmbeedProductStockResponse({})).toThrow();
       expect(() => assertIsAmbeedProductStockResponse(validResponse)).not.toThrow();
     });

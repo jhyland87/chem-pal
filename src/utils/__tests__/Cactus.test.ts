@@ -75,7 +75,7 @@ describe('Cactus', () => {
       const cactus = new Cactus('aspirin');
       const stats = cactus.getCacheStats();
       expect(stats).toHaveProperty('size');
-      expect(typeof stats.size).toBe('number');
+      expect(stats.size).toBeTypeOf('number');
     });
 
     it('should return zero size when cache is disabled', () => {

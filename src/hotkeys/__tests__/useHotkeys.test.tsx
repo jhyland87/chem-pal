@@ -19,10 +19,12 @@ describe('getHotkeyConfigs', () => {
     expect(Array.isArray(configs)).toBe(true);
     expect(configs.length).toBeGreaterThan(0);
     expect(configs[0].id).toBe('showHotkeyHelp');
-    for (const c of configs) {
-      expect(typeof c.id).toBe('string');
-      expect(typeof c.description).toBe('string');
-    }
+  });
+
+  const configs = getHotkeyConfigs();
+  it.runIf(configs.length > 0).for(configs)('config "$id" has a string id and description', (c) => {
+    expect(c.id).toBeTypeOf('string');
+    expect(c.description).toBeTypeOf('string');
   });
 });
 

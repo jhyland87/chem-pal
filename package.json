@@ -234,7 +234,8 @@
     "vite-plugin-graphql-loader": "^5.1.1",
     "vite-plugin-static-copy": "^2.3.1",
     "vitest": "^3.1.4",
-    "web-ext": "^10.4.0"
+    "web-ext": "^10.4.0",
+    "xml-formatter": "^3.7.0"
   },
   "msw": {
     "workerDirectory": [

@@ -15,31 +15,36 @@ describe('HotkeyHelpModal', () => {
     expect(screen.queryByText('Keyboard Shortcuts')).not.toBeInTheDocument();
   });
 
-  it('renders the title and grouped tabs when open', () => {
+  it('renders the title when open', () => {
     render(<HotkeyHelpModal open={true} onClose={onClose} />);
 
     expect(screen.getByText('Keyboard Shortcuts')).toBeInTheDocument();
+  });
 
-    // Every distinct group in config.json should appear as a tab.
-    const groups = new Set(getHotkeyConfigs().map((c) => c.group || 'General'));
-    for (const group of groups) {
+  // Every distinct group in config.json should appear as a tab.
+  const groupNames = Array.from(new Set(getHotkeyConfigs().map((c) => c.group || 'General')));
+  it.runIf(groupNames.length > 0).each(groupNames)(
+    'renders a tab for the %s group when open',
+    (group) => {
+      render(<HotkeyHelpModal open={true} onClose={onClose} />);
+
       expect(screen.getAllByRole('tab', { name: group }).length).toBeGreaterThan(0);
-    }
-  });
+    },
+  );
 
-  it("shows the descriptions for the first group's entries", () => {
-    const configs = getHotkeyConfigs();
-    const firstGroup = configs[0].group || 'General';
-    const firstGroupEntries = configs.filter(
-      (c) => (c.group || 'General') === firstGroup && !c.unlisted,
-    );
+  const firstGroupConfigs = getHotkeyConfigs();
+  const firstGroupName = firstGroupConfigs[0]?.group || 'General';
+  const firstGroupEntries = firstGroupConfigs.filter(
+    (c) => (c.group || 'General') === firstGroupName && !c.unlisted,
+  );
+  it.runIf(firstGroupEntries.length > 0).for(firstGroupEntries)(
+    "shows the '$description' entry for the first group",
+    (entry) => {
+      render(<HotkeyHelpModal open={true} onClose={onClose} />);
 
-    render(<HotkeyHelpModal open={true} onClose={onClose} />);
-
-    for (const entry of firstGroupEntries) {
       expect(screen.getByText(entry.description)).toBeInTheDocument();
-    }
-  });
+    },
+  );
 
   it('switches the visible entries when a different tab is selected', () => {
     const configs = getHotkeyConfigs();

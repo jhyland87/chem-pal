@@ -32,22 +32,18 @@ describe('CryptoPaymentIcon', () => {
     expect(await screen.findByText(type)).toBeInTheDocument();
   });
 
-  test('renders correct SVG content for each type', () => {
-    types.forEach((type) => {
-      const { container, unmount } = render(<CryptoPaymentIcon type={type} />);
-      const svg = container.querySelector('svg');
-      expect(svg).toBeInTheDocument();
-      // Each icon type should have a unique color or shape
-      if (type === 'bitcoin') {
-        expect(svg?.innerHTML).toContain('#F7931A');
-      } else if (type === 'ethereum') {
-        expect(svg?.innerHTML).toContain('#627EEA');
-      } else if (type === 'tether') {
-        expect(svg?.innerHTML).toContain('₮');
-      } else if (type === 'litecoin') {
-        expect(svg?.innerHTML).toContain('Ł');
-      }
-      unmount();
-    });
+  // Each icon type has a unique color or shape marker in its SVG content.
+  const svgMarkers: [CryptoType, string][] = [
+    ['bitcoin', '#F7931A'],
+    ['ethereum', '#627EEA'],
+    ['tether', '₮'],
+    ['litecoin', 'Ł'],
+  ];
+
+  test.each(svgMarkers)('renders correct SVG content for %s (contains %s)', (type, marker) => {
+    const { container } = render(<CryptoPaymentIcon type={type} />);
+    const svg = container.querySelector('svg');
+    expect(svg).toBeInTheDocument();
+    expect(svg?.innerHTML).toContain(marker);
   });
 });

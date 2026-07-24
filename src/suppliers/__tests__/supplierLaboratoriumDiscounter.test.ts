@@ -96,7 +96,7 @@ describe('SupplierLaboratoriumDiscounter', () => {
         expect(results[0].title).toBeDefined();
         expect(results[0].supplier).toBe('Laboratorium Discounter');
         for (const product of results) {
-          expect(typeof product.id).toBe('number');
+          expect(product.id).toBeTypeOf('number');
         }
       });
 
@@ -345,7 +345,7 @@ describe('SupplierLaboratoriumDiscounter getProductData methods', () => {
   });
 });
 
-describe('SupplierLaboratoriumDiscounter content/SDS parsing', () => {
+describe.concurrent('SupplierLaboratoriumDiscounter content/SDS parsing', () => {
   // Mirrors the shape of `product.content` from the detail JSON response.
   const content = [
     '<p>Empirical formula NaOH<br />Molar mass (M) 40.0 g / mol<br />CAS No. [1310-73-2]</p>',
@@ -361,20 +361,20 @@ describe('SupplierLaboratoriumDiscounter content/SDS parsing', () => {
   };
   const internals = (): Internals => makeSupplier() as unknown as Internals;
 
-  it('picks the SDS in the requested language', () => {
+  it('picks the SDS in the requested language', ({ expect }) => {
     expect(internals().pickSdsUrl(content, 'nl')).toContain('sdb-9356-nl-nl.pdf');
     expect(internals().pickSdsUrl(content, 'fr')).toContain('sdb-9356-fr-fr.pdf');
   });
 
-  it('falls back to English when the language is unavailable', () => {
+  it('falls back to English when the language is unavailable', ({ expect }) => {
     expect(internals().pickSdsUrl(content, 'ja')).toContain('sdb-9356-gb-en.pdf');
   });
 
-  it('returns undefined when there are no SDS links', () => {
+  it('returns undefined when there are no SDS links', ({ expect }) => {
     expect(internals().pickSdsUrl('<p>No documents here</p>', 'en')).toBeUndefined();
   });
 
-  it('applies formula, molar mass, CAS and an SDS url to the builder', async () => {
+  it('applies formula, molar mass, CAS and an SDS url to the builder', async ({ expect }) => {
     const builder = makeBuilder('sodium-hydroxide.html');
     await internals().applyContentSpecs(builder, content);
     expect(builder.get('formula')).toBe('NaOH');
@@ -383,7 +383,7 @@ describe('SupplierLaboratoriumDiscounter content/SDS parsing', () => {
     expect(builder.get('sdsUrl')).toContain('.pdf');
   });
 
-  it('parses a subscripted formula and a comma-decimal molar mass', async () => {
+  it('parses a subscripted formula and a comma-decimal molar mass', async ({ expect }) => {
     const builder = makeBuilder('sodium-hydroxide.html');
     await internals().applyContentSpecs(
       builder,
@@ -395,7 +395,7 @@ describe('SupplierLaboratoriumDiscounter content/SDS parsing', () => {
     expect(builder.get('cas')).toBe('102-71-6');
   });
 
-  it("parses a dot-joined salt formula and a bare 'mol :' molar mass", async () => {
+  it("parses a dot-joined salt formula and a bare 'mol :' molar mass", async ({ expect }) => {
     const builder = makeBuilder('sodium-hydroxide.html');
     await internals().applyContentSpecs(
       builder,
@@ -406,7 +406,7 @@ describe('SupplierLaboratoriumDiscounter content/SDS parsing', () => {
     expect(builder.get('cas')).toBe('10017-56-8');
   });
 
-  it('parses the purity from the product title in the search phase', () => {
+  it('parses the purity from the product title in the search phase', ({ expect }) => {
     type WithInit = {
       initProductBuilders(data: unknown[]): ProductBuilder<Product>[];
     };

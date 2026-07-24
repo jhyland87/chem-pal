@@ -317,7 +317,7 @@ describe('formatFromHtml', () => {
 describe('formatTimestamp', () => {
   it('formats an epoch ms value into a short date-time string', () => {
     const out = formatTimestamp(1711468500000);
-    expect(typeof out).toBe('string');
+    expect(out).toBeTypeOf('string');
     expect(out.length).toBeGreaterThan(0);
   });
 });
@@ -326,7 +326,7 @@ describe('serialize/deserialize', () => {
   it('should correctly serialize and deserialize strings', () => {
     const original = 'Hello, World!';
     const serialized = serialize(original);
-    expect(typeof serialized).toBe('string');
+    expect(serialized).toBeTypeOf('string');
     expect(deserialize(serialized)).toBe(original);
   });
 

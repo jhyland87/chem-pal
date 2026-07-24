@@ -1,5 +1,5 @@
 import { AVAILABILITY } from '@/constants/common';
-import { describe, expect, it } from 'vitest';
+import { describe, it } from 'vitest';
 import {
   isAvailability,
   isCachedProductData,
@@ -7,15 +7,16 @@ import {
   isValidVariant,
 } from '../productbuilder';
 
-describe('ProductBuilder TypeGuards', () => {
+describe.concurrent('ProductBuilder TypeGuards', () => {
   describe('isAvailability', () => {
-    it('should return true for valid AVAILABILITY enum values', () => {
-      Object.values(AVAILABILITY).forEach((availability) => {
+    it.for(Object.values(AVAILABILITY))(
+      'should return true for valid AVAILABILITY enum value %j',
+      (availability, { expect }) => {
         expect(isAvailability(availability)).toBe(true);
-      });
-    });
+      },
+    );
 
-    it.skip('should return false for invalid availability values', () => {
+    it.skip('should return false for invalid availability values', ({ expect }) => {
       const invalidValues = [
         'available',
         'in_stock',
@@ -33,22 +34,18 @@ describe('ProductBuilder TypeGuards', () => {
       });
     });
 
-    it('should return false for non-string values', () => {
-      const nonStringValues = [
-        null,
-        undefined,
-        123,
-        true,
-        false,
-        {},
-        [],
-        () => {},
-        Symbol('IN_STOCK'),
-      ];
-
-      nonStringValues.forEach((value) => {
-        expect(isAvailability(value)).toBe(false);
-      });
+    it.for([
+      null,
+      undefined,
+      123,
+      true,
+      false,
+      {},
+      [],
+      () => {},
+      Symbol('IN_STOCK'),
+    ])('should return false for non-string value %#: %j', (value, { expect }) => {
+      expect(isAvailability(value)).toBe(false);
     });
   });
 
@@ -65,78 +62,72 @@ describe('ProductBuilder TypeGuards', () => {
       // title inherited from parent product
     };
 
-    it('should return true for a valid complete variant', () => {
+    it('should return true for a valid complete variant', ({ expect }) => {
       expect(isValidVariant(validCompleteVariant)).toBe(true);
     });
 
-    it('should return true for a valid partial variant', () => {
+    it('should return true for a valid partial variant', ({ expect }) => {
       expect(isValidVariant(validPartialVariant)).toBe(true);
     });
 
-    it('should return false for null', () => {
+    it('should return false for null', ({ expect }) => {
       expect(isValidVariant(null)).toBe(false);
     });
 
-    it('should return false for non-object values', () => {
-      const nonObjectValues = [
-        'not an object',
-        123,
-        true,
-        false,
-        undefined,
-        () => {},
-        Symbol('variant'),
-      ];
-
-      nonObjectValues.forEach((value) => {
-        expect(isValidVariant(value)).toBe(false);
-      });
+    it.for([
+      'not an object',
+      123,
+      true,
+      false,
+      undefined,
+      () => {},
+      Symbol('variant'),
+    ])('should return false for non-object value %#: %j', (value, { expect }) => {
+      expect(isValidVariant(value)).toBe(false);
     });
 
-    it('should return false for variants with wrong numeric property types', () => {
-      const invalidNumericProps = [
-        {
-          ...validCompleteVariant,
-          price: '29.99', // Should be number
-        },
-        {
-          ...validCompleteVariant,
-          quantity: '500', // Should be number
-        },
-        {
-          ...validCompleteVariant,
-          price: true, // Should be number
-          quantity: null, // Should be number
-        },
-      ];
-
-      invalidNumericProps.forEach((variant) => {
+    it.for([
+      {
+        ...validCompleteVariant,
+        price: '29.99', // Should be number
+      },
+      {
+        ...validCompleteVariant,
+        quantity: '500', // Should be number
+      },
+      {
+        ...validCompleteVariant,
+        price: true, // Should be number
+        quantity: null, // Should be number
+      },
+    ])(
+      'should return false for variants with wrong numeric property types %#',
+      (variant, { expect }) => {
         expect(isValidVariant(variant)).toBe(false);
-      });
-    });
+      },
+    );
 
-    it('should return false for variants with wrong string property types', () => {
-      const invalidStringProps = [
-        {
-          ...validCompleteVariant,
-          title: 123, // Should be string
-        },
-        {
-          ...validCompleteVariant,
-          title: true, // Should be string
-        },
-        {
-          ...validCompleteVariant,
-          title: null, // Should be string
-        },
-      ];
-
-      invalidStringProps.forEach((variant) => {
+    it.for([
+      {
+        ...validCompleteVariant,
+        title: 123, // Should be string
+      },
+      {
+        ...validCompleteVariant,
+        title: true, // Should be string
+      },
+      {
+        ...validCompleteVariant,
+        title: null, // Should be string
+      },
+    ])(
+      'should return false for variants with wrong string property types %#',
+      (variant, { expect }) => {
         expect(isValidVariant(variant)).toBe(false);
-      });
-    });
+      },
+    );
 
-    it('should return true for variants with additional properties', () => {
+    it('should return true for variants with additional properties', ({ expect }) => {
       const variantWithExtraProps = {
         ...validCompleteVariant,
         extraProp1: 'value1',
@@ -147,13 +138,13 @@ describe('ProductBuilder TypeGuards', () => {
       expect(isValidVariant(variantWithExtraProps)).toBe(true);
     });
 
-    it('should return true for empty object (minimal valid variant)', () => {
+    it('should return true for empty object (minimal valid variant)', ({ expect }) => {
       expect(isValidVariant({})).toBe(true);
     });
   });
 
   describe('isProductImage', () => {
-    it('should return true for valid image and thumbnail entries', () => {
+    it('should return true for valid image and thumbnail entries', ({ expect }) => {
       expect(isProductImage({ href: 'https://example.com/a.jpg', type: 'image' })).toBe(true);
       expect(isProductImage({ href: 'https://example.com/a-t.jpg', type: 'thumbnail' })).toBe(true);
       expect(
@@ -161,41 +152,43 @@ describe('ProductBuilder TypeGuards', () => {
       ).toBe(true);
     });
 
-    it('should return false for an unknown type', () => {
+    it('should return false for an unknown type', ({ expect }) => {
       expect(isProductImage({ href: 'https://example.com/a.jpg', type: 'banner' })).toBe(false);
     });
 
-    it('should return false when href is missing or not a string', () => {
+    it('should return false when href is missing or not a string', ({ expect }) => {
       expect(isProductImage({ type: 'image' })).toBe(false);
       expect(isProductImage({ href: 42, type: 'image' })).toBe(false);
     });
 
-    it('should return false for null, arrays, and primitives', () => {
-      [null, undefined, [{ href: 'a', type: 'image' }], 'a', 42].forEach((value) => {
+    it.for([null, undefined, [{ href: 'a', type: 'image' }], 'a', 42])(
+      'should return false for null, arrays, and primitives %#: %j',
+      (value, { expect }) => {
         expect(isProductImage(value)).toBe(false);
-      });
-    });
+      },
+    );
   });
 
   describe('isCachedProductData', () => {
-    it('should return true for a plain product-data object', () => {
+    it('should return true for a plain product-data object', ({ expect }) => {
       expect(isCachedProductData({ title: 'Acetone', price: 9.99, cacheKey: 'id-1' })).toBe(true);
     });
 
-    it('should return true for an empty object', () => {
+    it('should return true for an empty object', ({ expect }) => {
       expect(isCachedProductData({})).toBe(true);
     });
 
-    it('should return false for null, undefined, and arrays', () => {
+    it('should return false for null, undefined, and arrays', ({ expect }) => {
       expect(isCachedProductData(null)).toBe(false);
       expect(isCachedProductData(undefined)).toBe(false);
       expect(isCachedProductData([{ title: 'x' }])).toBe(false);
     });
 
-    it('should return false for primitives', () => {
-      [42, 'id-1', true].forEach((value) => {
+    it.for([42, 'id-1', true])(
+      'should return false for primitive %#: %j',
+      (value, { expect }) => {
         expect(isCachedProductData(value)).toBe(false);
-      });
-    });
+      },
+    );
   });
 });

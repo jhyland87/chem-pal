@@ -43,10 +43,8 @@ describe('Common TypeGuards', () => {
   });
 
   describe('isUOM', () => {
-    it('should return true for valid UOM values', () => {
-      Object.values(UOM).forEach((uom) => {
-        expect(isUOM(uom)).toBe(true);
-      });
+    it.each(Object.values(UOM))('should return true for valid UOM value %s', (uom) => {
+      expect(isUOM(uom)).toBe(true);
     });
 
     it('should return false for invalid UOM values', () => {

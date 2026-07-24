@@ -124,7 +124,7 @@ describe('SupplierBaseMagento2 wires getProductUrl into the product permalink', 
 
     expect(builder).toBeInstanceOf(ProductBuilder);
     const permalink = builder.get('permalink');
-    expect(typeof permalink).toBe('string');
+    expect(permalink).toBeTypeOf('string');
     expect(permalink).toContain('sodium-chloride.html');
     expect(permalink).toContain('us_en'); // default storeCode
     expect(permalink).not.toContain('should-not-be-used');

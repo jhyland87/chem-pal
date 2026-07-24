@@ -85,7 +85,7 @@ describe('SupplierAmbeed signing', () => {
     expect(decoded.proid).toBe('3255116');
     expect(decoded.__).toEqual(['timestamp', 'proid']);
     expect(decoded._).toMatch(/^[A-Za-z0-9+/]+=*$/);
-    expect(typeof decoded.timestamp).toBe('number');
+    expect(decoded.timestamp).toBeTypeOf('number');
   });
 
   it('makeSignedParams (product_stock) signs bd and carries proid unsigned', () => {

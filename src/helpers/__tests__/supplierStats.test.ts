@@ -79,10 +79,8 @@ describe('filterStatsByRange', () => {
     expect(Object.keys(filterStatsByRange(withFuture, 'month', NOW))).not.toContain('2026-07-20');
   });
 
-  it('covers every range option offered in the dropdown', () => {
-    for (const { value } of STATS_RANGES) {
-      expect(() => filterStatsByRange(STATS, value, NOW)).not.toThrow();
-    }
+  it.for(STATS_RANGES)('covers the $value range option offered in the dropdown', ({ value }) => {
+    expect(() => filterStatsByRange(STATS, value, NOW)).not.toThrow();
   });
 });
 

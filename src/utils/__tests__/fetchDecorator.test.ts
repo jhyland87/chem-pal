@@ -44,7 +44,7 @@ describe('generateRequestHash', () => {
   it("hashes an empty string input to '0'", async () => {
     // An all-zero djb2 accumulator is possible for empty content; ensure no throw.
     const hash = await generateRequestHash('', { method: 'GET' });
-    expect(typeof hash).toBe('string');
+    expect(hash).toBeTypeOf('string');
   });
 });
 
@@ -81,7 +81,7 @@ describe('fetchDecorator', () => {
     const result = await fetchDecorator('https://x.test/bin');
     // Blob comes from undici's realm, so match by shape rather than instanceof.
     const data = result.data as Blob;
-    expect(typeof data.arrayBuffer).toBe('function');
+    expect(data.arrayBuffer).toBeTypeOf('function');
     expect(await data.text()).toBe('bytes');
   });
 
@@ -93,7 +93,7 @@ describe('fetchDecorator', () => {
       }),
     );
     const result = await fetchDecorator('https://x.test/img');
-    expect(typeof (result.data as Blob).arrayBuffer).toBe('function');
+    expect((result.data as Blob).arrayBuffer).toBeTypeOf('function');
   });
 
   it('throws on a non-ok status', async () => {

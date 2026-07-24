@@ -508,11 +508,12 @@ describe('science helpers', () => {
       });
 
       // Guarded: it.each throws on an empty table, and "Ungraded" has no near-misses.
-      if (cases.unsuccessful.length > 0) {
-        it.each(cases.unsuccessful)('should not classify %j', (input) => {
+      it.runIf(cases.unsuccessful.length > 0).each(cases.unsuccessful)(
+        'should not classify %j',
+        (input) => {
           expect(parseGrade(input)).not.toBe(expected);
-        });
-      }
+        },
+      );
     });
 
     const nearMisses = Object.entries(GRADE_CORPUS).flatMap(([grade, { unsuccessful }]) =>

@@ -27,11 +27,12 @@ describe('ProductBuilder availability — schema.org ItemAvailability labels', (
     expect(setAvailability(label)).toBe(expected);
   });
 
-  it("stores each enum member's own value (normalizing casing)", () => {
-    for (const value of Object.values(AVAILABILITY)) {
+  it.each(Object.values(AVAILABILITY))(
+    "stores enum member %s from its own uppercased value (normalizing casing)",
+    (value) => {
       expect(setAvailability(value.toUpperCase())).toBe(value);
-    }
-  });
+    },
+  );
 
   it('ignores an unrecognized label', () => {
     expect(setAvailability('teleported')).toBeUndefined();
