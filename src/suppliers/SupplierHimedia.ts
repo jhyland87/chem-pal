@@ -8,19 +8,19 @@ import { SupplierBaseAmazon } from './SupplierBaseAmazon';
  */
 export class SupplierHimedia extends SupplierBaseAmazon implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = 'Himedia';
+  public static readonly supplierName: string = 'Himedia';
 
   // Shipping scope for HbarSci
-  public readonly shipping: ShippingRange = 'international';
+  public static readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = 'IN';
+  public static readonly country: CountryCode = 'IN';
 
   // Prefix to add to the query (ie: brand name or seller name)
   protected readonly queryPrefix: string = 'himedia';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['amazononly'];
+  public static readonly paymentMethods: PaymentMethod[] = ['amazononly'];
 
   public readonly amazonStoreURL: string = 'https://www.amazon.com/s?k=HiMedia';
 

@@ -522,6 +522,16 @@
     "message": "Показать или скрыть столбцы",
     "description": "Accessible label for the header button that opens the column-visibility menu."
   },
+  "results_column_filter_number_min": {
+    "message": "мин $value$",
+    "placeholders": { "value": { "content": "$1" } },
+    "description": "Label for the minimum value of a numeric column filter."
+  },
+  "results_column_filter_number_max": {
+    "message": "макс $value$",
+    "placeholders": { "value": { "content": "$1" } },
+    "description": "Label for the maximum value of a numeric column filter."
+  },
   "results_open_options": {
     "message": "Открыть параметры",
     "description": "Accessible label for the header button that opens the search/settings options drawer."

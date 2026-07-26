@@ -331,20 +331,20 @@ interface ScienceLabItem {
  */
 export class SupplierScienceLab extends SupplierBase<ScienceLabItem, Product> implements ISupplier {
   // Display name of the supplier used for UI and logging
-  public readonly supplierName: string = 'ScienceLab';
+  public static readonly supplierName: string = 'ScienceLab';
 
   // Base URL for all requests (non-www, matching the sitemap and og:url)
-  public readonly baseURL: string = 'https://sciencelab.com';
+  public static readonly baseURL: string = 'https://sciencelab.com';
 
   // Shipping scope for ScienceLab (US domestic chemical supplier)
-  public readonly shipping: ShippingRange = 'domestic';
+  public static readonly shipping: ShippingRange = 'domestic';
 
   // The country code of the supplier.
   // This is used to determine the currency and other country-specific information.
-  public readonly country: CountryCode = 'US';
+  public static readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   // Maximum number of HTTP requests allowed per search query. Up to `limit`
   // products, each a page fetch plus a variant-price POST per size, add up — so

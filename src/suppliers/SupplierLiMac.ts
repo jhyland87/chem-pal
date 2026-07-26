@@ -40,24 +40,24 @@ import { SupplierBase } from './SupplierBase';
  */
 export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> implements ISupplier {
   // Display name of the supplier used for UI and logging
-  public readonly supplierName: string = 'LiMac';
+  public static readonly supplierName: string = 'LiMac';
 
   // Base URL for product detail pages on LiMac's storefront
-  public readonly baseURL: string = 'https://www.limac.lv';
+  public static readonly baseURL: string = 'https://www.limac.lv';
 
   // FreeFind hostname used for the product search step. Declaring it as
   // `apiURL` automatically extends `requiredHosts` so the extension
   // requests the necessary host permission.
-  public readonly apiURL: string = 'search.freefind.com';
+  public static readonly apiURL: string = 'search.freefind.com';
 
   // Shipping scope for LiMac
-  public readonly shipping: ShippingRange = 'worldwide';
+  public static readonly shipping: ShippingRange = 'worldwide';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = 'LV';
+  public static readonly country: CountryCode = 'LV';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'other', 'ach'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'other', 'ach'];
 
   // Cached search results from the last query execution
   protected queryResults: Array<Partial<Product>> = [];

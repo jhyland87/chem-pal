@@ -20,20 +20,20 @@ const SKU_SIZE_REGEX = /\bSIZE\s*[.,]\s*([\d.,]+\s*[A-Za-z]+)/i;
  */
 export class SupplierDailyBioUSA extends SupplierBaseWix implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = 'Daily Bio USA';
+  public static readonly supplierName: string = 'Daily Bio USA';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = 'https://www.dailybiousa.com/';
+  public static readonly baseURL: string = 'https://www.dailybiousa.com/';
 
   // Shipping scope for Biofuran Chem
-  public readonly shipping: ShippingRange = 'domestic';
+  public static readonly shipping: ShippingRange = 'domestic';
 
   // The country code of the supplier.
   // This is used to determine the currency and other country-specific information.
-  public readonly country: CountryCode = 'US';
+  public static readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['ebayonly'];
+  public static readonly paymentMethods: PaymentMethod[] = ['ebayonly'];
 
   public readonly ebayStoreURL: string = 'https://www.ebay.com/str/dailybiousa';
 

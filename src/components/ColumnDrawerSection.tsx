@@ -1,6 +1,11 @@
 import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
 import { useAppContext } from '@/context';
 import { i18n } from '@/helpers/i18n';
+import {
+  countriesForSuppliers,
+  fulfillableShippingRanges,
+  suppliersExcludedBySearchFilters,
+} from '@/helpers/supplierFilters';
 import { toFiniteNumber } from '@/helpers/utils';
 import { SupplierFactory } from '@/suppliers/SupplierFactory';
 import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
@@ -94,25 +99,34 @@ export default function ColumnDrawerSection({
     setUserSettings,
   } = useAppContext();
 
-  // Supplier keys the ship-to filter will exclude, so the supplier autocomplete
-  // can grey out + italicize (and disable) suppliers that won't ship to the
-  // user's location. Empty unless this is the supplier selector and the filter
-  // is active — recomputed only when the location or toggle changes.
+  // Each supplier's country + shipping scope, used both to grey out suppliers that
+  // can't satisfy the active shipping/country filters and to grey out shipping/
+  // country options no selected supplier offers. Read once (instantiates suppliers).
+  const shippingMeta = useMemo(() => SupplierFactory.supplierShippingMeta(), []);
+
+  // Supplier keys to grey out + disable in the supplier autocomplete: those that
+  // won't ship to the user's location (gated by the toggle), plus those ruled out
+  // by the active shipping-type / country search filters. Empty unless this is the
+  // supplier selector.
   const excludeSuppliers = userSettings.excludeNonShippingSuppliers ?? true;
   const { location } = userSettings;
   const isSupplierSelector =
     config.widget === 'autocompleteStrings' && config.bind.kind === 'selectedSuppliers';
   const excludedSuppliers = useMemo(() => {
-    if (!isSupplierSelector || !excludeSuppliers || !location) {
-      return new Set<string>();
+    if (!isSupplierSelector) return new Set<string>();
+    const excluded = new Set<string>();
+    if (excludeSuppliers && location) {
+      for (const [key, ships] of Object.entries(
+        SupplierFactory.supplierShipsTo(location as CountryCode),
+      )) {
+        if (!ships) excluded.add(key);
+      }
     }
-    const shipsToMap = SupplierFactory.supplierShipsTo(location as CountryCode);
-    return new Set(
-      Object.entries(shipsToMap)
-        .filter(([, ships]) => !ships)
-        .map(([key]) => key),
-    );
-  }, [isSupplierSelector, excludeSuppliers, location]);
+    for (const key of suppliersExcludedBySearchFilters(shippingMeta, searchFilters)) {
+      excluded.add(key);
+    }
+    return excluded;
+  }, [isSupplierSelector, excludeSuppliers, location, shippingMeta, searchFilters]);
 
   const panelId = `search-${columnId}`;
   const isExpanded = expandedAccordion === panelId;
@@ -248,6 +262,14 @@ export default function ColumnDrawerSection({
     const selectedCodes = searchFilters[bindKey] as string[];
     const currentValue: CountryOption[] = options.filter((opt) => selectedCodes.includes(opt.code));
 
+    // When suppliers are selected and this is the country filter, grey out
+    // countries none of the selected suppliers reside in — they could never match.
+    const suppliers = selectedSuppliers ?? [];
+    const offeredCountries =
+      bindKey === 'country' && suppliers.length > 0
+        ? new Set<string>(countriesForSuppliers(shippingMeta, suppliers))
+        : undefined;
+
     const handleChange = (_event: SyntheticEvent, newValue: CountryOption[]) => {
       setSearchFilters({
         ...searchFilters,
@@ -276,6 +298,9 @@ export default function ColumnDrawerSection({
             value={currentValue}
             onChange={handleChange}
             isOptionEqualToValue={(option, value) => option.code === value.code}
+            getOptionDisabled={(option) =>
+              offeredCountries !== undefined && !offeredCountries.has(option.code)
+            }
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -300,6 +325,19 @@ export default function ColumnDrawerSection({
     // widget only binds to the `string[]` filters.
     const selected = searchFilters[bindKey] as string[];
 
+    // Only the shipping-type filter is constrained by supplier selection
+    // (availability is independent of suppliers): once suppliers are selected,
+    // grey out shipping scopes none of them can fulfill (respecting the hierarchy,
+    // so a domestic supplier still enables "local") — but never a currently-selected
+    // chip, so the user can always toggle it back off.
+    const suppliers = selectedSuppliers ?? [];
+    const fulfillable =
+      bindKey === 'shippingType' && suppliers.length > 0
+        ? new Set<string>(fulfillableShippingRanges(shippingMeta, suppliers))
+        : undefined;
+    const isOptionDisabled = (option: string) =>
+      fulfillable !== undefined && !fulfillable.has(option) && !selected.includes(option);
+
     const toggle = (value: string) => {
       const next = selected.includes(value)
         ? selected.filter((item) => item !== value)
@@ -317,6 +355,7 @@ export default function ColumnDrawerSection({
                 key={option}
                 label={formatChipLabel ? formatChipLabel(option) : option}
                 size="small"
+                disabled={isOptionDisabled(option)}
                 onClick={() => toggle(option)}
                 color={selected.includes(option) ? 'primary' : 'default'}
                 variant={selected.includes(option) ? 'filled' : 'outlined'}
@@ -351,8 +390,8 @@ export default function ColumnDrawerSection({
             minValue != null && maxValue != null
               ? `${adornment ?? ''}${minValue} - ${adornment ?? ''}${maxValue}`
               : minValue != null
-                ? `min ${adornment ?? ''}${minValue}`
-                : `max ${adornment ?? ''}${maxValue}`
+                ? i18n('results_column_filter_number_min', [adornment ?? '' + minValue])
+                : i18n('results_column_filter_number_max', [adornment ?? '' + maxValue])
           })`
         : undefined;
 

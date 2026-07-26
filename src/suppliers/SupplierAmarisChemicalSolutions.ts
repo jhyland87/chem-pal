@@ -43,19 +43,19 @@ export class SupplierAmarisChemicalSolutions extends SupplierBaseWoocommerce imp
    * ```
    * @source
    */
-  public readonly supplierName: string = 'Amaris Chemical Solutions';
+  public static readonly supplierName: string = 'Amaris Chemical Solutions';
 
   // The base URL for the supplier's website.
-  public readonly baseURL: string = 'https://amarischemicalsolutions.com';
+  public static readonly baseURL: string = 'https://amarischemicalsolutions.com';
 
   // Shipping scope for Alchemie Labs
-  public readonly shipping: ShippingRange = 'international';
+  public static readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = 'US';
+  public static readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   public readonly productSearchFilters: WooCommerceProductSearchParams = {
     category: [

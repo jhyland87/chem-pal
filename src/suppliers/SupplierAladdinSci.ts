@@ -28,19 +28,19 @@ export type PageFetchResult =
  */
 export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = 'AladdinSci';
+  public static readonly supplierName: string = 'AladdinSci';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = 'https://www.aladdinsci.com';
+  public static readonly baseURL: string = 'https://www.aladdinsci.com';
 
   // Shipping scope for AladdinSci
-  public readonly shipping: ShippingRange = 'worldwide';
+  public static readonly shipping: ShippingRange = 'worldwide';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = 'US';
+  public static readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   /** Base unit (n) for the escalating rate-limit backoff: pause = n, then 2n, 3n, … */
   private readonly backoffBaseDelayMs: number = 1000;

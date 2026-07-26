@@ -1,11 +1,12 @@
 import { getColumnFilterConfig } from '@/components/SearchPanel/TableColumns';
-import { AVAILABILITY_LABEL_MAP, CACHE } from '@/constants/common';
+import { AVAILABILITY_LABEL_MAP, CACHE, isShippingRange } from '@/constants/common';
 import { useAppContext } from '@/context';
 import { SearchEvent, emitSearchEvent } from '@/events/searchEvents';
 import { addExcludedProduct } from '@/helpers/excludedProducts';
 import { i18n } from '@/helpers/i18n';
 import { recordProductPrices } from '@/helpers/priceHistory';
 import { dedupeProducts, getProductDedupeKey } from '@/helpers/productIdentity';
+import { shippingCovers, suppliersExcludedBySearchFilters } from '@/helpers/supplierFilters';
 import { suggestAlternativeSearch } from '@/helpers/pubchem';
 import { HotkeyEvent } from '@/hotkeys';
 import { SupplierFactory } from '@/suppliers/SupplierFactory';
@@ -188,10 +189,14 @@ function passesSearchFilters(
     const allowedStatuses = filters.availability.flatMap(
       (label) => AVAILABILITY_LABEL_MAP[label] ?? [],
     );
+    // Read the product's own availability (normalized to the canonical enum by
+    // ProductBuilder.setAvailability), not a nested variant's — variants never
+    // carry availability, so the old `variants[0]` read was always empty/raw and
+    // dropped every product. Mirrors the availability column's `row.original`.
     const productAvailability = (
-      product.variants?.[0]?.availability ??
-      product.variants?.[0]?.status ??
-      product.variants?.[0]?.statusTxt ??
+      product.availability ??
+      product.status ??
+      product.statusTxt ??
       ''
     ).toLowerCase();
 
@@ -207,9 +212,18 @@ function passesSearchFilters(
     }
   }
 
-  // Shipping type filter
-  if (filters.shippingType.length > 0 && product.supplierShipping) {
-    if (!filters.shippingType.includes(product.supplierShipping)) {
+  // Shipping type filter — hierarchical: a broader supplier scope fulfills a
+  // narrower requested one (a worldwide supplier satisfies a "domestic" filter).
+  if (
+    filters.shippingType.length > 0 &&
+    product.supplierShipping !== undefined &&
+    isShippingRange(product.supplierShipping)
+  ) {
+    const scope = product.supplierShipping;
+    const covered = filters.shippingType.some(
+      (requested) => isShippingRange(requested) && shippingCovers(scope, requested),
+    );
+    if (!covered) {
       return false;
     }
   }
@@ -472,13 +486,31 @@ export function useSearch() {
       // Create new abort controller for this search
       fetchControllerRef.current = new AbortController();
 
+      // Don't even query suppliers the active shipping/country filters rule out —
+      // the post-filter would drop all their products anyway. Fall back to the
+      // full selection if the filters would exclude every candidate (the
+      // post-filter then yields zero results rather than querying everyone).
+      let suppliersToQuery = appContext.selectedSuppliers;
+      if (searchFilters.shippingType.length > 0 || searchFilters.country.length > 0) {
+        const excluded = suppliersExcludedBySearchFilters(
+          SupplierFactory.supplierShippingMeta(),
+          searchFilters,
+        );
+        if (excluded.size > 0) {
+          const selected = appContext.selectedSuppliers ?? [];
+          const base = selected.length > 0 ? selected : SupplierFactory.supplierList();
+          const compatible = base.filter((name) => !excluded.has(name));
+          if (compatible.length > 0) suppliersToQuery = compatible;
+        }
+      }
+
       try {
         // Create the search factory object, which sets the query, supplier search limits,
         // and the abort controller for the search.
         const productQueryFactory = new SupplierFactory(query, {
           limit: fetchLimit,
           controller: fetchControllerRef.current,
-          suppliers: appContext.selectedSuppliers,
+          suppliers: suppliersToQuery,
           caching: appContext.userSettings.caching,
           // The scorer selector lives behind advanced mode, so only honor the
           // override there; otherwise a stale value can't strand a normal user

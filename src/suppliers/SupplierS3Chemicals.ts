@@ -32,20 +32,20 @@ export class SupplierS3Chemicals
   implements ISupplier
 {
   // Display name of the supplier used for UI and logging
-  public readonly supplierName: string = 'S3 Chemicals';
+  public static readonly supplierName: string = 'S3 Chemicals';
 
   // Base URL for all web requests to S3 Chemicals
-  public readonly baseURL: string = 'https://shop.es-drei.de';
+  public static readonly baseURL: string = 'https://shop.es-drei.de';
 
   // Shipping scope for S3 Chemicals (DE-based, ships across borders)
-  public readonly shipping: ShippingRange = 'international';
+  public static readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
   // This is used to determine the currency and other country-specific information.
-  public readonly country: CountryCode = 'DE';
+  public static readonly country: CountryCode = 'DE';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa', 'ach'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa', 'ach'];
 
   // German-language titles rarely overlap the English query tokens, so we
   // use WRatio (a best-of-several-scorers heuristic) with a low cutoff to

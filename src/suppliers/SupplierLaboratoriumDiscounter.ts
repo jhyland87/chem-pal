@@ -62,19 +62,19 @@ export class SupplierLaboratoriumDiscounter
   implements ISupplier
 {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = 'Laboratorium Discounter';
+  public static readonly supplierName: string = 'Laboratorium Discounter';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = 'https://www.laboratoriumdiscounter.nl';
+  public static readonly baseURL: string = 'https://www.laboratoriumdiscounter.nl';
 
   // Shipping scope for Laboratorium Discounter
-  public readonly shipping: ShippingRange = 'domestic';
+  public static readonly shipping: ShippingRange = 'domestic';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = 'NL';
+  public static readonly country: CountryCode = 'NL';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa', 'paypal', 'ach'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa', 'paypal', 'ach'];
 
   // Override the type of queryResults to use our specific type
   protected queryResults: Array<LaboratoriumDiscounterProductObject> = [];

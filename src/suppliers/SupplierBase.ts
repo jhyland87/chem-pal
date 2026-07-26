@@ -59,6 +59,23 @@ import { type JsonValue } from 'type-fest';
 // types/supplierCache.d.ts — see that file for their definitions.
 
 /**
+ * The static shipping metadata every supplier class exposes as `static` fields,
+ * readable without instantiating (e.g. `SupplierCarolina.shipping`). Consumed by
+ * {@link SupplierBase.shipsToCountryStatic} and `SupplierFactory`.
+ * @category Suppliers
+ * @group Suppliers
+ * @source
+ */
+export interface SupplierStaticMeta {
+  /** The supplier's coarse shipping scope. */
+  readonly shipping: ShippingRange;
+  /** The supplier's home country (ISO 3166-1 alpha-2). */
+  readonly country: CountryCode;
+  /** Optional explicit destination allowlist; overrides {@link shipping} when set. */
+  readonly shipsTo?: CountryCode[];
+}
+
+/**
  * The base class for all suppliers.
  * @abstract
  * @category Suppliers
@@ -72,10 +89,20 @@ import { type JsonValue } from 'type-fest';
  */
 export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   /** The name of the supplier (used for display name, lists, etc). */
-  public abstract readonly supplierName: string;
+  public static readonly supplierName: string;
+
+  /** Instance view of the static {@link supplierName} (keeps `this.supplierName` working). */
+  public get supplierName(): string {
+    return this.supplierClass.supplierName;
+  }
 
   /** The base URL for the supplier. */
-  public abstract readonly baseURL: string;
+  public static readonly baseURL: string;
+
+  /** Instance view of the static {@link baseURL} (keeps `this.baseURL` working). */
+  public get baseURL(): string {
+    return this.supplierClass.baseURL;
+  }
 
   /**
    * Color used to visually tag this supplier's log output (and available for
@@ -136,11 +163,33 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * supplier whose search natively accepts that identifier (e.g. Ambeed), so it
    * receives the raw identifier unchanged.
    */
-  protected readonly supportsCAS: boolean = false;
+  protected static readonly supportsCAS: boolean = false;
   /** See {@link supportsCAS}. */
-  protected readonly supportsFormula: boolean = false;
+  protected static readonly supportsFormula: boolean = false;
   /** See {@link supportsCAS}. */
-  protected readonly supportsSMILES: boolean = false;
+  protected static readonly supportsSMILES: boolean = false;
+
+  /**
+   * This supplier's own class, typed for `static` metadata access. `this.constructor`
+   * is otherwise typed `Function` (no custom statics), so the instance getters below
+   * read the concrete class's static fields through this narrowed view.
+   */
+  private get supplierClass(): typeof SupplierBase {
+    return this.constructor as typeof SupplierBase;
+  }
+
+  /** Instance view of the static {@link supportsCAS} flag (keeps `this.supportsCAS` working). */
+  protected get supportsCAS(): boolean {
+    return this.supplierClass.supportsCAS;
+  }
+  /** Instance view of the static {@link supportsFormula} flag. */
+  protected get supportsFormula(): boolean {
+    return this.supplierClass.supportsFormula;
+  }
+  /** Instance view of the static {@link supportsSMILES} flag. */
+  protected get supportsSMILES(): boolean {
+    return this.supplierClass.supportsSMILES;
+  }
 
   /** Memoized {@link effectiveQueryCandidates}; cleared when {@link setResolvedStructures} runs. */
   private effectiveQueryCandidatesCache?: string[];
@@ -197,19 +246,34 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * The shipping scope of the supplier. Used to determine the shipping scope
    * of the supplier.
    */
-  public abstract readonly shipping: ShippingRange;
+  public static readonly shipping: ShippingRange;
+
+  /** Instance view of the static {@link shipping} scope (keeps `this.shipping` working). */
+  public get shipping(): ShippingRange {
+    return this.supplierClass.shipping;
+  }
 
   /**
    * The country code of the supplier. Used to determine the currency and other
    * country-specific information.
    */
-  public abstract readonly country: CountryCode;
+  public static readonly country: CountryCode;
+
+  /** Instance view of the static {@link country} (keeps `this.country` working). */
+  public get country(): CountryCode {
+    return this.supplierClass.country;
+  }
 
   /**
    * The payment methods accepted by the supplier. Used to determine the
    * payment methods accepted by the supplier.
    */
-  public abstract readonly paymentMethods: PaymentMethod[];
+  public static readonly paymentMethods: PaymentMethod[];
+
+  /** Instance view of the static {@link paymentMethods} (keeps `this.paymentMethods` working). */
+  public get paymentMethods(): PaymentMethod[] {
+    return this.supplierClass.paymentMethods;
+  }
 
   /**
    * The supplier's eBay storefront. Subclasses that list `"ebayonly"` in
@@ -233,26 +297,41 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * ```
    * @source
    */
-  protected readonly shipsTo?: CountryCode[];
+  protected static readonly shipsTo?: CountryCode[];
+
+  /** Instance view of the static {@link shipsTo} allowlist (keeps `this.shipsTo` working). */
+  protected get shipsTo(): CountryCode[] | undefined {
+    return this.supplierClass.shipsTo;
+  }
 
   /**
    * Optional external API hostname used by some suppliers (e.g., Typesense,
    * Searchanise). When set, automatically included in `requiredHosts` for
    * permission checks.
    */
-  protected readonly apiURL?: string;
+  protected static readonly apiURL?: string;
+
+  /** Instance view of the static {@link apiURL} (keeps `this.apiURL` working). */
+  protected get apiURL(): string | undefined {
+    return this.supplierClass.apiURL;
+  }
 
   /**
    * All host origin patterns required for this supplier to function.
    * Automatically includes `baseURL` and, if defined, `apiURL`. Used by the
    * factory to check chrome permissions before querying.
    */
-  public get requiredHosts(): string[] {
+  public static get requiredHosts(): string[] {
     const hosts = [`${this.baseURL}/*`];
     if (this.apiURL) {
       hosts.push(`https://${this.apiURL}/*`);
     }
     return hosts;
+  }
+
+  /** Instance view of the static {@link requiredHosts}. */
+  public get requiredHosts(): string[] {
+    return this.supplierClass.requiredHosts;
   }
 
   /**
@@ -277,16 +356,36 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * @source
    */
   public shipsToCountry(location: CountryCode): boolean {
-    if (this.shipsTo) {
-      return this.shipsTo.includes(location);
+    // Pass an explicit meta object rather than `this.constructor` so the
+    // (protected) `shipsTo` static doesn't clash with SupplierStaticMeta's public
+    // shape; the getters read the concrete class's static values.
+    return SupplierBase.shipsToCountryStatic(
+      { shipping: this.shipping, country: this.country, shipsTo: this.shipsTo },
+      location,
+    );
+  }
+
+  /**
+   * Whether a supplier with the given static shipping metadata ships to
+   * `location`. Shared by the instance {@link shipsToCountry} and `SupplierFactory`
+   * so the UI can test shipping compatibility from a supplier's `static` fields
+   * without instantiating it.
+   * @param meta - The supplier's static shipping/country/`shipsTo` metadata.
+   * @param location - Destination country (ISO 3166-1 alpha-2).
+   * @returns True when the supplier ships to `location`.
+   * @source
+   */
+  public static shipsToCountryStatic(meta: SupplierStaticMeta, location: CountryCode): boolean {
+    if (meta.shipsTo) {
+      return meta.shipsTo.includes(location);
     }
-    switch (this.shipping) {
+    switch (meta.shipping) {
       case 'worldwide':
       case 'international':
         return true;
       case 'domestic':
       case 'local':
-        return this.country === location;
+        return meta.country === location;
       default:
         return true;
     }

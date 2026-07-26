@@ -65,11 +65,11 @@ const cookieSetMock = vi.fn(async () => {
  * exercised.
  */
 class TestSupplier extends SupplierBase<unknown, Product> {
-  public readonly supplierName = 'TestSupplier';
-  public readonly baseURL = 'https://example.invalid';
-  public readonly shipping = 'worldwide' as ShippingRange;
-  public readonly country = 'US' as CountryCode;
-  public readonly paymentMethods = [] as PaymentMethod[];
+  public static readonly supplierName = 'TestSupplier';
+  public static readonly baseURL = 'https://example.invalid';
+  public static readonly shipping = 'worldwide' as ShippingRange;
+  public static readonly country = 'US' as CountryCode;
+  public static readonly paymentMethods = [] as PaymentMethod[];
 
   public setupCallCount = 0;
   public setupDone = false;
@@ -153,11 +153,11 @@ class TestSupplier extends SupplierBase<unknown, Product> {
 // override fetch), so the 403 retry loop runs end to end. challengeRetryLimit
 // is configurable per test; the delay is 0 to keep tests fast.
 class RetryTestSupplier extends SupplierBase<unknown, Product> {
-  public readonly supplierName = 'RetryTestSupplier';
-  public readonly baseURL = 'https://example.invalid';
-  public readonly shipping = 'worldwide' as ShippingRange;
-  public readonly country = 'US' as CountryCode;
-  public readonly paymentMethods = [] as PaymentMethod[];
+  public static readonly supplierName = 'RetryTestSupplier';
+  public static readonly baseURL = 'https://example.invalid';
+  public static readonly shipping = 'worldwide' as ShippingRange;
+  public static readonly country = 'US' as CountryCode;
+  public static readonly paymentMethods = [] as PaymentMethod[];
 
   protected override readonly challengeRetryLimit: number;
   protected override readonly challengeRetryDelayMs = 0;

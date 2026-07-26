@@ -87,7 +87,7 @@ export abstract class SupplierBaseAmazon
    * the user's country is not found in the lookup table.
    * @source
    */
-  public readonly baseURL: string = amazonDomains[userCountry] || amazonDomains['US'];
+  public static readonly baseURL: string = amazonDomains[userCountry] || amazonDomains['US'];
 
   /**
    * Terms found in the listing - An array of strings, at least one of which must be

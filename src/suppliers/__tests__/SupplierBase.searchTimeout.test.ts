@@ -3,11 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SupplierBase } from '../SupplierBase';
 
 class TimeoutTestSupplier extends SupplierBase<unknown, Product> {
-  public readonly supplierName = 'TimeoutTestSupplier';
-  public readonly baseURL = 'https://example.invalid';
-  public readonly shipping = 'worldwide' as ShippingRange;
-  public readonly country = 'US' as CountryCode;
-  public readonly paymentMethods = [] as PaymentMethod[];
+  public static readonly supplierName = 'TimeoutTestSupplier';
+  public static readonly baseURL = 'https://example.invalid';
+  public static readonly shipping = 'worldwide' as ShippingRange;
+  public static readonly country = 'US' as CountryCode;
+  public static readonly paymentMethods = [] as PaymentMethod[];
 
   protected titleSelector(): Maybe<string> {
     return '';

@@ -35,21 +35,21 @@ export class SupplierConsolidatedChemical extends SupplierBaseWoocommerce implem
    * ```
    * @source
    */
-  public readonly supplierName: string = 'Consolidated Chemical & Solvents';
+  public static readonly supplierName: string = 'Consolidated Chemical & Solvents';
 
   // The base URL for the supplier's website.
-  public readonly baseURL: string = 'https://consolidated-chemical.com/';
+  public static readonly baseURL: string = 'https://consolidated-chemical.com/';
 
   // Shipping scope for Consolidated Chemical & Solvents
-  public readonly shipping: ShippingRange = 'domestic';
+  public static readonly shipping: ShippingRange = 'domestic';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = 'US';
+  public static readonly country: CountryCode = 'US';
 
   protected readonly minMatchPercentage: number = 50;
 
   //protected readonly fuzzScorer: FuzzScorerFn = WRatio;
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 }

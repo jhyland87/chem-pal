@@ -16,11 +16,11 @@ interface TitleItem {
  * testing. No network/cache is touched by `fuzzyFilterAst`/`deriveFallbackTerms`.
  */
 class TestSupplier extends SupplierBase<TitleItem, Product> {
-  public readonly supplierName = 'Test';
-  public readonly baseURL = 'https://example.com';
-  public readonly shipping: ShippingRange = 'worldwide';
-  public readonly country: CountryCode = 'US';
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard'];
+  public static readonly supplierName = 'Test';
+  public static readonly baseURL = 'https://example.com';
+  public static readonly shipping: ShippingRange = 'worldwide';
+  public static readonly country: CountryCode = 'US';
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard'];
 
   protected titleSelector(data: unknown): Maybe<string> {
     return (data as TitleItem).title;

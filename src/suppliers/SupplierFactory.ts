@@ -16,7 +16,7 @@ import type { ParsedSearchQuery } from '@/utils/search-query/types';
 import { incrementParseError } from '@/utils/SupplierStatsStore';
 import { Queue } from 'async-await-queue';
 import * as suppliers from '.';
-import { SupplierBase } from './SupplierBase';
+import { SupplierBase, type SupplierStaticMeta } from './SupplierBase';
 
 /** Constructor signature for supplier classes used by the factory */
 type SupplierConstructor<P extends Product> = new (
@@ -278,16 +278,13 @@ export class SupplierFactory<P extends Product> {
    * @source
    */
   public static supplierDisplayNames(): Record<string, string> {
-    const controller = new AbortController();
     return Object.fromEntries(
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      mapDefined(Object.entries(suppliers), ([key, SupplierClass]) => {
-        // Trusted static supplier classes; the union of concrete constructors
-        // isn't structurally assignable to the generic SupplierConstructor.
-        const ConcreteClass = SupplierClass as unknown as SupplierConstructor<Product>;
-        const instance = new ConcreteClass('', 1, controller);
-        return [key, instance.supplierName];
-      }),
+      Object.entries(suppliers).map(([key, SupplierClass]) => [
+        // Read the class's static supplierName directly — no instance needed.
+        key,
+        (SupplierClass as unknown as { supplierName: string }).supplierName,
+      ]),
     );
   }
 
@@ -308,37 +305,57 @@ export class SupplierFactory<P extends Product> {
    * @source
    */
   public static supplierShipsTo(location: CountryCode): Record<string, boolean> {
-    const controller = new AbortController();
     return Object.fromEntries(
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      mapDefined(Object.entries(suppliers), ([key, SupplierClass]) => {
-        // Trusted static supplier classes; the union of concrete constructors
-        // isn't structurally assignable to the generic SupplierConstructor.
-        const ConcreteClass = SupplierClass as unknown as SupplierConstructor<Product>;
-        const instance = new ConcreteClass('', 1, controller);
-        return [key, instance.shipsToCountry(location)];
+      Object.entries(suppliers).map(([key, SupplierClass]) => {
+        // Read the class's static shipping metadata directly — no instance needed.
+        const meta = SupplierClass as unknown as SupplierStaticMeta;
+        return [key, SupplierBase.shipsToCountryStatic(meta, location)];
       }),
     );
   }
 
   /**
-   * Get a map of supplier class names to their required host origins.
-   * Creates throwaway instances to read requiredHosts from each supplier.
-   *
+   * Get a map of supplier class names to their home country and shipping scope,
+   * the same fields stamped onto products. Lets the UI (and the search) reason
+   * about which suppliers are compatible with the drawer's shipping/country
+   * filters without querying them. Reads each supplier's `static` metadata, so no
+   * instances are created.
+   * @returns Record mapping supplier class names to `{ country, shipping }`.
+   * @example
+   * ```typescript
+   * const meta = SupplierFactory.supplierShippingMeta();
+   * // { SupplierCarolina: { country: "US", shipping: "domestic" }, ... }
+   * ```
+   * @source
+   */
+  public static supplierShippingMeta(): Record<
+    string,
+    { country: CountryCode; shipping: ShippingRange }
+  > {
+    return Object.fromEntries(
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      Object.entries(suppliers).map(([key, SupplierClass]) => {
+        const meta = SupplierClass as unknown as SupplierStaticMeta;
+        return [key, { country: meta.country, shipping: meta.shipping }];
+      }),
+    );
+  }
+
+  /**
+   * Get a map of supplier class names to their required host origins, read from
+   * each supplier's static `requiredHosts` (derived from its static baseURL/apiURL)
+   * — no instances are created.
    * @returns Record mapping supplier class names to their requiredHosts arrays
    * @source
    */
   public static supplierRequiredHosts(): Record<string, string[]> {
-    const controller = new AbortController();
     return Object.fromEntries(
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      mapDefined(Object.entries(suppliers), ([key, SupplierClass]) => {
-        // Trusted static supplier classes; the union of concrete constructors
-        // isn't structurally assignable to the generic SupplierConstructor.
-        const ConcreteClass = SupplierClass as unknown as SupplierConstructor<Product>;
-        const instance = new ConcreteClass('', 1, controller);
-        return [key, instance.requiredHosts];
-      }),
+      Object.entries(suppliers).map(([key, SupplierClass]) => [
+        key,
+        (SupplierClass as unknown as { requiredHosts: string[] }).requiredHosts,
+      ]),
     );
   }
 

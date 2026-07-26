@@ -61,11 +61,11 @@ const tick = (ms = 0) => new Promise<void>((resolve) => setTimeout(resolve, ms))
  * exercised.
  */
 class TestSupplier extends SupplierBase<unknown, Product> {
-  public readonly supplierName = 'TestSupplier';
-  public readonly baseURL = 'https://example.invalid';
-  public readonly shipping = 'worldwide' as ShippingRange;
-  public readonly country = 'US' as CountryCode;
-  public readonly paymentMethods = [] as PaymentMethod[];
+  public static readonly supplierName = 'TestSupplier';
+  public static readonly baseURL = 'https://example.invalid';
+  public static readonly shipping = 'worldwide' as ShippingRange;
+  public static readonly country = 'US' as CountryCode;
+  public static readonly paymentMethods = [] as PaymentMethod[];
 
   public setupCallCount = 0;
   public setupDone = false;

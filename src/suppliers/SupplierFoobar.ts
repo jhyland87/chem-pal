@@ -14,19 +14,19 @@ import { SupplierBase } from './SupplierBase';
  */
 export class SupplierFoobar extends SupplierBase<Partial<Product>, Product> implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = 'Foobar';
+  public static readonly supplierName: string = 'Foobar';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = 'https://foobar.com';
+  public static readonly baseURL: string = 'https://foobar.com';
 
   // Shipping scope
-  public readonly shipping: ShippingRange = 'domestic';
+  public static readonly shipping: ShippingRange = 'domestic';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = 'US';
+  public static readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   protected async queryProducts(
     _query: string,

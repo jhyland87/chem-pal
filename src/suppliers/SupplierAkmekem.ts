@@ -13,19 +13,19 @@ import { SupplierBaseAmazon } from './SupplierBaseAmazon';
  */
 export class SupplierAkmekem extends SupplierBaseAmazon implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = 'Akmekem';
+  public static readonly supplierName: string = 'Akmekem';
 
   // Shipping scope for HbarSci
-  public readonly shipping: ShippingRange = 'international';
+  public static readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = 'CN';
+  public static readonly country: CountryCode = 'CN';
 
   // Prefix to add to the query (ie: brand name or seller name)
   protected readonly queryPrefix: string = 'akmekem';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   // Pure-search supplier: the initial search returns every field and
   // getProductData is a passthrough, so there's no per-product detail to cache.

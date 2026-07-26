@@ -28,19 +28,19 @@ import { SupplierBase } from './SupplierBase';
  */
 export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = 'N2O3';
+  public static readonly supplierName: string = 'N2O3';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = 'https://n2o3.com/';
+  public static readonly baseURL: string = 'https://n2o3.com/';
 
   // Shipping scope for N2O3
-  public readonly shipping: ShippingRange = 'international';
+  public static readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = 'PL';
+  public static readonly country: CountryCode = 'PL';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa', 'paypal', 'ach'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa', 'paypal', 'ach'];
 
   // All product fields are scraped from the search listing; getProductData is a
   // passthrough, so there's no per-product detail fetch to cache.

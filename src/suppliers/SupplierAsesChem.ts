@@ -17,22 +17,22 @@ import { SupplierBaseShopify } from './SupplierBaseShopify';
  */
 export class SupplierAsesChem extends SupplierBaseShopify implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = 'AsesChem';
+  public static readonly supplierName: string = 'AsesChem';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = 'https://ases.in';
+  public static readonly baseURL: string = 'https://ases.in';
 
   // Shipping scope
-  public readonly shipping: ShippingRange = 'domestic';
+  public static readonly shipping: ShippingRange = 'domestic';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = 'IN';
+  public static readonly country: CountryCode = 'IN';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   // Shopify API URL for GraphQL queries
-  protected apiURL: string = 'aseschem.myshopify.com';
+  protected static readonly apiURL: string = 'aseschem.myshopify.com';
 
   /**
    * Enriches a search-result product with details only present on its product page. Fetches the
