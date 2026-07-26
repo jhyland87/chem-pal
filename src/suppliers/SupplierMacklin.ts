@@ -84,6 +84,69 @@ class TimeoutError extends Error {
  *    - For subsequent requests: Uses current timestamp + digits from previous signature
  *    - Server timestamp is fetched every 800 seconds to maintain sync
  *
+ * ## Storage units
+ *
+ * All persistent state lives in three keys the site keeps in `localStorage`
+ * (mirrored here by the in-memory `localStorage` field). Each one feeds the
+ * request headers below:
+ *
+ * - **`MklTmKey`** — the server/client clock sync, stored as
+ *   `{ serverTm, clientTm }`. `serverTm` is the Unix timestamp returned by
+ *   `GET /api/timestamp`; `clientTm` is the local clock (`Date.now() / 1000`)
+ *   captured at the moment of that fetch. It is refetched when missing or older
+ *   than `TIMESTAMP_REFRESH_THRESHOLD` (800 s). The `X-Timestamp` header is
+ *   derived from it as `now + (serverTm - clientTm)`, so it tracks server time
+ *   across the batched request phases without a `/api/timestamp` round-trip
+ *   before every call. Written by `fetchServerTimestamp`, validated by
+ *   `isTimestampStorage`.
+ * - **`soleId`** — a stable per-browser device identifier: a random
+ *   16-character string generated once (via `generateString`) and reused
+ *   thereafter. Sent verbatim as the `X-Device-Id` header.
+ * - **`MklUserToken`** — the logged-in user's session token. The site sets it on
+ *   login and leaves it empty (`''`) for an anonymous session. Sent as the
+ *   `X-User-Token` header. ChemPal only browses anonymously, so this is normally
+ *   empty; the site itself attaches it only on the authenticated endpoints (see
+ *   `AuthRequiredEndpoints`).
+ *
+ * ## Request headers
+ *
+ * - **`x-device-id`** — copied from the `soleId` storage key above.
+ * - **`x-user-token`** — copied from the `MklUserToken` storage key above.
+ * - **`x-timestamp`** — the current server time derived from `MklTmKey` above.
+ * - **`sign`** — the per-request signature (`headerHash + paramHash`) built by
+ *   the process described above. Recomputed for every call and stashed in
+ *   `lastSignature` to seed the next request's `timestampe`.
+ *
+ * ## Request parameter
+ *
+ * - **`timestampe`** — a per-request nonce (the API's own spelling — not a typo
+ *   to "fix"). Carried in the GET query string or the POST body. The first
+ *   request uses `Date.now()` plus a small random offset; every later request
+ *   uses `Date.now()` string-concatenated with the digits pulled from the
+ *   previous signature (see `generateRequestTimestamp`). It must stay a string:
+ *   the value is 40+ digits, so numeric addition would collapse it into
+ *   scientific notation and the server would reject the signature.
+ *
+ * Known Macklin API response codes/messages:
+ * Successful:
+ * 200    "查询成功" ("Query successful")
+ *        "成功" ("success")
+ *        "Success"
+ *        "success"
+ *        "获取地区列表成功" ("Successfully retrieved list of regions")
+ *        "200 ok!"
+ * Error:
+ * 201    "请输入正确的项目号！" ("Please enter the correct project number!")
+ * 401    "The <field> field is required."
+ * 504    "Signature expired"
+ *        "Signature failed"
+ *        "Signature invalid"
+ * 1005   "Please login and try again"
+ * 1114   "The product number does not exist, please enter the full product number!"
+ * 1108   "If necessary, please contact customer service: 4006238666!" (failed call to specification endpoint)
+ * 1202   ??
+ * 3002   ??
+ *
  * @category Suppliers
  * @example
  * ```ts
@@ -165,6 +228,12 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
 
   /** Last `X-Ratelimit-Remaining` seen; a rise signals the server window reset. */
   private rateLimitLastRemaining: number = Number.POSITIVE_INFINITY;
+
+  /** Macklin supports CAS numbers searches. */
+  protected readonly supportsCAS: boolean = true;
+
+  /** Macklin supports formula searches. */
+  protected readonly supportsFormula: boolean = true;
 
   /** HTTP headers used as a basis for all queries. */
   protected headers: MacklinRequestHeaders = {
@@ -780,6 +849,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
       if (response.code !== 200) {
         this.logger.warn('Macklin API returned a non-success code', {
           path,
+          response,
           code: response.code,
           message: response.message,
         });

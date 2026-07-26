@@ -6,7 +6,7 @@ import { isHtmlResponse } from '@/utils/typeGuards/common';
 import { SupplierBaseMagento2 } from './SupplierBaseMagento2';
 
 /** Outcome of a single product-page fetch attempt. */
-type PageFetchResult =
+export type PageFetchResult =
   | { status: 'ok'; html?: string }
   // `httpStatus` carries the HTTP status when the failure was an HttpError (e.g. 429, 404);
   // undefined for non-HTTP failures (network error, non-HTML response).
