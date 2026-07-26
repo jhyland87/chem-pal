@@ -73,7 +73,6 @@ export const SearchField = styled(TextField)(({ theme }) => ({
       border: 'none',
     },
   },
-
   '& .MuiInputBase-input': {
     color: theme.palette.text.primary,
   },
@@ -157,7 +156,6 @@ export const MenuButton = styled(IconButton)(({ theme }) => ({
   boxShadow: designTokens.shadows.low,
   color: theme.palette.text.primary,
   transition: '0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-
   '&:hover': {
     backgroundColor: theme.palette.grey[100],
     transform: 'translateY(-1px)',

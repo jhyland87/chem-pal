@@ -1,8 +1,9 @@
 import { CACHE } from '@/constants/common';
 import { i18n } from '@/helpers/i18n';
+import { countActiveSearchFilters } from '@/helpers/searchFilters';
 import { cstorage } from '@/utils/storage';
 import { Science as ScienceIcon, Search as SearchIcon } from '@mui/icons-material';
-import { Box, IconButton } from '@mui/material';
+import { Box, IconButton, Tooltip } from '@mui/material';
 import { FC, FormEvent, useEffect, useState } from 'react';
 import { useAppContext } from '../context';
 import styles from './SearchForm.module.scss';
@@ -56,6 +57,14 @@ export const SearchForm: FC<SearchFormProps> = ({
   const appContext = useAppContext();
   const { searchFilters, setSearchFilters } = appContext;
   const query = searchFilters.titleQuery;
+
+  // Blue-highlight the advanced-search button (and note the count on hover) when
+  // any drawer filter is set to a non-default value.
+  const activeFilterCount = countActiveSearchFilters({
+    selectedSuppliers: appContext.selectedSuppliers,
+    searchFilters,
+    userSettings: appContext.userSettings,
+  });
 
   // Set when the typed query is an invalid advanced query; blocks submit until fixed.
   const [searchError, setSearchError] = useState<string | undefined>(undefined);
@@ -139,15 +148,23 @@ export const SearchForm: FC<SearchFormProps> = ({
         </IconButton>
 
         <SearchFormDivider />
-        <IconButton
-          className={styles['search-form-icon-button']}
-          type="button"
-          //color="primary"
-          aria-label={i18n('search_advanced_options')}
-          onClick={handleDrawerToggle}
+        <Tooltip
+          title={
+            activeFilterCount > 0
+              ? i18n('search_active_filters', [String(activeFilterCount)])
+              : i18n('search_advanced_options')
+          }
         >
-          <ScienceIcon />
-        </IconButton>
+          <IconButton
+            className={styles['search-form-icon-button']}
+            type="button"
+            aria-label={i18n('search_advanced_options')}
+            onClick={handleDrawerToggle}
+            sx={activeFilterCount > 0 ? { color: '#4e73af' } : undefined}
+          >
+            <ScienceIcon />
+          </IconButton>
+        </Tooltip>
       </SearchFormPaper>
 
       {hintMessage && (

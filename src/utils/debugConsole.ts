@@ -256,6 +256,70 @@ async function nudgePriceHistory(stepsBack: number = 0): Promise<number> {
   return changed;
 }
 
+/**
+ * Dev-only: appends `count` synthetic points to every stored price-history series
+ * so trends and sparklines — which need at least two points — have something to
+ * render without waiting for real prices to change across searches. Unlike
+ * {@link nudgePriceHistory} (which edits one existing point in place), this grows
+ * each series: every appended point swings a random ±1–8% from the point before
+ * it, is dated one day later, stays positive, and is forced to move by at least
+ * $0.01 so consecutive points never dedupe to a flat line. Writes through the
+ * app's own storage layer (the `price_history` store).
+ * @param count - How many points to append to each series. Default `5`.
+ * @returns The number of series that were extended.
+ * @example
+ * ```typescript
+ * // In the console:
+ * await chempal.seedPriceHistory(); // append 5 points to every series
+ * await chempal.seedPriceHistory(2); // append 2 points to every series
+ * ```
+ * @source
+ */
+async function seedPriceHistory(count: number = 5): Promise<number> {
+  const SWING_MIN = 0.01;
+  const SWING_MAX = 0.08;
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+  const toAppend = Math.max(1, Math.trunc(count));
+
+  const all = await getAllPriceSeries();
+  if (all.length === 0) {
+    console.warn('price_history is empty — run a search with price tracking enabled first.');
+    return 0;
+  }
+
+  let changed = 0;
+  let skipped = 0;
+  for (const entry of all) {
+    // Each new point swings off the previous one, so a series needs at least one
+    // existing point to anchor the walk.
+    if ((entry.points?.length ?? 0) === 0) {
+      skipped++;
+      continue;
+    }
+    const points = [...entry.points];
+    for (let i = 0; i < toAppend; i++) {
+      const prev = points[points.length - 1];
+      const dir = Math.random() < 0.5 ? -1 : 1;
+      const pct = SWING_MIN + Math.random() * (SWING_MAX - SWING_MIN);
+      let usd = round2(prev.usd * (1 + dir * pct));
+      if (usd <= 0) usd = round2(prev.usd * (1 + pct)); // keep positive
+      if (usd === prev.usd) usd = round2(prev.usd + dir * 0.01); // force a visible move
+      points.push({ t: prev.t + DAY_MS, usd });
+    }
+    entry.points = points;
+    entry.updatedAt = Math.max(Date.now(), points[points.length - 1].t);
+    await putPriceSeries(entry);
+    changed++;
+  }
+
+  const skippedNote = skipped > 0 ? ` (${skipped} skipped — no existing point to anchor from)` : '';
+  printDebug(
+    `✅ Appended ${toAppend} point(s) onto ${changed} price series${skippedNote}. Open a product's detail panel or enable the Trend column to see it.`,
+  );
+  return changed;
+}
+
 /** Stand-in notes used when CHANGELOG.md has nothing under `## [Unreleased]`. */
 const SAMPLE_RELEASE_NOTES: ReleaseSection[] = [
   { title: 'Added', items: ['A shiny new thing', 'Another new thing'] },
@@ -561,6 +625,8 @@ function help(): void {
       '                      limit: 25   (0 = show all) }',
       '  Testing:    nudgePriceHistory(stepsBack=0) (mutates price_history — nudges',
       '              one point per series by a random ±1–8%; 0=latest, 1=one back, …)',
+      '              seedPriceHistory(count=5) (mutates price_history — APPENDS count',
+      '              points per series so trends/sparklines have ≥2 points to draw)',
       '  Updates:    simulateUpdate(version?, opts?) — preview the next release:',
       '                defaults to the next minor + CHANGELOG.md [Unreleased] notes',
       '                opts: { notes: ReleaseSection[] | false, releaseUrl: string }',
@@ -582,6 +648,7 @@ function help(): void {
       "  await chempal.astTest('sodium AND NOT borohydride')",
       "  await chempal.astTest('acid OR base', { fuzzyWords: false, threshold: 70 })",
       '  await chempal.nudgePriceHistory(2) // nudge the price 2 entries back',
+      '  await chempal.seedPriceHistory() // append 5 points to every series (build a trend)',
       "  await chempal.simulateUpdate() // then reload → prompt with the next release's notes",
       "  await chempal.simulateUpdate('1.3.0', { notes: false }) // no-notes fallback",
       '  await chempal.resetUpdatePrompt() // back to a clean slate',
@@ -634,6 +701,7 @@ const chempal = {
   listSuppliers,
   // Testing / fixtures (mutates IndexedDB)
   nudgePriceHistory,
+  seedPriceHistory,
   // Update-prompt simulation (mutates chrome.storage.local)
   simulateUpdate,
   simulateWebstoreUpdate,

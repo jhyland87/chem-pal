@@ -1,11 +1,19 @@
-import { CountryFlagTooltip } from '@/components/StyledComponents';
+import { PriceSparkline, PriceTrend } from '@/components/SearchPanel/PriceTrendGraph';
+import { CountryFlagTooltip, PriceHistoryTooltip } from '@/components/StyledComponents';
 import { default as Link } from '@/components/TabLink';
 import { AVAILABILITY_OPTIONS, SHIPPING_OPTIONS } from '@/constants/common';
 import { SUPPLIER_COUNTRY_OPTIONS } from '@/constants/countries';
 import { omit } from '@/helpers/collectionUtils';
 import { getCountryName } from '@/helpers/country';
 import { i18n } from '@/helpers/i18n';
-import { formatDisplayPrice, formatUnitPrice, getUnitPrice } from '@/helpers/price';
+import {
+  formatDisplayPrice,
+  formatUnitPrice,
+  formatUnitPriceExact,
+  getUnitPrice,
+} from '@/helpers/price';
+import { resolveRowTrendPoints } from '@/helpers/priceHistory';
+import { resolveDisplayedVariants } from '@/helpers/product';
 import { availabilityLabel, shippingLabel } from '@/helpers/productLabels';
 import { pubchemCasSearchUrl, pubchemCompoundUrl } from '@/helpers/pubchem';
 import { formatUomForDisplay } from '@/helpers/quantity';
@@ -35,7 +43,7 @@ import styles from './TableColumns.module.scss';
  * // columns.map(c => c.id) →
  * //   ["expander", "title", "supplier", "country", "shipping",
  * //    "availability", "description", "price", "quantity", "uom",
- * //    "unitPrice", "sds", "specs", "coa", "cas", "pubchem", "formula",
+ * //    "unitPrice", "priceTrend", "sds", "specs", "coa", "cas", "pubchem", "formula",
  * //    "moleweight", "purity", "concentration"]
  * // columns.filter(c => c.meta?.drawer).map(c => c.id) →
  * //   ["supplier", "country", "shipping", "availability", "price"]
@@ -303,8 +311,15 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       // Numeric value (per base unit) so the column sorts/filters/auto-hides on
       // the amount; the cell renders the "$0.08/g" display string.
       accessorFn: (product) => getUnitPrice(product),
-      cell: ({ row, table }: CellContext<Product, unknown>) =>
-        formatUnitPrice(row.original, table.options.meta?.userSettings),
+      cell: ({ row, table }: CellContext<Product, unknown>) => {
+        const settings = table.options.meta?.userSettings;
+        const display = formatUnitPrice(row.original, settings);
+        if (!display) return '';
+        // When the display was rounded or collapsed to "<$0.01", reveal the
+        // full-precision value on hover via a native title tooltip.
+        const exact = formatUnitPriceExact(row.original, settings);
+        return exact && exact !== display ? <span title={exact}>{display}</span> : display;
+      },
       sortingFn: 'unitPriceSortingFn',
       filterFn: 'inNumberRangeHierarchy',
       meta: {
@@ -312,6 +327,60 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         filterVariant: 'range',
         style: {
           textAlign: 'left',
+        },
+      },
+    },
+    {
+      id: 'priceTrend',
+      header: i18n('column_price_trend'),
+      // Sortable by the trend's signed percent change (rising = +, falling = −),
+      // stamped onto the row as `priceTrendValue` by useResultsTable — TanStack
+      // can't sort a column without an accessor, and the price history it derives
+      // from isn't on the row. `sortUndefined: 'last'` parks trend-less rows at the
+      // bottom; `meta.skipEmptyHide` keeps the empty-column auto-hide from dropping
+      // this opt-in column when no row currently has a trend.
+      accessorFn: (product) => product.priceTrendValue,
+      // The cell still draws from the preloaded history map in table meta (the
+      // accessor value above is only the number the column sorts on).
+      cell: ({ row, table }: CellContext<Product, unknown>) => {
+        const history = table.options.meta?.priceHistory;
+        if (history === undefined) return null;
+        const product = row.original;
+        // Match the detail panel's variant set: filtered sub-rows when grouped,
+        // else the product's own variants. A flattened variant row (ungrouped) has
+        // neither and is resolved by its stamped priceSeriesKey inside the helper.
+        const variants: Variant[] =
+          row.subRows.length > 0 ? row.subRows.map((sub) => sub.original) : (product.variants ?? []);
+        const points = resolveRowTrendPoints(
+          product,
+          resolveDisplayedVariants(product, variants),
+          history,
+        );
+        if (!points) return null;
+        // Hover reveals the same delta/percent badge shown in the variant list.
+        // PriceHistoryTooltip's light surface keeps the red/green trend colors
+        // legible — the default dark tooltip bubble washes them out.
+        return (
+          <PriceHistoryTooltip
+            title={<PriceTrend points={points} userSettings={table.options.meta?.userSettings} />}
+            arrow
+            placement="top"
+          >
+            <span style={{ display: 'inline-flex' }}>
+              <PriceSparkline points={points} colorByTrend />
+            </span>
+          </PriceHistoryTooltip>
+        );
+      },
+      enableColumnFilter: false,
+      sortUndefined: 'last',
+      size: 96,
+      minSize: 96,
+      maxSize: 140,
+      meta: {
+        skipEmptyHide: true,
+        style: {
+          textAlign: 'center',
         },
       },
     },

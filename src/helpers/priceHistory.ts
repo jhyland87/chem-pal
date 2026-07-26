@@ -477,3 +477,47 @@ export function buildAggregateSeries(seriesList: readonly PriceHistoryEntry[]): 
   }
   return aggregate;
 }
+
+/**
+ * Resolve the price series a results-table row should graph, shared by the
+ * collapsed trend column and the expanded detail panel so the two never diverge.
+ * A flattened variant row (identified by its stamped {@link Product.priceSeriesKey})
+ * graphs its own variant series; any other row graphs the mean of its displayed
+ * variants (see {@link buildAggregateSeries}), falling back to the base product
+ * series. Returns `undefined` when there aren't two points to draw a line.
+ * @category Helpers
+ * @param product - The row's product.
+ * @param displayedVariants - The variants shown for this row (already deduped by
+ *   `resolveDisplayedVariants`); ignored for a flattened variant row.
+ * @param history - Recorded series keyed by series id (from {@link getProductPriceHistory}
+ *   or a bulk preload).
+ * @returns The points to graph, or `undefined` when there's no drawable trend.
+ * @example
+ * ```ts
+ * const points = resolveRowTrendPoints(product, displayedVariants, history);
+ * if (points) render(<PriceSparkline points={points} />);
+ * ```
+ * @source
+ */
+export function resolveRowTrendPoints(
+  product: Product,
+  displayedVariants: readonly Variant[],
+  history: ReadonlyMap<string, PriceHistoryEntry>,
+): readonly PricePoint[] | undefined {
+  if (product.priceSeriesKey !== undefined) {
+    const points = history.get(product.priceSeriesKey)?.points;
+    return points !== undefined && points.length >= 2 ? points : undefined;
+  }
+
+  const productKey = productSeriesKey(product);
+  const seriesFor = (variant: Variant): PriceHistoryEntry | undefined => {
+    const key = variant === product ? productKey : variantSeriesKey(product, variant);
+    return key !== undefined ? history.get(key) : undefined;
+  };
+  const displayedSeries = displayedVariants
+    .map(seriesFor)
+    .filter((series): series is PriceHistoryEntry => series !== undefined);
+  const basePoints = productKey !== undefined ? history.get(productKey)?.points : undefined;
+  const aggregate = displayedSeries.length > 0 ? buildAggregateSeries(displayedSeries) : basePoints;
+  return aggregate !== undefined && aggregate.length >= 2 ? aggregate : undefined;
+}

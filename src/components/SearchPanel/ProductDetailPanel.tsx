@@ -17,15 +17,22 @@ import {
 } from '@/components/StyledComponents';
 import { default as Link } from '@/components/TabLink';
 import { ProductImageModal } from '@/components/SearchPanel/ProductImageModal';
+import {
+  formatUsd,
+  PriceSparkline,
+  PriceTrend,
+  TREND_GLYPH,
+  type PriceHistorySettings,
+} from '@/components/SearchPanel/PriceTrendGraph';
 import { SupplierStoreNotice } from '@/components/SearchPanel/SupplierStoreNotice';
 import { omit } from '@/helpers/collectionUtils';
 import { i18n } from '@/helpers/i18n';
 import { formatDisplayPrice } from '@/helpers/price';
 import {
-  buildAggregateSeries,
   describeTrend,
   getProductPriceHistory,
   productSeriesKey,
+  resolveRowTrendPoints,
   variantSeriesKey,
 } from '@/helpers/priceHistory';
 import { isPresent, resolveDisplayedVariants, resolveProductImages } from '@/helpers/product';
@@ -289,118 +296,6 @@ export function ProductImageCarousel({
   );
 }
 
-/** The user settings the price-history views read to convert USD for display. */
-type PriceHistorySettings = Pick<UserSettings, 'currency' | 'currencyRate' | 'trackPriceHistory'>;
-
-/** MUI theme color token per trend direction (rising price = bad = red). */
-const TREND_COLOR = { up: 'error.main', down: 'success.main', flat: 'text.secondary' } as const;
-
-/** Glyph per trend direction. */
-const TREND_GLYPH = { up: '▲', down: '▼', flat: '—' } as const;
-
-/**
- * Format a USD amount for display in the user's currency, reusing the same
- * conversion the results table applies so history values match the table.
- * @param usd - The amount in USD.
- * @param userSettings - The user's currency/rate settings.
- * @returns The localized currency string (e.g. `"$19.99"`).
- * @example
- * ```ts
- * formatUsd(19.99, { currency: "EUR", currencyRate: 0.9 }); // => "€17.99"
- * ```
- * @source
- */
-function formatUsd(usd: number, userSettings?: PriceHistorySettings): string {
-  return formatDisplayPrice({ usdPrice: usd, price: usd, currencyCode: 'USD' }, userSettings);
-}
-
-/**
- * Inline SVG sparkline of a price series. Points are spaced evenly by index and
- * scaled to the series' own min/max. Renders nothing for a series too short to
- * draw a line (fewer than two points).
- * @param props - The series points to plot.
- * @returns The sparkline element, or `null` when there's nothing to draw.
- * @example
- * ```tsx
- * <PriceSparkline points={[{ t: 1, usd: 20 }, { t: 2, usd: 22 }]} />
- * ```
- * @source
- */
-function PriceSparkline({ points }: { points: readonly PricePoint[] }): ReactElement | null {
-  if (points.length < 2) return null;
-  const width = 84;
-  const height = 22;
-  const pad = 2;
-  const values = points.map((p) => p.usd);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const span = max - min || 1;
-  const stepX = (width - pad * 2) / (points.length - 1);
-  const coords = points
-    .map((p, i) => {
-      const x = pad + i * stepX;
-      const y = pad + (height - pad * 2) * (1 - (p.usd - min) / span);
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(' ');
-  return (
-    <svg
-      width={width}
-      height={height}
-      viewBox={`0 0 ${width} ${height}`}
-      role="img"
-      aria-label={i18n('product_detail_sparkline_aria')}
-      style={{ display: 'block' }}
-    >
-      <polyline
-        points={coords}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={1.5}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-/**
- * Compact trend indicator: a colored glyph plus the signed delta and percent
- * change since the previous recorded price. Rising prices read red, drops read
- * green. Renders nothing when there aren't two points to compare.
- * @param props - The series points and the user's currency settings.
- * @returns The trend element, or `null` when there's no move to show.
- * @example
- * ```tsx
- * <PriceTrend points={series.points} userSettings={userSettings} />
- * ```
- * @source
- */
-function PriceTrend({
-  points,
-  userSettings,
-}: {
-  points: readonly PricePoint[];
-  userSettings?: PriceHistorySettings;
-}): ReactElement | null {
-  if (points.length < 2) return null;
-  const trend = describeTrend(points);
-  const sign = trend.deltaUsd > 0 ? '+' : trend.deltaUsd < 0 ? '−' : '';
-  const magnitude = formatUsd(Math.abs(trend.deltaUsd), userSettings);
-  return (
-    <Typography
-      component="span"
-      variant="caption"
-      color={TREND_COLOR[trend.direction]}
-      sx={{ whiteSpace: 'nowrap', fontWeight: 600 }}
-    >
-      {TREND_GLYPH[trend.direction]}
-      {trend.direction !== 'flat' &&
-        ` ${sign}${magnitude} (${sign}${Math.abs(trend.pctChange).toFixed(1)}%)`}
-    </Typography>
-  );
-}
-
 /**
  * Per-entry trend badge for the price-history popover: a colored arrow and
  * signed percent comparing this point to the previous one (rising = red).
@@ -537,7 +432,7 @@ function ProductPriceHistory({
         {hasTrend ? (
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <span style={{ color: 'inherit' }}>
-              <PriceSparkline points={points} />
+              <PriceSparkline points={points} colorByTrend />
             </span>
             <PriceTrend points={points} userSettings={userSettings} />
             <Typography component="span" variant="caption" color="text.secondary">
@@ -608,14 +503,9 @@ export function ProductDetailPanel({ row, table }: ProductDetailPanelProps): Rea
   };
 
   // The product-level summary aggregates the *displayed* rows into one mean-price
-  // series, so it can never contradict the rows below it. Falls back to the base
-  // series when nothing is recorded yet.
-  const displayedSeries = displayedVariants
-    .map(seriesFor)
-    .filter((series): series is PriceHistoryEntry => series !== undefined);
-  const basePoints = productKey !== undefined ? priceHistory.get(productKey)?.points : undefined;
-  const aggregatePoints =
-    displayedSeries.length > 0 ? buildAggregateSeries(displayedSeries) : basePoints;
+  // series (shared with the results table's trend column), so it can never
+  // contradict the rows below it.
+  const aggregatePoints = resolveRowTrendPoints(product, displayedVariants, priceHistory);
 
   const detailFields = buildDetailFields(product);
   const docLinks = buildDocLinks(product);

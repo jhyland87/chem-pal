@@ -9,6 +9,7 @@ import {
   samePurchasableUnit,
   variantRowTitle,
 } from '@/helpers/product';
+import { variantSeriesKey } from '@/helpers/priceHistory';
 import { describe, expect, it } from 'vitest';
 
 /** Minimal base product with only the required fields populated. */
@@ -362,5 +363,22 @@ describe.concurrent('flattenProductVariants', () => {
     flattenProductVariants([product]);
     expect(product.variants).toBe(variants);
     expect(product.parentProduct).toBeUndefined();
+  });
+
+  it('stamps each variant row with its price-history series key', ({ expect }) => {
+    const variants: Variant[] = [
+      { title: '100g', quantity: 100, uom: 'g', price: 195.99 },
+      { title: '10kg', quantity: 10, uom: 'kg', price: 4818.48 },
+    ];
+    const product = { ...variantProduct, variants } as Product;
+    const rows = flattenProductVariants([product]);
+
+    // The parent/passthrough row carries no stamped key (the panel keys it via
+    // productSeriesKey); each variant row carries its resolved variant series key so
+    // the flattened leaf can still find its history after losing the parent identity.
+    expect(rows[0].priceSeriesKey).toBeUndefined();
+    expect(rows[1].priceSeriesKey).toBe(variantSeriesKey(product, variants[0]));
+    expect(rows[2].priceSeriesKey).toBe(variantSeriesKey(product, variants[1]));
+    expect(rows[1].priceSeriesKey).toEqual(expect.any(String));
   });
 });

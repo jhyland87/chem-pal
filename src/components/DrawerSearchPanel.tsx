@@ -2,8 +2,13 @@ import TableColumns from '@/components/SearchPanel/TableColumns';
 import { CACHE, DRAWER_INDEX, PANEL } from '@/constants/common';
 import { useAppContext } from '@/context';
 import { i18n, useLocale } from '@/helpers/i18n';
+import { countActiveSearchFilters } from '@/helpers/searchFilters';
 import { cstorage } from '@/utils/storage';
-import { ExpandMore as ExpandMoreIcon, Search as SearchIcon } from '@mui/icons-material';
+import {
+  FilterAltOff as ClearFiltersIcon,
+  ExpandMore as ExpandMoreIcon,
+  Search as SearchIcon,
+} from '@mui/icons-material';
 import { Accordion, Box, Button, TextField, Typography } from '@mui/material';
 import { FC, KeyboardEvent, SyntheticEvent, useEffect, useMemo } from 'react';
 import ColumnDrawerSection from './ColumnDrawerSection';
@@ -55,8 +60,18 @@ const DrawerSearchPanel: FC<{
     setPendingSearchQuery,
     searchFilters,
     setSearchFilters,
+    selectedSuppliers,
+    setSelectedSuppliers,
     setPanel,
   } = useAppContext();
+
+  // How many advanced filters are set to a non-default value; gates the
+  // "Clear all filters" button below.
+  const activeFilterCount = countActiveSearchFilters({
+    selectedSuppliers,
+    searchFilters,
+    userSettings,
+  });
 
   // Re-render (and rebuild the memoized drawer configs below) when the UI
   // language changes, so the translated column/drawer labels update live.
@@ -137,6 +152,15 @@ const DrawerSearchPanel: FC<{
     }
   };
 
+  // Reset every advanced filter to its default, matching the set counted by
+  // countActiveSearchFilters. The title query is the search term, not a filter,
+  // so it's left untouched.
+  const handleClearFilters = () => {
+    setSelectedSuppliers([]);
+    setSearchFilters({ ...searchFilters, availability: [], country: [], shippingType: [] });
+    setUserSettings({ ...userSettings, priceMin: undefined, priceMax: undefined });
+  };
+
   const renderResultLimit = () => (
     <Accordion
       key="per-supplier-limit"
@@ -202,7 +226,16 @@ const DrawerSearchPanel: FC<{
         ];
       })}
 
-      <Box sx={{ p: 2 }}>
+      <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Button
+          variant="text"
+          fullWidth
+          startIcon={<ClearFiltersIcon />}
+          onClick={handleClearFilters}
+          disabled={activeFilterCount === 0}
+        >
+          {i18n('drawer_clear_filters')}
+        </Button>
         <Button
           variant="contained"
           fullWidth

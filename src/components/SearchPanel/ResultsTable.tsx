@@ -4,6 +4,7 @@ import resultStyles from '@/components/ResultsPanel.module.scss';
 import { CACHE, DRAWER_INDEX } from '@/constants/common';
 import { emitSearchEvent, SearchEvent } from '@/events/searchEvents';
 import { i18n } from '@/helpers/i18n';
+import { countActiveSearchFilters } from '@/helpers/searchFilters';
 import { generatePageSizes } from '@/helpers/utils';
 import { HotkeyEvent } from '@/hotkeys';
 import { getEmptyHideableColumnIds } from '@/mixins/tanstack';
@@ -174,6 +175,20 @@ export default function ResultsTable({
   columnFilterFns,
 }: ResultsTableProps): ReactElement {
   const appContext = useAppContext();
+  // Count of active advanced-search (drawer) filters — blue-highlights the flask
+  // button and is surfaced on hover. 0 when the context isn't ready or all default.
+  const advancedFilterCount = appContext
+    ? countActiveSearchFilters({
+        selectedSuppliers: appContext.selectedSuppliers,
+        searchFilters: appContext.searchFilters,
+        userSettings: appContext.userSettings,
+      })
+    : 0;
+  // How many columns have an active filter (each entry is one column) —
+  // independent of whether the filter row is shown. Drives the filter-toggle
+  // icon's blue highlight and its hover count.
+  const activeColumnFilterCount = columnFilterFns[0].length;
+  const hasActiveColumnFilters = activeColumnFilterCount > 0;
   const [showFilters, setShowFilters] = useState(false);
   const [columnMenuAnchor, setColumnMenuAnchor] = useState<null | HTMLElement>(null);
   const [globalFilter, setGlobalFilter] = useState('');
@@ -252,6 +267,15 @@ export default function ResultsTable({
   // chrome.storage.session, and restore them on mount.
   const [tableState, setTableState] = useState<TableState>(table.initialState);
   const isStateLoadedRef = useRef(false);
+
+  // The rows-per-page the user explicitly asked for, via the Select or the
+  // "show all" hotkey. Filtering can clamp the *effective* pageSize below this
+  // when fewer rows are available; tracking the intent lets us restore it once
+  // the row count grows back (e.g. the user clears a column filter).
+  // `Number.POSITIVE_INFINITY` means "all rows". Declared here (above the load
+  // effect) so a restored pageSize can hydrate it — otherwise the reconciliation
+  // below would immediately reset a persisted non-default row limit to the default.
+  const desiredPageSizeRef = useRef(tableState.pagination?.pageSize ?? 10);
 
   // Collapse all variant rows whenever a new search begins. Without this,
   // the persisted `expanded` state from the previous search can leak into
@@ -338,6 +362,12 @@ export default function ResultsTable({
           if (Array.isArray(stored.columnFilters)) {
             columnFilterFns[1](stored.columnFilters);
           }
+          // Hydrate the "desired rows-per-page" intent from the restored pageSize
+          // so the reconciliation below keeps the persisted row limit instead of
+          // resetting it to the default once cached results repopulate the table.
+          if (typeof stored.pagination?.pageSize === 'number') {
+            desiredPageSizeRef.current = stored.pagination.pageSize;
+          }
           setTableState((prev) => ({ ...prev, ...stored }));
         }
       } catch (error) {
@@ -405,13 +435,6 @@ export default function ResultsTable({
   const filteredRowCount = table.getRowModel().rows.filter((row) => row.depth === 0).length;
   const totalRowCount = table.getFilteredRowModel().rows.length;
   const supplierResultsCount = table.getColumn('supplier')?.getFacetedUniqueValues().size ?? 0;
-
-  // The rows-per-page the user explicitly asked for, via the Select or the
-  // "show all" hotkey. Filtering can clamp the *effective* pageSize below this
-  // when fewer rows are available; tracking the intent lets us restore it once
-  // the row count grows back (e.g. the user clears a column filter).
-  // `Number.POSITIVE_INFINITY` means "all rows".
-  const desiredPageSizeRef = useRef(tableState.pagination?.pageSize ?? 10);
 
   // Emit the filtered row count; the badge controller owns the badge update.
   // Suppress leading zeros (the empty table before results populate on open)
@@ -505,6 +528,24 @@ export default function ResultsTable({
   // row model) so that filter input keystrokes don't trigger column remeasuring.
   const { getMeasurementTableProps, autoSizeColumns } = useAutoColumnSizing(table, searchResults);
 
+  // A column-resize drag ends with a stray `click` that bubbles to the header's
+  // sort toggle (the click's target resolves to the <th>, so stopping propagation
+  // on the resizer alone doesn't catch it). Mark a resize in progress on the
+  // handle's pointer-down and clear it one frame after pointer-up — after the
+  // stray click has already fired and been swallowed by the header handler below.
+  const suppressSortAfterResizeRef = useRef(false);
+  const markResizeStart = () => {
+    suppressSortAfterResizeRef.current = true;
+    window.addEventListener(
+      'pointerup',
+      () =>
+        requestAnimationFrame(() => {
+          suppressSortAfterResizeRef.current = false;
+        }),
+      { once: true },
+    );
+  };
+
   const handleSearch = (query: string) => {
     if (query.trim()) {
       executeSearch(query.trim());
@@ -549,25 +590,44 @@ export default function ResultsTable({
           </div>
           <div className={resultStyles['header-right']}>
             {/* Advanced search: opens the drawer's Search tab (mirrors the home
-                page's ScienceIcon). First icon, to the left of the others. */}
-            <ColoredIconButton
-              onClick={() => appContext?.toggleDrawer(DRAWER_INDEX.SEARCH)}
-              size="small"
-              iconColor="#666"
-              aria-label={i18n('search_advanced_options')}
+                page's ScienceIcon). First icon, to the left of the others. Turns
+                blue with a filter count on hover when any drawer filter is set. */}
+            <Tooltip
+              title={
+                advancedFilterCount > 0
+                  ? i18n('search_active_filters', [String(advancedFilterCount)])
+                  : i18n('search_advanced_options')
+              }
             >
-              <ScienceIcon />
-            </ColoredIconButton>
-            <FilterIconButton
-              onClick={toggleFilters}
-              size="small"
-              isActive={showFilters}
-              activeColor="#007bff"
-              textColor="#666"
-              aria-label={i18n('results_toggle_filters')}
+              <ColoredIconButton
+                onClick={() => appContext?.toggleDrawer(DRAWER_INDEX.SEARCH)}
+                size="small"
+                iconColor={advancedFilterCount > 0 ? '#4e73af' : '#666'}
+                aria-label={i18n('search_advanced_options')}
+              >
+                <ScienceIcon />
+              </ColoredIconButton>
+            </Tooltip>
+            <Tooltip
+              title={
+                hasActiveColumnFilters
+                  ? i18n('results_active_column_filters', [String(activeColumnFilterCount)])
+                  : i18n('results_toggle_filters')
+              }
             >
-              <FilterListIcon />
-            </FilterIconButton>
+              <FilterIconButton
+                onClick={toggleFilters}
+                size="small"
+                // Blue when a column filter is applied, or while the filter row is
+                // open (preserving the toggle's pressed-state affordance).
+                isActive={hasActiveColumnFilters || showFilters}
+                activeColor="#4e73af"
+                textColor="#666"
+                aria-label={i18n('results_toggle_filters')}
+              >
+                <FilterListIcon />
+              </FilterIconButton>
+            </Tooltip>
             <ColoredIconButton
               onClick={(e) => setColumnMenuAnchor(e.currentTarget)}
               size="small"
@@ -686,7 +746,12 @@ export default function ResultsTable({
                       key={header.id}
                       canSort={header.column.getCanSort()}
                       cellWidth={header.getSize()}
-                      onClick={header.column.getToggleSortingHandler()}
+                      onClick={(event) => {
+                        // Swallow the stray click that ends a column resize so it
+                        // doesn't toggle the sort (see markResizeStart).
+                        if (suppressSortAfterResizeRef.current) return;
+                        header.column.getToggleSortingHandler()?.(event);
+                      }}
                       style={header.column.columnDef.meta?.style}
                     >
                       {header.isPlaceholder ? null : (
@@ -707,8 +772,14 @@ export default function ResultsTable({
                       {header.column.getCanResize() && (
                         <ColumnResizer
                           isResizing={header.column.getIsResizing()}
-                          onMouseDown={header.getResizeHandler()}
-                          onTouchStart={header.getResizeHandler()}
+                          onMouseDown={(event) => {
+                            markResizeStart();
+                            header.getResizeHandler()(event);
+                          }}
+                          onTouchStart={(event) => {
+                            markResizeStart();
+                            header.getResizeHandler()(event);
+                          }}
                           // Stop the drag/click from bubbling to the header's
                           // sort toggle handler.
                           onClick={(event) => event.stopPropagation()}

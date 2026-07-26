@@ -4,6 +4,7 @@ import {
   getProductPriceHistory,
   productSeriesKey,
   recordProductPrices,
+  resolveRowTrendPoints,
   variantSeriesKey,
 } from '@/helpers/priceHistory';
 import { clearPriceHistory, getPriceSeries } from '@/utils/idbCache';
@@ -52,28 +53,33 @@ describe('recordProductPrices', () => {
     expect(await usdValues(productSeriesKey(baseProduct(0)))).toEqual([19.99, 21.5]);
   });
 
-  it('trims to the newest N points when priceHistoryMaxPoints is positive', async () => {
-    for (const price of [10, 11, 12, 13, 14]) {
-      await recordProductPrices([baseProduct(price)], { priceHistoryMaxPoints: 3 });
-    }
-    expect(await usdValues(productSeriesKey(baseProduct(0)))).toEqual([12, 13, 14]);
-  });
-
-  it('keeps every point when priceHistoryMaxPoints is 0 (unlimited)', async () => {
-    for (const price of [10, 11, 12, 13, 14]) {
-      await recordProductPrices([baseProduct(price)], { priceHistoryMaxPoints: 0 });
-    }
-    expect(await usdValues(productSeriesKey(baseProduct(0)))).toEqual([10, 11, 12, 13, 14]);
-  });
-
-  it('coerces a string max-points setting (settings persist numbers as strings)', async () => {
-    for (const price of [10, 11, 12]) {
+  it.for([
+    {
+      label: 'trims to the newest N points when priceHistoryMaxPoints is positive',
+      maxPoints: 3,
+      prices: [10, 11, 12, 13, 14],
+      expected: [12, 13, 14],
+    },
+    {
+      label: 'keeps every point when priceHistoryMaxPoints is 0 (unlimited)',
+      maxPoints: 0,
+      prices: [10, 11, 12, 13, 14],
+      expected: [10, 11, 12, 13, 14],
+    },
+    {
       // priceHistoryMaxPoints arrives as a string from the settings reducer.
-      await recordProductPrices([baseProduct(price)], {
-        priceHistoryMaxPoints: '2' as unknown as number,
-      });
+      label: 'coerces a string max-points setting (settings persist numbers as strings)',
+      maxPoints: '2' as unknown as number,
+      prices: [10, 11, 12],
+      expected: [11, 12],
+    },
+  ])('$label', async ({ maxPoints, prices, expected }) => {
+    // Sequential, order-dependent seeding: each record appends to the same series,
+    // so the cap is applied against the accumulated points.
+    for (const price of prices) {
+      await recordProductPrices([baseProduct(price)], { priceHistoryMaxPoints: maxPoints });
     }
-    expect(await usdValues(productSeriesKey(baseProduct(0)))).toEqual([11, 12]);
+    expect(await usdValues(productSeriesKey(baseProduct(0)))).toEqual(expected);
   });
 
   it('tracks each variant as its own series, distinct from the base and each other', async () => {
@@ -185,9 +191,10 @@ describe('recordProductPrices', () => {
     await recordProductPrices([p]);
 
     // Each variant gets its own single-point series — no manufactured trend.
-    for (const variant of p.variants!) {
-      expect(await usdValues(variantSeriesKey(p, variant))).toEqual([variant.usdPrice]);
-    }
+    const recorded = await Promise.all(
+      p.variants!.map((variant) => usdValues(variantSeriesKey(p, variant))),
+    );
+    expect(recorded).toEqual(p.variants!.map((variant) => [variant.usdPrice]));
     // Four distinct variant series ids.
     const ids = new Set(p.variants!.map((v) => variantSeriesKey(p, v)));
     expect(ids.size).toBe(4);
@@ -358,5 +365,69 @@ describe('buildAggregateSeries', () => {
       { t: 1, usd: 10 },
       { t: 3, usd: 12 },
     ]);
+  });
+});
+
+describe('resolveRowTrendPoints', () => {
+  const twoPoints: PricePoint[] = [
+    { t: 1, usd: 10 },
+    { t: 2, usd: 12 },
+  ];
+  const seriesEntry = (id: string, points: PricePoint[]): PriceHistoryEntry => ({
+    id,
+    productKey: 'pk',
+    supplier: 'Loudwolf',
+    title: 't',
+    points,
+    updatedAt: 0,
+  });
+  const historyOf = (...entries: PriceHistoryEntry[]): Map<string, PriceHistoryEntry> =>
+    new Map(entries.map((e) => [e.id, e]));
+
+  it("graphs a flattened variant row's own stamped series", () => {
+    const row = product({ priceSeriesKey: 'pk::100g' });
+    const history = historyOf(seriesEntry('pk::100g', twoPoints));
+    expect(resolveRowTrendPoints(row, [], history)).toEqual(twoPoints);
+  });
+
+  it('returns undefined for a stamped series with fewer than two points', () => {
+    const row = product({ priceSeriesKey: 'pk::100g' });
+    const history = historyOf(seriesEntry('pk::100g', [{ t: 1, usd: 10 }]));
+    expect(resolveRowTrendPoints(row, [], history)).toBeUndefined();
+  });
+
+  it('returns undefined when the stamped series is not recorded', () => {
+    const row = product({ priceSeriesKey: 'pk::missing' });
+    expect(resolveRowTrendPoints(row, [], historyOf())).toBeUndefined();
+  });
+
+  it('aggregates the displayed variants for a product row', () => {
+    const variants: Variant[] = [{ title: '50g' } as Variant, { title: '100g' } as Variant];
+    const parent = baseProduct(0, variants);
+    const history = historyOf(
+      seriesEntry(variantSeriesKey(parent, variants[0]) ?? '', [
+        { t: 1, usd: 10 },
+        { t: 2, usd: 8 },
+      ]),
+      seriesEntry(variantSeriesKey(parent, variants[1]) ?? '', [
+        { t: 1, usd: 20 },
+        { t: 2, usd: 18 },
+      ]),
+    );
+    expect(resolveRowTrendPoints(parent, variants, history)).toEqual([
+      { t: 1, usd: 15 },
+      { t: 2, usd: 13 },
+    ]);
+  });
+
+  it('falls back to the base product series when no variant series exist', () => {
+    const parent = baseProduct(0);
+    const history = historyOf(seriesEntry(productSeriesKey(parent) ?? '', twoPoints));
+    expect(resolveRowTrendPoints(parent, [], history)).toEqual(twoPoints);
+  });
+
+  it('returns undefined for a product row with no recorded history', () => {
+    const parent = baseProduct(0);
+    expect(resolveRowTrendPoints(parent, [], historyOf())).toBeUndefined();
   });
 });

@@ -362,10 +362,12 @@ export function variantRowTitle(product: Product, variant: Variant): string {
  * plus one **variant row** per variant that isn't the parent's own purchasable
  * unit. Each variant row inherits the product's shared fields (CAS, formula,
  * images…) with the variant's own price/quantity/identity overlaid, carries a
- * {@link Product.parentProduct} back-reference, gets a disambiguated title (see
- * {@link variantRowTitle}), and drops the nested `variants` array so it stays a
- * leaf. Products without variants pass through unchanged. This is a presentational
- * transform only — it never mutates the inputs or the stored product data.
+ * {@link Product.parentProduct} back-reference, carries its resolved
+ * {@link Product.priceSeriesKey} (so the results table can look up the variant's
+ * own price history), gets a disambiguated title (see {@link variantRowTitle}), and
+ * drops the nested `variants` array so it stays a leaf. Products without variants
+ * pass through unchanged. This is a presentational transform only — it never mutates
+ * the inputs or the stored product data.
  * @category Helpers
  * @param products - The grouped product rows.
  * @returns The parent row plus one row per non-parent variant, per product.
@@ -390,7 +392,13 @@ export function flattenProductVariants(products: readonly Product[]): Product[] 
       if (isParentPurchasableUnit(product, variant)) continue;
       rows.push(
         omit(
-          { ...product, ...variant, title: variantRowTitle(product, variant), parentProduct },
+          {
+            ...product,
+            ...variant,
+            title: variantRowTitle(product, variant),
+            parentProduct,
+            priceSeriesKey: variantSeriesKey(product, variant),
+          },
           'variants',
         ),
       );
