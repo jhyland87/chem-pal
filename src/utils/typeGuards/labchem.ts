@@ -1,41 +1,34 @@
-import { z } from 'zod';
+import * as v from 'valibot';
 import type {
   EpagesProductPage,
   EpagesSearchResponse,
   EpagesVariationsResponse,
 } from '@/types/labchem';
 
-const epagesSearchResponseSchema = z.object({
-  products: z.array(
-    z
-      .object({
-        productId: z.string(),
-        name: z.string(),
-        links: z.array(z.object({ rel: z.string(), href: z.string() }).passthrough()),
-      })
-      .passthrough(),
+const epagesSearchResponseSchema = v.object({
+  products: v.array(
+    v.looseObject({
+      productId: v.string(),
+      name: v.string(),
+      links: v.array(v.looseObject({ rel: v.string(), href: v.string() })),
+    }),
   ),
-  totalNumberOfProducts: z.number(),
+  totalNumberOfProducts: v.number(),
 });
 
-const epagesVariationsResponseSchema = z.object({
-  results: z.number(),
-  items: z.array(
-    z
-      .object({
-        link: z.object({ rel: z.string(), href: z.string() }).passthrough(),
-      })
-      .passthrough(),
+const epagesVariationsResponseSchema = v.object({
+  results: v.number(),
+  items: v.array(
+    v.looseObject({
+      link: v.looseObject({ rel: v.string(), href: v.string() }),
+    }),
   ),
 });
 
-const epagesProductPageSchema = z
-  .object({
-    productId: z.string(),
-    forSale: z.boolean(),
-  })
-  .passthrough();
-
+const epagesProductPageSchema = v.looseObject({
+  productId: v.string(),
+  forSale: v.boolean(),
+});
 /**
  * Type guard for the ePages catalog search response
  * (`POST /api/v2/search`). Verifies the `products` array (each with an id, name,
@@ -54,7 +47,7 @@ const epagesProductPageSchema = z
  * @source
  */
 export function isEpagesSearchResponse(response: unknown): response is EpagesSearchResponse {
-  return epagesSearchResponseSchema.safeParse(response).success;
+  return v.safeParse(epagesSearchResponseSchema, response).success;
 }
 
 /**
@@ -77,7 +70,7 @@ export function isEpagesSearchResponse(response: unknown): response is EpagesSea
 export function isEpagesVariationsResponse(
   response: unknown,
 ): response is EpagesVariationsResponse {
-  return epagesVariationsResponseSchema.safeParse(response).success;
+  return v.safeParse(epagesVariationsResponseSchema, response).success;
 }
 
 /**
@@ -98,5 +91,5 @@ export function isEpagesVariationsResponse(
  * @source
  */
 export function isEpagesProductPage(response: unknown): response is EpagesProductPage {
-  return epagesProductPageSchema.safeParse(response).success;
+  return v.safeParse(epagesProductPageSchema, response).success;
 }

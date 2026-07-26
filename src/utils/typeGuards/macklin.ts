@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as v from 'valibot';
 
 /**
  * Macklin API paths used by the supplier module, relative to its API host.
@@ -38,8 +38,8 @@ export enum AuthRequiredEndpoints {
   FRUIT_ORDER = '/api/fruit/order',
 }
 
-const timestampResponseSchema = z.object({
-  timestamp: z.number(),
+const timestampResponseSchema = v.object({
+  timestamp: v.number(),
 });
 
 /**
@@ -60,13 +60,13 @@ const timestampResponseSchema = z.object({
  * @source
  */
 export function isTimestampResponse(data: unknown): data is TimestampResponse {
-  return timestampResponseSchema.safeParse(data).success;
+  return v.safeParse(timestampResponseSchema, data).success;
 }
 
-const macklinApiResponseSchema = z.object({
-  code: z.number(),
-  message: z.string(),
-  data: z.custom((val) => val !== undefined),
+const macklinApiResponseSchema = v.object({
+  code: v.number(),
+  message: v.string(),
+  data: v.custom((val) => val !== undefined),
 });
 
 /**
@@ -87,11 +87,11 @@ const macklinApiResponseSchema = z.object({
  * @source
  */
 export function isMacklinApiResponse<T>(data: unknown): data is MacklinApiResponse<T> {
-  return macklinApiResponseSchema.safeParse(data).success;
+  return v.safeParse(macklinApiResponseSchema, data).success;
 }
 
-const macklinMsdsSearchResponseSchema = z.object({
-  url: z.string(),
+const macklinMsdsSearchResponseSchema = v.object({
+  url: v.string(),
 });
 
 /**
@@ -113,11 +113,11 @@ const macklinMsdsSearchResponseSchema = z.object({
  * @source
  */
 export function isMacklinMsdsSearchResponse(data: unknown): data is MacklinMsdsSearchResponse {
-  return macklinMsdsSearchResponseSchema.safeParse(data).success;
+  return v.safeParse(macklinMsdsSearchResponseSchema, data).success;
 }
 
-const macklinProductInfoSchema = z.object({
-  item: z.object({ chem_mw: z.string() }),
+const macklinProductInfoSchema = v.object({
+  item: v.object({ chem_mw: v.string() }),
 });
 
 /**
@@ -138,7 +138,7 @@ const macklinProductInfoSchema = z.object({
  * @source
  */
 export function isMacklinProductInfo(data: unknown): data is MacklinProductInfo {
-  return macklinProductInfoSchema.safeParse(data).success;
+  return v.safeParse(macklinProductInfoSchema, data).success;
 }
 
 /**
@@ -191,8 +191,8 @@ export function isAuthCheckEndpoint(url: string): boolean {
   ).includes(url);
 }
 
-const macklinSearchResultSchema = z.object({
-  list: z.custom<object>((val) => typeof val === 'object' && val !== null),
+const macklinSearchResultSchema = v.object({
+  list: v.custom<object>((val) => typeof val === 'object' && val !== null),
 });
 
 /**
@@ -214,7 +214,7 @@ const macklinSearchResultSchema = z.object({
  * @source
  */
 export function isMacklinSearchResult<T>(data: unknown): data is MacklinSearchResult<T> {
-  return macklinSearchResultSchema.safeParse(data).success;
+  return v.safeParse(macklinSearchResultSchema, data).success;
 }
 
 /**
@@ -242,19 +242,19 @@ export function isMacklinProductDetailsResponse(
   return data.list.every(isMacklinProductDetails);
 }
 
-const macklinProductDetailsSchema = z.object({
-  item_id: z.number(),
-  item_code: z.string(),
-  product_id: z.number(),
-  product_code: z.string(),
-  product_price: z.string(),
-  product_unit: z.string(),
-  product_locked_stock: z.string(),
-  product_pack: z.string(),
-  item_en_name: z.string(),
-  product_stock: z.string(),
-  chem_cas: z.string(),
-  delivery_desc_show: z.string(),
+const macklinProductDetailsSchema = v.object({
+  item_id: v.number(),
+  item_code: v.string(),
+  product_id: v.number(),
+  product_code: v.string(),
+  product_price: v.string(),
+  product_unit: v.string(),
+  product_locked_stock: v.string(),
+  product_pack: v.string(),
+  item_en_name: v.string(),
+  product_stock: v.string(),
+  chem_cas: v.string(),
+  delivery_desc_show: v.string(),
 });
 
 /**
@@ -276,7 +276,7 @@ const macklinProductDetailsSchema = z.object({
  * @source
  */
 export function isMacklinProductDetails(data: unknown): data is MacklinProductDetails {
-  return macklinProductDetailsSchema.safeParse(data).success;
+  return v.safeParse(macklinProductDetailsSchema, data).success;
 }
 
 /**

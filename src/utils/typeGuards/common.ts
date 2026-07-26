@@ -2,10 +2,10 @@ import { CAS_REGEX, SPIN_SPEED, UOM, type Uom } from '@/constants/common';
 import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
 import { findCountryByIso2 } from '@/helpers/country';
 import { looksLikeSmiles } from '@/helpers/smiles';
-import { zodAddActualValueToIssues } from '@/helpers/utils';
+import { addActualValueToIssues } from '@/helpers/utils';
 import { SUPPLIER_CLASS_NAMES } from '@/constants/suppliers';
 //import { currencies } from "price-parser";
-import { z } from 'zod';
+import * as v from 'valibot';
 
 /**
  * @categoryDescription Typeguards
@@ -14,12 +14,12 @@ import { z } from 'zod';
  * @module
  */
 
-const httpResponseSchema = z.object({
-  ok: z.boolean(),
-  status: z.number(),
-  statusText: z.string(),
-  json: z.custom<(...args: unknown[]) => unknown>((val) => typeof val === 'function'),
-  text: z.custom<(...args: unknown[]) => unknown>((val) => typeof val === 'function'),
+const httpResponseSchema = v.object({
+  ok: v.boolean(),
+  status: v.number(),
+  statusText: v.string(),
+  json: v.custom<(...args: unknown[]) => unknown>((val) => typeof val === 'function'),
+  text: v.custom<(...args: unknown[]) => unknown>((val) => typeof val === 'function'),
 });
 
 /**
@@ -48,7 +48,7 @@ const httpResponseSchema = z.object({
  * @source
  */
 export function isHttpResponse(value: unknown): value is Response {
-  return httpResponseSchema.safeParse(value).success;
+  return v.safeParse(httpResponseSchema, value).success;
 }
 
 /**
@@ -205,15 +205,15 @@ export function assertHtmlResponse(response: unknown): asserts response is Respo
   }
 }
 
-const validResultSchema = z.object({
-  title: z.string(),
-  price: z.number(),
-  quantity: z.number(),
-  uom: z.string(),
-  supplier: z.string(),
-  url: z.string(),
-  currencyCode: z.string(),
-  currencySymbol: z.string(),
+const validResultSchema = v.object({
+  title: v.string(),
+  price: v.number(),
+  quantity: v.number(),
+  uom: v.string(),
+  supplier: v.string(),
+  url: v.string(),
+  currencyCode: v.string(),
+  currencySymbol: v.string(),
 });
 
 /**
@@ -255,7 +255,7 @@ const validResultSchema = z.object({
  * @source
  */
 export function isValidResult(value: unknown): value is RequiredProductFields {
-  return validResultSchema.safeParse(value).success;
+  return v.safeParse(validResultSchema, value).success;
 }
 
 /**
@@ -694,10 +694,10 @@ export function isPopulatedArray(arr: unknown): arr is unknown[] {
   return Array.isArray(arr) === true && arr.length > 0;
 }
 
-const parsedPriceSchema = z.object({
-  currencyCode: z.string(),
-  currencySymbol: z.string(),
-  price: z.number(),
+const parsedPriceSchema = v.object({
+  currencyCode: v.string(),
+  currencySymbol: v.string(),
+  price: v.number(),
 });
 
 /**
@@ -717,12 +717,12 @@ const parsedPriceSchema = z.object({
  * @source
  */
 export function isParsedPrice(data: unknown): data is ParsedPrice {
-  return parsedPriceSchema.safeParse(data).success;
+  return v.safeParse(parsedPriceSchema, data).success;
 }
 
-const quantityObjectSchema = z.object({
-  quantity: z.number(),
-  uom: z.string(),
+const quantityObjectSchema = v.object({
+  quantity: v.number(),
+  uom: v.string(),
 });
 
 /**
@@ -742,7 +742,7 @@ const quantityObjectSchema = z.object({
  * @source
  */
 export function isQuantityObject(value: unknown): value is QuantityObject {
-  return quantityObjectSchema.safeParse(value).success;
+  return v.safeParse(quantityObjectSchema, value).success;
 }
 
 /**
@@ -870,32 +870,47 @@ export function isInputElement(target: EventTarget | null): target is HTMLInputE
 // the options page) that only need to validate settings.
 let cachedUserSettingsSchema: ReturnType<typeof buildUserSettingsSchema> | null = null;
 function buildUserSettingsSchema() {
-  return z.object({
-    showHelp: z.boolean().optional(),
-    caching: z.boolean().optional(),
-    doNotCacheEmptyResults: z.boolean().optional(),
-    cacheTtlMinutes: z.coerce.number().nonnegative().optional(),
-    trackPriceHistory: z.boolean().optional(),
-    priceHistoryMaxPoints: z.coerce.number().int().nonnegative().optional(),
-    noCacheStatusCodes: z.array(z.number().int().positive()).optional(),
-    maxAllowableSearchTimeSec: z.coerce.number().nonnegative().optional(),
-    currencyRate: z.number().optional(),
-    currency: z
-      .string()
-      .refine((value) => isCurrencyCode(value), { message: 'Invalid currency code' })
-      .optional(),
+  // `v.coerce.number()` has no valibot equivalent; the numeric settings coerce
+  // via `Number` in a pipe (mirroring zod's `z.coerce.number()`), then apply the
+  // same int/nonnegative/positive constraints as `v.integer()` / `v.minValue()`.
+  const coercedNonnegative = v.pipe(v.unknown(), v.transform(Number), v.number(), v.minValue(0));
+  const coercedNonnegativeInt = v.pipe(
+    v.unknown(),
+    v.transform(Number),
+    v.number(),
+    v.integer(),
+    v.minValue(0),
+  );
+  return v.object({
+    showHelp: v.optional(v.boolean()),
+    caching: v.optional(v.boolean()),
+    doNotCacheEmptyResults: v.optional(v.boolean()),
+    cacheTtlMinutes: v.optional(coercedNonnegative),
+    trackPriceHistory: v.optional(v.boolean()),
+    priceHistoryMaxPoints: v.optional(coercedNonnegativeInt),
+    noCacheStatusCodes: v.optional(v.array(v.pipe(v.number(), v.integer(), v.minValue(1)))),
+    maxAllowableSearchTimeSec: v.optional(coercedNonnegative),
+    currencyRate: v.optional(v.number()),
+    currency: v.optional(
+      v.pipe(
+        v.string(),
+        v.check((value) => isCurrencyCode(value), 'Invalid currency code'),
+      ),
+    ),
     // Allow an empty string for the "None" location option.
-    location: z
-      .string()
-      .refine((value) => value === '' || isCountryCode(value), { message: 'Invalid country code' })
-      .optional(),
-    theme: z.enum(['light', 'dark']).optional(),
-    fontSize: z.enum(['small', 'medium', 'large']).optional(),
-    suppliers: z.array(z.enum(SUPPLIER_CLASS_NAMES)).optional(),
-    excludeNonShippingSuppliers: z.boolean().optional(),
-    hideRestrictedProducts: z.boolean().optional(),
-    hideColumns: z.array(z.string()).optional(),
-    fuzzScorerOverride: z.string().optional(),
+    location: v.optional(
+      v.pipe(
+        v.string(),
+        v.check((value) => value === '' || isCountryCode(value), 'Invalid country code'),
+      ),
+    ),
+    theme: v.optional(v.picklist(['light', 'dark'])),
+    fontSize: v.optional(v.picklist(['small', 'medium', 'large'])),
+    suppliers: v.optional(v.array(v.picklist(SUPPLIER_CLASS_NAMES))),
+    excludeNonShippingSuppliers: v.optional(v.boolean()),
+    hideRestrictedProducts: v.optional(v.boolean()),
+    hideColumns: v.optional(v.array(v.string())),
+    fuzzScorerOverride: v.optional(v.string()),
   });
 }
 function getUserSettingsSchema() {
@@ -920,11 +935,11 @@ function getUserSettingsSchema() {
  * @source
  */
 export function isValidUserSettings(settings: unknown): settings is UserSettings {
-  const check = getUserSettingsSchema().safeParse(settings);
+  const check = v.safeParse(getUserSettingsSchema(), settings);
   if (!check.success) {
     console.warn('isValidUserSettings| The user settings are invalid', {
       settings,
-      issues: zodAddActualValueToIssues(check.error.issues, settings),
+      issues: addActualValueToIssues(check.issues, settings),
     });
   }
   return check.success;

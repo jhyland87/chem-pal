@@ -1,11 +1,11 @@
-import { z } from 'zod';
+import * as v from 'valibot';
 
-const ambeedProductListResponseSchema = z.object({
-  source: z.number(),
-  code: z.number(),
-  lang: z.string(),
-  value: z.record(z.string(), z.unknown()),
-  time: z.string(),
+const ambeedProductListResponseSchema = v.object({
+  source: v.number(),
+  code: v.number(),
+  lang: v.string(),
+  value: v.record(v.string(), v.unknown()),
+  time: v.string(),
 });
 
 /**
@@ -27,7 +27,7 @@ const ambeedProductListResponseSchema = z.object({
  * @source
  */
 export function isAmbeedProductListResponse(data: unknown): data is AmbeedProductListResponse {
-  return ambeedProductListResponseSchema.safeParse(data).success;
+  return v.safeParse(ambeedProductListResponseSchema, data).success;
 }
 
 /**
@@ -57,13 +57,13 @@ export function assertIsAmbeedProductListResponse(
   }
 }
 
-const ambeedProductListResponseValueSchema = z.object({
-  total: z.number(),
-  pagenum: z.number(),
-  pageindex: z.number(),
-  pagesize: z.number(),
-  result: z.custom<object>((val) => typeof val === 'object' && val !== null),
-  menu_res: z.custom<object>((val) => typeof val === 'object' && val !== null),
+const ambeedProductListResponseValueSchema = v.object({
+  total: v.number(),
+  pagenum: v.number(),
+  pageindex: v.number(),
+  pagesize: v.number(),
+  result: v.custom<object>((val) => typeof val === 'object' && val !== null),
+  menu_res: v.custom<object>((val) => typeof val === 'object' && val !== null),
 });
 
 /**
@@ -85,17 +85,17 @@ const ambeedProductListResponseValueSchema = z.object({
 export function isAmbeedProductListResponseValue(
   data: unknown,
 ): data is AmbeedProductListResponseValue {
-  return ambeedProductListResponseValueSchema.safeParse(data).success;
+  return v.safeParse(ambeedProductListResponseValueSchema, data).success;
 }
 
-const ambeedProductListResponseResultItemSchema = z.object({
-  p_id: z.string(),
-  priceList: z.custom<object>((val) => typeof val === 'object' && val !== null),
-  p_proper_name3: z.string(),
-  p_am: z.string(),
-  s_url: z.string(),
-  p_name_en: z.string(),
-  p_cas: z.string(),
+const ambeedProductListResponseResultItemSchema = v.object({
+  p_id: v.string(),
+  priceList: v.custom<object>((val) => typeof val === 'object' && val !== null),
+  p_proper_name3: v.string(),
+  p_am: v.string(),
+  s_url: v.string(),
+  p_name_en: v.string(),
+  p_cas: v.string(),
 });
 
 /**
@@ -120,17 +120,17 @@ const ambeedProductListResponseResultItemSchema = z.object({
 export function isAmbeedProductListResponseResultItem(
   data: unknown,
 ): data is AmbeedProductListResponseResultItem {
-  return ambeedProductListResponseResultItemSchema.safeParse(data).success;
+  return v.safeParse(ambeedProductListResponseResultItemSchema, data).success;
 }
 
-const ambeedProductListResponsePriceListSchema = z.object({
-  pr_am: z.string(),
-  pr_usd: z.string(),
-  pr_id: z.number(),
-  discount_usd: z.string(),
-  pr_size: z.string(),
-  vip_usd: z.string(),
-  pr_rate: z.number(),
+const ambeedProductListResponsePriceListSchema = v.object({
+  pr_am: v.string(),
+  pr_usd: v.string(),
+  pr_id: v.number(),
+  discount_usd: v.string(),
+  pr_size: v.string(),
+  vip_usd: v.string(),
+  pr_rate: v.number(),
 });
 
 /**
@@ -155,7 +155,7 @@ const ambeedProductListResponsePriceListSchema = z.object({
 export function isAmbeedProductListResponsePriceList(
   data: unknown,
 ): data is AmbeedProductListResponsePriceList {
-  return ambeedProductListResponsePriceListSchema.safeParse(data).success;
+  return v.safeParse(ambeedProductListResponsePriceListSchema, data).success;
 }
 
 /**
@@ -176,16 +176,16 @@ export function isAmbeedProductListResponsePriceList(
  * @source
  */
 export function isAmbeedSearchResponseProduct(data: unknown): data is AmbeedSearchResponseProduct {
-  return ambeedProductListResponseSchema.safeParse(data).success;
+  return v.safeParse(ambeedProductListResponseSchema, data).success;
 }
 
-const ambeedProductPriceResponseSchema = z.object({
-  source: z.number(),
-  code: z.number(),
-  lang: z.string(),
-  time: z.string(),
-  value: z.object({
-    proInfo: z.custom<object>((val) => typeof val === 'object' && val !== null),
+const ambeedProductPriceResponseSchema = v.object({
+  source: v.number(),
+  code: v.number(),
+  lang: v.string(),
+  time: v.string(),
+  value: v.object({
+    proInfo: v.custom<object>((val) => typeof val === 'object' && val !== null),
   }),
 });
 
@@ -207,7 +207,7 @@ const ambeedProductPriceResponseSchema = z.object({
  * @source
  */
 export function isAmbeedProductPriceResponse(data: unknown): data is AmbeedProductPriceResponse {
-  return ambeedProductPriceResponseSchema.safeParse(data).success;
+  return v.safeParse(ambeedProductPriceResponseSchema, data).success;
 }
 
 /**
@@ -232,14 +232,14 @@ export function assertIsAmbeedProductPriceResponse(
   }
 }
 
-const ambeedGetSearchProductAndRecommendedProductsByCASResponseSchema = z.object({
-  source: z.number(),
-  code: z.number(),
-  lang: z.string(),
-  time: z.string(),
-  value: z.object({
-    search_pro_dict: z.custom<object>((val) => typeof val === 'object' && val !== null),
-    r_pro_list: z.array(z.unknown()),
+const ambeedGetSearchProductAndRecommendedProductsByCASResponseSchema = v.object({
+  source: v.number(),
+  code: v.number(),
+  lang: v.string(),
+  time: v.string(),
+  value: v.object({
+    search_pro_dict: v.custom<object>((val) => typeof val === 'object' && val !== null),
+    r_pro_list: v.array(v.unknown()),
   }),
 });
 
@@ -264,7 +264,7 @@ const ambeedGetSearchProductAndRecommendedProductsByCASResponseSchema = z.object
 export function isAmbeedGetSearchProductAndRecommendedProductsByCASResponse(
   data: unknown,
 ): data is AmbeedGetSearchProductAndRecommendedProductsByCASResponse {
-  return ambeedGetSearchProductAndRecommendedProductsByCASResponseSchema.safeParse(data).success;
+  return v.safeParse(ambeedGetSearchProductAndRecommendedProductsByCASResponseSchema, data).success;
 }
 
 /**
@@ -291,12 +291,12 @@ export function assertIsAmbeedGetSearchProductAndRecommendedProductsByCASRespons
   }
 }
 
-const ambeedProductStockResponseSchema = z.object({
-  source: z.number(),
-  code: z.number(),
-  lang: z.string(),
-  time: z.string(),
-  value: z.array(z.object({ size: z.string() }).passthrough()),
+const ambeedProductStockResponseSchema = v.object({
+  source: v.number(),
+  code: v.number(),
+  lang: v.string(),
+  time: v.string(),
+  value: v.array(v.looseObject({ size: v.string() })),
 });
 
 /**
@@ -317,7 +317,7 @@ const ambeedProductStockResponseSchema = z.object({
  * @source
  */
 export function isAmbeedProductStockResponse(data: unknown): data is AmbeedProductStockResponse {
-  return ambeedProductStockResponseSchema.safeParse(data).success;
+  return v.safeParse(ambeedProductStockResponseSchema, data).success;
 }
 
 /**
@@ -342,14 +342,14 @@ export function assertIsAmbeedProductStockResponse(
   }
 }
 
-const ambeedGetPmsSdsByAmsResponseSchema = z.object({
-  value: z.object({
-    isokk: z.boolean(),
-    errmsg: z.string(),
+const ambeedGetPmsSdsByAmsResponseSchema = v.object({
+  value: v.object({
+    isokk: v.boolean(),
+    errmsg: v.string(),
     // sds_list[<p_am>][<sdsType>] = { status, url }
-    sds_list: z.record(
-      z.string(),
-      z.record(z.string(), z.object({ status: z.boolean(), url: z.string() })),
+    sds_list: v.record(
+      v.string(),
+      v.record(v.string(), v.object({ status: v.boolean(), url: v.string() })),
     ),
   }),
 });
@@ -372,7 +372,7 @@ const ambeedGetPmsSdsByAmsResponseSchema = z.object({
 export function isAmbeedGetPmsSdsByAmsResponse(
   data: unknown,
 ): data is AmbeedGetPmsSdsByAmsResponse {
-  return ambeedGetPmsSdsByAmsResponseSchema.safeParse(data).success;
+  return v.safeParse(ambeedGetPmsSdsByAmsResponseSchema, data).success;
 }
 
 /**

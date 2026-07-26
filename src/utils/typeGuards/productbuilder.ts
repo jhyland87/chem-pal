@@ -1,34 +1,36 @@
 import { AVAILABILITY, type Availability } from '@/constants/common';
-import { z } from 'zod';
+import * as v from 'valibot';
 
-// `z.enum` requires a non-empty tuple type, which `Object.values` (typed as a plain
-// array) cannot express. The enum always has at least one member, so the cast is safe.
-const availabilityValues = Object.values(AVAILABILITY) as [Availability, ...Availability[]];
+// `v.picklist` accepts a readonly array of literal values, so `Object.values`
+// can be passed directly (no non-empty-tuple cast needed as with `z.enum`).
+const availabilityValues = Object.values(AVAILABILITY);
 
-// Zod schema that accepts any string whose lowercased form matches an `AVAILABILITY`
-// enum value. Non-string inputs are rejected outright.
-const availabilitySchema = z.preprocess(
-  (v) => (typeof v === 'string' ? v.toLowerCase() : v),
-  z.enum(availabilityValues),
+// Valibot schema that accepts any string whose lowercased form matches an
+// `AVAILABILITY` enum value. Non-string inputs are lowercased-through untouched
+// and then rejected by the picklist.
+const availabilitySchema = v.pipe(
+  v.unknown(),
+  v.transform((input) => (typeof input === 'string' ? input.toLowerCase() : input)),
+  v.picklist(availabilityValues),
 );
 
-// Zod schema for the subset of `Variant` fields that are type-checked here. All
+// Valibot schema for the subset of `Variant` fields that are type-checked here. All
 // fields are optional because a variant may inherit values from its parent product.
 // `looseObject` preserves (and does not reject) any additional keys the caller includes.
-const variantSchema = z.looseObject({
-  title: z.string().optional(),
-  price: z.number().optional(),
-  quantity: z.number().optional(),
+const variantSchema = v.looseObject({
+  title: v.optional(v.string()),
+  price: v.optional(v.number()),
+  quantity: v.optional(v.number()),
 });
 
-// Zod schema for a `ProductImage` entry: a string `href` and a `type` that is
+// Valibot schema for a `ProductImage` entry: a string `href` and a `type` that is
 // either "image" or "thumbnail". `altText` is optional. `looseObject` preserves
 // any extra keys. The `href` is validated for shape only (a string); the builder
 // resolves it to an absolute URL afterwards.
-const productImageSchema = z.looseObject({
-  href: z.string(),
-  type: z.enum(['image', 'thumbnail']),
-  altText: z.string().optional(),
+const productImageSchema = v.looseObject({
+  href: v.string(),
+  type: v.picklist(['image', 'thumbnail']),
+  altText: v.optional(v.string()),
 });
 
 /**
@@ -59,7 +61,7 @@ const productImageSchema = z.looseObject({
  * @source
  */
 export function isAvailability(availability: unknown): availability is Availability {
-  return availabilitySchema.safeParse(availability).success;
+  return v.safeParse(availabilitySchema, availability).success;
 }
 
 /**
@@ -110,7 +112,7 @@ export function isAvailability(availability: unknown): availability is Availabil
  * @source
  */
 export function isValidVariant(variant: unknown): variant is Partial<Variant> {
-  return variantSchema.safeParse(variant).success;
+  return v.safeParse(variantSchema, variant).success;
 }
 
 /**
@@ -141,7 +143,7 @@ export function isValidVariant(variant: unknown): variant is Partial<Variant> {
  * @source
  */
 export function isProductImage(value: unknown): value is ProductImage {
-  return productImageSchema.safeParse(value).success;
+  return v.safeParse(productImageSchema, value).success;
 }
 
 /**

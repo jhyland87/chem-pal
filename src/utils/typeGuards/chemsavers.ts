@@ -1,18 +1,18 @@
-import { z } from 'zod';
+import * as v from 'valibot';
 
-const searchResponseItemSchema = z.object({
-  document: z.object({
-    //CAS: z.string(),
-    id: z.string(),
-    inventoryLevel: z.number(),
-    name: z.string(),
-    product_id: z.number(),
-    retailPrice: z.number(),
-    salePrice: z.number(),
-    price: z.number(),
-    sku: z.string(),
-    upc: z.string(),
-    url: z.string(),
+const searchResponseItemSchema = v.object({
+  document: v.object({
+    //CAS: v.string(),
+    id: v.string(),
+    inventoryLevel: v.number(),
+    name: v.string(),
+    product_id: v.number(),
+    retailPrice: v.number(),
+    salePrice: v.number(),
+    price: v.number(),
+    sku: v.string(),
+    upc: v.string(),
+    url: v.string(),
   }),
 });
 
@@ -94,17 +94,18 @@ const searchResponseItemSchema = z.object({
  * @source
  */
 export function isValidSearchResponseItem(response: unknown): response is ChemsaversProductObject {
-  return searchResponseItemSchema.safeParse(response).success;
+  return v.safeParse(searchResponseItemSchema, response).success;
 }
 
-const searchResponseSchema = z.object({
-  results: z
-    .array(
-      z.object({
-        hits: z.array(searchResponseItemSchema),
+const searchResponseSchema = v.object({
+  results: v.pipe(
+    v.array(
+      v.object({
+        hits: v.array(searchResponseItemSchema),
       }),
-    )
-    .min(1),
+    ),
+    v.minLength(1),
+  ),
 });
 
 /**
@@ -201,7 +202,7 @@ const searchResponseSchema = z.object({
  * @source
  */
 export function isValidSearchResponse(response: unknown): response is ChemsaversSearchResponse {
-  return searchResponseSchema.safeParse(response).success;
+  return v.safeParse(searchResponseSchema, response).success;
 }
 
 /**

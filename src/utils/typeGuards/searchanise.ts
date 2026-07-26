@@ -1,11 +1,11 @@
-import { z } from 'zod';
+import * as v from 'valibot';
 
-const validSearchResponseSchema = z.object({
-  totalItems: z.number(),
-  startIndex: z.number(),
-  itemsPerPage: z.number(),
-  currentItemCount: z.number(),
-  items: z.array(z.unknown()),
+const validSearchResponseSchema = v.object({
+  totalItems: v.number(),
+  startIndex: v.number(),
+  itemsPerPage: v.number(),
+  currentItemCount: v.number(),
+  items: v.array(v.unknown()),
 });
 
 /**
@@ -49,20 +49,20 @@ const validSearchResponseSchema = z.object({
  * @source
  */
 export function isValidSearchResponse(response: unknown): response is SearchResponse {
-  const parsed = validSearchResponseSchema.safeParse(response);
+  const parsed = v.safeParse(validSearchResponseSchema, response);
   if (!parsed.success) {
     return false;
   }
-  return parsed.data.items.every((item) => isItemListing(item));
+  return parsed.output.items.every((item) => isItemListing(item));
 }
 
-const searchaniseVariantSchema = z.object({
-  sku: z.string(),
-  price: z.string(),
-  link: z.string(),
-  variant_id: z.string(),
-  quantity_total: z.union([z.string(), z.number()]),
-  options: z.record(z.string(), z.unknown()),
+const searchaniseVariantSchema = v.object({
+  sku: v.string(),
+  price: v.string(),
+  link: v.string(),
+  variant_id: v.string(),
+  quantity_total: v.union([v.string(), v.number()]),
+  options: v.record(v.string(), v.unknown()),
 });
 
 /**
@@ -93,20 +93,20 @@ const searchaniseVariantSchema = z.object({
  * @source
  */
 export function isSearchaniseVariant(variant: unknown): variant is SearchaniseVariant {
-  return searchaniseVariantSchema.safeParse(variant).success;
+  return v.safeParse(searchaniseVariantSchema, variant).success;
 }
 
-const itemListingSchema = z.object({
-  title: z.string(),
-  price: z.union([z.string(), z.number()]),
-  link: z.string(),
-  product_id: z.string(),
-  product_code: z.string(),
-  quantity: z.string(),
-  shopify_variants: z.array(searchaniseVariantSchema),
-  vendor: z.string(),
-  original_product_id: z.string(),
-  list_price: z.string(),
+const itemListingSchema = v.object({
+  title: v.string(),
+  price: v.union([v.string(), v.number()]),
+  link: v.string(),
+  product_id: v.string(),
+  product_code: v.string(),
+  quantity: v.string(),
+  shopify_variants: v.array(searchaniseVariantSchema),
+  vendor: v.string(),
+  original_product_id: v.string(),
+  list_price: v.string(),
 });
 
 /**
@@ -150,5 +150,5 @@ const itemListingSchema = z.object({
  * @source
  */
 export function isItemListing(item: unknown): item is ItemListing {
-  return itemListingSchema.safeParse(item).success;
+  return v.safeParse(itemListingSchema, item).success;
 }

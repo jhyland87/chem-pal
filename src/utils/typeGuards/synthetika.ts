@@ -1,10 +1,10 @@
-import { z } from 'zod';
+import * as v from 'valibot';
 
-const synthetikaSearchResponseSchema = z.object({
-  count: z.number(),
-  pages: z.number(),
-  page: z.number(),
-  list: z.array(z.unknown()),
+const synthetikaSearchResponseSchema = v.object({
+  count: v.number(),
+  pages: v.number(),
+  page: v.number(),
+  list: v.array(v.unknown()),
 });
 
 /**
@@ -23,13 +23,12 @@ const synthetikaSearchResponseSchema = z.object({
  * @source
  */
 export function isSynthetikaSearchResponse(data: unknown): data is SynthetikaSearchResponse {
-  const check = synthetikaSearchResponseSchema.safeParse(data);
+  const check = v.safeParse(synthetikaSearchResponseSchema, data);
   if (!check.success) {
     console.warn('isSynthetikaSearchResponse: data is not a SynthetikaSearchResponse', {
       data,
       check,
-      error: check.error,
-      issues: check.error.issues,
+      issues: check.issues,
     });
   }
   return check.success;
@@ -64,49 +63,49 @@ export function assertIsSynthetikaSearchResponse(
   }
 }
 
-const synthetikaProductPriceSchema = z.object({
-  base: z.string(),
-  base_float: z.number(),
-  final: z.string(),
-  final_float: z.number(),
+const synthetikaProductPriceSchema = v.object({
+  base: v.string(),
+  base_float: v.number(),
+  final: v.string(),
+  final_float: v.number(),
 });
 
-const synthetikaConfigurationOptionValueSchema = z.object({
-  id: z.string(),
-  order: z.string(),
-  name: z.string(),
+const synthetikaConfigurationOptionValueSchema = v.object({
+  id: v.string(),
+  order: v.string(),
+  name: v.string(),
 });
 
-const synthetikaConfigurationOptionSchema = z.object({
-  values: z.array(synthetikaConfigurationOptionValueSchema),
+const synthetikaConfigurationOptionSchema = v.object({
+  values: v.array(synthetikaConfigurationOptionValueSchema),
 });
 
-const synthetikaProductResponseSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  can_buy: z.boolean(),
-  code: z.string(),
-  unit: z.object({
-    name: z.string(),
-    floating_point: z.boolean(),
+const synthetikaProductResponseSchema = v.object({
+  id: v.number(),
+  name: v.string(),
+  can_buy: v.boolean(),
+  code: v.string(),
+  unit: v.object({
+    name: v.string(),
+    floating_point: v.boolean(),
   }),
-  //stockId: z.number(),
-  url: z.string(),
-  availability: z.object({
-    name: z.string(),
+  //stockId: v.number(),
+  url: v.string(),
+  availability: v.object({
+    name: v.string(),
   }),
-  price: z.object({
+  price: v.object({
     gross: synthetikaProductPriceSchema,
     net: synthetikaProductPriceSchema,
   }),
-  weight: z.object({
-    weight_float: z.number(),
-    weight: z.string(),
+  weight: v.object({
+    weight_float: v.number(),
+    weight: v.string(),
   }),
-  //producer: z.record(z.string(), z.unknown()).nullable(),
-  shortDescription: z.string(),
-  description: z.string(),
-  options_configuration: z.array(synthetikaConfigurationOptionSchema).optional(),
+  //producer: v.nullable(v.record(v.string(), v.unknown())),
+  shortDescription: v.string(),
+  description: v.string(),
+  options_configuration: v.optional(v.array(synthetikaConfigurationOptionSchema)),
 });
 
 /**
@@ -125,13 +124,12 @@ const synthetikaProductResponseSchema = z.object({
  * @source
  */
 export function isSynthetikaProduct(data: unknown): data is SynthetikaProduct {
-  const check = synthetikaProductResponseSchema.safeParse(data);
+  const check = v.safeParse(synthetikaProductResponseSchema, data);
   if (!check.success) {
     console.warn('isSynthetikaProduct: data is not a SynthetikaProduct', {
       data,
       check,
-      error: check.error,
-      issues: check.error.issues,
+      issues: check.issues,
     });
   }
   return check.success;
@@ -153,7 +151,7 @@ export function isSynthetikaProduct(data: unknown): data is SynthetikaProduct {
  * @source
  */
 export function isSynthetikaProductPrice(data: unknown): data is SynthetikaProductPrice {
-  return synthetikaProductPriceSchema.safeParse(data).success;
+  return v.safeParse(synthetikaProductPriceSchema, data).success;
 }
 
 /**

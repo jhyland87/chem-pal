@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as v from 'valibot';
 
 /**
  * Minimal shape every MySimpleStore search-list product must satisfy for the
@@ -8,16 +8,16 @@ import { z } from 'zod';
  * tolerantly at the point of use — and stays optional since a product may
  * legitimately carry no images.
  */
-const mySimpleStoreListProductSchema = z.object({
-  id: z.string(),
-  slug: z.string(),
-  name: z.string(),
-  relative_url: z.string(),
-  image_list: z.array(z.unknown()).optional(),
+const mySimpleStoreListProductSchema = v.object({
+  id: v.string(),
+  slug: v.string(),
+  name: v.string(),
+  relative_url: v.string(),
+  image_list: v.optional(v.array(v.unknown())),
 });
 
-const mySimpleStoreSearchResponseSchema = z.object({
-  products: z.array(mySimpleStoreListProductSchema),
+const mySimpleStoreSearchResponseSchema = v.object({
+  products: v.array(mySimpleStoreListProductSchema),
 });
 
 /**
@@ -37,14 +37,14 @@ const mySimpleStoreSearchResponseSchema = z.object({
  * @source
  */
 export function isValidSearchResponse(response: unknown): response is MySimpleStoreSearchResponse {
-  return mySimpleStoreSearchResponseSchema.safeParse(response).success;
+  return v.safeParse(mySimpleStoreSearchResponseSchema, response).success;
 }
 
-const mySimpleStoreProductDetailSchema = z.object({
-  id: z.string(),
-  slug: z.string(),
-  name: z.string(),
-  variants: z.array(z.unknown()).optional(),
+const mySimpleStoreProductDetailSchema = v.object({
+  id: v.string(),
+  slug: v.string(),
+  name: v.string(),
+  variants: v.optional(v.array(v.unknown())),
 });
 
 /**
@@ -63,5 +63,5 @@ const mySimpleStoreProductDetailSchema = z.object({
  * @source
  */
 export function isProductDetail(product: unknown): product is MySimpleStoreProductDetail {
-  return mySimpleStoreProductDetailSchema.safeParse(product).success;
+  return v.safeParse(mySimpleStoreProductDetailSchema, product).success;
 }
