@@ -1,15 +1,15 @@
-import { z } from 'zod';
+import * as v from 'valibot';
 
-const shopifyVariantNodeSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  sku: z.string().nullable(),
-  availableForSale: z.boolean(),
-  currentlyNotInStock: z.boolean(),
-  weight: z.number(),
-  weightUnit: z.enum(['POUNDS', 'OUNCES', 'GRAMS', 'KILOGRAMS']),
-  price: z.object({
-    amount: z.string(),
+const shopifyVariantNodeSchema = v.object({
+  id: v.string(),
+  title: v.string(),
+  sku: v.nullable(v.string()),
+  availableForSale: v.boolean(),
+  currentlyNotInStock: v.boolean(),
+  weight: v.number(),
+  weightUnit: v.picklist(['POUNDS', 'OUNCES', 'GRAMS', 'KILOGRAMS']),
+  price: v.object({
+    amount: v.string(),
   }),
 });
 
@@ -40,20 +40,20 @@ const shopifyVariantNodeSchema = z.object({
  * @source
  */
 export function isShopifyVariantNode(variant: unknown): variant is ShopifyVariantNode {
-  return shopifyVariantNodeSchema.safeParse(variant).success;
+  return v.safeParse(shopifyVariantNodeSchema, variant).success;
 }
 
-const shopifyProductNodeSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  handle: z.string(),
-  descriptionHtml: z.string(),
+const shopifyProductNodeSchema = v.object({
+  id: v.string(),
+  title: v.string(),
+  handle: v.string(),
+  descriptionHtml: v.string(),
   // Null for products not published to the online store; initProductBuilders
   // falls back to `${baseURL}/products/${handle}`.
-  onlineStoreUrl: z.string().nullable(),
-  variants: z.object({
-    edges: z.array(
-      z.object({
+  onlineStoreUrl: v.nullable(v.string()),
+  variants: v.object({
+    edges: v.array(
+      v.object({
         node: shopifyVariantNodeSchema,
       }),
     ),
@@ -86,26 +86,26 @@ const shopifyProductNodeSchema = z.object({
  * @source
  */
 export function isShopifyProductNode(product: unknown): product is ShopifyProductNode {
-  return shopifyProductNodeSchema.safeParse(product).success;
+  return v.safeParse(shopifyProductNodeSchema, product).success;
 }
 
-const shopifySearchResponseSchema = z.object({
-  data: z.object({
-    products: z.object({
-      edges: z.array(
-        z.object({
+const shopifySearchResponseSchema = v.object({
+  data: v.object({
+    products: v.object({
+      edges: v.array(
+        v.object({
           node: shopifyProductNodeSchema,
         }),
       ),
     }),
   }),
-  extensions: z
-    .object({
-      cost: z.object({
-        requestedQueryCost: z.number(),
+  extensions: v.optional(
+    v.object({
+      cost: v.object({
+        requestedQueryCost: v.number(),
       }),
-    })
-    .optional(),
+    }),
+  ),
 });
 
 /**
@@ -129,13 +129,12 @@ const shopifySearchResponseSchema = z.object({
  * @source
  */
 export function isValidShopifySearchResponse(response: unknown): response is ShopifySearchResponse {
-  const parsed = shopifySearchResponseSchema.safeParse(response);
+  const parsed = v.safeParse(shopifySearchResponseSchema, response);
   if (!parsed.success) {
     console.warn('isValidShopifySearchResponse: response is not a valid ShopifySearchResponse', {
       response,
       parsed,
-      error: parsed.error,
-      issues: parsed.error.issues,
+      issues: parsed.issues,
     });
   }
   return parsed.success;

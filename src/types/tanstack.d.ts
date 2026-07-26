@@ -174,6 +174,26 @@ declare module '@tanstack/react-table' {
      * @example ["sdsUrl"]
      */
     dataKeys?: string[];
+
+    /**
+     * When true, the cell fills the column width and truncates overflow with an
+     * ellipsis (single-line), exposing the full value in a native hover tooltip.
+     * Applied by ResultsTable's body-cell renderer, not the column's cell fn, so
+     * the auto-sizing measurement table still measures the full natural width.
+     * @example true
+     */
+    truncate?: boolean;
+
+    /**
+     * Upper bound (px) for the column's content-fit width in
+     * `useAutoColumnSizing`. Short columns shrink to their content; a column
+     * with long content (title, description) settles at this cap and wraps or
+     * truncates beyond it instead of stretching the table. Independent of
+     * `maxSize`, which caps manual resizing — a column can still be dragged
+     * wider than its auto-fit cap.
+     * @example 240
+     */
+    autoSizeMax?: number;
   }
 
   // Register our custom sorting functions by augmenting the `SortingFns`

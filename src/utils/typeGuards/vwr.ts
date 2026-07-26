@@ -1,9 +1,9 @@
-import { z } from 'zod';
+import * as v from 'valibot';
 
-const vwrTokenResponseSchema = z.object({
-  access_token: z.string(),
-  token_type: z.string(),
-  expires_in: z.number(),
+const vwrTokenResponseSchema = v.object({
+  access_token: v.string(),
+  token_type: v.string(),
+  expires_in: v.number(),
 });
 
 /**
@@ -20,18 +20,15 @@ const vwrTokenResponseSchema = z.object({
  * @source
  */
 export function isVWRTokenResponse(data: unknown): data is VWRTokenResponse {
-  return vwrTokenResponseSchema.safeParse(data).success;
+  return v.safeParse(vwrTokenResponseSchema, data).success;
 }
 
-const vwrSearchProductSchema = z
-  .object({
-    code: z.string(),
-    baseProduct: z.string(),
-  })
-  .passthrough();
-
-const vwrSearchResponseSchema = z.object({
-  products: z.array(vwrSearchProductSchema),
+const vwrSearchProductSchema = v.looseObject({
+  code: v.string(),
+  baseProduct: v.string(),
+});
+const vwrSearchResponseSchema = v.object({
+  products: v.array(vwrSearchProductSchema),
 });
 
 /**
@@ -48,18 +45,15 @@ const vwrSearchResponseSchema = z.object({
  * @source
  */
 export function isVWRSearchResponse(data: unknown): data is VWRSearchResponse {
-  return vwrSearchResponseSchema.safeParse(data).success;
+  return v.safeParse(vwrSearchResponseSchema, data).success;
 }
 
-const vwrProductRowSchema = z
-  .object({
-    code: z.string(),
-    catalogNumber: z.string(),
-  })
-  .passthrough();
-
-const vwrOrdertableResponseSchema = z.object({
-  productRows: z.array(vwrProductRowSchema),
+const vwrProductRowSchema = v.looseObject({
+  code: v.string(),
+  catalogNumber: v.string(),
+});
+const vwrOrdertableResponseSchema = v.object({
+  productRows: v.array(vwrProductRowSchema),
 });
 
 /**
@@ -76,17 +70,14 @@ const vwrOrdertableResponseSchema = z.object({
  * @source
  */
 export function isVWROrdertableResponse(data: unknown): data is VWROrdertableResponse {
-  return vwrOrdertableResponseSchema.safeParse(data).success;
+  return v.safeParse(vwrOrdertableResponseSchema, data).success;
 }
 
-const vwrAssetReferenceSchema = z
-  .object({
-    url: z.string(),
-  })
-  .passthrough();
-
-const vwrAssetReferencesResponseSchema = z.object({
-  assetReferences: z.array(vwrAssetReferenceSchema),
+const vwrAssetReferenceSchema = v.looseObject({
+  url: v.string(),
+});
+const vwrAssetReferencesResponseSchema = v.object({
+  assetReferences: v.array(vwrAssetReferenceSchema),
 });
 
 /**
@@ -103,19 +94,16 @@ const vwrAssetReferencesResponseSchema = z.object({
  * @source
  */
 export function isVWRAssetReferencesResponse(data: unknown): data is VWRAssetReferencesResponse {
-  return vwrAssetReferencesResponseSchema.safeParse(data).success;
+  return v.safeParse(vwrAssetReferencesResponseSchema, data).success;
 }
 
-const vwrSubstanceAttributeSchema = z
-  .object({
-    code: z.string(),
-    name: z.string(),
-    value: z.string(),
-  })
-  .passthrough();
-
-const vwrSubstanceResponseSchema = z.object({
-  substanceAttributes: z.array(vwrSubstanceAttributeSchema),
+const vwrSubstanceAttributeSchema = v.looseObject({
+  code: v.string(),
+  name: v.string(),
+  value: v.string(),
+});
+const vwrSubstanceResponseSchema = v.object({
+  substanceAttributes: v.array(vwrSubstanceAttributeSchema),
 });
 
 /**
@@ -132,16 +120,14 @@ const vwrSubstanceResponseSchema = z.object({
  * @source
  */
 export function isVWRSubstanceResponse(data: unknown): data is VWRSubstanceResponse {
-  return vwrSubstanceResponseSchema.safeParse(data).success;
+  return v.safeParse(vwrSubstanceResponseSchema, data).success;
 }
 
-const vwrSpecificationResponseSchema = z.array(
-  z
-    .object({
-      name: z.string(),
-      result: z.string(),
-    })
-    .passthrough(),
+const vwrSpecificationResponseSchema = v.array(
+  v.looseObject({
+    name: v.string(),
+    result: v.string(),
+  }),
 );
 
 /**
@@ -157,18 +143,16 @@ const vwrSpecificationResponseSchema = z.array(
  * @source
  */
 export function isVWRSpecificationResponse(data: unknown): data is VWRSpecificationResponse {
-  return vwrSpecificationResponseSchema.safeParse(data).success;
+  return v.safeParse(vwrSpecificationResponseSchema, data).success;
 }
 
-const vwrStockResponseSchema = z.object({
-  articleAvailabilityDetails: z.object({
-    articleAvailabilityDetail: z.array(
-      z
-        .object({
-          catalogNumber: z.string(),
-          availability: z.object({}).passthrough(),
-        })
-        .passthrough(),
+const vwrStockResponseSchema = v.object({
+  articleAvailabilityDetails: v.object({
+    articleAvailabilityDetail: v.array(
+      v.looseObject({
+        catalogNumber: v.string(),
+        availability: v.looseObject({}),
+      }),
     ),
   }),
 });
@@ -190,5 +174,5 @@ const vwrStockResponseSchema = z.object({
  * @source
  */
 export function isVWRStockResponse(data: unknown): data is VWRStockResponse {
-  return vwrStockResponseSchema.safeParse(data).success;
+  return v.safeParse(vwrStockResponseSchema, data).success;
 }

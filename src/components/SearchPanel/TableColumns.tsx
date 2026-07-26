@@ -67,9 +67,11 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         ) : null;
       },
       enableHiding: false,
-      minSize: 10,
-      maxSize: 10,
-      size: 10,
+      // Fixed width sized to fit the 20px toggle button (.svg-button-icon) so
+      // the expand/collapse chevron isn't clipped under table-layout: fixed.
+      minSize: 24,
+      maxSize: 24,
+      size: 24,
       enableSorting: false,
       enableColumnFilter: false,
       enableResizing: false,
@@ -101,6 +103,9 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       meta: {
         filterPlaceholder: i18n('filter_placeholder_title'),
         filterVariant: 'text',
+        // Titles are long; let the column grow wider than most (to this cap),
+        // then word-wrap within that width.
+        autoSizeMax: 240,
         style: {
           textAlign: 'left',
         },
@@ -212,9 +217,12 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     {
       accessorKey: 'description',
       header: i18n('column_description'),
+      cell: ({ row }: CellContext<Product, unknown>) => row.original.description,
       meta: {
-        filterPlaceholder: i18n('filter_placeholder_description'),
-        filterVariant: 'text',
+        truncate: true,
+        // Descriptions can be very long; cap the content-fit width so the
+        // column truncates with an ellipsis instead of stretching the table.
+        autoSizeMax: 180,
         style: {
           textAlign: 'left',
         },

@@ -1,4 +1,5 @@
 import {
+  addActualValueToIssues,
   base36Timestamp,
   base64EncodeUtf8,
   decodeHTMLEntities,
@@ -24,7 +25,6 @@ import {
   stripHTML,
   toFiniteNumber,
   tryParseJson,
-  zodAddActualValueToIssues,
 } from '@/helpers/utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -485,15 +485,17 @@ describe('getPath', () => {
   });
 });
 
-describe('zodAddActualValueToIssues', () => {
+describe('addActualValueToIssues', () => {
   it('adds the resolved actual value from the source object', () => {
-    const issues = [{ path: ['user', 'age'], code: 'invalid_type', message: 'Expected number' }];
+    const issues = [
+      { path: [{ key: 'user' }, { key: 'age' }], kind: 'schema', message: 'Expected number' },
+    ];
     const obj = { user: { age: 'forty' } };
 
-    expect(zodAddActualValueToIssues(issues, obj)).toEqual([
+    expect(addActualValueToIssues(issues, obj)).toEqual([
       {
-        path: ['user', 'age'],
-        code: 'invalid_type',
+        path: [{ key: 'user' }, { key: 'age' }],
+        kind: 'schema',
         message: 'Expected number',
         actual: 'forty',
       },
@@ -501,34 +503,52 @@ describe('zodAddActualValueToIssues', () => {
   });
 
   it('sets actual to undefined when the path is missing on the source object', () => {
-    const issues = [{ path: ['missing'], message: 'required' }];
-    expect(zodAddActualValueToIssues(issues, {})).toEqual([
-      { path: ['missing'], message: 'required', actual: undefined },
+    const issues = [{ path: [{ key: 'missing' }], message: 'required' }];
+    expect(addActualValueToIssues(issues, {})).toEqual([
+      { path: [{ key: 'missing' }], message: 'required', actual: undefined },
+    ]);
+  });
+
+  it('resolves to the root object when an issue has no path', () => {
+    const obj = { a: 1 };
+    // Valibot omits `path` (leaves it undefined) for root-level failures.
+    const issues = [{ path: undefined, message: 'root' }];
+    expect(addActualValueToIssues(issues, obj)).toEqual([
+      { path: undefined, message: 'root', actual: obj },
+    ]);
+  });
+
+  it('drops non-indexable path keys (e.g. a set segment with a null key)', () => {
+    const issues = [{ path: [{ key: 'items' }, { key: null }], message: 'bad' }];
+    const obj = { items: [10, 20, 30] };
+    // The null segment is skipped, so the walk stops at `items`.
+    expect(addActualValueToIssues(issues, obj)).toEqual([
+      { path: [{ key: 'items' }, { key: null }], message: 'bad', actual: [10, 20, 30] },
     ]);
   });
 
   it('preserves any extra fields on each issue', () => {
-    const issues = [{ path: ['a'], code: 'x', expected: 'string', received: 'number' }];
-    const out = zodAddActualValueToIssues(issues, { a: 7 });
-    expect(out[0]).toMatchObject({ code: 'x', expected: 'string', received: 'number', actual: 7 });
+    const issues = [{ path: [{ key: 'a' }], kind: 'schema', expected: 'string', received: '7' }];
+    const out = addActualValueToIssues(issues, { a: 7 });
+    expect(out[0]).toMatchObject({ kind: 'schema', expected: 'string', received: '7', actual: 7 });
   });
 
   it('returns an empty array when given no issues', () => {
-    expect(zodAddActualValueToIssues([], { a: 1 })).toEqual([]);
+    expect(addActualValueToIssues([], { a: 1 })).toEqual([]);
   });
 
   it('supports numeric path segments (array indexes)', () => {
-    const issues = [{ path: ['items', 1], message: 'bad' }];
+    const issues = [{ path: [{ key: 'items' }, { key: 1 }], message: 'bad' }];
     const obj = { items: [10, 20, 30] };
-    expect(zodAddActualValueToIssues(issues, obj)).toEqual([
-      { path: ['items', 1], message: 'bad', actual: 20 },
+    expect(addActualValueToIssues(issues, obj)).toEqual([
+      { path: [{ key: 'items' }, { key: 1 }], message: 'bad', actual: 20 },
     ]);
   });
 
   it('does not mutate the input issue objects', () => {
-    const original = { path: ['a'], message: 'bad' };
+    const original = { path: [{ key: 'a' }], message: 'bad' };
     const frozen = Object.freeze({ ...original });
-    expect(() => zodAddActualValueToIssues([frozen], { a: 1 })).not.toThrow();
+    expect(() => addActualValueToIssues([frozen], { a: 1 })).not.toThrow();
     expect(frozen).toEqual(original);
     expect('actual' in frozen).toBe(false);
   });

@@ -1,9 +1,9 @@
-import { zodAddActualValueToIssues } from '@/helpers/utils';
-import { z } from 'zod';
+import { addActualValueToIssues } from '@/helpers/utils';
+import * as v from 'valibot';
 
-const magento2MoneySchema = z.object({
-  value: z.number(),
-  currency: z.string(),
+const magento2MoneySchema = v.object({
+  value: v.number(),
+  currency: v.string(),
 });
 
 /**
@@ -23,79 +23,80 @@ const magento2MoneySchema = z.object({
  * @source
  */
 export function isMagento2Money(value: unknown): value is Magento2Money {
-  return magento2MoneySchema.safeParse(value).success;
+  return v.safeParse(magento2MoneySchema, value).success;
 }
 
-const magento2PriceBoundSchema = z.object({
+const magento2PriceBoundSchema = v.object({
   regular_price: magento2MoneySchema,
-  final_price: magento2MoneySchema.optional(),
+  final_price: v.optional(magento2MoneySchema),
 });
 
-const magento2PriceRangeSchema = z.object({
+const magento2PriceRangeSchema = v.object({
   minimum_price: magento2PriceBoundSchema,
-  maximum_price: magento2PriceBoundSchema.optional(),
+  maximum_price: v.optional(magento2PriceBoundSchema),
 });
 
-const magento2GroupedItemSchema = z.object({
-  qty: z.number().optional(),
-  position: z.number().optional(),
-  product: z.object({
-    sku: z.string(),
-    name: z.string(),
-    stock_status: z.string().optional(),
-    quantity: z.number().nullable().optional(),
-    price_range: z.object({
+const magento2GroupedItemSchema = v.object({
+  qty: v.optional(v.number()),
+  position: v.optional(v.number()),
+  product: v.object({
+    sku: v.string(),
+    name: v.string(),
+    stock_status: v.optional(v.string()),
+    quantity: v.optional(v.nullable(v.number())),
+    price_range: v.object({
       minimum_price: magento2PriceBoundSchema,
     }),
   }),
 });
 
-const magento2ConfigurableVariantSchema = z.object({
-  attributes: z
-    .array(
-      z.object({
-        code: z.string(),
-        label: z.string().optional().nullable(),
-        value_index: z.number(),
+const magento2ConfigurableVariantSchema = v.object({
+  attributes: v.optional(
+    v.array(
+      v.object({
+        code: v.string(),
+        label: v.nullable(v.optional(v.string())),
+        value_index: v.number(),
       }),
-    )
-    .optional(),
-  product: z.object({
-    uid: z.string().nullable().optional(),
-    sku: z.string(),
-    name: z.string(),
-    stock_status: z.string().optional(),
-    quantity: z.number().nullable().optional(),
-    price_range: z.object({
+    ),
+  ),
+  product: v.object({
+    uid: v.optional(v.nullable(v.string())),
+    sku: v.string(),
+    name: v.string(),
+    stock_status: v.optional(v.string()),
+    quantity: v.optional(v.nullable(v.number())),
+    price_range: v.object({
       minimum_price: magento2PriceBoundSchema,
     }),
   }),
 });
 
-const magento2ProductItemSchema = z.object({
-  __typename: z.string(),
-  uid: z.string().nullable().optional(),
-  sku: z.string(),
-  name: z.string(),
-  url_key: z.string(),
-  url_suffix: z.string().nullable().optional(),
-  stock_status: z.string().optional(),
-  quantity: z.number().nullable().optional(),
-  only_x_left_in_stock: z.number().nullable().optional(),
+const magento2ProductItemSchema = v.object({
+  __typename: v.string(),
+  uid: v.optional(v.nullable(v.string())),
+  sku: v.string(),
+  name: v.string(),
+  url_key: v.string(),
+  url_suffix: v.optional(v.nullable(v.string())),
+  stock_status: v.optional(v.string()),
+  quantity: v.optional(v.nullable(v.number())),
+  only_x_left_in_stock: v.optional(v.nullable(v.number())),
   price_range: magento2PriceRangeSchema,
-  price_tiers: z.array(z.unknown()).optional().nullable(),
-  short_description: z.object({ html: z.string() }).nullable().optional(),
-  description: z.object({ html: z.string() }).nullable().optional(),
-  image: z
-    .object({
-      url: z.string().optional(),
-      label: z.string().nullable().optional(),
-    })
-    .nullable()
-    .optional(),
-  categories: z.array(z.unknown()).nullable().optional(),
-  items: z.array(magento2GroupedItemSchema).optional(),
-  variants: z.array(magento2ConfigurableVariantSchema).optional(),
+  price_tiers: v.nullable(v.optional(v.array(v.unknown()))),
+  short_description: v.optional(v.nullable(v.object({ html: v.string() }))),
+  description: v.optional(v.nullable(v.object({ html: v.string() }))),
+  image: v.optional(
+    v.nullable(
+      v.object({
+        url: v.optional(v.string()),
+        label: v.optional(v.nullable(v.string())),
+      }),
+    ),
+  ),
+  categories: v.optional(v.nullable(v.array(v.unknown()))),
+  items: v.optional(v.array(magento2GroupedItemSchema)),
+  variants: v.optional(v.array(magento2ConfigurableVariantSchema)),
 });
 
 /**
@@ -123,22 +124,22 @@ const magento2ProductItemSchema = z.object({
  * @source
  */
 export function isMagento2ProductItem(item: unknown): item is Magento2ProductItem {
-  return magento2ProductItemSchema.safeParse(item).success;
+  return v.safeParse(magento2ProductItemSchema, item).success;
 }
 
-const magento2SearchResponseSchema = z.object({
-  data: z.object({
-    products: z.object({
-      items: z.array(magento2ProductItemSchema),
+const magento2SearchResponseSchema = v.object({
+  data: v.object({
+    products: v.object({
+      items: v.array(magento2ProductItemSchema),
     }),
   }),
-  errors: z
-    .array(
-      z.object({
-        message: z.string(),
+  errors: v.optional(
+    v.array(
+      v.object({
+        message: v.string(),
       }),
-    )
-    .optional(),
+    ),
+  ),
 });
 
 /**
@@ -162,13 +163,12 @@ const magento2SearchResponseSchema = z.object({
 export function isValidMagento2SearchResponse(
   response: unknown,
 ): response is Magento2SearchResponse {
-  const parsed = magento2SearchResponseSchema.safeParse(response);
+  const parsed = v.safeParse(magento2SearchResponseSchema, response);
   if (!parsed.success) {
     console.warn('isValidMagento2SearchResponse: response is not a valid Magento2SearchResponse', {
       response,
       parsed,
-      error: parsed.error,
-      issues: zodAddActualValueToIssues(parsed.error.issues, response),
+      issues: addActualValueToIssues(parsed.issues, response),
     });
   }
   return parsed.success;

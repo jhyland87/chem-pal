@@ -22,6 +22,8 @@ import SearchOffIcon from '@mui/icons-material/SearchOff';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 
+import ArrowDropDownIcon from '@/icons/ArrowDropDownIcon';
+import ArrowDropUpIcon from '@/icons/ArrowDropUpIcon';
 import {
   Box,
   Checkbox,
@@ -61,6 +63,7 @@ import {
   BackButton,
   ColoredIconButton,
   ColumnMenuItemContainer,
+  ColumnResizer,
   EmptyStateCell,
   ErrorContainer,
   ErrorRetryButton,
@@ -82,9 +85,8 @@ import {
   StyledTableCell,
   StyledTableHead,
   SubRowTableRow,
+  TruncatedCellText,
 } from '../StyledComponents';
-import ArrowDropDownIcon from '@/icons/ArrowDropDownIcon';
-import ArrowDropUpIcon from '@/icons/ArrowDropUpIcon';
 import ContextMenu from './ContextMenu';
 import { useAppContext } from './hooks/useContext';
 import { useSearch } from './hooks/useSearch';
@@ -501,7 +503,7 @@ export default function ResultsTable({
 
   // Auto column sizing is driven by the raw searchResults (not the filtered
   // row model) so that filter input keystrokes don't trigger column remeasuring.
-  const { getMeasurementTableProps } = useAutoColumnSizing(table, searchResults);
+  const { getMeasurementTableProps, autoSizeColumns } = useAutoColumnSizing(table, searchResults);
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
@@ -638,11 +640,16 @@ export default function ResultsTable({
           >
             <thead className="results-table-column-headers">
               <tr>
-                {table.getAllLeafColumns().map((col) => (
-                  <th key={col.id}>
-                    {typeof col.columnDef.header === 'function'
-                      ? col.id
-                      : (col.columnDef.header ?? col.id)}
+                {table.getFlatHeaders().map((header) => (
+                  <th key={header.id}>
+                    {/* Wrap the header in a nowrap span so its own text width is
+                        measurable independently of the column width. Rendered
+                        via flexRender (not col.id) so function headers like
+                        "Price (USD)" are measured correctly and set the column's
+                        minimum width. */}
+                    <span style={{ whiteSpace: 'nowrap' }}>
+                      {flexRender(header.column.columnDef.header, header.getContext())}
+                    </span>
                   </th>
                 ))}
               </tr>
@@ -654,7 +661,11 @@ export default function ResultsTable({
                 .map((row) => (
                   <tr key={row.id}>
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id}>
+                      // `nowrap` (no width pin) makes scrollWidth report the
+                      // natural single-line content width, so each column fits
+                      // its content (clamped by meta.autoSizeMax) instead of a
+                      // uniform width that leaves dead space after short values.
+                      <td key={cell.id} style={{ whiteSpace: 'nowrap' }}>
                         {typeof cell.column.columnDef.cell === 'function'
                           ? cell.column.columnDef.cell(cell.getContext())
                           : ''}
@@ -692,6 +703,23 @@ export default function ResultsTable({
                             </SortIndicator>
                           )}
                         </HeaderCellContent>
+                      )}
+                      {header.column.getCanResize() && (
+                        <ColumnResizer
+                          isResizing={header.column.getIsResizing()}
+                          onMouseDown={header.getResizeHandler()}
+                          onTouchStart={header.getResizeHandler()}
+                          // Stop the drag/click from bubbling to the header's
+                          // sort toggle handler.
+                          onClick={(event) => event.stopPropagation()}
+                          // Double-click any handle to best-fit every column to
+                          // its content width.
+                          onDoubleClick={(event) => {
+                            event.stopPropagation();
+                            autoSizeColumns();
+                          }}
+                          className={`resizer${header.column.getIsResizing() ? ' isResizing' : ''}`}
+                        />
                       )}
                     </StickyHeaderCell>
                   ))}
@@ -759,9 +787,21 @@ export default function ResultsTable({
                             className={resultStyles['styled-table-cell']}
                             style={{
                               textAlign: cell.column.columnDef.meta?.style?.textAlign,
+                              // Under table-layout: fixed, let long unbreakable
+                              // tokens wrap instead of overflowing the column.
+                              overflowWrap: 'anywhere',
                             }}
                           >
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            {cell.column.columnDef.meta?.truncate ? (
+                              // The fixed-layout cell already has a definite
+                              // width, so the block fills it and ellipsizes the
+                              // overflow; full text shows in the hover tooltip.
+                              <TruncatedCellText title={String(cell.getValue() ?? '')}>
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                              </TruncatedCellText>
+                            ) : (
+                              flexRender(cell.column.columnDef.cell, cell.getContext())
+                            )}
                           </StyledTableCell>
                         ))}
                       </SubRowTableRow>

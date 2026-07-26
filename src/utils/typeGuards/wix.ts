@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as v from 'valibot';
 
 /**
  * Minimal shape every Wix product must satisfy for the supplier to consume it.
@@ -9,27 +9,27 @@ import { z } from 'zod';
  * shape is guarded at the point of use so a stray entry can't reject the whole
  * response — and stay optional since a product may legitimately carry none.
  */
-const wixProductSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  description: z.string(),
-  sku: z.string(),
-  urlPart: z.string(),
-  price: z.number(),
-  formattedPrice: z.string(),
-  productItems: z.array(z.unknown()),
-  options: z.array(z.unknown()),
-  media: z.array(z.unknown()).optional(),
-  additionalInfo: z.array(z.unknown()).optional(),
+const wixProductSchema = v.object({
+  id: v.string(),
+  name: v.string(),
+  description: v.string(),
+  sku: v.string(),
+  urlPart: v.string(),
+  price: v.number(),
+  formattedPrice: v.string(),
+  productItems: v.array(v.unknown()),
+  options: v.array(v.unknown()),
+  media: v.optional(v.array(v.unknown())),
+  additionalInfo: v.optional(v.array(v.unknown())),
 });
 
-const validSearchResponseSchema = z.object({
-  data: z.object({
-    catalog: z.object({
-      category: z.object({
-        productsWithMetaData: z.object({
-          totalCount: z.number(),
-          list: z.array(wixProductSchema),
+const validSearchResponseSchema = v.object({
+  data: v.object({
+    catalog: v.object({
+      category: v.object({
+        productsWithMetaData: v.object({
+          totalCount: v.number(),
+          list: v.array(wixProductSchema),
         }),
       }),
     }),
@@ -78,7 +78,7 @@ const validSearchResponseSchema = z.object({
  * @source
  */
 export function isValidSearchResponse(response: unknown): response is QueryResponse {
-  return validSearchResponseSchema.safeParse(response).success;
+  return v.safeParse(validSearchResponseSchema, response).success;
 }
 
 /**
@@ -125,12 +125,12 @@ export function isValidSearchResponse(response: unknown): response is QueryRespo
  * @source
  */
 export function isWixProduct(product: unknown): product is ProductObject {
-  const parsed = wixProductSchema.safeParse(product);
+  const parsed = v.safeParse(wixProductSchema, product);
   if (!parsed.success) {
     return false;
   }
 
-  const p = parsed.data;
+  const p = parsed.output;
 
   if (!p.productItems.every((item) => isProductItem(item))) {
     return false;
@@ -146,11 +146,11 @@ export function isWixProduct(product: unknown): product is ProductObject {
   return true;
 }
 
-const productItemSchema = z.object({
-  id: z.string(),
-  formattedPrice: z.string(),
-  price: z.number(),
-  optionsSelections: z.array(z.number()).min(1),
+const productItemSchema = v.object({
+  id: v.string(),
+  formattedPrice: v.string(),
+  price: v.number(),
+  optionsSelections: v.pipe(v.array(v.number()), v.minLength(1)),
 });
 
 /**
@@ -179,15 +179,15 @@ const productItemSchema = z.object({
  * @source
  */
 export function isProductItem(item: unknown): item is ProductItem {
-  return productItemSchema.safeParse(item).success;
+  return v.safeParse(productItemSchema, item).success;
 }
 
-const productSelectionSchema = z.object({
-  id: z.union([z.string(), z.number()]),
-  value: z.string(),
-  description: z.string(),
-  key: z.string(),
-  inStock: z.union([z.boolean(), z.null()]),
+const productSelectionSchema = v.object({
+  id: v.union([v.string(), v.number()]),
+  value: v.string(),
+  description: v.string(),
+  key: v.string(),
+  inStock: v.union([v.boolean(), v.null_()]),
 });
 
 /**
@@ -217,5 +217,5 @@ const productSelectionSchema = z.object({
  * @source
  */
 export function isProductSelection(selection: unknown): selection is ProductSelection {
-  return productSelectionSchema.safeParse(selection).success;
+  return v.safeParse(productSelectionSchema, selection).success;
 }

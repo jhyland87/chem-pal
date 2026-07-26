@@ -764,61 +764,79 @@ export function getPath(obj: unknown, path: readonly PropertyKey[]): unknown {
   return path.reduce<unknown>((acc, key) => (acc == null ? acc : Reflect.get(acc, key)), obj);
 }
 
-// Matches the real zod `$ZodIssue.path` shape (PropertyKey[]), which can
-// include `symbol` segments. `getPath` ignores those (they never index a
-// JSON-shaped settings object), but the constraint has to be wide enough to
-// accept what zod actually hands us.
-// Intentionally no index signature: zod's concrete issue types (e.g.
-// `$ZodIssueInvalidType`) have closed shapes that don't satisfy a
-// `[key: string]: unknown` signature, and we only need to *read* the `path`
-// field here — any extra fields just pass through via the spread in the
-// caller.
+// A single segment of a valibot issue path. Valibot reports `issue.path` as an
+// array of path-item objects, each carrying a `key` whose type varies by
+// container (string for objects, number for arrays, `null` for sets, `unknown`
+// for maps). Only `key` is read here, and non-indexable keys are dropped before
+// `getPath` walks the source object.
+interface ValibotPathSegment {
+  readonly key: unknown;
+}
+
+// The subset of a valibot issue this helper needs. `path` is optional because
+// valibot omits it for root-level failures. No index signature: valibot's
+// concrete issue types are closed shapes, and only `path` is read — every other
+// field passes through via the spread in the caller.
 interface PathedIssue {
-  path: readonly PropertyKey[];
+  readonly path?: readonly ValibotPathSegment[];
 }
 
 /**
- * Enriches a list of zod issues (or any `{ path }`-shaped records) with the
+ * Narrows an arbitrary path-segment key to a {@link PropertyKey}. Valibot keys
+ * are typed as `unknown` for some containers (and `null` for sets); those can't
+ * index an object, so they're filtered out before {@link getPath} runs.
+ * @param key - The raw `key` from a valibot issue path segment.
+ * @returns Whether the key can index a JS object.
+ * @source
+ */
+function isIndexableKey(key: unknown): key is PropertyKey {
+  const type = typeof key;
+  return type === 'string' || type === 'number' || type === 'symbol';
+}
+
+/**
+ * Enriches a list of valibot issues (or any `{ path }`-shaped records) with the
  * actual value found at each issue's path in the source object. Useful when
- * logging validation failures — stock zod issues only say "expected X at
- * path Y", and knowing what *was* there makes debugging drastically faster.
+ * logging validation failures — stock issues only say "expected X at path Y",
+ * and knowing what *was* there makes debugging drastically faster.
  *
- * The original issue objects are spread shallowly, so extra zod fields
- * (`code`, `message`, `expected`, etc.) pass through untouched; only the new
- * `actual` key is added.
+ * The original issue objects are spread shallowly, so extra issue fields
+ * (`kind`, `message`, `expected`, etc.) pass through untouched; only the new
+ * `actual` key is added. Each path segment's `key` is extracted and non-
+ * indexable keys (e.g. a set's `null`) are dropped before walking the object.
  * @category Helpers
- * @param issues - Array of issue records; each must have a `path` array.
+ * @param issues - Array of valibot issue records; each may carry a `path` array.
  * @param obj - The value that was validated — used as the root for `getPath`.
  * @returns A new array of issues, each augmented with an `actual` field.
  * @example
  * ```typescript
  * const issues = [
- *   { path: ["user", "age"], code: "invalid_type", message: "Expected number" },
+ *   { path: [{ key: "user" }, { key: "age" }], kind: "schema", message: "Expected number" },
  * ];
  * const obj = { user: { age: "forty" } };
- * zodAddActualValueToIssues(issues, obj);
+ * addActualValueToIssues(issues, obj);
  * // [
  * //   {
- * //     path: ["user", "age"],
- * //     code: "invalid_type",
+ * //     path: [{ key: "user" }, { key: "age" }],
+ * //     kind: "schema",
  * //     message: "Expected number",
  * //     actual: "forty",
  * //   },
  * // ]
  *
  * // Missing path → `actual` is undefined
- * zodAddActualValueToIssues([{ path: ["missing"] }], {});
- * // [{ path: ["missing"], actual: undefined }]
+ * addActualValueToIssues([{ path: [{ key: "missing" }] }], {});
+ * // [{ path: [{ key: "missing" }], actual: undefined }]
  * ```
  * @source
  */
-export function zodAddActualValueToIssues<T extends PathedIssue>(
+export function addActualValueToIssues<T extends PathedIssue>(
   issues: readonly T[],
   obj: unknown,
 ): Array<T & { actual: unknown }> {
   return issues.map((issue) => ({
     ...issue,
-    actual: getPath(obj, issue.path),
+    actual: getPath(obj, (issue.path ?? []).map((segment) => segment.key).filter(isIndexableKey)),
   }));
 }
 

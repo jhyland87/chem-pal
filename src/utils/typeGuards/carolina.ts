@@ -1,10 +1,10 @@
 import { StatusCodes } from 'http-status-codes';
-import { z } from 'zod';
+import * as v from 'valibot';
 
-const responseOkSchema = z.object({
-  responseStatusCode: z.literal(StatusCodes.OK),
-  '@type': z.string(),
-  contents: z.record(z.string(), z.unknown()),
+const responseOkSchema = v.object({
+  responseStatusCode: v.literal(StatusCodes.OK),
+  '@type': v.string(),
+  contents: v.record(v.string(), v.unknown()),
 });
 
 /**
@@ -63,20 +63,21 @@ const responseOkSchema = z.object({
  * @source
  */
 export function isResponseOk(response: unknown): response is CarolinaSearchResponse {
-  return responseOkSchema.safeParse(response).success;
+  return v.safeParse(responseOkSchema, response).success;
 }
 
-const validSearchResponseSchema = z.object({
-  responseStatusCode: z.literal(StatusCodes.OK),
-  '@type': z.string(),
-  contents: z.object({
-    ContentFolderZone: z
-      .array(
-        z.object({
-          childRules: z.array(z.record(z.string(), z.unknown())).min(1),
+const validSearchResponseSchema = v.object({
+  responseStatusCode: v.literal(StatusCodes.OK),
+  '@type': v.string(),
+  contents: v.object({
+    ContentFolderZone: v.pipe(
+      v.array(
+        v.object({
+          childRules: v.pipe(v.array(v.record(v.string(), v.unknown())), v.minLength(1)),
         }),
-      )
-      .min(1),
+      ),
+      v.minLength(1),
+    ),
   }),
 });
 
@@ -153,18 +154,18 @@ const validSearchResponseSchema = z.object({
  * @source
  */
 export function isValidSearchResponse(response: unknown): response is CarolinaSearchResponse {
-  return validSearchResponseSchema.safeParse(response).success;
+  return v.safeParse(validSearchResponseSchema, response).success;
 }
 
-const searchResultItemSchema = z.object({
-  'product.productId': z.string(),
-  'product.productName': z.string(),
-  'product.shortDescription': z.string(),
-  itemPrice: z.string(),
-  'product.seoName': z.string(),
-  productUrl: z.string(),
-  productName: z.string(),
-  qtyDiscountAvailable: z.boolean(),
+const searchResultItemSchema = v.object({
+  'product.productId': v.string(),
+  'product.productName': v.string(),
+  'product.shortDescription': v.string(),
+  itemPrice: v.string(),
+  'product.seoName': v.string(),
+  productUrl: v.string(),
+  productName: v.string(),
+  qtyDiscountAvailable: v.boolean(),
 });
 
 /**
@@ -223,18 +224,19 @@ const searchResultItemSchema = z.object({
  * @source
  */
 export function isSearchResultItem(result: unknown): result is CarolinaSearchResult {
-  return searchResultItemSchema.safeParse(result).success;
+  return v.safeParse(searchResultItemSchema, result).success;
 }
 
-const validProductResponseSchema = z.object({
-  contents: z.object({
-    MainContent: z
-      .array(
-        z.object({
-          atgResponse: z.record(z.string(), z.unknown()),
+const validProductResponseSchema = v.object({
+  contents: v.object({
+    MainContent: v.pipe(
+      v.array(
+        v.object({
+          atgResponse: v.record(v.string(), v.unknown()),
         }),
-      )
-      .min(1),
+      ),
+      v.minLength(1),
+    ),
   }),
 });
 
@@ -257,19 +259,19 @@ const validProductResponseSchema = z.object({
  * @source
  */
 export function isValidProductResponse(obj: unknown): obj is CarolinaProductResponse {
-  return validProductResponseSchema.safeParse(obj).success;
+  return v.safeParse(validProductResponseSchema, obj).success;
 }
 
-const atgResponseSchema = z.object({
-  result: z.literal('success'),
-  response: z.object({
-    response: z.object({
-      displayName: z.string(),
-      longDescription: z.string(),
-      shortDescription: z.string(),
-      product: z.string(),
-      dataLayer: z.record(z.string(), z.unknown()),
-      canonicalUrl: z.string(),
+const atgResponseSchema = v.object({
+  result: v.literal('success'),
+  response: v.object({
+    response: v.object({
+      displayName: v.string(),
+      longDescription: v.string(),
+      shortDescription: v.string(),
+      product: v.string(),
+      dataLayer: v.record(v.string(), v.unknown()),
+      canonicalUrl: v.string(),
     }),
   }),
 });
@@ -293,5 +295,5 @@ const atgResponseSchema = z.object({
  * @source
  */
 export function isATGResponse(obj: unknown): obj is ATGResponse {
-  return atgResponseSchema.safeParse(obj).success;
+  return v.safeParse(atgResponseSchema, obj).success;
 }

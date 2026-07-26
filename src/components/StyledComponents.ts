@@ -318,6 +318,16 @@ export const StyledTableCell = styled(TableCell)(() => ({
   padding: '2px 0 0 0',
 }));
 
+// Single-line ellipsis wrapper for body-cell text. The caller supplies an
+// inline maxWidth (the measured column width) so the text fills the column and
+// truncates overflow with "…"; the full value is exposed via a title tooltip.
+export const TruncatedCellText = styled('span')({
+  display: 'block',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+});
+
 // Empty state cell
 export const EmptyStateCell = styled(StyledTableCell)(({ theme }) => ({
   whiteSpace: 'pre-wrap',
@@ -943,9 +953,13 @@ export const GlobalFilterTextField = styled(TextField)(({ theme }) => ({
   minWidth: 180,
 }));
 
-// Styled table with minimum width
+// Styled table with minimum width. `table-layout: fixed` makes every column
+// honor its measured/resized header width (instead of stretching to fit cell
+// content), so drag-to-resize actually moves the column border and cell text
+// wraps or truncates within the width rather than widening the column.
 export const SearchResultsTable = styled(StyledTable)(() => ({
   minWidth: 650,
+  tableLayout: 'fixed',
 }));
 
 // Sticky header cell

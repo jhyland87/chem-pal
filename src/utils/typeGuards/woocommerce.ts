@@ -1,57 +1,58 @@
-import { z } from 'zod';
+import * as v from 'valibot';
 
-const searchItemImagesSchema = z.array(
-  z.object({
-    id: z.number(),
-    src: z.string(),
-    thumbnail: z.string(),
-    srcset: z.string(),
-    sizes: z.string(),
-    thumbnail_srcset: z.string(),
-    thumbnail_sizes: z.string(),
-    name: z.string(),
-    alt: z.string(),
+const searchItemImagesSchema = v.array(
+  v.object({
+    id: v.number(),
+    src: v.string(),
+    thumbnail: v.string(),
+    srcset: v.string(),
+    sizes: v.string(),
+    thumbnail_srcset: v.string(),
+    thumbnail_sizes: v.string(),
+    name: v.string(),
+    alt: v.string(),
   }),
 );
 
-const searchItemPricesSchema = z.object({
-  price: z.string(),
-  regular_price: z.string(),
-  sale_price: z.string(),
-  currency_code: z.string(),
-  currency_symbol: z.string(),
-  currency_minor_unit: z.number(),
-  currency_decimal_separator: z.string(),
-  currency_thousand_separator: z.string(),
-  currency_prefix: z.string(),
-  currency_suffix: z.string(),
+const searchItemPricesSchema = v.object({
+  price: v.string(),
+  regular_price: v.string(),
+  sale_price: v.string(),
+  currency_code: v.string(),
+  currency_symbol: v.string(),
+  currency_minor_unit: v.number(),
+  currency_decimal_separator: v.string(),
+  currency_thousand_separator: v.string(),
+  currency_prefix: v.string(),
+  currency_suffix: v.string(),
   // The Store API returns price_range as { min_amount, max_amount } for
   // variable/grouped products. Fields are optional so a partial or evolving
   // shape can never reject the whole search response.
-  price_range: z
-    .object({
-      min_amount: z.string().optional(),
-      max_amount: z.string().optional(),
-    })
-    .nullable()
-    .optional(),
+  price_range: v.optional(
+    v.nullable(
+      v.object({
+        min_amount: v.optional(v.string()),
+        max_amount: v.optional(v.string()),
+      }),
+    ),
+  ),
 });
 
-const searchResponseItemSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  type: z.string(),
-  description: z.string(),
-  short_description: z.string(),
-  permalink: z.string(),
-  is_in_stock: z.boolean(),
-  sold_individually: z.boolean(),
-  weight: z.string().nullable().optional(),
-  formatted_weight: z.string().nullable().optional(),
-  sku: z.string(),
+const searchResponseItemSchema = v.object({
+  id: v.number(),
+  name: v.string(),
+  type: v.string(),
+  description: v.string(),
+  short_description: v.string(),
+  permalink: v.string(),
+  is_in_stock: v.boolean(),
+  sold_individually: v.boolean(),
+  weight: v.optional(v.nullable(v.string())),
+  formatted_weight: v.optional(v.nullable(v.string())),
+  sku: v.string(),
   prices: searchItemPricesSchema,
-  price_html: z.string().nullable().optional(),
-  images: searchItemImagesSchema.nullable().optional(),
+  price_html: v.optional(v.nullable(v.string())),
+  images: v.optional(v.nullable(searchItemImagesSchema)),
 });
 
 /**
@@ -96,7 +97,7 @@ const searchResponseItemSchema = z.object({
  * @source
  */
 export function isSearchResponseItem(item: unknown): item is WooCommerceSearchResponseItem {
-  return searchResponseItemSchema.safeParse(item).success;
+  return v.safeParse(searchResponseItemSchema, item).success;
 }
 
 /**
@@ -165,11 +166,11 @@ export function isProductVariant(product: unknown): product is WooCommerceProduc
   return !('variation' in product === false || typeof product.variation !== 'string');
 }
 
-const validProductVariantSchema = z.object({
-  variation: z.string(),
-  sku: z.string(),
-  description: z.string(),
-  variations: z.array(z.unknown()),
+const validProductVariantSchema = v.object({
+  variation: v.string(),
+  sku: v.string(),
+  description: v.string(),
+  variations: v.array(v.unknown()),
 });
 
 /**
@@ -204,5 +205,5 @@ export function isValidProductVariant(response: unknown): response is WooCommerc
   if (!isProductVariant(response)) {
     return false;
   }
-  return validProductVariantSchema.safeParse(response).success;
+  return v.safeParse(validProductVariantSchema, response).success;
 }

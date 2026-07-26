@@ -1,21 +1,21 @@
-import { z } from 'zod';
+import * as v from 'valibot';
 
-const searchResponseOkSchema = z.object({
-  page: z.object({
-    search: z.string(),
-    session_id: z.string(),
-    key: z.string(),
-    title: z.string(),
-    status: z.number(),
+const searchResponseOkSchema = v.object({
+  page: v.object({
+    search: v.string(),
+    session_id: v.string(),
+    key: v.string(),
+    title: v.string(),
+    status: v.number(),
   }),
-  request: z.object({
-    url: z.string(),
-    method: z.string(),
-    get: z.record(z.string(), z.unknown()),
-    device: z.record(z.string(), z.unknown()),
+  request: v.object({
+    url: v.string(),
+    method: v.string(),
+    get: v.record(v.string(), v.unknown()),
+    device: v.record(v.string(), v.unknown()),
   }),
-  collection: z.object({
-    products: z.record(z.string(), z.unknown()),
+  collection: v.object({
+    products: v.record(v.string(), v.unknown()),
   }),
 });
 
@@ -107,22 +107,22 @@ const searchResponseOkSchema = z.object({
  * @source
  */
 export function isSearchResponseOk(response: unknown): response is SearchResponse {
-  const parsed = searchResponseOkSchema.safeParse(response);
+  const parsed = v.safeParse(searchResponseOkSchema, response);
   if (!parsed.success) {
     return false;
   }
-  return Object.values(parsed.data.collection.products).every((product) =>
+  return Object.values(parsed.output.collection.products).every((product) =>
     isSearchResponseProduct(product),
   );
 }
 
-const priceObjectSchema = z.object({
-  price: z.number(),
-  price_incl: z.number(),
-  price_excl: z.number(),
-  price_old: z.number(),
-  price_old_incl: z.number(),
-  price_old_excl: z.number(),
+const priceObjectSchema = v.object({
+  price: v.number(),
+  price_incl: v.number(),
+  price_excl: v.number(),
+  price_old: v.number(),
+  price_old_incl: v.number(),
+  price_old_excl: v.number(),
 });
 
 /**
@@ -190,26 +190,26 @@ const priceObjectSchema = z.object({
  * @source
  */
 export function isPriceObject(price: unknown): price is PriceObject {
-  return priceObjectSchema.safeParse(price).success;
+  return v.safeParse(priceObjectSchema, price).success;
 }
 
-const searchResponseProductSchema = z.object({
-  id: z.number(),
-  vid: z.number(),
-  image: z.number(),
-  brand: z.boolean(),
-  code: z.string(),
-  ean: z.string(),
-  sku: z.string(),
-  score: z.number(),
-  available: z.boolean(),
-  unit: z.boolean(),
-  url: z.string(),
-  title: z.string(),
-  fulltitle: z.string(),
-  variant: z.string(),
-  description: z.string(),
-  data_01: z.string(),
+const searchResponseProductSchema = v.object({
+  id: v.number(),
+  vid: v.number(),
+  image: v.number(),
+  brand: v.boolean(),
+  code: v.string(),
+  ean: v.string(),
+  sku: v.string(),
+  score: v.number(),
+  available: v.boolean(),
+  unit: v.boolean(),
+  url: v.string(),
+  title: v.string(),
+  fulltitle: v.string(),
+  variant: v.string(),
+  description: v.string(),
+  data_01: v.string(),
   price: priceObjectSchema,
 });
 
@@ -260,18 +260,19 @@ const searchResponseProductSchema = z.object({
  * @source
  */
 export function isSearchResponseProduct(product: unknown): product is SearchResponseProduct {
-  return searchResponseProductSchema.safeParse(product).success;
+  return v.safeParse(searchResponseProductSchema, product).success;
 }
 
-const productObjectSchema = z.object({
-  product: z
-    .record(z.string(), z.unknown())
-    .refine(
+const productObjectSchema = v.object({
+  product: v.pipe(
+    v.record(v.string(), v.unknown()),
+    v.check(
       (val) => 'variants' in val && (typeof val.variants === 'object' || val.variants === false),
     ),
-  shop: z.object({
-    currencies: z.record(z.string(), z.unknown()),
-    currency: z.string(),
+  ),
+  shop: v.object({
+    currencies: v.record(v.string(), v.unknown()),
+    currency: v.string(),
   }),
 });
 
@@ -314,12 +315,12 @@ const productObjectSchema = z.object({
  * @source
  */
 export function isProductObject(data: unknown): data is LaboratoriumDiscounterProductObject {
-  return productObjectSchema.safeParse(data).success;
+  return v.safeParse(productObjectSchema, data).success;
 }
 
-const validSearchParamsSchema = z.object({
-  limit: z.string(),
-  format: z.string(),
+const validSearchParamsSchema = v.object({
+  limit: v.string(),
+  format: v.string(),
 });
 
 /**
@@ -355,5 +356,5 @@ const validSearchParamsSchema = z.object({
  * @source
  */
 export function isValidSearchParams(params: unknown): params is LaboratoriumDiscounterSearchParams {
-  return validSearchParamsSchema.safeParse(params).success;
+  return v.safeParse(validSearchParamsSchema, params).success;
 }
