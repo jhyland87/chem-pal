@@ -1,5 +1,4 @@
 import { i18n } from '@/helpers/i18n';
-import { BenzeneBlueIcon } from '@/icons';
 import Backdrop from '@mui/material/Backdrop';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -35,7 +34,7 @@ function formatResultsText(props: LoadingBackdropProps): string {
 }
 
 /**
- * A full-screen loading overlay component with a spinning benzene molecule and stop button.
+ * A full-screen loading overlay component with a spinning cubane loader graphic and stop button.
  * The spinner has a delayed fade-in animation when the backdrop is opened.
  *
  * @param props - Component properties containing:
@@ -66,12 +65,19 @@ export default function LoadingBackdrop(props: LoadingBackdropProps) {
         aria-label={i18n('loading_aria')}
       >
         <Box className={styles['loading-backdrop-box']}>
-          <Box className={styles['spinner-box']}>
-            <IconSpinner>
-              <BenzeneBlueIcon sx={{ width: 80, height: 80 }} />
-            </IconSpinner>
+          <Box className={styles['spinner-stack']}>
+            <Box className={styles['spinner-box']}>
+              <IconSpinner>
+                <img
+                  src="/static/images/cubane-loader-noh-thick-blue-320px.png"
+                  width={128}
+                  height={128}
+                  alt=""
+                />
+              </IconSpinner>
+            </Box>
+            <span className={styles['status-text']}>{formatResultsText(props)}</span>
           </Box>
-          <span className={styles['status-text']}>{formatResultsText(props)}</span>
           <Button
             className={styles['abort-button']}
             onClick={props.onClick}
