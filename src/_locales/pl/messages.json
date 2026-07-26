@@ -47,6 +47,26 @@
     "message": "Logo ChemPal",
     "description": "Alt text for the ChemPal logo in the About modal."
   },
+  "about_repository_link_title": {
+    "message": "Repozytorium kodu",
+    "description": "Alt text for the Code Repository link in the About modal."
+  },
+  "about_homepage_link_title": {
+    "message": "Strona główna",
+    "description": "Alt text for the Homepage link in the About modal."
+  },
+  "about_wiki_link_title": {
+    "message": "Wiki",
+    "description": "Alt text for the Wiki link in the About modal."
+  },
+  "about_privacy_link_title": {
+    "message": "Polityka prywatności",
+    "description": "Alt text for the Privacy Policy link in the About modal."
+  },
+  "about_bugs_link_title": {
+    "message": "Błędy",
+    "description": "Alt text for the Bugs link in the About modal."
+  },
   "loading_cancel": {
     "message": "Anuluj wyszukiwanie",
     "description": "The text of the button to cancel the search."
@@ -161,6 +181,11 @@
     "message": "opcje zaawansowane",
     "description": "Accessible label for the advanced-options (drawer) button."
   },
+  "search_active_filters": {
+    "message": "Aktywne filtry wyszukiwania: $count$",
+    "description": "Tooltip on the advanced-search button when filters are active.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
   "search_invalid_query": {
     "message": "Nieprawidłowe zapytanie.",
     "description": "Fallback error hint shown when a search query is invalid."
@@ -184,6 +209,10 @@
   "drawer_search_button": {
     "message": "Szukaj",
     "description": "Label for the search button in the search drawer."
+  },
+  "drawer_clear_filters": {
+    "message": "Wyczyść wszystkie filtry",
+    "description": "Label for the button that clears all advanced search filters in the drawer."
   },
   "drawer_results_limit": {
     "message": "Limit wyników",
@@ -392,6 +421,10 @@
     "message": "Cena jedn.",
     "description": "Table column header for price per base unit."
   },
+  "column_price_trend": {
+    "message": "Trend",
+    "description": "Table column header for the price-history trend sparkline."
+  },
   "column_sds": {
     "message": "SDS",
     "description": "Table column header."
@@ -478,6 +511,11 @@
   "results_toggle_filters": {
     "message": "Przełącz filtry kolumn",
     "description": "Accessible label for the header button that shows/hides the per-column filter row."
+  },
+  "results_active_column_filters": {
+    "message": "Aktywne filtry kolumn: $count$",
+    "description": "Tooltip on the column-filter toggle showing how many columns are filtered.",
+    "placeholders": { "count": { "content": "$1" } }
   },
   "results_column_visibility": {
     "message": "Pokaż lub ukryj kolumny",

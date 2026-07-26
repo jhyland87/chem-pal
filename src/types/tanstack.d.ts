@@ -10,6 +10,12 @@ declare module '@tanstack/react-table' {
    */
   interface TableMeta {
     userSettings: UserSettings;
+    /**
+     * Recorded price series keyed by series id, preloaded once from IndexedDB so
+     * the trend column's synchronous cell renderers can look up a row's price
+     * history without a per-row async read. Absent until the first load resolves.
+     */
+    priceHistory?: ReadonlyMap<string, PriceHistoryEntry>;
   }
 
   /**
@@ -174,6 +180,16 @@ declare module '@tanstack/react-table' {
      * @example ["sdsUrl"]
      */
     dataKeys?: string[];
+
+    /**
+     * When true, `getEmptyHideableColumnIds` never auto-hides this column, even
+     * though it has an accessor. For columns whose accessor value is an optional,
+     * separately-loaded derivation (e.g. the price-trend column, whose sort value
+     * is present only for rows with recorded history) — auto-hiding would wrongly
+     * hide a column the user opted into whenever no row happens to have a value.
+     * @example true
+     */
+    skipEmptyHide?: boolean;
 
     /**
      * When true, the cell fills the column width and truncates overflow with an

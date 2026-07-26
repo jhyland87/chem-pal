@@ -136,6 +136,7 @@ describe('Tanstack Mixins', () => {
       accessorKey?: string;
       accessorFn?: (row: Record<string, unknown>) => unknown;
       dataKeys?: string[];
+      skipEmptyHide?: boolean;
     };
 
     const buildTable = (
@@ -148,7 +149,16 @@ describe('Tanstack Mixins', () => {
         columnDef: {
           ...(spec.accessorKey !== undefined ? { accessorKey: spec.accessorKey } : {}),
           ...(spec.accessorFn !== undefined ? { accessorFn: spec.accessorFn } : {}),
-          ...(spec.dataKeys !== undefined ? { meta: { dataKeys: spec.dataKeys } } : {}),
+          ...(spec.dataKeys !== undefined || spec.skipEmptyHide !== undefined
+            ? {
+                meta: {
+                  ...(spec.dataKeys !== undefined ? { dataKeys: spec.dataKeys } : {}),
+                  ...(spec.skipEmptyHide !== undefined
+                    ? { skipEmptyHide: spec.skipEmptyHide }
+                    : {}),
+                },
+              }
+            : {}),
         },
       }));
       const specById = new Map(specs.map((spec) => [spec.id, spec]));
@@ -203,6 +213,18 @@ describe('Tanstack Mixins', () => {
         [{ id: 'title', canHide: false, accessorKey: 'name' }, { id: 'expander' }],
       );
       expect(getEmptyHideableColumnIds(table)).toEqual([]);
+    });
+
+    it('never reports an accessor column flagged meta.skipEmptyHide, even when empty', () => {
+      const table = buildTable(
+        [{ trend: undefined }, { trend: undefined }],
+        [
+          { id: 'cas', accessorKey: 'cas' },
+          { id: 'priceTrend', accessorFn: (row) => row.trend, skipEmptyHide: true },
+        ],
+      );
+      // cas is empty and reported; priceTrend is empty but opted out.
+      expect(getEmptyHideableColumnIds(table)).toEqual(['cas']);
     });
 
     it('treats blank strings and empty arrays as empty but 0 as data', () => {

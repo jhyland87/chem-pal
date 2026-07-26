@@ -429,6 +429,26 @@ declare global {
      * exported.
      */
     parentProduct?: { title: string; url: string; permalink?: string };
+
+    /**
+     * Display-only price-history series id for this row, stamped on flattened
+     * variant rows when the "group product variants" setting is off (see
+     * `flattenProductVariants`). Because flattening merges the variant onto a copy
+     * of the product and drops `variants`, the row can no longer recompute its own
+     * `variantSeriesKey`; carrying the resolved key lets the results table look up
+     * the variant's recorded series directly. Never set by suppliers, never
+     * persisted or exported.
+     */
+    priceSeriesKey?: string;
+
+    /**
+     * Display-only signed percent change of this row's price trend (rising = +,
+     * falling = −), stamped by the results table so its trend column has a value
+     * to sort by (price history isn't on the row — it's loaded separately). Absent
+     * when the row has no drawable trend. Never set by suppliers, never persisted
+     * or exported.
+     */
+    priceTrendValue?: number;
   };
 
   /**

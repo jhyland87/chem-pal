@@ -5,6 +5,7 @@
  * @source
  */
 
+import { unitPriceExactFractionDigits, unitPriceMinDisplay } from '@/../config.json';
 import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
 import { formatUomForDisplay, toCostBaseQuantity } from '@/helpers/quantity';
 
@@ -98,8 +99,32 @@ export function formatDisplayPrice(
   return formatWithSymbol(currency, priceInUsd * currencyRate);
 }
 
-/** Max decimal places for a per-unit price, so small values stay readable. */
-const UNIT_PRICE_MAX_FRACTION_DIGITS = 4;
+/**
+ * Formats a single per-base-unit price with its `/{unit}` suffix, keeping the
+ * column narrow: a positive value below one cent collapses to `"<$0.01/{unit}"`
+ * (the threshold is run through {@link formatWithSymbol} so the currency symbol
+ * and locale decimal separator match), and everything else is rendered at the
+ * default two decimal places.
+ * @category Helpers
+ * @group Formatters
+ * @param currency - The display currency code, used to pick the symbol.
+ * @param perUnit - The price per base unit, already converted into `currency`.
+ * @param unitLabel - The base-unit label to append, e.g. `"g"`, `"mL"`, `"pcs"`.
+ * @returns A `"{price}/{unit}"` string, using `"<$0.01"` for sub-cent values.
+ * @example
+ * ```ts
+ * formatPerUnitPrice("USD", 0.08, "g");   // => "$0.08/g"
+ * formatPerUnitPrice("USD", 0.0035, "g"); // => "<$0.01/g"
+ * formatPerUnitPrice("EUR", 0.004, "g");  // => "<€0.01/g"
+ * ```
+ * @source
+ */
+function formatPerUnitPrice(currency: string, perUnit: number, unitLabel: string): string {
+  if (perUnit > 0 && perUnit < unitPriceMinDisplay) {
+    return `<${formatWithSymbol(currency, unitPriceMinDisplay)}/${unitLabel}`;
+  }
+  return `${formatWithSymbol(currency, perUnit)}/${unitLabel}`;
+}
 
 /**
  * Computes a product's price per base unit as a currency-stable number for
@@ -137,13 +162,71 @@ export function getUnitPrice(product: UnitPriceFields): number | undefined {
 }
 
 /**
+ * The pieces needed to format a per-unit price: the display currency, the amount
+ * per base unit already converted into that currency, and the base-unit label.
+ * @category Helpers
+ * @group Formatters
+ */
+interface ResolvedUnitPrice {
+  currency: string;
+  perUnit: number;
+  unitLabel: string;
+}
+
+/**
+ * Resolves a product's per-base-unit price and display currency, mirroring
+ * {@link formatDisplayPrice}'s currency handling: converts the USD anchor into the
+ * user's currency (falling back to the native price when a non-USD product has no
+ * anchor) and divides by the quantity normalized to its cost base unit. Shared by
+ * {@link formatUnitPrice} (rounded display) and {@link formatUnitPriceExact}
+ * (full-precision hover value) so both agree on the underlying number. Returns
+ * `undefined` when there's no price or the quantity/unit can't be converted.
+ * @category Helpers
+ * @group Formatters
+ * @param product - The product/variant `price`, `usdPrice`, `currencyCode`, `quantity`, and `uom` fields.
+ * @param userSettings - The user's `currency` and `currencyRate`; defaults to USD at rate 1 when undefined.
+ * @returns The resolved currency, per-unit amount, and unit label, or `undefined` when unavailable.
+ * @example
+ * ```ts
+ * resolveUnitPrice({ price: 40, usdPrice: 40, currencyCode: "USD", quantity: 500, uom: "g" }, undefined);
+ * // => { currency: "USD", perUnit: 0.08, unitLabel: "g" }
+ * ```
+ * @source
+ */
+function resolveUnitPrice(
+  product: UnitPriceFields,
+  userSettings: PriceSettings | undefined,
+): ResolvedUnitPrice | undefined {
+  const { usdPrice, price: rawPrice, currencyCode, quantity, uom } = product;
+
+  if (usdPrice === undefined && rawPrice === undefined) return undefined;
+  if (quantity === undefined || uom === undefined) return undefined;
+
+  const base = toCostBaseQuantity(quantity, uom);
+  if (!base) return undefined;
+
+  const unitLabel = formatUomForDisplay(base.uom);
+  const currencyRate = userSettings?.currencyRate ?? 1;
+
+  // Non-USD product without a USD anchor: use the native per-unit price as-is.
+  if (currencyCode !== 'USD' && usdPrice === undefined) {
+    const fallbackCurrency = currencyCode ?? 'USD';
+    return { currency: fallbackCurrency, perUnit: Number(rawPrice) / base.quantity, unitLabel };
+  }
+
+  const currency = userSettings?.currency ?? 'USD';
+  const priceInUsd = usdPrice ?? Number(rawPrice);
+  return { currency, perUnit: (priceInUsd * currencyRate) / base.quantity, unitLabel };
+}
+
+/**
  * Formats a product's price per base unit for display, e.g. `"$0.08/g"` or
- * `"$19.99/pcs"`. Mirrors {@link formatDisplayPrice}'s currency handling —
- * converts the USD anchor into the user's currency (falling back to the native
- * price when a non-USD product has no anchor) — then divides by the quantity
- * normalized to its cost base unit and appends `/{unit}`. Small values keep up to
- * four decimal places so a fraction-of-a-cent unit price stays legible. Returns
- * `""` when there's no price or the quantity/unit can't be converted.
+ * `"$19.99/pcs"`. Resolves the per-unit amount via {@link resolveUnitPrice}, then
+ * renders it at two decimal places, collapsing any positive unit price below one
+ * cent to `"<$0.01/{unit}"` (see {@link formatPerUnitPrice}) to keep the column
+ * narrow. The unrounded value is available via {@link formatUnitPriceExact} for a
+ * hover tooltip. Returns `""` when there's no price or the quantity/unit can't be
+ * converted.
  * @category Helpers
  * @group Formatters
  * @param product - The product/variant `price`, `usdPrice`, `currencyCode`, `quantity`, and `uom` fields.
@@ -154,7 +237,7 @@ export function getUnitPrice(product: UnitPriceFields): number | undefined {
  * formatUnitPrice({ price: 40, usdPrice: 40, currencyCode: "USD", quantity: 500, uom: "g" }, undefined);
  * // => "$0.08/g"
  * formatUnitPrice({ price: 5, usdPrice: 5, currencyCode: "USD", quantity: 1, uom: "kg" }, { currency: "EUR", currencyRate: 0.9 });
- * // => "€0.0045/g"
+ * // => "<€0.01/g"
  * ```
  * @source
  */
@@ -162,27 +245,40 @@ export function formatUnitPrice(
   product: UnitPriceFields,
   userSettings: PriceSettings | undefined,
 ): string {
-  const { usdPrice, price: rawPrice, currencyCode, quantity, uom } = product;
+  const resolved = resolveUnitPrice(product, userSettings);
+  if (!resolved) return '';
 
-  if (usdPrice === undefined && rawPrice === undefined) return '';
-  if (quantity === undefined || uom === undefined) return '';
+  return formatPerUnitPrice(resolved.currency, resolved.perUnit, resolved.unitLabel);
+}
 
-  const base = toCostBaseQuantity(quantity, uom);
-  if (!base) return '';
+/**
+ * Formats a product's price per base unit at full precision — up to four decimal
+ * places, with no sub-cent collapse — for use as the hover tooltip behind the
+ * rounded {@link formatUnitPrice} display, so a value shown as `"<$0.01/g"` or
+ * `"$0.07/g"` reveals its actual `"$0.0035/g"` / `"$0.072/g"` on hover. Uses the
+ * same resolved amount as the display formatter (see {@link resolveUnitPrice}).
+ * Returns `""` when there's no price or the quantity/unit can't be converted.
+ * @category Helpers
+ * @group Formatters
+ * @param product - The product/variant `price`, `usdPrice`, `currencyCode`, `quantity`, and `uom` fields.
+ * @param userSettings - The user's `currency` and `currencyRate`; defaults to USD at rate 1 when undefined.
+ * @returns A localized full-precision `"{price}/{unit}"` string, or `""` when unavailable.
+ * @example
+ * ```ts
+ * formatUnitPriceExact({ price: 5, usdPrice: 5, currencyCode: "USD", quantity: 1, uom: "kg" }, undefined);
+ * // => "$0.005/g"
+ * formatUnitPriceExact({ price: 40, usdPrice: 40, currencyCode: "USD", quantity: 500, uom: "g" }, { currency: "EUR", currencyRate: 0.9 });
+ * // => "€0.072/g"
+ * ```
+ * @source
+ */
+export function formatUnitPriceExact(
+  product: UnitPriceFields,
+  userSettings: PriceSettings | undefined,
+): string {
+  const resolved = resolveUnitPrice(product, userSettings);
+  if (!resolved) return '';
 
-  const unitLabel = formatUomForDisplay(base.uom);
-  const currency = userSettings?.currency ?? 'USD';
-  const currencyRate = userSettings?.currencyRate ?? 1;
-
-  // Non-USD product without a USD anchor: render the native per-unit price as-is.
-  if (currencyCode !== 'USD' && usdPrice === undefined) {
-    const fallbackCurrency = currencyCode ?? 'USD';
-    const perUnit = Number(rawPrice) / base.quantity;
-    return `${formatWithSymbol(fallbackCurrency, perUnit, UNIT_PRICE_MAX_FRACTION_DIGITS)}/${unitLabel}`;
-  }
-
-  const priceInUsd = usdPrice ?? Number(rawPrice);
-  const perUnit = (priceInUsd * currencyRate) / base.quantity;
-
-  return `${formatWithSymbol(currency, perUnit, UNIT_PRICE_MAX_FRACTION_DIGITS)}/${unitLabel}`;
+  const { currency, perUnit, unitLabel } = resolved;
+  return `${formatWithSymbol(currency, perUnit, unitPriceExactFractionDigits)}/${unitLabel}`;
 }

@@ -33,6 +33,8 @@
   },
   "defaultResultsLimit": 5,
   "descriptionPreviewLength": 300,
+  "unitPriceMinDisplay": 0.01,
+  "unitPriceExactFractionDigits": 4,
   "maxSupplierCacheEntries": 100,
   "maxHistoryEntries": 100,
   "maxExportEntries": 20,

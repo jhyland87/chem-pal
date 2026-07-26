@@ -1,4 +1,9 @@
-import { formatDisplayPrice, formatUnitPrice, getUnitPrice } from '@/helpers/price';
+import {
+  formatDisplayPrice,
+  formatUnitPrice,
+  formatUnitPriceExact,
+  getUnitPrice,
+} from '@/helpers/price';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 describe('formatDisplayPrice', () => {
@@ -91,14 +96,24 @@ describe('formatUnitPrice', () => {
     ).toBe('$0.08/g');
   });
 
-  it('keeps extra decimals for small values but trims trailing ones', () => {
-    // 5 USD / 1000 g = $0.005/g
+  it('collapses a sub-cent unit price to "<$0.01"', () => {
+    // 5 USD / 1000 g = $0.005/g, below one cent
     expect(
       formatUnitPrice(
         { price: 5, usdPrice: 5, currencyCode: 'USD', quantity: 1, uom: 'kg' },
         undefined,
       ),
-    ).toBe('$0.005/g');
+    ).toBe('<$0.01/g');
+  });
+
+  it('renders an exactly-one-cent unit price normally, not as "<$0.01"', () => {
+    // 10 USD / 1000 g = $0.01/g, at the threshold
+    expect(
+      formatUnitPrice(
+        { price: 10, usdPrice: 10, currencyCode: 'USD', quantity: 1, uom: 'kg' },
+        undefined,
+      ),
+    ).toBe('$0.01/g');
   });
 
   it('normalizes volume to millilitres', () => {
@@ -107,16 +122,26 @@ describe('formatUnitPrice', () => {
         { price: 10, usdPrice: 10, currencyCode: 'USD', quantity: 2, uom: 'l' },
         { currency: 'USD', currencyRate: 1 },
       ),
-    ).toBe('$0.005/mL');
+    ).toBe('<$0.01/mL');
   });
 
-  it('converts into the user currency at the given rate', () => {
+  it('converts into the user currency at the given rate, capped at two decimals', () => {
     expect(
       formatUnitPrice(
         { price: 40, usdPrice: 40, currencyCode: 'USD', quantity: 500, uom: 'g' },
         { currency: 'EUR', currencyRate: 0.9 },
       ),
-    ).toBe('€0.072/g');
+    ).toBe('€0.07/g');
+  });
+
+  it('collapses a sub-cent price in a non-USD currency using its symbol', () => {
+    // 5 USD * 0.9 / 1000 g = €0.0045/g, below one cent
+    expect(
+      formatUnitPrice(
+        { price: 5, usdPrice: 5, currencyCode: 'USD', quantity: 1, uom: 'kg' },
+        { currency: 'EUR', currencyRate: 0.9 },
+      ),
+    ).toBe('<€0.01/g');
   });
 
   it('returns an empty string when there is no unit price to show', () => {
@@ -125,6 +150,40 @@ describe('formatUnitPrice', () => {
     ).toBe('');
     expect(
       formatUnitPrice({ price: 10, usdPrice: 10, currencyCode: 'USD', quantity: 1, uom: 'xyz' }, undefined),
+    ).toBe('');
+  });
+});
+
+describe('formatUnitPriceExact', () => {
+  it('reveals the full-precision value that the display collapses to "<$0.01"', () => {
+    // 5 USD / 1000 g = $0.005/g — shown as "<$0.01/g", exact is "$0.005/g"
+    expect(
+      formatUnitPriceExact(
+        { price: 5, usdPrice: 5, currencyCode: 'USD', quantity: 1, uom: 'kg' },
+        undefined,
+      ),
+    ).toBe('$0.005/g');
+  });
+
+  it('keeps the extra decimals the two-decimal display rounds away', () => {
+    // 40 USD * 0.9 / 500 g = €0.072/g — display rounds to "€0.07/g"
+    expect(
+      formatUnitPriceExact(
+        { price: 40, usdPrice: 40, currencyCode: 'USD', quantity: 500, uom: 'g' },
+        { currency: 'EUR', currencyRate: 0.9 },
+      ),
+    ).toBe('€0.072/g');
+  });
+
+  it('matches the display for values that need no extra precision', () => {
+    const product = { price: 40, usdPrice: 40, currencyCode: 'USD', quantity: 500, uom: 'g' };
+    expect(formatUnitPriceExact(product, undefined)).toBe('$0.08/g');
+    expect(formatUnitPrice(product, undefined)).toBe('$0.08/g');
+  });
+
+  it('returns an empty string when there is no unit price to show', () => {
+    expect(
+      formatUnitPriceExact({ currencyCode: 'USD', quantity: 100, uom: 'g' }, undefined),
     ).toBe('');
   });
 });

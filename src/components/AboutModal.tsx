@@ -119,6 +119,7 @@ export default function AboutModal({
             data-testid="github-button"
             href={__APP_REPOSITORY__}
             target="_blank"
+            title={i18n('about_repository_link_title')}
             rel="noopener noreferrer"
           >
             <GitHubIcon />
@@ -127,6 +128,7 @@ export default function AboutModal({
             data-testid="homepage-button"
             href={__APP_HOMEPAGE__}
             target="_blank"
+            title={i18n('about_homepage_link_title')}
             rel="noopener noreferrer"
           >
             <WebIcon />
@@ -135,6 +137,7 @@ export default function AboutModal({
             data-testid="wiki-button"
             href={__APP_WIKI__}
             target="_blank"
+            title={i18n('about_wiki_link_title')}
             rel="noopener noreferrer"
           >
             <ArticleIcon />
@@ -143,6 +146,7 @@ export default function AboutModal({
             data-testid="privacy-button"
             href={__APP_PRIVACY__}
             target="_blank"
+            title={i18n('about_privacy_link_title')}
             rel="noopener noreferrer"
           >
             <PrivacyTipIcon />
@@ -151,6 +155,7 @@ export default function AboutModal({
             data-testid="bugs-button"
             href={__APP_BUGS__}
             target="_blank"
+            title={i18n('about_bugs_link_title')}
             rel="noopener noreferrer"
           >
             <BugReportIcon />

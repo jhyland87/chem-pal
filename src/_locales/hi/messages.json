@@ -47,6 +47,26 @@
     "message": "ChemPal लोगो",
     "description": "Alt text for the ChemPal logo in the About modal."
   },
+  "about_repository_link_title": {
+    "message": "कोड रिपॉज़िटरी",
+    "description": "Alt text for the Code Repository link in the About modal."
+  },
+  "about_homepage_link_title": {
+    "message": "मुखपृष्ठ",
+    "description": "Alt text for the Homepage link in the About modal."
+  },
+  "about_wiki_link_title": {
+    "message": "विकी",
+    "description": "Alt text for the Wiki link in the About modal."
+  },
+  "about_privacy_link_title": {
+    "message": "गोपनीयता नीति",
+    "description": "Alt text for the Privacy Policy link in the About modal."
+  },
+  "about_bugs_link_title": {
+    "message": "बग",
+    "description": "Alt text for the Bugs link in the About modal."
+  },
   "loading_cancel": {
     "message": "खोज रद्द करें",
     "description": "The text of the button to cancel the search."
@@ -143,6 +163,11 @@
     "message": "उन्नत विकल्प",
     "description": "Accessible label for the advanced-options (drawer) button."
   },
+  "search_active_filters": {
+    "message": "$count$ सक्रिय खोज फ़िल्टर",
+    "description": "Tooltip on the advanced-search button when filters are active.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
   "search_invalid_query": {
     "message": "अमान्य क्वेरी।",
     "description": "Fallback error hint shown when a search query is invalid."
@@ -166,6 +191,10 @@
   "drawer_search_button": {
     "message": "खोजें",
     "description": "Label for the search button in the search drawer."
+  },
+  "drawer_clear_filters": {
+    "message": "सभी फ़िल्टर साफ़ करें",
+    "description": "Label for the button that clears all advanced search filters in the drawer."
   },
   "drawer_results_limit": {
     "message": "परिणाम सीमा",
@@ -333,6 +362,7 @@
   "column_quantity": { "message": "मात्रा", "description": "Table column header." },
   "column_unit": { "message": "इकाई", "description": "Table column header." },
   "column_unit_price": { "message": "इकाई मूल्य", "description": "Table column header for price per base unit." },
+  "column_price_trend": { "message": "रुझान", "description": "Table column header for the price-history trend sparkline." },
   "column_sds": { "message": "SDS", "description": "Table column header." },
   "column_specs": { "message": "विशिष्टताएँ", "description": "Table column header." },
   "column_coa": { "message": "COA", "description": "Table column header." },
@@ -374,6 +404,11 @@
   "results_toggle_filters": {
     "message": "कॉलम फ़िल्टर टॉगल करें",
     "description": "Accessible label for the header button that shows/hides the per-column filter row."
+  },
+  "results_active_column_filters": {
+    "message": "$count$ सक्रिय कॉलम फ़िल्टर",
+    "description": "Tooltip on the column-filter toggle showing how many columns are filtered.",
+    "placeholders": { "count": { "content": "$1" } }
   },
   "results_column_visibility": {
     "message": "कॉलम दिखाएँ या छिपाएँ",

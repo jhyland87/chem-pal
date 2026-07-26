@@ -187,6 +187,12 @@ export class ProductBuilder<T extends Product> {
       // Display-only back-reference set by the ungrouped table view, never sourced
       // from supplier or cached data — dropped here so it can't round-trip in.
       parentProduct: () => {},
+      // Display-only price-history series id stamped by the ungrouped table view;
+      // like parentProduct, dropped here so it can't round-trip in from cached data.
+      priceSeriesKey: () => {},
+      // Display-only trend sort value stamped by the results table; like
+      // parentProduct, dropped here so it can't round-trip in from cached data.
+      priceTrendValue: () => {},
     };
 
     // `Object.entries` widens each key to `string`; narrow it back to a dispatch

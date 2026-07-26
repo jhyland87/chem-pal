@@ -212,6 +212,10 @@ export function getEmptyHideableColumnIds<TData>(table: Table<TData>): string[] 
     if (!column.getCanHide()) continue;
 
     const columnDef = column.columnDef;
+    // Opt-out for accessor columns whose value is an optional, separately-loaded
+    // derivation (e.g. price-trend); auto-hiding would drop a column the user
+    // opted into whenever no row currently has a value.
+    if (columnDef.meta?.skipEmptyHide) continue;
     const isAccessorColumn = 'accessorKey' in columnDef || 'accessorFn' in columnDef;
     const dataKeys = columnDef.meta?.dataKeys ?? [];
     // A display column with no accessor and no declared dataKeys can't be judged.

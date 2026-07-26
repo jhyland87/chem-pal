@@ -49,7 +49,26 @@
     "message": "ChemPal logo",
     "description": "Alt text for the ChemPal logo in the About modal."
   },
-
+  "about_repository_link_title": {
+    "message": "Code Repository",
+    "description": "Alt text for the Code Repository link in the About modal."
+  },
+  "about_homepage_link_title": {
+    "message": "Homepage",
+    "description": "Alt text for the Homepage link in the About modal."
+  },
+  "about_wiki_link_title": {
+    "message": "Wiki",
+    "description": "Alt text for the Wiki link in the About modal."
+  },
+  "about_privacy_link_title": {
+    "message": "Privacy Policy",
+    "description": "Alt text for the Privacy Policy link in the About modal."
+  },
+  "about_bugs_link_title": {
+    "message": "Bugs",
+    "description": "Alt text for the Bugs link in the About modal."
+  },
   "loading_cancel": {
     "message": "Cancel search",
     "description": "The text of the button to cancel the search."
@@ -147,6 +166,11 @@
     "message": "advanced options",
     "description": "Accessible label for the advanced-options (drawer) button."
   },
+  "search_active_filters": {
+    "message": "$count$ active search filters",
+    "description": "Tooltip on the advanced-search button when filters are active.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
   "search_invalid_query": {
     "message": "Invalid query.",
     "description": "Fallback error hint shown when a search query is invalid."
@@ -171,6 +195,10 @@
   "drawer_search_button": {
     "message": "Search",
     "description": "Label for the search button in the search drawer."
+  },
+  "drawer_clear_filters": {
+    "message": "Clear all filters",
+    "description": "Label for the button that clears all advanced search filters in the drawer."
   },
   "drawer_results_limit": {
     "message": "Results Limit",
@@ -356,6 +384,7 @@
   "column_quantity": { "message": "Qty", "description": "Table column header." },
   "column_unit": { "message": "Unit", "description": "Table column header." },
   "column_unit_price": { "message": "Unit Price", "description": "Table column header for price per base unit." },
+  "column_price_trend": { "message": "Trend", "description": "Table column header for the price-history trend sparkline." },
   "column_sds": { "message": "SDS", "description": "Table column header." },
   "column_specs": { "message": "Specs", "description": "Table column header." },
   "column_coa": { "message": "COA", "description": "Table column header." },
@@ -397,6 +426,11 @@
   "results_toggle_filters": {
     "message": "Toggle column filters",
     "description": "Accessible label for the header button that shows/hides the per-column filter row."
+  },
+  "results_active_column_filters": {
+    "message": "$count$ active column filters",
+    "description": "Tooltip on the column-filter toggle showing how many columns are filtered.",
+    "placeholders": { "count": { "content": "$1" } }
   },
   "results_column_visibility": {
     "message": "Show or hide columns",
