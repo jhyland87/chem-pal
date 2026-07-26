@@ -25,20 +25,20 @@ import { SupplierBase } from './SupplierBase';
  */
 export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> implements ISupplier {
   // Display name of the supplier used for UI and logging
-  public readonly supplierName: string = 'Warchem';
+  public static readonly supplierName: string = 'Warchem';
 
   // Base URL for all API and web requests to Warchem
-  public readonly baseURL: string = 'https://warchem.pl';
+  public static readonly baseURL: string = 'https://warchem.pl';
 
   // Shipping scope for Warchem
-  public readonly shipping: ShippingRange = 'domestic';
+  public static readonly shipping: ShippingRange = 'domestic';
 
   // The country code of the supplier.
   // This is used to determine the currency and other country-specific information.
-  public readonly country: CountryCode = 'PL';
+  public static readonly country: CountryCode = 'PL';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa', 'ach', 'cash'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa', 'ach', 'cash'];
 
   // Cached search results from the last query execution
   protected queryResults: Array<Partial<Product>> = [];

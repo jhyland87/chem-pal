@@ -21,12 +21,6 @@ export abstract class SupplierBaseWix
   extends SupplierBase<ProductObject, Product>
   implements ISupplier
 {
-  /** Display name of the supplier */
-  public abstract readonly supplierName: string;
-
-  /** Base URL for all API requests */
-  public abstract readonly baseURL: string;
-
   /** Access token for Wix API authentication */
   protected accessToken: string = '';
 

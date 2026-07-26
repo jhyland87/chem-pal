@@ -61,19 +61,19 @@ export class SupplierSynthetika
   implements ISupplier
 {
   /** Name of supplier (for display purposes) */
-  public readonly supplierName: string = 'Synthetika';
+  public static readonly supplierName: string = 'Synthetika';
 
   /** Base URL for HTTP(s) requests */
-  public readonly baseURL: string = 'https://synthetikaeu.com';
+  public static readonly baseURL: string = 'https://synthetikaeu.com';
 
   /** Shipping scope for Synthetika */
-  public readonly shipping: ShippingRange = 'international';
+  public static readonly shipping: ShippingRange = 'international';
 
   /** The country code of the supplier */
-  public readonly country: CountryCode = 'PL';
+  public static readonly country: CountryCode = 'PL';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   /** Override the type of queryResults to use our specific type */
   protected queryResults: Array<SynthetikaProduct> = [];

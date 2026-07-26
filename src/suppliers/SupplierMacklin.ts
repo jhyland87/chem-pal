@@ -168,22 +168,22 @@ class TimeoutError extends Error {
  */
 export class SupplierMacklin extends SupplierBase<Product, Product> implements ISupplier {
   /** Name of supplier (for display purposes) */
-  public readonly supplierName: string = 'Macklin';
+  public static readonly supplierName: string = 'Macklin';
 
   /** Base URL for HTTP(s) requests */
-  public readonly baseURL: string = 'https://www.macklin.cn';
+  public static readonly baseURL: string = 'https://www.macklin.cn';
 
   /** The host of the Macklin API. */
-  public readonly apiURL: string = 'api.macklin.cn';
+  public static readonly apiURL: string = 'api.macklin.cn';
 
   /** Shipping scope for Macklin */
-  public readonly shipping: ShippingRange = 'worldwide';
+  public static readonly shipping: ShippingRange = 'worldwide';
 
   /** The country code of the supplier. */
-  public readonly country: CountryCode = 'CN';
+  public static readonly country: CountryCode = 'CN';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   /** Override the type of queryResults to use our specific type */
   protected queryResults: Array<Product> = [];
@@ -230,10 +230,10 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
   private rateLimitLastRemaining: number = Number.POSITIVE_INFINITY;
 
   /** Macklin supports CAS numbers searches. */
-  protected readonly supportsCAS: boolean = true;
+  protected static readonly supportsCAS: boolean = true;
 
   /** Macklin supports formula searches. */
-  protected readonly supportsFormula: boolean = true;
+  protected static readonly supportsFormula: boolean = true;
 
   /** HTTP headers used as a basis for all queries. */
   protected headers: MacklinRequestHeaders = {

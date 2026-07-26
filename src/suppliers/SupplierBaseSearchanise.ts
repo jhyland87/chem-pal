@@ -39,12 +39,12 @@ import { SupplierBase } from './SupplierBase';
  *   implements AsyncIterable<Product>
  * {
  *   // Name of supplier (for display purposes)
- *   public readonly supplierName: string = "Foobar";
+ *   public static readonly supplierName: string = "Foobar";
  *
  *   protected apiKey: string = "<api_key>";
  *
  *   // Base URL for HTTP(s) requests
- *   public readonly baseURL: string = "https://www.foobar.com";
+ *   public static readonly baseURL: string = "https://www.foobar.com";
  * }
  * ```
  * @source
@@ -55,7 +55,7 @@ export abstract class SupplierBaseSearchanise
 {
   protected apiKey: string = '';
 
-  protected apiURL: string = 'searchserverapi.com';
+  protected static readonly apiURL: string = 'searchserverapi.com';
 
   /**
    * Derives the unique product key from a Searchanise item listing: its

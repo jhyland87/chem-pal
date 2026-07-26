@@ -29,12 +29,6 @@ export abstract class SupplierBaseMySimpleStore
   extends SupplierBase<MySimpleStoreListProduct, Product>
   implements ISupplier
 {
-  /** Display name of the supplier */
-  public abstract readonly supplierName: string;
-
-  /** Base URL for the supplier's own website (product pages, permalinks) */
-  public abstract readonly baseURL: string;
-
   /** The MySimpleStore store id (uuid) that keys every API request */
   public abstract readonly storeId: string;
 

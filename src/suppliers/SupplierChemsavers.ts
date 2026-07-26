@@ -25,24 +25,24 @@ export class SupplierChemsavers
   implements ISupplier
 {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = 'Chemsavers';
+  public static readonly supplierName: string = 'Chemsavers';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = 'https://www.chemsavers.com';
+  public static readonly baseURL: string = 'https://www.chemsavers.com';
 
   // Shipping scope for Chemsavers
-  public readonly shipping: ShippingRange = 'international';
+  public static readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = 'US';
+  public static readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['amazononly'];
+  public static readonly paymentMethods: PaymentMethod[] = ['amazononly'];
 
   public readonly amazonStoreURL: string = 'https://www.amazon.com/s?rh=p_89%3AChemsavers';
 
   // The API URL for the Typesense search API.
-  protected apiURL: string = '0ul35zwtpkx14ifhp-1.a1.typesense.net';
+  protected static readonly apiURL: string = '0ul35zwtpkx14ifhp-1.a1.typesense.net';
 
   // Override the type of queryResults to use our specific type
   protected queryResults: Array<ChemsaversProductObject> = [];
@@ -63,9 +63,9 @@ export class SupplierChemsavers
   // cache. Products are still keyed for exclusions via getUniqueProductKey.
   protected readonly skipProductDetailCache: boolean = true;
 
-  protected readonly supportsCAS: boolean = true;
-  // protected readonly supportsFormula: boolean = true;
-  // protected readonly supportsSMILES: boolean = true;
+  protected static readonly supportsCAS: boolean = true;
+  // protected static readonly supportsFormula: boolean = true;
+  // protected static readonly supportsSMILES: boolean = true;
 
   /**
    * Derives the unique product key from a Chemsavers product object: its `id`

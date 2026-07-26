@@ -11,11 +11,11 @@ const { SupplierBaseMagento2 } = await import('@/suppliers/SupplierBaseMagento2'
  * network is touched — both methods are pure transforms of a product item.
  */
 class TestMagento2 extends SupplierBaseMagento2 {
-  public readonly supplierName = 'TestMagento2';
-  public readonly baseURL = 'https://mag.example';
-  public readonly shipping = 'worldwide' as ShippingRange;
-  public readonly country = 'US' as CountryCode;
-  public readonly paymentMethods = [] as PaymentMethod[];
+  public static readonly supplierName = 'TestMagento2';
+  public static readonly baseURL = 'https://mag.example';
+  public static readonly shipping = 'worldwide' as ShippingRange;
+  public static readonly country = 'US' as CountryCode;
+  public static readonly paymentMethods = [] as PaymentMethod[];
 
   public callGetProductUrl(item: Magento2ProductItem): string {
     return this.getProductUrl(item);

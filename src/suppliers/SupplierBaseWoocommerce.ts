@@ -33,7 +33,7 @@ import { SupplierBase } from './SupplierBase';
  * @example
  * ```typescript
  * class MyChemicalSupplier extends SupplierBaseWoocommerce {
- *   public readonly supplierName = "My Chemical Supplier";
+ *   public static readonly supplierName = "My Chemical Supplier";
  *   protected baseURL = "https://mychemicalsupplier.com";
  * }
  *
@@ -68,9 +68,9 @@ export abstract class SupplierBaseWoocommerce
    */
   protected apiKey: string = '';
 
-  protected readonly supportsCAS: boolean = true;
-  // protected readonly supportsFormula: boolean = true;
-  // protected readonly supportsSMILES: boolean = true;
+  protected static readonly supportsCAS: boolean = true;
+  // protected static readonly supportsFormula: boolean = true;
+  // protected static readonly supportsSMILES: boolean = true;
 
   /**
    * The maximum number of objects to fetch in a single request.

@@ -226,26 +226,26 @@ export class SupplierAmbeed
   implements ISupplier
 {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = 'Ambeed';
+  public static readonly supplierName: string = 'Ambeed';
 
   // Ambeed's search natively accepts CAS numbers, molecular formulas, and SMILES
   // (it resolves them itself via resolvedStructures), so the base must not swap an
   // identifier query for a resolved name.
-  protected readonly supportsCAS: boolean = true;
-  protected readonly supportsFormula: boolean = true;
-  protected readonly supportsSMILES: boolean = true;
+  protected static readonly supportsCAS: boolean = true;
+  protected static readonly supportsFormula: boolean = true;
+  protected static readonly supportsSMILES: boolean = true;
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = 'https://www.ambeed.com';
+  public static readonly baseURL: string = 'https://www.ambeed.com';
 
   // Shipping scope for Ambeed
-  public readonly shipping: ShippingRange = 'international';
+  public static readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = 'CN';
+  public static readonly country: CountryCode = 'CN';
 
   // The countries to which the supplier ships.
-  public readonly shipsTo: CountryCode[] = [
+  public static readonly shipsTo: CountryCode[] = [
     'AR',
     'BR',
     'CA',
@@ -300,7 +300,7 @@ export class SupplierAmbeed
   ] as const;
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = [
+  public static readonly paymentMethods: PaymentMethod[] = [
     'mastercard',
     'visa',
     'ach',

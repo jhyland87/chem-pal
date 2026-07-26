@@ -51,11 +51,11 @@ interface RawMagento2Variant {
  *   extends SupplierBaseMagento2
  *   implements ISupplier
  * {
- *   public readonly supplierName: string = "My Store";
- *   public readonly baseURL: string = "https://www.mystore.com";
- *   public readonly shipping: ShippingRange = "domestic";
- *   public readonly country: CountryCode = "US";
- *   public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+ *   public static readonly supplierName: string = "My Store";
+ *   public static readonly baseURL: string = "https://www.mystore.com";
+ *   public static readonly shipping: ShippingRange = "domestic";
+ *   public static readonly country: CountryCode = "US";
+ *   public static readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
  *   protected storeCode: string = "us_en";
  * }
  * ```

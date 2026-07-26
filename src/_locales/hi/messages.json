@@ -414,6 +414,16 @@
     "message": "कॉलम दिखाएँ या छिपाएँ",
     "description": "Accessible label for the header button that opens the column-visibility menu."
   },
+  "results_column_filter_number_min": {
+    "message": "न्यूनतम $value$",
+    "placeholders": { "value": { "content": "$1" } },
+    "description": "Label for the minimum value of a numeric column filter."
+  },
+  "results_column_filter_number_max": {
+    "message": "अधिकतम $value$",
+    "placeholders": { "value": { "content": "$1" } },
+    "description": "Label for the maximum value of a numeric column filter."
+  },
   "results_open_options": {
     "message": "विकल्प खोलें",
     "description": "Accessible label for the header button that opens the search/settings options drawer."

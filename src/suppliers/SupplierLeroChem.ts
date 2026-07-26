@@ -32,20 +32,20 @@ import { SupplierBase } from './SupplierBase';
  */
 export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> implements ISupplier {
   // Display name of the supplier used for UI and logging
-  public readonly supplierName: string = 'LeroChem';
+  public static readonly supplierName: string = 'LeroChem';
 
   // Base URL for all API and web requests to LeroChem
-  public readonly baseURL: string = 'https://lerochem.eu';
+  public static readonly baseURL: string = 'https://lerochem.eu';
 
   // Shipping scope for LeroChem (ships across the EU, per /en/content/10-delivery-information)
-  public readonly shipping: ShippingRange = 'international';
+  public static readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier (Lithuania).
   // This is used to determine the currency and other country-specific information.
-  public readonly country: CountryCode = 'LT';
+  public static readonly country: CountryCode = 'LT';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa', 'ach', 'paypal'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa', 'ach', 'paypal'];
 
   // Cached search results from the last query execution
   protected queryResults: Array<Partial<Product>> = [];

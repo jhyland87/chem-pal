@@ -49,19 +49,19 @@ export class SupplierCarolina
   implements ISupplier
 {
   /** Display name of the supplier */
-  public readonly supplierName: string = 'Carolina';
+  public static readonly supplierName: string = 'Carolina';
 
   /** Base URL for all API requests */
-  public readonly baseURL: string = 'https://www.carolina.com';
+  public static readonly baseURL: string = 'https://www.carolina.com';
 
   // Shipping scope for Carolina
-  public readonly shipping: ShippingRange = 'domestic';
+  public static readonly shipping: ShippingRange = 'domestic';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = 'US';
+  public static readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   /** Cached search results from the last query */
   protected queryResults: Array<CarolinaSearchResult> = [];

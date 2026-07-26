@@ -69,22 +69,22 @@ const CHEMICAL_TAGS: ReadonlySet<string> = new Set([
  */
 export class SupplierTheLabStockroom extends SupplierBaseShopify implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = 'The Lab Stockroom';
+  public static readonly supplierName: string = 'The Lab Stockroom';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = 'https://www.thelabstockroom.com';
+  public static readonly baseURL: string = 'https://www.thelabstockroom.com';
 
   // Shipping scope for The Lab Stockroom
-  public readonly shipping: ShippingRange = 'international';
+  public static readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = 'US';
+  public static readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   // Shopify API URL for GraphQL queries
-  protected apiURL: string = 'hbarsci.myshopify.com';
+  protected static readonly apiURL: string = 'hbarsci.myshopify.com';
 
   // Base of the public S3 bucket that hosts SDS PDFs, keyed by uppercase SKU.
   private readonly sdsBaseUrl: string = 'https://s3.amazonaws.com/enalas-public/Public/SDS';

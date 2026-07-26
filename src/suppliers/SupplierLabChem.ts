@@ -93,19 +93,19 @@ export class SupplierLabChem
   implements ISupplier
 {
   /** Name of supplier (for display purposes). */
-  public readonly supplierName: string = 'LabChem';
+  public static readonly supplierName: string = 'LabChem';
 
   /** Base URL for HTTP(s) requests. */
-  public readonly baseURL: string = 'https://www.labchem.de';
+  public static readonly baseURL: string = 'https://www.labchem.de';
 
   /** Shipping scope for LabChem. */
-  public readonly shipping: ShippingRange = 'international';
+  public static readonly shipping: ShippingRange = 'international';
 
   /** The country code of the supplier. */
-  public readonly country: CountryCode = 'DE';
+  public static readonly country: CountryCode = 'DE';
 
   /** The payment methods accepted by the supplier. */
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   /** ePages shop id, used as the `shop` search parameter and in REST paths. */
   protected readonly shopId: string = '87762263';

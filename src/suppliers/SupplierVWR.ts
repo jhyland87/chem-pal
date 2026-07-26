@@ -29,23 +29,23 @@ import { SupplierBase } from './SupplierBase';
  */
 export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = 'VWR';
+  public static readonly supplierName: string = 'VWR';
 
   // Base URL for HTTP(s) requests (storefront; used for product links + referrer).
   // Must be www.vwr.com — it's the storefront referrer and the host granted in the manifest.
-  public readonly baseURL: string = 'https://www.vwr.com';
+  public static readonly baseURL: string = 'https://www.vwr.com';
 
   // Bare host for the OCC API (base builds `https://${apiURL}/*` for requiredHosts)
-  public readonly apiURL: string = 'occapi.avantorsciences.com';
+  public static readonly apiURL: string = 'occapi.avantorsciences.com';
 
   // Shipping scope
-  public readonly shipping: ShippingRange = 'worldwide';
+  public static readonly shipping: ShippingRange = 'worldwide';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = 'US';
+  public static readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   // OAuth client id for the anonymous client_credentials grant.
   private readonly clientId: string = 'VVjdGUHAb3ETZLEVTWtFy3BmhFhXSdBB';
@@ -54,8 +54,8 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
   private accessToken?: string;
   private accessTokenExpiresAt?: number;
 
-  protected readonly supportsCAS: boolean = true;
-  protected readonly supportsFormula: boolean = true;
+  protected static readonly supportsCAS: boolean = true;
+  protected static readonly supportsFormula: boolean = true;
 
   // Refresh the token this many ms before it actually expires.
   private readonly tokenSafetyMarginMs: number = 30_000;

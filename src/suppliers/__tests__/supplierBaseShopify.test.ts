@@ -61,12 +61,12 @@ const sampleNode = (): ShopifyProductNode => ({
 });
 
 class TestShopify extends SupplierBaseShopify {
-  public readonly supplierName = 'TestShopify';
-  public readonly baseURL = 'https://shop.example';
-  public readonly shipping = 'worldwide' as ShippingRange;
-  public readonly country = 'US' as CountryCode;
-  public readonly paymentMethods = [] as PaymentMethod[];
-  protected apiURL = 'test.myshopify.com';
+  public static readonly supplierName = 'TestShopify';
+  public static readonly baseURL = 'https://shop.example';
+  public static readonly shipping = 'worldwide' as ShippingRange;
+  public static readonly country = 'US' as CountryCode;
+  public static readonly paymentMethods = [] as PaymentMethod[];
+  protected static readonly apiURL = 'test.myshopify.com';
 
   public callInitProductBuilders(nodes: ShopifyProductNode[]) {
     return (

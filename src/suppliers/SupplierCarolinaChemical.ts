@@ -35,17 +35,17 @@ export class SupplierCarolinaChemical extends SupplierBaseWoocommerce implements
    * ```
    * @source
    */
-  public readonly supplierName: string = 'Carolina Chemical';
+  public static readonly supplierName: string = 'Carolina Chemical';
 
   // The base URL for the supplier's website.
-  public readonly baseURL: string = 'https://carolinachemical.com';
+  public static readonly baseURL: string = 'https://carolinachemical.com';
 
   // Shipping scope for Carolina Chemical
-  public readonly shipping: ShippingRange = 'domestic';
+  public static readonly shipping: ShippingRange = 'domestic';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = 'US';
+  public static readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 }

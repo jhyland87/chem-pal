@@ -30,19 +30,19 @@ const MOLE_WEIGHT_REGEX =
  */
 export class SupplierLibertySci extends SupplierBaseWoocommerce implements ISupplier {
   // The display name of the supplier.
-  public readonly supplierName: string = 'LibertySci';
+  public static readonly supplierName: string = 'LibertySci';
 
   // Shipping scope for LibertySci
-  public readonly shipping: ShippingRange = 'worldwide';
+  public static readonly shipping: ShippingRange = 'worldwide';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = 'US';
+  public static readonly country: CountryCode = 'US';
 
   // The base URL for the supplier's website.
-  public readonly baseURL: string = 'https://libertysci.com';
+  public static readonly baseURL: string = 'https://libertysci.com';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   /**
    * Builds the base WooCommerce product builders, then enriches each with the chemical formula and

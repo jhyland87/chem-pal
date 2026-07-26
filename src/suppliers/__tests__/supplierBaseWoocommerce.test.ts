@@ -47,11 +47,11 @@ const { SupplierBaseWoocommerce } = await import('@/suppliers/SupplierBaseWoocom
  * requested.
  */
 class TestWoo extends SupplierBaseWoocommerce {
-  public readonly supplierName = 'TestWoo';
-  public readonly baseURL = 'https://woo.example';
-  public readonly shipping = 'worldwide' as ShippingRange;
-  public readonly country = 'US' as CountryCode;
-  public readonly paymentMethods = [] as PaymentMethod[];
+  public static readonly supplierName = 'TestWoo';
+  public static readonly baseURL = 'https://woo.example';
+  public static readonly shipping = 'worldwide' as ShippingRange;
+  public static readonly country = 'US' as CountryCode;
+  public static readonly paymentMethods = [] as PaymentMethod[];
 
   public requestedVariantIds: number[] = [];
 

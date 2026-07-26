@@ -35,11 +35,11 @@ const SHOPIFY_THUMBNAIL_WIDTH = 200;
  *   extends SupplierBaseShopify
  *   implements ISupplier
  * {
- *   public readonly supplierName: string = "My Store";
- *   public readonly baseURL: string = "https://www.mystore.com";
- *   public readonly shipping: ShippingRange = "domestic";
- *   public readonly country: CountryCode = "US";
- *   public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+ *   public static readonly supplierName: string = "My Store";
+ *   public static readonly baseURL: string = "https://www.mystore.com";
+ *   public static readonly shipping: ShippingRange = "domestic";
+ *   public static readonly country: CountryCode = "US";
+ *   public static readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
  *   protected apiURL: string = "my-store.myshopify.com";
  * }
  * ```

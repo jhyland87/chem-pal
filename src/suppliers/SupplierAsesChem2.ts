@@ -14,19 +14,19 @@ import { SupplierBaseSearchanise } from './SupplierBaseSearchanise';
  */
 export class SupplierAsesChem2 extends SupplierBaseSearchanise implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = 'AsesChem';
+  public static readonly supplierName: string = 'AsesChem';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = 'https://ases.in';
+  public static readonly baseURL: string = 'https://ases.in';
 
   // Shipping scope for AsesChem2
-  public readonly shipping: ShippingRange = 'international';
+  public static readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = 'IN';
+  public static readonly country: CountryCode = 'IN';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   // Pure-search supplier: the initial search returns every field and
   // getProductData is a passthrough, so there's no per-product detail to cache.

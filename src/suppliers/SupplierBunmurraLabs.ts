@@ -10,19 +10,19 @@ import { SupplierBaseWix } from './SupplierBaseWix';
 export class SupplierBunmurraLabs extends SupplierBaseWix implements ISupplier {
   /* @deprecated */
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = 'Bunmurra Labs';
+  public static readonly supplierName: string = 'Bunmurra Labs';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = 'https://www.bunmurralabs.store';
+  public static readonly baseURL: string = 'https://www.bunmurralabs.store';
 
   // Shipping scope for Bunmurra Labs
-  public readonly shipping: ShippingRange = 'domestic';
+  public static readonly shipping: ShippingRange = 'domestic';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = 'US';
+  public static readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   // Pure-search supplier: the initial search returns every field and
   // getProductData is a passthrough, so there's no per-product detail to cache.

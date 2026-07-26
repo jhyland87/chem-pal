@@ -29,20 +29,20 @@ export class SupplierOnyxmet
   implements ISupplier
 {
   // Display name of the supplier used for UI and logging
-  public readonly supplierName: string = 'Onyxmet';
+  public static readonly supplierName: string = 'Onyxmet';
 
   // Base URL for all API and web requests to Onyxmet
-  public readonly baseURL: string = 'https://onyxmet.com';
+  public static readonly baseURL: string = 'https://onyxmet.com';
 
   // Shipping scope for Onyxmet
-  public readonly shipping: ShippingRange = 'international';
+  public static readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
   // This is used to determine the currency and other country-specific information.
-  public readonly country: CountryCode = 'CA';
+  public static readonly country: CountryCode = 'CA';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+  public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   // Cached search results from the last query execution
   protected queryResults: OnyxMetSearchResultResponse[] = [];
