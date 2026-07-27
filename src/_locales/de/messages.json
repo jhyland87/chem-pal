@@ -454,8 +454,21 @@
     "description": "Status shown when there is no search query."
   },
   "results_status_no_results_filtered": {
-    "message": "Keine Ergebnisse, die Ihren Filtern entsprechen",
-    "description": "Status shown when filters exclude all results."
+    "message": "Keine Ergebnisse für Ihre Suchanfrage und Filter gefunden.",
+    "description": "Status shown when a search with active drawer filters returns nothing."
+  },
+  "results_retry_without_filters": {
+    "message": "Klicken Sie hier, um die Suche ohne Filter zu wiederholen",
+    "description": "Link that clears the search filters and re-runs the search."
+  },
+  "results_status_hidden_by_column_filters": {
+    "message": "Es gibt $count$ Ergebnisse für Ihre Suchanfrage.",
+    "description": "Status shown when column filters hide every result.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "results_clear_column_filters": {
+    "message": "Spaltenfilter löschen, um alle anzuzeigen",
+    "description": "Link that clears the results table's column filters."
   },
   "results_status_no_results_found": {
     "message": "Keine Ergebnisse gefunden",

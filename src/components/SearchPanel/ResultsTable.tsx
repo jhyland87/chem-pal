@@ -31,6 +31,7 @@ import {
   FormControl,
   FormControlLabel,
   IconButton,
+  Link,
   ListItemText,
   Menu,
   MenuItem,
@@ -54,6 +55,7 @@ import {
   Fragment,
   KeyboardEvent,
   ReactElement,
+  ReactNode,
   SetStateAction,
   useCallback,
   useEffect,
@@ -562,6 +564,72 @@ export default function ResultsTable({
     setShowFilters(!showFilters);
   };
 
+  // Clear the results table's column filters (and the global filter) so hidden
+  // results become visible again.
+  const clearColumnFilters = () => {
+    setColumnFilters([]);
+    setGlobalFilter('');
+  };
+
+  // Reset every drawer search filter to its default and re-run the last query.
+  // Re-triggers via the pending-query path so the search reads the freshly
+  // cleared filters on the next render (rather than a stale closure).
+  const retrySearchWithoutFilters = () => {
+    if (!appContext) return;
+    appContext.setSelectedSuppliers([]);
+    appContext.setSearchFilters({
+      ...appContext.searchFilters,
+      availability: [],
+      country: [],
+      shippingType: [],
+    });
+    appContext.setUserSettings({
+      ...appContext.userSettings,
+      priceMin: undefined,
+      priceMax: undefined,
+    });
+    if (executedQuery) appContext.setPendingSearchQuery(executedQuery);
+  };
+
+  // Content for the empty table body — distinguishes "search returned nothing
+  // while drawer filters were active" (offer a filter-free retry) from "results
+  // exist but the table's column filters hide them all" (offer to clear those).
+  const renderEmptyState = (): ReactNode => {
+    if (searchResults.length === 0) {
+      if (isLoading) return i18n('results_status_searching');
+      if (executedQuery && advancedFilterCount > 0) {
+        return (
+          <>
+            {i18n('results_status_no_results_filtered')}
+            <Link
+              component="button"
+              type="button"
+              onClick={retrySearchWithoutFilters}
+              sx={{ display: 'block', mt: 1, mx: 'auto', cursor: 'pointer' }}
+            >
+              {i18n('results_retry_without_filters')}
+            </Link>
+          </>
+        );
+      }
+      return tableText || i18n('results_status_no_search_query');
+    }
+    // searchResults exist but none are shown → the column/global filters hid them.
+    const columnFiltersActive =
+      table.getState().columnFilters.length > 0 || Boolean(table.getState().globalFilter);
+    if (columnFiltersActive) {
+      return (
+        <>
+          {i18n('results_status_hidden_by_column_filters', [String(searchResults.length)])}{' '}
+          <Link component="button" type="button" onClick={clearColumnFilters}>
+            {i18n('results_clear_column_filters')}
+          </Link>
+        </>
+      );
+    }
+    return i18n('results_status_no_results_found');
+  };
+
   return (
     <>
       <LoadingBackdrop
@@ -888,13 +956,7 @@ export default function ResultsTable({
               ) : (
                 <TableRow className={resultStyles['styled-table-row']}>
                   <EmptyStateCell colSpan={table.getAllColumns().length}>
-                    {searchResults.length === 0
-                      ? isLoading
-                        ? i18n('results_status_searching')
-                        : tableText || i18n('results_status_no_search_query')
-                      : table.getState().columnFilters.length > 0 || table.getState().globalFilter
-                        ? i18n('results_status_no_results_filtered')
-                        : i18n('results_status_no_results_found')}
+                    {renderEmptyState()}
                   </EmptyStateCell>
                 </TableRow>
               )}

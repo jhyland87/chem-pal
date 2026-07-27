@@ -441,8 +441,21 @@
     "description": "Status shown when there is no search query."
   },
   "results_status_no_results_filtered": {
-    "message": "आपके फ़िल्टर मानों से मेल खाने वाले कोई परिणाम नहीं",
-    "description": "Status shown when filters exclude all results."
+    "message": "आपकी खोज क्वेरी और फ़िल्टर के लिए कोई परिणाम नहीं मिला।",
+    "description": "Status shown when a search with active drawer filters returns nothing."
+  },
+  "results_retry_without_filters": {
+    "message": "फ़िल्टर के बिना खोज पुनः करने के लिए यहां क्लिक करें",
+    "description": "Link that clears the search filters and re-runs the search."
+  },
+  "results_status_hidden_by_column_filters": {
+    "message": "आपकी खोज के लिए $count$ परिणाम हैं।",
+    "description": "Status shown when column filters hide every result.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "results_clear_column_filters": {
+    "message": "सभी देखने के लिए अपने कॉलम फ़िल्टर साफ़ करें",
+    "description": "Link that clears the results table's column filters."
   },
   "results_status_no_results_found": {
     "message": "कोई परिणाम नहीं मिला",

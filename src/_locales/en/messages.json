@@ -463,8 +463,21 @@
     "description": "Status shown when there is no search query."
   },
   "results_status_no_results_filtered": {
-    "message": "No results matching your filter values",
-    "description": "Status shown when filters exclude all results."
+    "message": "No results found for your search query and filters.",
+    "description": "Status shown when a search with active drawer filters returns nothing."
+  },
+  "results_retry_without_filters": {
+    "message": "Click here to retry search without filters",
+    "description": "Link that clears the search filters and re-runs the search."
+  },
+  "results_status_hidden_by_column_filters": {
+    "message": "There are $count$ results for your search query.",
+    "description": "Status shown when column filters hide every result.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "results_clear_column_filters": {
+    "message": "Clear your column filters to see them all",
+    "description": "Link that clears the results table's column filters."
   },
   "results_status_no_results_found": {
     "message": "No results found",

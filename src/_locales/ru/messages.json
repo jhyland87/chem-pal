@@ -549,8 +549,21 @@
     "description": "Status shown when there is no search query."
   },
   "results_status_no_results_filtered": {
-    "message": "Нет результатов, соответствующих фильтрам",
-    "description": "Status shown when filters exclude all results."
+    "message": "По вашему запросу и фильтрам ничего не найдено.",
+    "description": "Status shown when a search with active drawer filters returns nothing."
+  },
+  "results_retry_without_filters": {
+    "message": "Нажмите здесь, чтобы повторить поиск без фильтров",
+    "description": "Link that clears the search filters and re-runs the search."
+  },
+  "results_status_hidden_by_column_filters": {
+    "message": "По вашему запросу есть результатов: $count$.",
+    "description": "Status shown when column filters hide every result.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "results_clear_column_filters": {
+    "message": "Очистите фильтры столбцов, чтобы увидеть все",
+    "description": "Link that clears the results table's column filters."
   },
   "results_status_no_results_found": {
     "message": "Результаты не найдены",
