@@ -13,6 +13,8 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-07-26
+
 ### Added
 
 - New **Price Trend** column in the results table (opt-in via the column menu): a small graph
