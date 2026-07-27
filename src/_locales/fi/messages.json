@@ -454,8 +454,21 @@
     "description": "Status shown when there is no search query."
   },
   "results_status_no_results_filtered": {
-    "message": "Ei suodatusehtojasi vastaavia tuloksia",
-    "description": "Status shown when filters exclude all results."
+    "message": "Hakusanallesi ja suodattimillesi ei löytynyt tuloksia.",
+    "description": "Status shown when a search with active drawer filters returns nothing."
+  },
+  "results_retry_without_filters": {
+    "message": "Napsauta tästä yrittääksesi hakua ilman suodattimia",
+    "description": "Link that clears the search filters and re-runs the search."
+  },
+  "results_status_hidden_by_column_filters": {
+    "message": "Haullesi on $count$ tulosta.",
+    "description": "Status shown when column filters hide every result.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "results_clear_column_filters": {
+    "message": "Tyhjennä sarakesuodattimet nähdäksesi kaikki",
+    "description": "Link that clears the results table's column filters."
   },
   "results_status_no_results_found": {
     "message": "Ei tuloksia",

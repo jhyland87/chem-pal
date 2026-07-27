@@ -548,8 +548,21 @@
     "description": "Status shown when there is no search query."
   },
   "results_status_no_results_filtered": {
-    "message": "Brak wyników pasujących do filtrów",
-    "description": "Status shown when filters exclude all results."
+    "message": "Nie znaleziono wyników dla zapytania i filtrów.",
+    "description": "Status shown when a search with active drawer filters returns nothing."
+  },
+  "results_retry_without_filters": {
+    "message": "Kliknij tutaj, aby ponowić wyszukiwanie bez filtrów",
+    "description": "Link that clears the search filters and re-runs the search."
+  },
+  "results_status_hidden_by_column_filters": {
+    "message": "Jest $count$ wyników dla Twojego zapytania.",
+    "description": "Status shown when column filters hide every result.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "results_clear_column_filters": {
+    "message": "Wyczyść filtry kolumn, aby zobaczyć wszystkie",
+    "description": "Link that clears the results table's column filters."
   },
   "results_status_no_results_found": {
     "message": "Nie znaleziono wyników",
