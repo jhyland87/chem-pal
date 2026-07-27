@@ -221,9 +221,9 @@ function resolveUnitPrice(
 
 /**
  * Formats a product's price per base unit for display, e.g. `"$0.08/g"` or
- * `"$19.99/pcs"`. Resolves the per-unit amount via {@link resolveUnitPrice}, then
+ * `"$19.99/pcs"`. Resolves the per-unit amount via `resolveUnitPrice`, then
  * renders it at two decimal places, collapsing any positive unit price below one
- * cent to `"<$0.01/{unit}"` (see {@link formatPerUnitPrice}) to keep the column
+ * cent to `"<$0.01/{unit}"` (see `formatPerUnitPrice`) to keep the column
  * narrow. The unrounded value is available via {@link formatUnitPriceExact} for a
  * hover tooltip. Returns `""` when there's no price or the quantity/unit can't be
  * converted.
@@ -256,7 +256,7 @@ export function formatUnitPrice(
  * places, with no sub-cent collapse — for use as the hover tooltip behind the
  * rounded {@link formatUnitPrice} display, so a value shown as `"<$0.01/g"` or
  * `"$0.07/g"` reveals its actual `"$0.0035/g"` / `"$0.072/g"` on hover. Uses the
- * same resolved amount as the display formatter (see {@link resolveUnitPrice}).
+ * same resolved amount as the display formatter (see `resolveUnitPrice`).
  * Returns `""` when there's no price or the quantity/unit can't be converted.
  * @category Helpers
  * @group Formatters
