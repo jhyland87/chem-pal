@@ -13,6 +13,29 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+### Added
+
+- New **Price Trend** column in the results table (opt-in via the column menu): a small graph
+  of a product's recorded price history, colored green when the price is trending down and red
+  when up. Hover it for the exact change.
+- New **Clear all filters** button in the advanced-search drawer.
+
+### Changed
+
+- Advanced-search filters now work together: choosing a shipping type or country greys out —
+  and stops searching — suppliers that can't match, and selecting suppliers greys out shipping
+  and country options they can't fulfill. Shipping scope is treated as a hierarchy, so a
+  worldwide supplier also counts as international, domestic, and local.
+- The advanced-search and column-filter buttons now highlight when filters are active and show
+  how many on hover.
+
+### Fixed
+
+- The **Availability** search filter no longer hides every result.
+- Your page and rows-per-page are now remembered when you reload.
+- When a search or its filters return nothing, the table now explains why and offers a
+  one-click way to retry without filters or clear the column filters.
+
 ## [1.5.0] - 2026-07-24
 
 ### Added
