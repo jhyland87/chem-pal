@@ -285,7 +285,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
 
   /**
    * The supplier's Amazon storefront. Required alongside `"amazononly"`, exactly as
-   * {@link SupplierBase.ebayStoreURL} is for `"ebayonly"`.
+   * {@link ebayStoreURL} is for `"ebayonly"`.
    */
   public readonly amazonStoreURL?: string;
 
