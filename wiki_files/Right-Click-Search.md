@@ -2,14 +2,14 @@ You don't have to open ChemPal to start a search. Come across a chemical name, C
 number, or formula on **any web page** — a forum post, a Wikipedia article, a
 supplier's own site — and you can search it in one step.
 
-![the browser right-click menu showing the **Search "…" in Chem Pal** item over some highlighted text](images/right-click-search-string.png)
+![the browser right-click menu showing the **Search "…" in ChemPal** item over some highlighted text](images/right-click-search-string.png)
 
 
 ## How to use it
 
 1. **Highlight** the text you want to search on any web page.
 2. **Right-click** the selection.
-3. Choose **Search "…" in Chem Pal** from the menu (the `…` is replaced with the
+3. Choose **Search "…" in ChemPal** from the menu (the `…` is replaced with the
    text you highlighted).
 
 ChemPal opens in a **full browser tab** and runs the search automatically — you'll

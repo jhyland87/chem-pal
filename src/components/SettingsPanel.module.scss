@@ -40,6 +40,13 @@
   .MuiListItemText-primary {
     font-size: 0.8rem;
   }
+
+  // Keep the fixed-width input from being squeezed by a long label. Without this
+  // the FormControl shrinks below the input's width and the input overflows the
+  // panel's right edge (e.g. the price-history "Max points per product" row).
+  & > .MuiFormControl-root {
+    flex-shrink: 0;
+  }
 }
 
 .settings-panel__input {

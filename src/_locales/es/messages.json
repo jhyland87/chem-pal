@@ -1,6 +1,6 @@
 {
   "app_name": {
-    "message": "Chem Pal",
+    "message": "ChemPal",
     "description": "The extension name shown in the browser and web store."
   },
   "app_description": {
@@ -563,6 +563,16 @@
     "message": "Productos excluidos",
     "description": "Settings section header."
   },
+  "settings_excluded_count": {
+    "message": "cantidad: $count$",
+    "placeholders": { "count": { "content": "$1" } },
+    "description": "Italic badge by the Excluded Products header; placeholder is the number of excluded products."
+  },
+  "settings_supplier_disabled_count": {
+    "message": "$count$ desactivados",
+    "placeholders": { "count": { "content": "$1" } },
+    "description": "Italic badge by the Supplier Status header; placeholder is the number of disabled suppliers."
+  },
   "settings_section_supplier_status": {
     "message": "Estado de proveedores",
     "description": "Settings section header."
@@ -593,6 +603,16 @@
     "description": "Setting label."
   },
   "settings_cache_ttl": { "message": "TTL de la caché (minutos)", "description": "Setting label." },
+  "settings_cache_ttl_days_one": {
+    "message": "≈ $days$ día",
+    "placeholders": { "days": { "content": "$1" } },
+    "description": "Day-equivalent hint under the cache TTL input; placeholder is the number of days."
+  },
+  "settings_cache_ttl_days_other": {
+    "message": "≈ $days$ días",
+    "placeholders": { "days": { "content": "$1" } },
+    "description": "Day-equivalent hint under the cache TTL input; placeholder is the number of days."
+  },
   "settings_cache_stats": {
     "message": "$count$ registros en caché · $size$",
     "placeholders": { "count": { "content": "$1" }, "size": { "content": "$2" } },
@@ -635,7 +655,7 @@
   "settings_font_large": { "message": "Grande", "description": "Font-size option." },
   "settings_open_in_tab": { "message": "Abrir en una pestaña", "description": "Setting label." },
   "settings_open_in_tab_desc": {
-    "message": "Al hacer clic en el icono de la barra de herramientas, Chem Pal se abre en una pestaña completa del navegador en lugar del popup.",
+    "message": "Al hacer clic en el icono de la barra de herramientas, ChemPal se abre en una pestaña completa del navegador en lugar del popup.",
     "description": "Setting description."
   },
   "settings_auto_hide_empty_columns": {
@@ -681,8 +701,9 @@
     "description": "Setting label (dev)."
   },
   "settings_max_search_time_helper": {
-    "message": "Sustituye el presupuesto de tiempo de búsqueda de cada proveedor. Vacío = predeterminado por proveedor; 0 = sin límite",
-    "description": "Helper text (dev)."
+    "message": "Sustituye el presupuesto de tiempo de búsqueda de cada proveedor. Vacío = predeterminado ($seconds$ s); 0 = sin límite",
+    "placeholders": { "seconds": { "content": "$1" } },
+    "description": "Helper text; the placeholder is the default budget in seconds."
   },
   "settings_disable_fuzzy": {
     "message": "Desactivar filtrado difuso",
@@ -771,7 +792,7 @@
     "placeholders": { "product": { "content": "$1" } }
   },
   "context_menu_search_selection": {
-    "message": "Buscar \"%s\" en Chem Pal",
+    "message": "Buscar \"%s\" en ChemPal",
     "description": "Right-click context menu label; %s is the selected text (substituted by Chrome)."
   },
 
@@ -1214,7 +1235,7 @@
     "description": "Shown in the what's-new modal when the release notes could not be fetched."
   },
   "update_installed_message": {
-    "message": "Chem Pal se actualizó a la versión v$version$.",
+    "message": "ChemPal se actualizó a la versión v$version$.",
     "placeholders": {
       "version": {
         "content": "$1"
@@ -1227,7 +1248,7 @@
     "description": "Button that acknowledges the what's-new notes for an already-installed release."
   },
   "update_available_message": {
-    "message": "Chem Pal v$version$ ya está disponible.",
+    "message": "ChemPal v$version$ ya está disponible.",
     "placeholders": {
       "version": {
         "content": "$1"
@@ -1246,6 +1267,19 @@
   "update_dismiss": {
     "message": "Descartar",
     "description": "Accessible label for the button that dismisses the update snackbar."
+  },
+  "review_prompt_message": {
+    "message": "Has tenido ChemPal instalado durante $days$ días y has realizado $searches$ búsquedas que arrojaron $products$ productos. ¿Te gusta? Deja una reseña.",
+    "placeholders": {
+      "days": { "content": "$1" },
+      "searches": { "content": "$2" },
+      "products": { "content": "$3" }
+    },
+    "description": "Review prompt snackbar text; placeholders are days installed, searches run, and total products returned."
+  },
+  "review_prompt_action": {
+    "message": "Deja una reseña",
+    "description": "Snackbar action that opens the Chrome Web Store reviews page."
   },
 
   "context_menu_export_all": {"message": "Exportar todos los resultados", "description": "Context-menu action to export all results to an xlsx file."},

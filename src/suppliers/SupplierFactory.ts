@@ -1,15 +1,15 @@
-import { defaultResultsLimit } from '@/../config.json';
-import { filterRestrictedProduct } from '@/helpers/purchaseRestriction';
+import { search } from '@/../config.json';
 import { resolveIdentifierNames } from '@/helpers/pubchem';
+import { filterRestrictedProduct } from '@/helpers/purchaseRestriction';
 import {
   looksLikeSmiles,
   parseStructurePrefix,
   resolveSmiles,
   type ResolvedStructure,
 } from '@/helpers/smiles';
-import { detectTermType } from '@/utils/search-query/detectTermType';
 import { mapDefined, sleep } from '@/helpers/utils';
 import { Logger } from '@/utils/Logger';
+import { detectTermType } from '@/utils/search-query/detectTermType';
 import { extractAllPositiveTerms } from '@/utils/search-query/extractPositiveTerms';
 import { parseSearchQuery } from '@/utils/search-query/parseSearchQuery';
 import type { ParsedSearchQuery } from '@/utils/search-query/types';
@@ -34,7 +34,7 @@ type SupplierConstructor<P extends Product> = new (
 export interface SupplierFactoryOptions {
   /** Fetch controller (can be used to terminate the query). */
   controller: AbortController;
-  /** Maximum number of results per supplier. Defaults to `defaultResultsLimit`. */
+  /** Maximum number of results per supplier. Defaults to `search.defaultResultsLimitPerSupplier`. */
   limit?: number;
   /** Suppliers to query; empty (the default) queries all. */
   suppliers?: Array<SupplierClassName>;
@@ -48,8 +48,8 @@ export interface SupplierFactoryOptions {
   cacheTtlMinutes?: number;
   /** HTTP statuses that prevent a product-detail fetch from being cached. Defaults to [429]. */
   noCacheStatusCodes?: number[];
-  /** Override (ms) for each supplier's search-time budget. Omit to keep per-supplier defaults. */
-  maxAllowableSearchTimeSec?: number;
+  /** Override (seconds) for each supplier's search-time budget. Omit to keep per-supplier defaults. */
+  supplierSearchTimeBudgetSec?: number;
   /** When true, suppliers skip fuzzball scoring and show raw/boolean-only results. Defaults to false. */
   fuzzyFilteringDisabled?: boolean;
   /** User's ISO 3166-1 alpha-2 location; enables the shipping/restriction filters below. */
@@ -104,7 +104,7 @@ export class SupplierFactory<P extends Product> {
   private disabledSuppliers: Array<string>;
 
   // Maximum number of results for each supplier
-  private limit: number = defaultResultsLimit;
+  private limit: number = search.defaultResultsLimitPerSupplier;
 
   // Whether supplier caches (query + product detail) should be read from and
   // written to for this search. Mirrors userSettings.caching so a user who has
@@ -131,10 +131,10 @@ export class SupplierFactory<P extends Product> {
   // user's Advanced-settings choice wins over each supplier class's default.
   private fuzzScorerOverride?: string;
 
-  // Optional global max-search-time override (seconds) from userSettings.maxAllowableSearchTimeSec.
+  // Optional global max-search-time override (seconds) from userSettings.supplierSearchTimeBudgetSec.
   // When set, applied to every supplier instance so the user's Advanced-settings value
   // overrides each supplier class's default search-time budget.
-  private maxAllowableSearchTimeSec?: number;
+  private supplierSearchTimeBudgetSec?: number;
 
   // Parsed advanced-search query, derived once from `query` and shared with every
   // supplier instance so they all see the same AST.
@@ -183,14 +183,14 @@ export class SupplierFactory<P extends Product> {
   constructor(query: string, options: SupplierFactoryOptions) {
     const {
       controller,
-      limit = defaultResultsLimit,
+      limit = search.defaultResultsLimitPerSupplier,
       suppliers = [],
       caching = true,
       fuzzScorerOverride,
       doNotCacheEmptyResults = false,
       cacheTtlMinutes = 0,
       noCacheStatusCodes = [429],
-      maxAllowableSearchTimeSec,
+      supplierSearchTimeBudgetSec,
       fuzzyFilteringDisabled = false,
       location,
       excludeNonShippingSuppliers = false,
@@ -209,7 +209,7 @@ export class SupplierFactory<P extends Product> {
       doNotCacheEmptyResults,
       cacheTtlMinutes,
       noCacheStatusCodes,
-      maxAllowableSearchTimeSec,
+      supplierSearchTimeBudgetSec,
       fuzzyFilteringDisabled,
       location,
       excludeNonShippingSuppliers,
@@ -226,7 +226,7 @@ export class SupplierFactory<P extends Product> {
     this.doNotCacheEmptyResults = doNotCacheEmptyResults;
     this.cacheTtlMinutes = cacheTtlMinutes;
     this.noCacheStatusCodes = noCacheStatusCodes;
-    this.maxAllowableSearchTimeSec = maxAllowableSearchTimeSec;
+    this.supplierSearchTimeBudgetSec = supplierSearchTimeBudgetSec;
     this.fuzzyFilteringDisabled = fuzzyFilteringDisabled;
     this.location = location;
     this.excludeNonShippingSuppliers = excludeNonShippingSuppliers;
@@ -534,7 +534,7 @@ export class SupplierFactory<P extends Product> {
           this.noCacheStatusCodes,
         );
         instance.setFuzzScorerOverride(this.fuzzScorerOverride);
-        instance.setMaxAllowableSearchTimeSec(this.maxAllowableSearchTimeSec);
+        instance.setSupplierSearchTimeBudgetSec(this.supplierSearchTimeBudgetSec);
         instance.setParsedQuery(this.parsedQuery);
         instance.setFuzzyFilteringDisabled(this.fuzzyFilteringDisabled);
         instance.setResolvedStructures(this.resolvedStructures);
@@ -613,7 +613,7 @@ export class SupplierFactory<P extends Product> {
           this.noCacheStatusCodes,
         );
         instance.setFuzzScorerOverride(this.fuzzScorerOverride);
-        instance.setMaxAllowableSearchTimeSec(this.maxAllowableSearchTimeSec);
+        instance.setSupplierSearchTimeBudgetSec(this.supplierSearchTimeBudgetSec);
         instance.setParsedQuery(this.parsedQuery);
         instance.setFuzzyFilteringDisabled(this.fuzzyFilteringDisabled);
         instance.setResolvedStructures(this.resolvedStructures);

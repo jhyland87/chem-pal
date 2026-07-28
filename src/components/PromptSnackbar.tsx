@@ -44,7 +44,7 @@ interface PromptSnackbarProps {
  * ```tsx
  * <PromptSnackbar
  *   open
- *   message="Chem Pal v1.3.0 is available."
+ *   message="ChemPal v1.3.0 is available."
  *   actionLabel="What's new"
  *   onAction={openNotes}
  *   onDismiss={dismiss}

@@ -3,8 +3,8 @@ import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { type BrowserContext, type Page, chromium } from 'playwright';
-import { extensionLaunchOptions } from './helpers/launchOptions';
 import { afterAll, beforeAll, beforeEach, describe, it, expect as vitestExpect } from 'vitest';
+import { extensionLaunchOptions } from './helpers/launchOptions';
 
 const repoRoot = path.resolve(__dirname, '..');
 const buildDir = path.resolve(repoRoot, 'build');
@@ -177,7 +177,7 @@ describe('Chem-Pal update prompt', () => {
     const body = [
       '### Added',
       '',
-      '- Options page for configuring Chem Pal outside the popup.',
+      '- Options page for configuring ChemPal outside the popup.',
       '- Advanced mode, which unlocks the supplier statistics panel.',
       '',
       '### Fixed',
@@ -196,7 +196,7 @@ describe('Chem-Pal update prompt', () => {
     const modal = page.getByTestId('whats-new-modal');
     await playwrightExpect(modal).toBeVisible();
     await playwrightExpect(modal).toContainText('Added');
-    await playwrightExpect(modal).toContainText('Options page for configuring Chem Pal');
+    await playwrightExpect(modal).toContainText('Options page for configuring ChemPal');
     await playwrightExpect(modal).toContainText('Fixed');
     await playwrightExpect(modal).toContainText('Search failing to return results');
     // The auto-appended compare link is noise and must be filtered out.

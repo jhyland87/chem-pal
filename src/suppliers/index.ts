@@ -32,6 +32,7 @@
 //export { SupplierTheLabStockroomSearchanise } from "./SupplierTheLabStockroomSearchanise";
 
 export { SupplierAladdinSci } from './SupplierAladdinSci';
+export { SupplierAlboChemicals } from './SupplierAlboChemicals';
 export { SupplierAlchemieLabs } from './SupplierAlchemieLabs';
 export { SupplierAllianceChemical } from './SupplierAllianceChemical';
 export { SupplierAmarisChemicalSolutions } from './SupplierAmarisChemicalSolutions';

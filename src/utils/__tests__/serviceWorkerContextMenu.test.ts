@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
- * Unit tests for the "Search selection in Chem Pal" context menu in the
+ * Unit tests for the "Search selection in ChemPal" context menu in the
  * background service worker (src/service-worker.ts).
  *
  * The worker registers its listeners at import time, so each test installs a
@@ -42,6 +42,7 @@ function makeChromeMock() {
   const create = vi.fn();
   const sessionSet = vi.fn(async () => {});
   const localGet = vi.fn(async (): Promise<Record<string, unknown>> => ({}));
+  const localSet = vi.fn(async () => {});
   const setPopup = vi.fn(async () => {});
   const tabsQuery = vi.fn(async (): Promise<Array<Partial<chrome.tabs.Tab>>> => []);
   const tabsUpdate = vi.fn(async () => ({}));
@@ -69,7 +70,7 @@ function makeChromeMock() {
     windows: { update: windowsUpdate },
     storage: {
       session: { set: sessionSet },
-      local: { get: localGet },
+      local: { get: localGet, set: localSet },
       onChanged: {
         addListener: (fn: (changes: Record<string, unknown>, areaName: string) => void) =>
           storageChanged.push(fn),
@@ -89,6 +90,7 @@ function makeChromeMock() {
     create,
     sessionSet,
     localGet,
+    localSet,
     setPopup,
     tabsQuery,
     tabsUpdate,
@@ -127,6 +129,21 @@ describe('service worker context-menu search', () => {
     expect(mock.removeAll).toHaveBeenCalled();
     expect(mock.create).toHaveBeenCalledWith(
       expect.objectContaining({ id: MENU_ID, contexts: ['selection'] }),
+    );
+  });
+
+  it('seeds the review-prompt record with an install date on install', () => {
+    for (const listener of mock.onInstalled) listener({ reason: 'install' });
+
+    expect(mock.localSet).toHaveBeenCalledWith(
+      expect.objectContaining({
+        review_prompt: expect.objectContaining({
+          installedAt: expect.any(Number),
+          searchCount: 0,
+          totalResults: 0,
+          dismissCount: 0,
+        }),
+      }),
     );
   });
 

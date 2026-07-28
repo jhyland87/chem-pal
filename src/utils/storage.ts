@@ -1,4 +1,4 @@
-import { useStorageCompression } from '@/../config.json';
+import { storage as storageConfig } from '@/../config.json';
 import { Logger } from '@/utils/Logger';
 import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
 
@@ -56,14 +56,14 @@ export function isLzEnvelope(value: unknown): value is LzEnvelope {
 
 /**
  * JSON-stringifies and LZ-compresses a value, returning an {@link LzEnvelope}.
- * When `useStorageCompression` is `false` in config.json, the value is stored
+ * When `storage.useStorageCompression` is `false` in config.json, the value is stored
  * as-is (no compression). If serialization fails (e.g. circular structures)
  * the original value is returned untouched and an error is logged.
  * @category Utils
  * @param value - Any JSON-serializable value.
  */
 export function encodeValue(value: unknown): LzEnvelope | unknown {
-  if (!useStorageCompression) return value;
+  if (!storageConfig.useStorageCompression) return value;
   try {
     const json = JSON.stringify(value);
     if (json === undefined) {

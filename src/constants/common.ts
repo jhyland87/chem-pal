@@ -125,9 +125,24 @@ export const CACHE = {
   UPDATE_PENDING: 'update_pending',
   /** Last app version this profile has opened; drives the post-update what's-new prompt */
   LAST_SEEN_VERSION: 'last_seen_version',
+  /** Review-prompt bookkeeping: install date, lifetime search/result counts, dismissal state */
+  REVIEW_PROMPT: 'review_prompt',
 } as const;
 
 export type Cache = (typeof CACHE)[keyof typeof CACHE];
+
+/**
+ * The extension's Chrome Web Store item id, used to build store-facing links.
+ * @source
+ */
+export const CHROME_WEBSTORE_ID = 'facakdliomkjhegdhjimfjlcggfnpfnd';
+
+/**
+ * Deep link to the extension's Chrome Web Store reviews tab — where the review
+ * prompt sends users to leave a rating.
+ * @source
+ */
+export const CHROME_WEBSTORE_REVIEWS_URL = `https://chromewebstore.google.com/detail/${CHROME_WEBSTORE_ID}/reviews`;
 
 /**
  * IndexedDB object-store names for the ChemPal database. Centralized here so the

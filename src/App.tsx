@@ -1,10 +1,11 @@
-import { defaultResultsLimit, defaultSettings } from '@/../config.json';
+import { defaultSettings, search } from '@/../config.json';
 import { APP_ACTION, CACHE, DRAWER_INDEX, PANEL } from '@/constants/common';
 import { AppContext, useAppContext } from '@/context';
 import { emitSearchEvent, SearchEvent } from '@/events/searchEvents';
 import { playAdvancedModeSound } from '@/helpers/advancedMode';
 import { useDebugApi } from '@/hooks/useDebugApi';
 import { useJustUpdated } from '@/hooks/useJustUpdated';
+import { useReviewPrompt } from '@/hooks/useReviewPrompt';
 import { useUpdateAvailable } from '@/hooks/useUpdateAvailable';
 import { HotkeyEvent, HotkeyHelpModal, useHotkeys, type HotkeyHandlers } from '@/hotkeys';
 import {
@@ -36,14 +37,15 @@ import './App.scss';
 import DrawerSystem from './components/DrawerSystem';
 import ErrorBoundary from './components/ErrorBoundary';
 import { MigrationPrompt } from './components/MigrationPrompt';
-import { UpdatePrompt } from './components/UpdatePrompt';
-import { WhatsNewPrompt } from './components/WhatsNewPrompt';
+import { ReviewPrompt } from './components/ReviewPrompt';
 import SearchPanel from './components/SearchPanel/SearchPanel';
 import SearchPanelHome from './components/SearchPanelHome';
 import SpeedDialMenu from './components/SpeedDialMenu';
-import StatusBar, { StatusBarProvider, useStatusBar } from './components/StatusBar';
 import { StatusBadges } from './components/StatusBadges';
+import StatusBar, { StatusBarProvider, useStatusBar } from './components/StatusBar';
 import { ThemeProvider } from './components/ThemeProvider';
+import { UpdatePrompt } from './components/UpdatePrompt';
+import { WhatsNewPrompt } from './components/WhatsNewPrompt';
 import { diff } from './helpers/collectionUtils';
 import { getCountryName } from './helpers/country';
 import { getCurrencyCodeFromLocation, getCurrencyRate } from './helpers/currency';
@@ -119,7 +121,7 @@ Object.assign(initialAppState, {
     location: getUserLocation(),
     country: getCountryName(getUserLocation()),
     language: getUserLanguage(),
-    supplierResultLimit: defaultResultsLimit,
+    supplierResultLimit: search.defaultResultsLimitPerSupplier,
     suppliers: SupplierFactory.supplierList(),
   } satisfies UserSettings,
   panel: PANEL.SEARCH_HOME,
@@ -224,6 +226,12 @@ function App() {
   const { notice: updateNotice, dismiss: dismissUpdate, applyUpdate } = useUpdateAvailable();
   // The other side of the same coin: what changed in the release we're now on.
   const { notice: justUpdatedNotice, acknowledge: acknowledgeJustUpdated } = useJustUpdated();
+  // Nudge long-time, active users to leave a Web Store review.
+  const {
+    notice: reviewNotice,
+    onReview: onReviewPromptReview,
+    onDismiss: onReviewPromptDismiss,
+  } = useReviewPrompt();
   // Pending search query - set by HistoryPanel, consumed by ResultsTable
   const [pendingSearchQuery, setPendingSearchQuery] = useState<string | null>(null);
   // Pre-search filters - set by DrawerSearchPanel, consumed by useSearch
@@ -809,6 +817,11 @@ function App() {
               />
               <UpdatePrompt notice={updateNotice} onDismiss={dismissUpdate} onApply={applyUpdate} />
               <WhatsNewPrompt notice={justUpdatedNotice} onAcknowledge={acknowledgeJustUpdated} />
+              <ReviewPrompt
+                notice={reviewNotice}
+                onReview={onReviewPromptReview}
+                onDismiss={onReviewPromptDismiss}
+              />
             </div>
             <StatusBar />
           </StatusBarProvider>

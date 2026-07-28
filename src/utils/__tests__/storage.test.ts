@@ -9,7 +9,8 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 // Ensure compression is enabled for these tests regardless of config.json
 vi.mock('@/../config.json', async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
-  return { ...actual, useStorageCompression: true };
+  const storage = actual.storage as Record<string, unknown>;
+  return { ...actual, storage: { ...storage, useStorageCompression: true } };
 });
 
 const {

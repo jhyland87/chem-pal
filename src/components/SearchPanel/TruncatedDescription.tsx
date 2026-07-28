@@ -1,4 +1,4 @@
-import { descriptionPreviewLength } from '@/../config.json';
+import { display } from '@/../config.json';
 import { DescriptionToggleLink } from '@/components/StyledComponents';
 import { i18n } from '@/helpers/i18n';
 import { type KeyboardEvent, type ReactElement, useState } from 'react';
@@ -6,7 +6,7 @@ import { type KeyboardEvent, type ReactElement, useState } from 'react';
 interface TruncatedDescriptionProps {
   /** The full description text to render. */
   text: Maybe<string>;
-  /** Character limit before truncation; defaults to `descriptionPreviewLength` in config.json. */
+  /** Character limit before truncation; defaults to `display.descriptionPreviewLength` in config.json. */
   limit?: number;
 }
 
@@ -26,7 +26,7 @@ interface TruncatedDescriptionProps {
  */
 export function TruncatedDescription({
   text,
-  limit = descriptionPreviewLength,
+  limit = display.descriptionPreviewLength,
 }: TruncatedDescriptionProps): ReactElement | null {
   const [expanded, setExpanded] = useState(false);
 

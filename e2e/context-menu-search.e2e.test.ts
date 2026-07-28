@@ -2,12 +2,12 @@ import { expect as playwrightExpect } from '@playwright/test';
 import { execSync } from 'node:child_process';
 import path from 'node:path';
 import { type BrowserContext, type Page, chromium } from 'playwright';
-import { extensionLaunchOptions } from './helpers/launchOptions';
 import { afterAll, beforeAll, beforeEach, describe, it, expect as vitestExpect } from 'vitest';
+import { extensionLaunchOptions } from './helpers/launchOptions';
 import { setupMockRoutes } from './helpers/mockRoutes';
 
 /**
- * E2E coverage for the right-click "Search selection in Chem Pal" flow.
+ * E2E coverage for the right-click "Search selection in ChemPal" flow.
  *
  * A native context-menu click can't be scripted from Playwright, and the
  * worker's own click handler is unit-tested separately

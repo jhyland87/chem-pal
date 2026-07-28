@@ -5,6 +5,7 @@ import { SearchEvent, emitSearchEvent } from '@/events/searchEvents';
 import { addExcludedProduct } from '@/helpers/excludedProducts';
 import { i18n } from '@/helpers/i18n';
 import { recordProductPrices } from '@/helpers/priceHistory';
+import { recordSearch } from '@/utils/reviewStats';
 import { dedupeProducts, getProductDedupeKey } from '@/helpers/productIdentity';
 import { shippingCovers, suppliersExcludedBySearchFilters } from '@/helpers/supplierFilters';
 import { suggestAlternativeSearch } from '@/helpers/pubchem';
@@ -521,7 +522,7 @@ export function useSearch() {
           doNotCacheEmptyResults: appContext.userSettings.doNotCacheEmptyResults,
           cacheTtlMinutes: appContext.userSettings.cacheTtlMinutes,
           noCacheStatusCodes: appContext.userSettings.noCacheStatusCodes,
-          maxAllowableSearchTimeSec: appContext.userSettings.maxAllowableSearchTimeSec,
+          supplierSearchTimeBudgetSec: appContext.userSettings.supplierSearchTimeBudgetSec,
           fuzzyFilteringDisabled: appContext.userSettings.fuzzyFilteringDisabled,
           location: appContext.userSettings.location,
           excludeNonShippingSuppliers: appContext.userSettings.excludeNonShippingSuppliers ?? true,
@@ -693,6 +694,10 @@ export function useSearch() {
 
         // Signal completion; the badge controller reconciles the final count.
         emitSearchEvent(SearchEvent.COMPLETED, { count: totalResults });
+
+        // Tally this search toward the review prompt. Past the in-flight guard, so
+        // retriggers of the same query don't double-count. Fire-and-forget.
+        void recordSearch(totalResults);
 
         // Final state - search complete
         // NOTE: Do NOT wrap in startTransition — the isLoading:false update must be

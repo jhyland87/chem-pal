@@ -1,6 +1,6 @@
 {
   "app_name": {
-    "message": "Chem Pal",
+    "message": "ChemPal",
     "description": "The extension name shown in the browser and web store."
   },
   "app_description": {
@@ -572,6 +572,16 @@
     "message": "Excluded Products",
     "description": "Settings section header."
   },
+  "settings_excluded_count": {
+    "message": "count: $count$",
+    "placeholders": { "count": { "content": "$1" } },
+    "description": "Italic badge by the Excluded Products header; placeholder is the number of excluded products."
+  },
+  "settings_supplier_disabled_count": {
+    "message": "$count$ disabled",
+    "placeholders": { "count": { "content": "$1" } },
+    "description": "Italic badge by the Supplier Status header; placeholder is the number of disabled suppliers."
+  },
   "settings_section_supplier_status": {
     "message": "Supplier Status",
     "description": "Settings section header."
@@ -599,6 +609,16 @@
     "description": "Setting label."
   },
   "settings_cache_ttl": { "message": "Cache TTL (minutes)", "description": "Setting label." },
+  "settings_cache_ttl_days_one": {
+    "message": "≈ $days$ day",
+    "placeholders": { "days": { "content": "$1" } },
+    "description": "Day-equivalent hint under the cache TTL input; placeholder is the number of days."
+  },
+  "settings_cache_ttl_days_other": {
+    "message": "≈ $days$ days",
+    "placeholders": { "days": { "content": "$1" } },
+    "description": "Day-equivalent hint under the cache TTL input; placeholder is the number of days."
+  },
   "settings_cache_stats": {
     "message": "$count$ cached records · $size$",
     "placeholders": { "count": { "content": "$1" }, "size": { "content": "$2" } },
@@ -641,7 +661,7 @@
   "settings_font_large": { "message": "Large", "description": "Font-size option." },
   "settings_open_in_tab": { "message": "Open in a tab", "description": "Setting label." },
   "settings_open_in_tab_desc": {
-    "message": "Clicking the toolbar icon opens Chem Pal in a full browser tab instead of the popup.",
+    "message": "Clicking the toolbar icon opens ChemPal in a full browser tab instead of the popup.",
     "description": "Setting description."
   },
   "settings_auto_hide_empty_columns": {
@@ -684,8 +704,9 @@
     "description": "Setting label (dev)."
   },
   "settings_max_search_time_helper": {
-    "message": "Overrides each supplier's search-time budget. Empty = per-supplier default; 0 = no limit",
-    "description": "Helper text (dev)."
+    "message": "Overrides each supplier's search-time budget. Empty = default ($seconds$s); 0 = no limit",
+    "placeholders": { "seconds": { "content": "$1" } },
+    "description": "Helper text; the placeholder is the default budget in seconds."
   },
   "settings_disable_fuzzy": {
     "message": "Disable fuzzy filtering",
@@ -772,7 +793,7 @@
     "placeholders": { "product": { "content": "$1" } }
   },
   "context_menu_search_selection": {
-    "message": "Search \"%s\" in Chem Pal",
+    "message": "Search \"%s\" in ChemPal",
     "description": "Right-click context menu label; %s is the selected text (substituted by Chrome)."
   },
 
@@ -1242,7 +1263,7 @@
     "description": "Shown in the what's-new modal when the release notes could not be fetched."
   },
   "update_installed_message": {
-    "message": "Chem Pal was updated to v$version$.",
+    "message": "ChemPal was updated to v$version$.",
     "placeholders": {
       "version": {
         "content": "$1"
@@ -1255,7 +1276,7 @@
     "description": "Button that acknowledges the what's-new notes for an already-installed release."
   },
   "update_available_message": {
-    "message": "Chem Pal v$version$ is available.",
+    "message": "ChemPal v$version$ is available.",
     "placeholders": {
       "version": {
         "content": "$1"
@@ -1274,6 +1295,19 @@
   "update_dismiss": {
     "message": "Dismiss",
     "description": "Accessible label for the button that dismisses the update snackbar."
+  },
+  "review_prompt_message": {
+    "message": "You've had ChemPal installed for $days$ days and run $searches$ searches that returned $products$ products. Enjoying it? Leave a review.",
+    "placeholders": {
+      "days": { "content": "$1" },
+      "searches": { "content": "$2" },
+      "products": { "content": "$3" }
+    },
+    "description": "Review prompt snackbar text; placeholders are days installed, searches run, and total products returned."
+  },
+  "review_prompt_action": {
+    "message": "Leave a review",
+    "description": "Snackbar action that opens the Chrome Web Store reviews page."
   },
 
   "context_menu_export_all": {"message": "Export All Results", "description": "Context-menu action to export all results to an xlsx file."},

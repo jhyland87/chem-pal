@@ -5,7 +5,7 @@
  * @source
  */
 
-import { unitPriceExactFractionDigits, unitPriceMinDisplay } from '@/../config.json';
+import { display } from '@/../config.json';
 import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
 import { formatUomForDisplay, toCostBaseQuantity } from '@/helpers/quantity';
 
@@ -120,8 +120,8 @@ export function formatDisplayPrice(
  * @source
  */
 function formatPerUnitPrice(currency: string, perUnit: number, unitLabel: string): string {
-  if (perUnit > 0 && perUnit < unitPriceMinDisplay) {
-    return `<${formatWithSymbol(currency, unitPriceMinDisplay)}/${unitLabel}`;
+  if (perUnit > 0 && perUnit < display.unitPriceMinDisplay) {
+    return `<${formatWithSymbol(currency, display.unitPriceMinDisplay)}/${unitLabel}`;
   }
   return `${formatWithSymbol(currency, perUnit)}/${unitLabel}`;
 }
@@ -280,5 +280,5 @@ export function formatUnitPriceExact(
   if (!resolved) return '';
 
   const { currency, perUnit, unitLabel } = resolved;
-  return `${formatWithSymbol(currency, perUnit, unitPriceExactFractionDigits)}/${unitLabel}`;
+  return `${formatWithSymbol(currency, perUnit, display.unitPriceExactFractionDigits)}/${unitLabel}`;
 }

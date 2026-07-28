@@ -1,9 +1,4 @@
-import {
-  maxExportEntries,
-  maxExportsCacheBytes,
-  maxHistoryEntries,
-  maxSupplierCacheEntries,
-} from '@/../config.json';
+import { storage } from '@/../config.json';
 import { IDB_STORE, type IdbStore } from '@/constants/common';
 import type { ExcludedProductsMap } from '@/helpers/excludedProducts';
 import { Logger } from '@/utils/Logger';
@@ -39,12 +34,12 @@ const DB_VERSION = 7;
 /** Single-row key used by the `app_meta` store (mirrors the `"current"` pattern of `search_results`). */
 const APP_META_KEY = 'current';
 // Cache-capacity caps live in config.json alongside the other build-time tunables.
-const MAX_SUPPLIER_CACHE_ENTRIES = maxSupplierCacheEntries;
-const MAX_HISTORY_ENTRIES = maxHistoryEntries;
+const MAX_SUPPLIER_CACHE_ENTRIES = storage.maxSupplierCacheEntries;
+const MAX_HISTORY_ENTRIES = storage.maxHistoryEntries;
 // Exports are capped by BOTH a record count and a total byte budget; the oldest
 // are evicted first when either is exceeded (see `putExport`).
-const MAX_EXPORT_ENTRIES = maxExportEntries;
-const MAX_EXPORT_CACHE_BYTES = maxExportsCacheBytes;
+const MAX_EXPORT_ENTRIES = storage.maxExportEntries;
+const MAX_EXPORT_CACHE_BYTES = storage.maxExportsCacheBytes;
 
 /**
  * A cached spreadsheet export: the generated `.xlsx` Blob plus the metadata the
@@ -544,7 +539,7 @@ export async function getSupplierQueryCacheEntry(
 
 /**
  * Writes a supplier query-cache entry, evicting the least recently cached row
- * first when the store is at `maxSupplierCacheEntries` capacity.
+ * first when the store is at `storage.maxSupplierCacheEntries` capacity.
  * @category Utils
  * @param cacheKey - The composite query+supplier cache key.
  * @param entry - The result set plus its `__cacheMetadata`.
@@ -705,7 +700,7 @@ export async function getSupplierProductDataCacheEntry(
 
 /**
  * Writes a supplier product-data cache entry, evicting the oldest row first
- * when the store is at `maxSupplierCacheEntries` capacity.
+ * when the store is at `storage.maxSupplierCacheEntries` capacity.
  * @category Utils
  * @param cacheKey - The product-level cache key.
  * @param entry - The product data and the timestamp it was fetched.
@@ -1228,8 +1223,8 @@ export async function getMigrationDb(): Promise<IDBPDatabase> {
 
 /**
  * Stores a generated `.xlsx` export, then evicts the oldest exports until the
- * store is within **both** caps: at most `maxExportEntries` records and at most
- * `maxExportsCacheBytes` total bytes. The most recent export is always kept, even
+ * store is within **both** caps: at most `storage.maxExportEntries` records and at most
+ * `storage.maxExportsCacheBytes` total bytes. The most recent export is always kept, even
  * if it alone exceeds the byte budget.
  * @category Utils
  * @param record - The export record to persist (its `id` is the store key).

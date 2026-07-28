@@ -1,5 +1,5 @@
 /**
- * Chem Pal background service worker.
+ * ChemPal background service worker.
  *
  * Required by Manifest V3 for the extension to participate in the Chrome
  * extension lifecycle (install / update events) and to provide a discoverable
@@ -16,16 +16,27 @@
 
 import { CACHE, MESSAGE_TYPE } from '@/constants/common';
 
-/** Context-menu item id for the "Search selection in Chem Pal" entry. */
+/** Context-menu item id for the "Search selection in ChemPal" entry. */
 const CONTEXT_MENU_ID = 'chempal-search-selection';
 /** Full-tab view URL; `?view=tab` is recognized by the app (see utils/displayContext.ts). */
 const TAB_VIEW_PATH = 'index.html?view=tab';
 
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   if (reason === chrome.runtime.OnInstalledReason.INSTALL) {
-    console.info('Chem Pal installed');
+    console.info('ChemPal installed');
+    // Seed the review-prompt record with an exact install date. Raw chrome.storage
+    // (not cstorage) for the same reason as the writes below: compression is off and
+    // the app-side decoder passes non-envelope values through unchanged.
+    void chrome.storage.local.set({
+      [CACHE.REVIEW_PROMPT]: {
+        installedAt: Date.now(),
+        searchCount: 0,
+        totalResults: 0,
+        dismissCount: 0,
+      },
+    });
   } else if (reason === chrome.runtime.OnInstalledReason.UPDATE) {
-    console.info('Chem Pal updated');
+    console.info('ChemPal updated');
     // The staged update just landed; drop the record so the UI doesn't keep
     // prompting for a version that is now running.
     void chrome.storage.local.remove(CACHE.UPDATE_PENDING);
@@ -104,12 +115,12 @@ chrome.contextMenus.onClicked.addListener(async (info) => {
 });
 
 // Toolbar-icon behavior. The `openInTab` user setting decides whether clicking
-// the toolbar icon shows the popup (default) or opens Chem Pal in a full tab.
+// the toolbar icon shows the popup (default) or opens ChemPal in a full tab.
 // We enforce it by toggling the action popup: clearing the popup makes clicks
 // fire chrome.action.onClicked (below) instead of opening index.html as a popup.
 //
 // Settings live in chrome.storage.local under CACHE.USER_SETTINGS. Compression is
-// disabled (config.json useStorageCompression=false), so the value is the plain
+// disabled (config.json storage.useStorageCompression=false), so the value is the plain
 // object; an LZ envelope ({__lz}) would be unreadable here, so that case falls
 // back to the default popup behavior.
 
