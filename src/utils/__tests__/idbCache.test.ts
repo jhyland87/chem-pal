@@ -19,9 +19,11 @@ import {
   putSupplierProductDataCacheEntry,
   setSearchResults,
 } from '@/utils/idbCache';
-import { maxExportEntries } from '@/../config.json';
+import { storage } from '@/../config.json';
 import { Logger } from '@/utils/Logger';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+const { maxExportEntries } = storage;
 
 const product = (fields: Partial<Product>): Product => fields as unknown as Product;
 

@@ -1,6 +1,6 @@
 {
   "app_name": {
-    "message": "Chem Pal",
+    "message": "ChemPal",
     "description": "The extension name shown in the browser and web store."
   },
   "app_description": {
@@ -548,6 +548,16 @@
     "message": "बहिष्कृत उत्पाद",
     "description": "Settings section header."
   },
+  "settings_excluded_count": {
+    "message": "संख्या: $count$",
+    "placeholders": { "count": { "content": "$1" } },
+    "description": "Italic badge by the Excluded Products header; placeholder is the number of excluded products."
+  },
+  "settings_supplier_disabled_count": {
+    "message": "$count$ अक्षम",
+    "placeholders": { "count": { "content": "$1" } },
+    "description": "Italic badge by the Supplier Status header; placeholder is the number of disabled suppliers."
+  },
   "settings_section_supplier_status": {
     "message": "आपूर्तिकर्ता स्थिति",
     "description": "Settings section header."
@@ -575,6 +585,16 @@
     "description": "Setting label."
   },
   "settings_cache_ttl": { "message": "कैश TTL (मिनट)", "description": "Setting label." },
+  "settings_cache_ttl_days_one": {
+    "message": "≈ $days$ दिन",
+    "placeholders": { "days": { "content": "$1" } },
+    "description": "Day-equivalent hint under the cache TTL input; placeholder is the number of days."
+  },
+  "settings_cache_ttl_days_other": {
+    "message": "≈ $days$ दिन",
+    "placeholders": { "days": { "content": "$1" } },
+    "description": "Day-equivalent hint under the cache TTL input; placeholder is the number of days."
+  },
   "settings_cache_stats": {
     "message": "$count$ कैश किए गए रिकॉर्ड · $size$",
     "placeholders": { "count": { "content": "$1" }, "size": { "content": "$2" } },
@@ -620,7 +640,7 @@
   "settings_font_large": { "message": "बड़ा", "description": "Font-size option." },
   "settings_open_in_tab": { "message": "टैब में खोलें", "description": "Setting label." },
   "settings_open_in_tab_desc": {
-    "message": "टूलबार आइकन पर क्लिक करने पर Chem Pal पॉपअप के बजाय पूरे ब्राउज़र टैब में खुलता है।",
+    "message": "टूलबार आइकन पर क्लिक करने पर ChemPal पॉपअप के बजाय पूरे ब्राउज़र टैब में खुलता है।",
     "description": "Setting description."
   },
   "settings_auto_hide_empty_columns": {
@@ -663,8 +683,9 @@
     "description": "Setting label (dev)."
   },
   "settings_max_search_time_helper": {
-    "message": "प्रत्येक आपूर्तिकर्ता के खोज-समय बजट को ओवरराइड करता है। खाली = प्रति-आपूर्तिकर्ता डिफ़ॉल्ट; 0 = कोई सीमा नहीं",
-    "description": "Helper text (dev)."
+    "message": "प्रत्येक आपूर्तिकर्ता के खोज-समय बजट को ओवरराइड करता है। खाली = डिफ़ॉल्ट ($seconds$ सेकंड); 0 = कोई सीमा नहीं",
+    "placeholders": { "seconds": { "content": "$1" } },
+    "description": "Helper text; the placeholder is the default budget in seconds."
   },
   "settings_disable_fuzzy": {
     "message": "फ़ज़ी फ़िल्टरिंग अक्षम करें",
@@ -752,7 +773,7 @@
     "placeholders": { "product": { "content": "$1" } }
   },
   "context_menu_search_selection": {
-    "message": "Chem Pal में \"%s\" खोजें",
+    "message": "ChemPal में \"%s\" खोजें",
     "description": "Right-click context menu label; %s is the selected text (substituted by Chrome)."
   },
   "copy_info_price": {
@@ -1196,7 +1217,7 @@
     "description": "Shown in the what's-new modal when the release notes could not be fetched."
   },
   "update_installed_message": {
-    "message": "Chem Pal को v$version$ पर अपडेट किया गया।",
+    "message": "ChemPal को v$version$ पर अपडेट किया गया।",
     "placeholders": {
       "version": {
         "content": "$1"
@@ -1209,7 +1230,7 @@
     "description": "Button that acknowledges the what's-new notes for an already-installed release."
   },
   "update_available_message": {
-    "message": "Chem Pal v$version$ उपलब्ध है।",
+    "message": "ChemPal v$version$ उपलब्ध है।",
     "placeholders": {
       "version": {
         "content": "$1"
@@ -1228,6 +1249,19 @@
   "update_dismiss": {
     "message": "खारिज करें",
     "description": "Accessible label for the button that dismisses the update snackbar."
+  },
+  "review_prompt_message": {
+    "message": "आपने ChemPal को $days$ दिनों से इंस्टॉल कर रखा है और $searches$ खोजें कीं जिनसे कुल $products$ उत्पाद मिले। यह आपको कैसा लगा? समीक्षा दें।",
+    "placeholders": {
+      "days": { "content": "$1" },
+      "searches": { "content": "$2" },
+      "products": { "content": "$3" }
+    },
+    "description": "Review prompt snackbar text; placeholders are days installed, searches run, and total products returned."
+  },
+  "review_prompt_action": {
+    "message": "समीक्षा दें",
+    "description": "Snackbar action that opens the Chrome Web Store reviews page."
   },
 
   "context_menu_export_all": {"message": "सभी परिणाम निर्यात करें", "description": "Context-menu action to export all results to an xlsx file."},

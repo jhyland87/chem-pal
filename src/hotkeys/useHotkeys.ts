@@ -1,4 +1,4 @@
-import { hotkeys as hotkeysConfig, sequenceResetMs } from '@/../config.json';
+import { hotkeys as hotkeysConfig } from '@/../config.json';
 import { useEffect, useMemo, useRef } from 'react';
 import { matches, normalizeKey, parseBinding, parseSequence, resolveBinding } from './matcher';
 import type { HotkeyConfig, HotkeyHandlers, ParsedBinding } from './types';
@@ -7,9 +7,9 @@ import type { HotkeyConfig, HotkeyHandlers, ParsedBinding } from './types';
  * Idle window (ms) after which an in-progress key sequence is abandoned.
  * Pressing the next key of a sequence more than this long after the previous
  * one resets the buffer, so a stale partial press can't complete a sequence
- * later. Sourced from `config.json` (`sequenceResetMs`).
+ * later. Sourced from `config.json` (`hotkeys.sequenceResetMs`).
  */
-const SEQUENCE_RESET_MS = sequenceResetMs;
+const SEQUENCE_RESET_MS = hotkeysConfig.sequenceResetMs;
 
 /** Keys that are modifiers on their own; excluded from the sequence buffer. */
 const MODIFIER_KEYS = new Set(['meta', 'control', 'alt', 'shift']);
@@ -130,7 +130,7 @@ function isActionable(config: HotkeyConfig, handlers: HotkeyHandlers): boolean {
 export function useHotkeys(handlers: HotkeyHandlers, options: UseHotkeysOptions = {}): void {
   // Trusted static config: JSON import infers literal types that don't widen to
   // HotkeyConfig[]; shape is validated by config.json's authored structure.
-  const compiled = useMemo(() => compile(hotkeysConfig as HotkeyConfig[]), []);
+  const compiled = useMemo(() => compile(hotkeysConfig.bindings as HotkeyConfig[]), []);
   const { onTriggered } = options;
 
   // Rolling buffer of recently pressed keys, for matching sequential hotkeys.
@@ -202,5 +202,5 @@ export function useHotkeys(handlers: HotkeyHandlers, options: UseHotkeysOptions 
 export function getHotkeyConfigs(): HotkeyConfig[] {
   // Trusted static config: JSON import infers literal types that don't widen to
   // HotkeyConfig[]; shape is validated by config.json's authored structure.
-  return hotkeysConfig as HotkeyConfig[];
+  return hotkeysConfig.bindings as HotkeyConfig[];
 }

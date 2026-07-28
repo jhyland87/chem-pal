@@ -1,12 +1,12 @@
-# Chem Pal — Privacy Policy
+# ChemPal — Privacy Policy
 
 **Effective date:** July 10, 2026
 
-Chem Pal ("the extension") is a browser extension that lets you search and compare
+ChemPal ("the extension") is a browser extension that lets you search and compare
 laboratory chemical product listings across supported supplier websites. This
 policy explains what data the extension handles, where it goes, and why.
 
-**Short version:** Chem Pal has no backend server of its own. It does not collect,
+**Short version:** ChemPal has no backend server of its own. It does not collect,
 sell, or transmit your data to the developer. It contains no analytics, tracking,
 or advertising code. The only data that leaves your browser is the search terms
 and chemical identifiers you enter, which are sent directly to the third‑party
@@ -17,7 +17,7 @@ browser would send them if you visited those sites yourself.
 
 ## 1. Who provides this extension
 
-Chem Pal is an independent, open‑source project maintained by Justin Hyland.
+ChemPal is an independent, open‑source project maintained by Justin Hyland.
 There is no company, hosted service, or third‑party data processor operated by
 the developer.
 
@@ -37,7 +37,7 @@ and display matching product listings and pricing.
 
 Because these are ordinary web requests, the receiving third party also sees the
 standard technical information any website receives (such as your IP address and
-browser user‑agent). Chem Pal does not add any identifier of its own to these
+browser user‑agent). ChemPal does not add any identifier of its own to these
 requests. The developer does not receive, log, or store your searches.
 
 ### 2.2 Cookies on supplier domains
@@ -96,7 +96,7 @@ may send requests to:
   extension is available. No personal data is sent.
 
 Each of these third parties handles the data it receives under its own privacy
-policy. Chem Pal has no control over, and takes no responsibility for, the data
+policy. ChemPal has no control over, and takes no responsibility for, the data
 practices of these independent services.
 
 ---
@@ -122,7 +122,7 @@ practices of these independent services.
 | `cookies` | Establish the session cookies certain suppliers require to return search results, on those suppliers' own domains. |
 | `bookmarks` | Create and manage the favorites folder used to save products. |
 | `tabs` | Read the current tab's context to open product pages and search links, and to power the right‑click "search selection" action. |
-| `contextMenus` | Add a right‑click menu item to search selected text with Chem Pal. |
+| `contextMenus` | Add a right‑click menu item to search selected text with ChemPal. |
 | Host permissions (supplier domains, PubChem, etc.) | Send search and lookup requests to the supplier and chemistry services you enable. |
 
 ---
@@ -144,7 +144,7 @@ to retain or delete on your behalf.
 
 ## 7. Children's privacy
 
-Chem Pal is a tool intended for laboratory, educational, and professional use. It
+ChemPal is a tool intended for laboratory, educational, and professional use. It
 is not directed to children under 13 and does not knowingly collect any
 information from them.
 

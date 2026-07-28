@@ -1,13 +1,13 @@
 # Changelog
 
-All notable changes to Chem Pal are documented here. The format follows
+All notable changes to ChemPal are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Each released section below is what users see in the extension's update prompt
 and on the GitHub release page — the release workflow extracts the section
 matching the tag being built (see `tools/extractChangelog.js`). Write entries for
-users, not for the commit log: describe what changed for someone using Chem Pal,
+users, not for the commit log: describe what changed for someone using ChemPal,
 one line per change, grouped under **Added** / **Changed** / **Fixed** /
 **Removed**.
 
@@ -91,10 +91,10 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ### Added
 
-- Update prompt: Chem Pal now tells you when a newer version is available, with a
+- Update prompt: ChemPal now tells you when a newer version is available, with a
   **What's new** summary of the release. Web Store installs can apply the staged
   update straight from the prompt; manual installs get a link to the release.
-- After updating, Chem Pal shows what changed in the version you moved onto.
+- After updating, ChemPal shows what changed in the version you moved onto.
 
 ### Fixed
 
@@ -109,7 +109,7 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ### Added
 
-- Options page for configuring Chem Pal outside the popup.
+- Options page for configuring ChemPal outside the popup.
 - Advanced mode, which unlocks the supplier statistics panel.
 - Demo mode assets for showcasing the extension.
 

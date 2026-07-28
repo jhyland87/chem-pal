@@ -46,9 +46,9 @@ describe('SupplierBase search-time budget', () => {
     vi.useRealTimers();
   });
 
-  it('treats maxAllowableSearchTimeSec as seconds, not milliseconds', async () => {
+  it('treats supplierSearchTimeBudgetSec as seconds, not milliseconds', async () => {
     const supplier = new TimeoutTestSupplier('potassium', 5, new AbortController());
-    supplier.setMaxAllowableSearchTimeSec(2);
+    supplier.setSupplierSearchTimeBudgetSec(2);
     const sentinel = Symbol('searchTimeout');
 
     const { promise } = supplier.callArmSearchTimeout(sentinel);
@@ -65,7 +65,7 @@ describe('SupplierBase search-time budget', () => {
 
   it('stays disarmed when the budget is zero', () => {
     const supplier = new TimeoutTestSupplier('potassium', 5, new AbortController());
-    supplier.setMaxAllowableSearchTimeSec(0);
+    supplier.setSupplierSearchTimeBudgetSec(0);
 
     expect(supplier.callArmSearchTimeout(Symbol('searchTimeout')).promise).toBeUndefined();
   });

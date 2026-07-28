@@ -152,7 +152,7 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
    */
   private async fetchProductPage(url: string): Promise<string | undefined> {
     for (let attempt = 0; attempt < this.maxPageFetchAttempts; attempt++) {
-      // Bail immediately if the search was aborted (e.g. maxAllowableSearchTimeSec elapsed).
+      // Bail immediately if the search was aborted (e.g. supplierSearchTimeBudgetSec elapsed).
       if (this.controller.signal.aborted) {
         return undefined;
       }

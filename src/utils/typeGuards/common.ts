@@ -889,7 +889,7 @@ function buildUserSettingsSchema() {
     trackPriceHistory: v.optional(v.boolean()),
     priceHistoryMaxPoints: v.optional(coercedNonnegativeInt),
     noCacheStatusCodes: v.optional(v.array(v.pipe(v.number(), v.integer(), v.minValue(1)))),
-    maxAllowableSearchTimeSec: v.optional(coercedNonnegative),
+    supplierSearchTimeBudgetSec: v.optional(coercedNonnegative),
     currencyRate: v.optional(v.number()),
     currency: v.optional(
       v.pipe(

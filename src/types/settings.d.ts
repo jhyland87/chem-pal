@@ -92,11 +92,12 @@ declare global {
     /**
      * Overrides each supplier's per-class search-time budget (in seconds). Once a supplier's
      * search exceeds this, its outstanding detail requests are aborted and only the products
-     * collected so far are shown. Leave unset to keep per-supplier defaults; set to `0` to disable
-     * the limit entirely. Exposed in the Advanced settings section.
+     * collected so far are shown. Leave unset to use the config default
+     * (`search.supplierSearchTimeBudgetSec`); set to `0` to disable the limit entirely. Exposed in
+     * the Advanced settings section.
      * @example 60
      */
-    maxAllowableSearchTimeSec?: number;
+    supplierSearchTimeBudgetSec?: number;
 
     /**
      * Currency rate for the user's currency
@@ -141,7 +142,7 @@ declare global {
     fontSize?: 'small' | 'medium' | 'large';
 
     /**
-     * When true, clicking the toolbar icon opens Chem Pal in a full browser tab
+     * When true, clicking the toolbar icon opens ChemPal in a full browser tab
      * (`index.html?view=tab`) instead of the popup. The service worker enforces
      * this by clearing the action popup (`chrome.action.setPopup`) and handling
      * `chrome.action.onClicked` to open/focus the tab. Defaults to false (popup).

@@ -1,3 +1,4 @@
+import { search } from '@/../config.json';
 import { useAppContext } from '@/components/SearchPanel/hooks/useContext';
 import { ACTION_TYPE, IDB_STORE } from '@/constants/common';
 import { COUNTRIES } from '@/constants/countries';
@@ -321,6 +322,7 @@ export default function SettingsPanel() {
   const excludedCount = excludedEntries.length;
 
   const currentSettings = formState || appContext.userSettings;
+  const disabledSupplierCount = (currentSettings.disabledSuppliers ?? []).length;
 
   // Toggles a supplier's disabled state. Switch on = enabled, so toggling off adds the
   // supplier's class name to the disabledSuppliers deny-list and toggling on removes it.
@@ -340,6 +342,24 @@ export default function SettingsPanel() {
   const selectedLanguage = AVAILABLE_LOCALES.includes(currentLanguageBase)
     ? currentLanguageBase
     : '';
+
+  // Cache TTL is entered in minutes; the hint below the input shows its day
+  // equivalent, recomputed 0.5s after the user stops typing so it doesn't churn on
+  // every keystroke. The debounced value holds minutes; the label is formatted each
+  // render so it also follows a locale switch.
+  const cacheTtlMinutes = Number(currentSettings.cacheTtlMinutes ?? 0);
+  const [debouncedTtlMinutes, setDebouncedTtlMinutes] = useState(cacheTtlMinutes);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedTtlMinutes(cacheTtlMinutes), 500);
+    return () => clearTimeout(timer);
+  }, [cacheTtlMinutes]);
+  const cacheTtlDays = Math.round((debouncedTtlMinutes / 1440) * 100) / 100;
+  const cacheTtlDaysLabel =
+    debouncedTtlMinutes > 0
+      ? i18n(cacheTtlDays === 1 ? 'settings_cache_ttl_days_one' : 'settings_cache_ttl_days_other', [
+          String(cacheTtlDays),
+        ])
+      : undefined;
 
   // Fetch the live USD→currency rate for the selected currency and show it under
   // the dropdown. Fetched directly (not read from stored settings) so the hint
@@ -398,23 +418,6 @@ export default function SettingsPanel() {
         </AccordionSummary>
         <AccordionDetails className={styles['settings-panel__accordion-details']}>
           <List dense component="nav" aria-labelledby="behavior-list-subheader">
-            {/* Caching */}
-            <ListItem className={styles['settings-panel__helper-on-hover']}>
-              <ListItemText primary={i18n('settings_cache_results')} />
-              {/*<FormHelperText>Improves performance</FormHelperText>*/}
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={currentSettings.caching}
-                    onChange={handleSwitchChange}
-                    name="caching"
-                    disabled={isPending}
-                  />
-                }
-                labelPlacement="start"
-                label=""
-              />
-            </ListItem>
             {/* Currency — laid out as a column so the rate hint sits on its own
                 right-aligned row below the dropdown (no wrap, and the label/dropdown
                 row above it doesn't shift when the hint appears). */}
@@ -523,6 +526,22 @@ export default function SettingsPanel() {
         </AccordionSummary>
         <AccordionDetails className={styles['settings-panel__accordion-details']}>
           <List dense component="nav" aria-labelledby="cache-list-subheader">
+            {/* Cache Search Results — master switch for supplier caching */}
+            <ListItem className={styles['settings-panel__helper-on-hover']}>
+              <ListItemText primary={i18n('settings_cache_results')} />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={currentSettings.caching}
+                    onChange={handleSwitchChange}
+                    name="caching"
+                    disabled={isPending}
+                  />
+                }
+                labelPlacement="start"
+                label=""
+              />
+            </ListItem>
             {/* Do Not Cache Empty Results */}
             <ListItem className={styles['settings-panel__helper-on-hover']}>
               <ListItemText primary={i18n('settings_do_not_cache_empty')} />
@@ -542,35 +561,51 @@ export default function SettingsPanel() {
             {/* Cache TTL (minutes) — 0 disables expiration */}
             <ListItem className={styles['settings-panel__helper-on-hover']}>
               <ListItemText primary={i18n('settings_cache_ttl')} />
-              <FormControl>
-                <TextField
-                  value={currentSettings.cacheTtlMinutes ?? 0}
-                  name="cacheTtlMinutes"
-                  onChange={handleInputChange}
-                  type="number"
-                  variant="outlined"
-                  size="small"
-                  className={styles['settings-panel__input']}
-                  disabled={isPending}
-                  slotProps={{ htmlInput: { min: 0, step: 1 } }}
-                />
-              </FormControl>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-end',
+                  flexShrink: 0,
+                }}
+              >
+                <FormControl>
+                  <TextField
+                    value={currentSettings.cacheTtlMinutes ?? 0}
+                    name="cacheTtlMinutes"
+                    onChange={handleInputChange}
+                    type="number"
+                    variant="outlined"
+                    size="small"
+                    className={styles['settings-panel__input']}
+                    disabled={isPending}
+                    slotProps={{ htmlInput: { min: 0, step: 1 } }}
+                  />
+                </FormControl>
+                {cacheTtlDaysLabel && (
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+                    {cacheTtlDaysLabel}
+                  </Typography>
+                )}
+              </Box>
             </ListItem>
             {/* Cache stats + clear button */}
             <ListItem
               className={styles['settings-panel__helper-on-hover']}
               sx={{ flexDirection: 'column', alignItems: 'flex-start', rowGap: 0.5 }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Button variant="outlined" color="warning" size="small" onClick={handleClearCache}>
-                  {i18n('settings_clear_cache')}
-                </Button>
-                {cacheCleared && (
-                  <Typography variant="caption" sx={{ ml: 1 }}>
-                    {i18n('settings_cache_cleared')}
-                  </Typography>
-                )}
-              </Box>
+              <Button
+                fullWidth
+                variant="outlined"
+                color="warning"
+                size="small"
+                onClick={handleClearCache}
+              >
+                {i18n('settings_clear_cache')}
+              </Button>
+              {cacheCleared && (
+                <Typography variant="caption">{i18n('settings_cache_cleared')}</Typography>
+              )}
               {cacheStats && (
                 <Typography variant="caption" color="text.secondary">
                   {i18n('settings_cache_stats', [
@@ -638,21 +673,20 @@ export default function SettingsPanel() {
               className={styles['settings-panel__helper-on-hover']}
               sx={{ flexDirection: 'column', alignItems: 'flex-start', rowGap: 0.5 }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Button
-                  variant="outlined"
-                  color="warning"
-                  size="small"
-                  onClick={handleClearPriceHistory}
-                >
-                  {i18n('settings_clear_price_history')}
-                </Button>
-                {priceHistoryCleared && (
-                  <Typography variant="caption" sx={{ ml: 1 }}>
-                    {i18n('settings_price_history_cleared')}
-                  </Typography>
-                )}
-              </Box>
+              <Button
+                fullWidth
+                variant="outlined"
+                color="warning"
+                size="small"
+                onClick={handleClearPriceHistory}
+              >
+                {i18n('settings_clear_price_history')}
+              </Button>
+              {priceHistoryCleared && (
+                <Typography variant="caption">
+                  {i18n('settings_price_history_cleared')}
+                </Typography>
+              )}
               {priceStats && (
                 <Typography variant="caption" color="text.secondary">
                   {i18n('settings_price_history_stats', [
@@ -809,9 +843,9 @@ export default function SettingsPanel() {
                 component="span"
                 variant="caption"
                 color="text.secondary"
-                sx={{ ml: 0.5 }}
+                sx={{ ml: 0.5, fontStyle: 'italic' }}
               >
-                ({excludedCount})
+                {i18n('settings_excluded_count', [String(excludedCount)])}
               </Typography>
             )}
           </Typography>
@@ -874,6 +908,7 @@ export default function SettingsPanel() {
               </List>
               <Box className={styles['settings-panel__excluded-actions']}>
                 <Button
+                  fullWidth
                   variant="outlined"
                   color="warning"
                   size="small"
@@ -900,6 +935,16 @@ export default function SettingsPanel() {
         >
           <Typography variant="body2" fontWeight={500}>
             {i18n('settings_section_supplier_status')}
+            {disabledSupplierCount > 0 && (
+              <Typography
+                component="span"
+                variant="caption"
+                color="text.secondary"
+                sx={{ ml: 0.5, fontStyle: 'italic' }}
+              >
+                {i18n('settings_supplier_disabled_count', [String(disabledSupplierCount)])}
+              </Typography>
+            )}
           </Typography>
         </AccordionSummary>
         <AccordionDetails className={styles['settings-panel__accordion-details']}>
@@ -986,12 +1031,15 @@ export default function SettingsPanel() {
               fullWidth
               size="small"
               type="number"
-              name="maxAllowableSearchTimeSec"
+              name="supplierSearchTimeBudgetSec"
               label={i18n('settings_max_search_time')}
-              value={currentSettings.maxAllowableSearchTimeSec ?? ''}
+              value={currentSettings.supplierSearchTimeBudgetSec ?? ''}
+              placeholder={String(search.supplierSearchTimeBudgetSec)}
               onChange={handleInputChange}
               disabled={isPending}
-              helperText={i18n('settings_max_search_time_helper')}
+              helperText={i18n('settings_max_search_time_helper', [
+                String(search.supplierSearchTimeBudgetSec),
+              ])}
               slotProps={{
                 formHelperText: { sx: { fontStyle: 'italic' } },
                 htmlInput: { min: 0, step: 1 },
@@ -1037,8 +1085,10 @@ export default function SettingsPanel() {
         <AccordionDetails className={styles['settings-panel__accordion-details--actions']}>
           <Stack direction="row" spacing={2}>
             <Button
+              fullWidth
               variant="outlined"
-              color="primary"
+              color="warning"
+              size="small"
               onClick={handleRestoreDefaults}
               disabled={isPending}
             >

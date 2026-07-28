@@ -15,6 +15,7 @@
  */
 export const SUPPLIER_CLASS_NAMES = [
   'SupplierAladdinSci',
+  'SupplierAlboChemicals',
   'SupplierAlchemieLabs',
   'SupplierAllianceChemical',
   'SupplierAmarisChemicalSolutions',

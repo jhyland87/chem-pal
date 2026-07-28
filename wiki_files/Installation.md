@@ -69,7 +69,7 @@ Once installed, there are several ways to open it:
 - **Side panel** — ChemPal can also run in the browser's side panel, so it stays
   open beside the page you're browsing.
 - **Right-click** — highlight text on any page and choose
-  **Search "…" in Chem Pal** — see [Right-Click Search](Right-Click-Search).
+  **Search "…" in ChemPal** — see [Right-Click Search](Right-Click-Search).
 
 Whichever way you open it, ChemPal remembers your settings and search history.
 

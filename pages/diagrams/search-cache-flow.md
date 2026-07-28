@@ -12,7 +12,7 @@ This diagram details how ChemPal caches search results and product data using **
 - **`skipProductDetailCache` flag**: Every supplier caches per-product detail by default (the safe default). A concrete pure-search supplier — one that resolves every field in the initial search with a passthrough `getProductData` (e.g. BVV, Himedia, Chemsavers) — sets `skipProductDetailCache = true` to skip the redundant per-product cache; the query cache already covers repeat searches, and the identity is still used for exclusions. The flag lives on the concrete supplier, never a shared base class, so a base's fetching subclass keeps caching by default
 - **LRU eviction**: Both supplier caches cap at `maxSupplierCacheEntries` entries (`config.json`, default 100), evicting the least recently used when full (using IndexedDB indexes on `cachedAt` / `timestamp`)
 - **Limit-aware invalidation**: The query cache invalidates entries when a new search requests more results than the cached limit
-- **Status-aware product caching**: A product's detail fetch is **not** cached when it hit a status in `noCacheStatusCodes` (default `[429]`) or when the search was aborted by `maxAllowableSearchTimeSec` — the product is still listed, but stays uncached so the next search retries it (`SupplierBase.shouldCacheProductData`)
+- **Status-aware product caching**: A product's detail fetch is **not** cached when it hit a status in `noCacheStatusCodes` (default `[429]`) or when the search was aborted by `supplierSearchTimeBudgetSec` — the product is still listed, but stays uncached so the next search retries it (`SupplierBase.shouldCacheProductData`)
 - **Timestamp refresh on read**: Product data cache updates `timestamp` on hit to prevent active entries from being evicted
 - **Serialization**: `ProductBuilder.dump()` serializes builders for storage; `ProductBuilder.createFromCache()` re-hydrates them
 - **Versioned migrations**: `src/migrations/registry.ts` collects semver-named step files (`vX.Y.Z-to-vX.Y.Z.ts`) and runs the pending chain whenever the version stamped in the `app_meta` store is older than the running build, then re-stamps the marker
@@ -227,7 +227,7 @@ end
 subgraph CacheMiss2["Cache Miss"]
 direction TB
 FETCH["getProductDataWithCache(product, fetcher, params)\ncall supplier-specific fetcher"]
-CACHEABLE{"shouldCacheProductData?\nskip if fetch hit a noCacheStatusCode (429)\nor search aborted (maxAllowableSearchTimeSec)"}
+CACHEABLE{"shouldCacheProductData?\nskip if fetch hit a noCacheStatusCode (429)\nor search aborted (supplierSearchTimeBudgetSec)"}
 DUMP2["resultBuilder.dump()\nserialize product data"]
 SAVE2["cache.cacheProductData(key, data)"]
 SKIP2["Skip caching\nproduct still yielded;\nretried on next search"]
