@@ -122,12 +122,7 @@ export function ProductImageModal({
         onClick={(event) => event.stopPropagation()}
       >
         <ProductImageModalHeader>
-          <Typography
-            id="product-image-modal-title"
-            variant="subtitle1"
-            component="h2"
-            noWrap
-          >
+          <Typography id="product-image-modal-title" variant="subtitle1" component="h2" noWrap>
             {i18n('product_image_modal_title', [title])}
           </Typography>
           <ProductImageModalClose

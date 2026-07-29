@@ -555,59 +555,59 @@ export function ProductDetailPanel({ row, table }: ProductDetailPanelProps): Rea
             hasVariants && (
               <ProductDetailVariantsColumn>
                 <ProductDetailVariantsGrid>
-                <Typography
-                  className="variant-header"
-                  variant="caption"
-                  color="text.secondary"
-                  fontWeight={600}
-                >
-                  {i18n('product_detail_variants_currency', [userSettings?.currency ?? 'USD'])}
-                </Typography>
-                {displayedVariants.map((variant, index) => {
-                  const variantId = variantSeriesKey(product, variant);
-                  const variantSeries = seriesFor(variant);
-                  return (
-                    <Fragment key={`${variantId ?? variant.title ?? 'variant'}-${index}`}>
-                      <span className="variant-name">
-                        <Link
-                          href={
-                            variant.permalink ?? variant.url ?? product.permalink ?? product.url
-                          }
-                          history={{
-                            type: 'product',
-                            data: omit({ ...product, ...variant }, 'variants'),
-                          }}
-                        >
-                          {variant.title ?? product.title}
-                        </Link>
-                      </span>
-                      <span className="variant-price">
-                        {formatDisplayPrice(variant, userSettings)}
-                      </span>
-                      <span className="variant-qty">{variantQuantity(variant)}</span>
-                      <span className="variant-trend">
-                        {variantSeries && variantSeries.points.length >= 2 && (
-                          <PriceHistoryTooltip
-                            arrow
-                            title={
-                              <VariantPriceHistoryCard
-                                points={variantSeries.points}
-                                userSettings={userSettings}
-                              />
+                  <Typography
+                    className="variant-header"
+                    variant="caption"
+                    color="text.secondary"
+                    fontWeight={600}
+                  >
+                    {i18n('product_detail_variants_currency', [userSettings?.currency ?? 'USD'])}
+                  </Typography>
+                  {displayedVariants.map((variant, index) => {
+                    const variantId = variantSeriesKey(product, variant);
+                    const variantSeries = seriesFor(variant);
+                    return (
+                      <Fragment key={`${variantId ?? variant.title ?? 'variant'}-${index}`}>
+                        <span className="variant-name">
+                          <Link
+                            href={
+                              variant.permalink ?? variant.url ?? product.permalink ?? product.url
                             }
+                            history={{
+                              type: 'product',
+                              data: omit({ ...product, ...variant }, 'variants'),
+                            }}
                           >
-                            <span style={{ display: 'inline-flex' }}>
-                              <PriceTrend
-                                points={variantSeries.points}
-                                userSettings={userSettings}
-                              />
-                            </span>
-                          </PriceHistoryTooltip>
-                        )}
-                      </span>
-                    </Fragment>
-                  );
-                })}
+                            {variant.title ?? product.title}
+                          </Link>
+                        </span>
+                        <span className="variant-price">
+                          {formatDisplayPrice(variant, userSettings)}
+                        </span>
+                        <span className="variant-qty">{variantQuantity(variant)}</span>
+                        <span className="variant-trend">
+                          {variantSeries && variantSeries.points.length >= 2 && (
+                            <PriceHistoryTooltip
+                              arrow
+                              title={
+                                <VariantPriceHistoryCard
+                                  points={variantSeries.points}
+                                  userSettings={userSettings}
+                                />
+                              }
+                            >
+                              <span style={{ display: 'inline-flex' }}>
+                                <PriceTrend
+                                  points={variantSeries.points}
+                                  userSettings={userSettings}
+                                />
+                              </span>
+                            </PriceHistoryTooltip>
+                          )}
+                        </span>
+                      </Fragment>
+                    );
+                  })}
                 </ProductDetailVariantsGrid>
               </ProductDetailVariantsColumn>
             )

@@ -27,18 +27,12 @@ describe.concurrent('Chemsavers TypeGuards', () => {
       expect(isValidSearchResponseItem(null)).toBe(false);
     });
 
-    it.for([
-      'not an object',
-      123,
-      true,
-      false,
-      undefined,
-      () => {},
-      Symbol('product'),
-      [],
-    ])('should return false for non-object value %#: %j', (value, { expect }) => {
-      expect(isValidSearchResponseItem(value)).toBe(false);
-    });
+    it.for(['not an object', 123, true, false, undefined, () => {}, Symbol('product'), []])(
+      'should return false for non-object value %#: %j',
+      (value, { expect }) => {
+        expect(isValidSearchResponseItem(value)).toBe(false);
+      },
+    );
 
     it('should return false for objects missing document property', ({ expect }) => {
       const noDocument = {
@@ -210,18 +204,12 @@ describe.concurrent('Chemsavers TypeGuards', () => {
       expect(isValidSearchResponse(null)).toBe(false);
     });
 
-    it.for([
-      'not an object',
-      123,
-      true,
-      false,
-      undefined,
-      () => {},
-      Symbol('response'),
-      [],
-    ])('should return false for non-object value %#: %j', (value, { expect }) => {
-      expect(isValidSearchResponse(value)).toBe(false);
-    });
+    it.for(['not an object', 123, true, false, undefined, () => {}, Symbol('response'), []])(
+      'should return false for non-object value %#: %j',
+      (value, { expect }) => {
+        expect(isValidSearchResponse(value)).toBe(false);
+      },
+    );
 
     it('should return false for objects missing results property', ({ expect }) => {
       const noResults = {

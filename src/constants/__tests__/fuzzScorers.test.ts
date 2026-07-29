@@ -39,9 +39,12 @@ describe.concurrent('fuzzScorers', () => {
   });
 
   describe('isFuzzScorerName', () => {
-    it.for([...FUZZ_SCORER_NAMES])('returns true for registered scorer name %j', (name, { expect }) => {
-      expect(isFuzzScorerName(name)).toBe(true);
-    });
+    it.for([...FUZZ_SCORER_NAMES])(
+      'returns true for registered scorer name %j',
+      (name, { expect }) => {
+        expect(isFuzzScorerName(name)).toBe(true);
+      },
+    );
 
     it('returns false for unknown strings', ({ expect }) => {
       expect(isFuzzScorerName('not_a_scorer')).toBe(false);

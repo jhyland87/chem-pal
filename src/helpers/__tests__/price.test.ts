@@ -145,11 +145,12 @@ describe('formatUnitPrice', () => {
   });
 
   it('returns an empty string when there is no unit price to show', () => {
+    expect(formatUnitPrice({ currencyCode: 'USD', quantity: 100, uom: 'g' }, undefined)).toBe('');
     expect(
-      formatUnitPrice({ currencyCode: 'USD', quantity: 100, uom: 'g' }, undefined),
-    ).toBe('');
-    expect(
-      formatUnitPrice({ price: 10, usdPrice: 10, currencyCode: 'USD', quantity: 1, uom: 'xyz' }, undefined),
+      formatUnitPrice(
+        { price: 10, usdPrice: 10, currencyCode: 'USD', quantity: 1, uom: 'xyz' },
+        undefined,
+      ),
     ).toBe('');
   });
 });
@@ -182,8 +183,8 @@ describe('formatUnitPriceExact', () => {
   });
 
   it('returns an empty string when there is no unit price to show', () => {
-    expect(
-      formatUnitPriceExact({ currencyCode: 'USD', quantity: 100, uom: 'g' }, undefined),
-    ).toBe('');
+    expect(formatUnitPriceExact({ currencyCode: 'USD', quantity: 100, uom: 'g' }, undefined)).toBe(
+      '',
+    );
   });
 });

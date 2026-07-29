@@ -28,7 +28,7 @@ describe('ProductBuilder availability — schema.org ItemAvailability labels', (
   });
 
   it.each(Object.values(AVAILABILITY))(
-    "stores enum member %s from its own uppercased value (normalizing casing)",
+    'stores enum member %s from its own uppercased value (normalizing casing)',
     (value) => {
       expect(setAvailability(value.toUpperCase())).toBe(value);
     },

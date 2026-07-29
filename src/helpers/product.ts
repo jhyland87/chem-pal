@@ -176,7 +176,13 @@ export function hasExpandableDetail(product: Product): boolean {
 }
 
 /** Keys stripped from copied product info — internal/derived noise. */
-const NON_EXPORTED_PRODUCT_KEYS = ['currencySymbol', 'baseQuantity', 'cacheKey', '_id', 'parentProduct'];
+const NON_EXPORTED_PRODUCT_KEYS = [
+  'currencySymbol',
+  'baseQuantity',
+  'cacheKey',
+  '_id',
+  'parentProduct',
+];
 
 /**
  * Splits a flat {@link ProductImage} list into separate `images` and

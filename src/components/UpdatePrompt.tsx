@@ -7,12 +7,14 @@ import { WhatsNewModal } from './WhatsNewModal';
 /**
  * Props for {@link UpdatePrompt}.
  * - `notice` - The pending update, or `undefined` to render nothing.
- * - `onDismiss` - Invoked when the user closes the prompt.
+ * - `onDismiss` - Invoked when the user dismisses the prompt for good (✕).
+ * - `onSnooze` - Invoked when the user defers the prompt (modal "Later").
  * - `onApply` - Invoked when the user takes the call to action.
  */
 interface UpdatePromptProps {
   notice: UpdateNotice | undefined;
   onDismiss: () => void;
+  onSnooze: () => void;
   onApply: () => void;
 }
 
@@ -28,14 +30,14 @@ interface UpdatePromptProps {
  *
  * Three levels of "not now", deliberately distinct:
  * - **modal open** — the snackbar hides, so one update is never announced twice;
- * - **"Later"** — the notes have been read, so the snackbar stays gone for this
- *   session; nothing is persisted, so the update prompts again next open;
- * - **✕ on the snackbar** — a real dismissal, persisted per version by
- *   `useUpdateAvailable`, so that version never prompts again.
+ * - **"Later"** — a snooze, persisted per version by `useUpdateAvailable`, so
+ *   the update stays gone across refreshes and prompts again once it expires;
+ * - **✕ on the snackbar** — a real dismissal, persisted per version, so that
+ *   version never prompts again.
  *
  * It has no auto-hide timeout — a popup can be open for a second or two, so a
  * timed dismissal would routinely never be seen. It closes only on an explicit
- * action, and `useUpdateAvailable` remembers the dismissal per version.
+ * action, and `useUpdateAvailable` remembers the snooze/dismissal per version.
  * @component
  * @category Components
  * @param props - The prompt props (see {@link UpdatePromptProps}).
@@ -47,12 +49,8 @@ interface UpdatePromptProps {
  * ```
  * @source
  */
-export function UpdatePrompt({ notice, onDismiss, onApply }: UpdatePromptProps) {
+export function UpdatePrompt({ notice, onDismiss, onSnooze, onApply }: UpdatePromptProps) {
   const [notesOpen, setNotesOpen] = useState(false);
-  // Set once the user has read the notes and closed the modal. Distinct from
-  // `onDismiss`: nothing is persisted, so the update prompts again next open —
-  // it just stops re-announcing itself for the rest of this session.
-  const [notesSeen, setNotesSeen] = useState(false);
 
   if (!notice) return null;
 
@@ -80,9 +78,9 @@ export function UpdatePrompt({ notice, onDismiss, onApply }: UpdatePromptProps) 
         testId="update-snackbar"
         actionTestId="update-apply"
         dismissTestId="update-dismiss"
-        // Hidden while the modal is up (never two notices for one update), and
-        // stays hidden once the notes have been read and closed.
-        open={!notesOpen && !notesSeen}
+        // Hidden while the modal is up (never two notices for one update).
+        // Closing via "Later" or ✕ clears `notice`, unmounting the whole prompt.
+        open={!notesOpen}
         message={i18n('update_available_message', [notice.version])}
         actionLabel={actionLabel}
         onAction={handleAction}
@@ -94,7 +92,7 @@ export function UpdatePrompt({ notice, onDismiss, onApply }: UpdatePromptProps) 
         open={notesOpen}
         onClose={() => {
           setNotesOpen(false);
-          setNotesSeen(true);
+          onSnooze();
         }}
         onApply={onApply}
       />

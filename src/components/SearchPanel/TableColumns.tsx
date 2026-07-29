@@ -350,7 +350,9 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         // else the product's own variants. A flattened variant row (ungrouped) has
         // neither and is resolved by its stamped priceSeriesKey inside the helper.
         const variants: Variant[] =
-          row.subRows.length > 0 ? row.subRows.map((sub) => sub.original) : (product.variants ?? []);
+          row.subRows.length > 0
+            ? row.subRows.map((sub) => sub.original)
+            : (product.variants ?? []);
         const points = resolveRowTrendPoints(
           product,
           resolveDisplayedVariants(product, variants),

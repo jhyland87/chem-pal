@@ -29,18 +29,12 @@ describe.concurrent('OnyxMet TypeGuards', () => {
       expect(isSearchResultItem(null)).toBe(false);
     });
 
-    it.for([
-      'not an object',
-      123,
-      true,
-      false,
-      undefined,
-      () => {},
-      Symbol('item'),
-      [],
-    ])('should return false for non-object value %#: %j', (value, { expect }) => {
-      expect(isSearchResultItem(value)).toBe(false);
-    });
+    it.for(['not an object', 123, true, false, undefined, () => {}, Symbol('item'), []])(
+      'should return false for non-object value %#: %j',
+      (value, { expect }) => {
+        expect(isSearchResultItem(value)).toBe(false);
+      },
+    );
 
     it.for([
       {

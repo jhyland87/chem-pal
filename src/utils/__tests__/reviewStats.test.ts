@@ -85,11 +85,14 @@ describe('reviewStats', () => {
       expect(stored().installedAt).toBeGreaterThan(0);
     });
 
-    it.each([0, -3, NaN])('counts the search but adds no products for %s results', async (count) => {
-      await recordSearch(count);
-      expect(stored().searchCount).toBe(1);
-      expect(stored().totalResults).toBe(0);
-    });
+    it.each([0, -3, NaN])(
+      'counts the search but adds no products for %s results',
+      async (count) => {
+        await recordSearch(count);
+        expect(stored().searchCount).toBe(1);
+        expect(stored().totalResults).toBe(0);
+      },
+    );
   });
 
   describe('snoozeReviewPrompt', () => {
