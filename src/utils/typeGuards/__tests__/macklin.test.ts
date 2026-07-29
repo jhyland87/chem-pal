@@ -28,18 +28,12 @@ describe.concurrent('Macklin TypeGuards', () => {
       expect(isTimestampResponse(null)).toBe(false);
     });
 
-    it.for([
-      'not an object',
-      123,
-      true,
-      false,
-      undefined,
-      () => {},
-      Symbol('timestamp'),
-      [],
-    ])('should return false for non-object value %#: %j', (value, { expect }) => {
-      expect(isTimestampResponse(value)).toBe(false);
-    });
+    it.for(['not an object', 123, true, false, undefined, () => {}, Symbol('timestamp'), []])(
+      'should return false for non-object value %#: %j',
+      (value, { expect }) => {
+        expect(isTimestampResponse(value)).toBe(false);
+      },
+    );
 
     it('should return false for objects missing timestamp property', ({ expect }) => {
       const noTimestamp = {};
@@ -72,18 +66,12 @@ describe.concurrent('Macklin TypeGuards', () => {
       expect(isMacklinApiResponse(null)).toBe(false);
     });
 
-    it.for([
-      'not an object',
-      123,
-      true,
-      false,
-      undefined,
-      () => {},
-      Symbol('response'),
-      [],
-    ])('should return false for non-object value %#: %j', (value, { expect }) => {
-      expect(isMacklinApiResponse(value)).toBe(false);
-    });
+    it.for(['not an object', 123, true, false, undefined, () => {}, Symbol('response'), []])(
+      'should return false for non-object value %#: %j',
+      (value, { expect }) => {
+        expect(isMacklinApiResponse(value)).toBe(false);
+      },
+    );
 
     it.for([
       {
@@ -189,18 +177,12 @@ describe.concurrent('Macklin TypeGuards', () => {
       expect(isMacklinSearchResult(null)).toBe(false);
     });
 
-    it.for([
-      'not an object',
-      123,
-      true,
-      false,
-      undefined,
-      () => {},
-      Symbol('searchResult'),
-      [],
-    ])('should return false for non-object value %#: %j', (value, { expect }) => {
-      expect(isMacklinSearchResult(value)).toBe(false);
-    });
+    it.for(['not an object', 123, true, false, undefined, () => {}, Symbol('searchResult'), []])(
+      'should return false for non-object value %#: %j',
+      (value, { expect }) => {
+        expect(isMacklinSearchResult(value)).toBe(false);
+      },
+    );
 
     it('should return false for objects missing list property', ({ expect }) => {
       const noList = {};
@@ -250,18 +232,12 @@ describe.concurrent('Macklin TypeGuards', () => {
       expect(isMacklinProductDetailsResponse(null)).toBe(false);
     });
 
-    it.for([
-      'not an object',
-      123,
-      true,
-      false,
-      undefined,
-      () => {},
-      Symbol('response'),
-      [],
-    ])('should return false for non-object value %#: %j', (value, { expect }) => {
-      expect(isMacklinProductDetailsResponse(value)).toBe(false);
-    });
+    it.for(['not an object', 123, true, false, undefined, () => {}, Symbol('response'), []])(
+      'should return false for non-object value %#: %j',
+      (value, { expect }) => {
+        expect(isMacklinProductDetailsResponse(value)).toBe(false);
+      },
+    );
 
     it('should return false for objects missing list property', ({ expect }) => {
       const noList = {};
@@ -319,18 +295,12 @@ describe.concurrent('Macklin TypeGuards', () => {
       expect(isMacklinProductDetails(null)).toBe(false);
     });
 
-    it.for([
-      'not an object',
-      123,
-      true,
-      false,
-      undefined,
-      () => {},
-      Symbol('productDetails'),
-      [],
-    ])('should return false for non-object value %#: %j', (value, { expect }) => {
-      expect(isMacklinProductDetails(value)).toBe(false);
-    });
+    it.for(['not an object', 123, true, false, undefined, () => {}, Symbol('productDetails'), []])(
+      'should return false for non-object value %#: %j',
+      (value, { expect }) => {
+        expect(isMacklinProductDetails(value)).toBe(false);
+      },
+    );
 
     it.for([
       {

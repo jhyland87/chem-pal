@@ -52,6 +52,9 @@
     "minSearches": 5,
     "maxDismissals": 2
   },
+  "updatePrompt": {
+    "snoozeHours": 24
+  },
   "hotkeys": {
     "sequenceResetMs": 1500,
     "bindings": [

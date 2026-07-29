@@ -11,6 +11,7 @@
  * @source
  */
 
+import { updatePrompt } from '@/../config.json';
 import semver from 'semver';
 
 /**
@@ -18,6 +19,13 @@ import semver from 'semver';
  * @category Helpers
  */
 export const UPDATE_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * How long "Later" suppresses the update prompt before it re-prompts. Sourced
+ * from `config.json` (`updatePrompt.snoozeHours`).
+ * @category Helpers
+ */
+export const UPDATE_SNOOZE_MS = updatePrompt.snoozeHours * 60 * 60 * 1000;
 
 /**
  * How the running extension was installed.

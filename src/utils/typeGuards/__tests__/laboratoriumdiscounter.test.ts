@@ -63,18 +63,12 @@ describe.concurrent('LaboratoriumDiscounter TypeGuards', () => {
       expect(isSearchResponseOk(null)).toBe(false);
     });
 
-    it.for([
-      'not an object',
-      123,
-      true,
-      false,
-      undefined,
-      () => {},
-      Symbol('response'),
-      [],
-    ])('should return false for non-object value %#: %j', (value, { expect }) => {
-      expect(isSearchResponseOk(value)).toBe(false);
-    });
+    it.for(['not an object', 123, true, false, undefined, () => {}, Symbol('response'), []])(
+      'should return false for non-object value %#: %j',
+      (value, { expect }) => {
+        expect(isSearchResponseOk(value)).toBe(false);
+      },
+    );
 
     it.for([
       {
@@ -243,18 +237,12 @@ describe.concurrent('LaboratoriumDiscounter TypeGuards', () => {
       expect(isPriceObject(null)).toBe(false);
     });
 
-    it.for([
-      'not an object',
-      123,
-      true,
-      false,
-      undefined,
-      () => {},
-      Symbol('price'),
-      [],
-    ])('should return false for non-object value %#: %j', (value, { expect }) => {
-      expect(isPriceObject(value)).toBe(false);
-    });
+    it.for(['not an object', 123, true, false, undefined, () => {}, Symbol('price'), []])(
+      'should return false for non-object value %#: %j',
+      (value, { expect }) => {
+        expect(isPriceObject(value)).toBe(false);
+      },
+    );
 
     it.for([
       {
@@ -333,18 +321,12 @@ describe.concurrent('LaboratoriumDiscounter TypeGuards', () => {
       expect(isSearchResponseProduct(null)).toBe(false);
     });
 
-    it.for([
-      'not an object',
-      123,
-      true,
-      false,
-      undefined,
-      () => {},
-      Symbol('product'),
-      [],
-    ])('should return false for non-object value %#: %j', (value, { expect }) => {
-      expect(isSearchResponseProduct(value)).toBe(false);
-    });
+    it.for(['not an object', 123, true, false, undefined, () => {}, Symbol('product'), []])(
+      'should return false for non-object value %#: %j',
+      (value, { expect }) => {
+        expect(isSearchResponseProduct(value)).toBe(false);
+      },
+    );
 
     it.for([
       {
@@ -444,18 +426,12 @@ describe.concurrent('LaboratoriumDiscounter TypeGuards', () => {
       expect(isProductObject(null)).toBe(false);
     });
 
-    it.for([
-      'not an object',
-      123,
-      true,
-      false,
-      undefined,
-      () => {},
-      Symbol('product'),
-      [],
-    ])('should return false for non-object value %#: %j', (value, { expect }) => {
-      expect(isProductObject(value)).toBe(false);
-    });
+    it.for(['not an object', 123, true, false, undefined, () => {}, Symbol('product'), []])(
+      'should return false for non-object value %#: %j',
+      (value, { expect }) => {
+        expect(isProductObject(value)).toBe(false);
+      },
+    );
 
     it.for([
       {
@@ -539,18 +515,12 @@ describe.concurrent('LaboratoriumDiscounter TypeGuards', () => {
       expect(isValidSearchParams(null)).toBe(false);
     });
 
-    it.for([
-      'not an object',
-      123,
-      true,
-      false,
-      undefined,
-      () => {},
-      Symbol('params'),
-      [],
-    ])('should return false for non-object value %#: %j', (value, { expect }) => {
-      expect(isValidSearchParams(value)).toBe(false);
-    });
+    it.for(['not an object', 123, true, false, undefined, () => {}, Symbol('params'), []])(
+      'should return false for non-object value %#: %j',
+      (value, { expect }) => {
+        expect(isValidSearchParams(value)).toBe(false);
+      },
+    );
 
     it.for([
       {

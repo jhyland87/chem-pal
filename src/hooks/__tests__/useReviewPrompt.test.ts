@@ -31,7 +31,9 @@ function setupChrome({
   webstore = true,
   firefox = false,
 }: { webstore?: boolean; firefox?: boolean } = {}) {
-  const manifest = webstore ? { update_url: 'https://clients2.google.com/service/update2/crx' } : {};
+  const manifest = webstore
+    ? { update_url: 'https://clients2.google.com/service/update2/crx' }
+    : {};
   const url = firefox ? 'moz-extension://abc/' : 'chrome-extension://abc/';
   (globalThis as unknown as { chrome: Record<string, unknown> }).chrome = {
     runtime: { getManifest: () => manifest, getURL: () => url },

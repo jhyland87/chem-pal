@@ -683,9 +683,7 @@ export default function SettingsPanel() {
                 {i18n('settings_clear_price_history')}
               </Button>
               {priceHistoryCleared && (
-                <Typography variant="caption">
-                  {i18n('settings_price_history_cleared')}
-                </Typography>
+                <Typography variant="caption">{i18n('settings_price_history_cleared')}</Typography>
               )}
               {priceStats && (
                 <Typography variant="caption" color="text.secondary">

@@ -34,19 +34,12 @@ describe.concurrent('ProductBuilder TypeGuards', () => {
       });
     });
 
-    it.for([
-      null,
-      undefined,
-      123,
-      true,
-      false,
-      {},
-      [],
-      () => {},
-      Symbol('IN_STOCK'),
-    ])('should return false for non-string value %#: %j', (value, { expect }) => {
-      expect(isAvailability(value)).toBe(false);
-    });
+    it.for([null, undefined, 123, true, false, {}, [], () => {}, Symbol('IN_STOCK')])(
+      'should return false for non-string value %#: %j',
+      (value, { expect }) => {
+        expect(isAvailability(value)).toBe(false);
+      },
+    );
   });
 
   describe('isValidVariant', () => {
@@ -74,17 +67,12 @@ describe.concurrent('ProductBuilder TypeGuards', () => {
       expect(isValidVariant(null)).toBe(false);
     });
 
-    it.for([
-      'not an object',
-      123,
-      true,
-      false,
-      undefined,
-      () => {},
-      Symbol('variant'),
-    ])('should return false for non-object value %#: %j', (value, { expect }) => {
-      expect(isValidVariant(value)).toBe(false);
-    });
+    it.for(['not an object', 123, true, false, undefined, () => {}, Symbol('variant')])(
+      'should return false for non-object value %#: %j',
+      (value, { expect }) => {
+        expect(isValidVariant(value)).toBe(false);
+      },
+    );
 
     it.for([
       {
@@ -184,11 +172,8 @@ describe.concurrent('ProductBuilder TypeGuards', () => {
       expect(isCachedProductData([{ title: 'x' }])).toBe(false);
     });
 
-    it.for([42, 'id-1', true])(
-      'should return false for primitive %#: %j',
-      (value, { expect }) => {
-        expect(isCachedProductData(value)).toBe(false);
-      },
-    );
+    it.for([42, 'id-1', true])('should return false for primitive %#: %j', (value, { expect }) => {
+      expect(isCachedProductData(value)).toBe(false);
+    });
   });
 });

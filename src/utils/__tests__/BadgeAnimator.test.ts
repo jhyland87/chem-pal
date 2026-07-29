@@ -216,12 +216,9 @@ describe('BadgeAnimator', () => {
       },
     );
 
-    it.each(Object.entries(BadgeAnimator.charsets))(
-      '%s is a non-empty array',
-      (_name, charset) => {
-        expect(Array.isArray(charset)).toBe(true);
-        expect(charset.length).toBeGreaterThan(0);
-      },
-    );
+    it.each(Object.entries(BadgeAnimator.charsets))('%s is a non-empty array', (_name, charset) => {
+      expect(Array.isArray(charset)).toBe(true);
+      expect(charset.length).toBeGreaterThan(0);
+    });
   });
 });

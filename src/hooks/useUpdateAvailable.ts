@@ -2,6 +2,7 @@ import { CACHE } from '@/constants/common';
 import type { InstallSource, ReleaseSection, UpdateInfo } from '@/helpers/updates';
 import {
   UPDATE_CHECK_INTERVAL_MS,
+  UPDATE_SNOOZE_MS,
   getAvailableUpdate,
   getInstallSource,
   getReleaseNotes,
@@ -23,6 +24,10 @@ interface UpdateCheckState {
   releaseUrl?: string;
   /** Version the user dismissed; suppresses the prompt for that version only. */
   dismissedVersion?: string;
+  /** Version the user snoozed via "Later"; suppressed until {@link UpdateCheckState.snoozedUntil}. */
+  snoozedVersion?: string;
+  /** Epoch ms until which {@link UpdateCheckState.snoozedVersion} stays suppressed. */
+  snoozedUntil?: number;
   /** The version {@link UpdateCheckState.notes} belongs to. */
   notesVersion?: string;
   /** Cached release notes, so the modal opens without a second fetch. */
@@ -63,8 +68,10 @@ export interface UpdateNotice {
 interface UseUpdateAvailable {
   /** The pending update, or `undefined` when up to date or already dismissed. */
   notice: UpdateNotice | undefined;
-  /** Suppresses the prompt for {@link UpdateNotice.version}. */
+  /** Suppresses the prompt for {@link UpdateNotice.version} for good. */
   dismiss: () => void;
+  /** Suppresses the prompt for {@link UpdateNotice.version} for {@link UPDATE_SNOOZE_MS}. */
+  snooze: () => void;
   /** Reloads the extension (Web Store) or opens the release page (manual). */
   applyUpdate: () => void;
 }
@@ -188,17 +195,52 @@ async function fetchNotesOnce(
 }
 
 /**
- * Determines whether `version` is newer than the running build and hasn't been
- * dismissed.
+ * Reports whether the prompt for `version` is currently held back — either
+ * dismissed for good, or snoozed and not yet expired.
+ * @param state - The stored check state carrying the dismissal/snooze.
+ * @param version - The version a prompt would be about.
+ * @param now - Current epoch ms, compared against the snooze expiry.
+ * @returns True when `version` should not be prompted right now.
+ * @source
+ */
+function isSuppressed(state: UpdateCheckState, version: string, now: number): boolean {
+  if (version === state.dismissedVersion) return true;
+  return (
+    state.snoozedVersion === version &&
+    typeof state.snoozedUntil === 'number' &&
+    now < state.snoozedUntil
+  );
+}
+
+/**
+ * Determines whether `version` is newer than the running build and isn't being
+ * held back by a dismissal or an active snooze.
+ * @param state - The stored check state carrying the dismissal/snooze.
  * @param version - Candidate version, without a leading `v`.
- * @param dismissedVersion - The version the user last dismissed, if any.
+ * @param now - Current epoch ms, compared against the snooze expiry.
  * @returns True when the user should be prompted about `version`.
  * @source
  */
-function shouldPrompt(version: string | undefined, dismissedVersion: string | undefined): boolean {
-  if (!version || version === dismissedVersion) return false;
+function shouldPrompt(state: UpdateCheckState, version: string | undefined, now: number): boolean {
+  if (!version || isSuppressed(state, version, now)) return false;
   const valid = semver.valid(version);
   return valid !== null && semver.gt(valid, __APP_VERSION__);
+}
+
+/**
+ * Merges a suppression patch (a dismissal or a snooze) into the stored check
+ * state, re-reading first so a concurrent write isn't clobbered.
+ * @param patch - The fields to record, e.g. `{ dismissedVersion }`.
+ * @returns Resolves once the merged state is written.
+ * @source
+ */
+async function persistSuppression(patch: Partial<UpdateCheckState>): Promise<void> {
+  const stored = await cstorage.local.get([CACHE.UPDATE_CHECK]);
+  const state: UpdateCheckState = isUpdateCheckState(stored[CACHE.UPDATE_CHECK])
+    ? stored[CACHE.UPDATE_CHECK]
+    : {};
+  // Leave UPDATE_PENDING alone — it belongs to the service worker.
+  await cstorage.local.set({ [CACHE.UPDATE_CHECK]: { ...state, ...patch } });
 }
 
 /**
@@ -226,7 +268,9 @@ function shouldPrompt(version: string | undefined, dismissedVersion: string | un
  */
 export function useUpdateAvailable(): UseUpdateAvailable {
   const [notice, setNotice] = useState<UpdateNotice | undefined>(undefined);
-  const dismissedRef = useRef<string | undefined>(undefined);
+  // Mirrors the stored dismissal/snooze so the storage-change listener can
+  // evaluate suppression without re-reading storage on every event.
+  const suppressedRef = useRef<UpdateCheckState>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -238,14 +282,15 @@ export function useUpdateAvailable(): UseUpdateAvailable {
         const state: UpdateCheckState = isUpdateCheckState(stored[CACHE.UPDATE_CHECK])
           ? stored[CACHE.UPDATE_CHECK]
           : {};
-        dismissedRef.current = state.dismissedVersion;
+        suppressedRef.current = state;
+        const now = Date.now();
 
         // Web Store: the browser already staged an update, so there's nothing to
         // discover — but onUpdateAvailable reports only a version, so the notes
         // still have to be looked up (once per staged version).
         if (getInstallSource() === 'webstore') {
           const pending = stored[CACHE.UPDATE_PENDING];
-          if (!isUpdatePendingState(pending) || pending.version === state.dismissedVersion) return;
+          if (!isUpdatePendingState(pending) || isSuppressed(state, pending.version, now)) return;
 
           // Show the prompt immediately; the notes fill in behind it if they
           // aren't already cached, so a slow lookup never delays the prompt.
@@ -271,7 +316,7 @@ export function useUpdateAvailable(): UseUpdateAvailable {
         const elapsed = Date.now() - (state.lastCheckedAt ?? 0);
         if (elapsed < UPDATE_CHECK_INTERVAL_MS) {
           const cachedVersion = state.latestVersion;
-          if (!cancelled && cachedVersion && shouldPrompt(cachedVersion, state.dismissedVersion)) {
+          if (!cancelled && cachedVersion && shouldPrompt(state, cachedVersion, now)) {
             setNotice({
               version: cachedVersion,
               source: 'manual',
@@ -283,7 +328,7 @@ export function useUpdateAvailable(): UseUpdateAvailable {
         }
 
         const update = await pollOnce(state);
-        if (!cancelled && update && update.version !== state.dismissedVersion) {
+        if (!cancelled && update && !isSuppressed(state, update.version, now)) {
           setNotice({ ...update, source: 'manual' });
         }
       } catch (error) {
@@ -304,7 +349,7 @@ export function useUpdateAvailable(): UseUpdateAvailable {
       if (area !== 'local') return;
       const change = changes[CACHE.UPDATE_PENDING];
       if (!change || !isUpdatePendingState(change.newValue)) return;
-      if (change.newValue.version === dismissedRef.current) return;
+      if (isSuppressed(suppressedRef.current, change.newValue.version, Date.now())) return;
       // Notes are looked up by the mount effect on the next open; showing the
       // prompt without them is better than delaying it behind a fetch.
       setNotice({ version: change.newValue.version, source: 'webstore', notes: [] });
@@ -317,19 +362,27 @@ export function useUpdateAvailable(): UseUpdateAvailable {
     const dismissed = notice?.version;
     setNotice(undefined);
     if (!dismissed) return;
-    dismissedRef.current = dismissed;
+    suppressedRef.current = { ...suppressedRef.current, dismissedVersion: dismissed };
     void (async () => {
       try {
-        const stored = await cstorage.local.get([CACHE.UPDATE_CHECK]);
-        const state: UpdateCheckState = isUpdateCheckState(stored[CACHE.UPDATE_CHECK])
-          ? stored[CACHE.UPDATE_CHECK]
-          : {};
-        // Leave UPDATE_PENDING alone — it belongs to the service worker.
-        await cstorage.local.set({
-          [CACHE.UPDATE_CHECK]: { ...state, dismissedVersion: dismissed },
-        });
+        await persistSuppression({ dismissedVersion: dismissed });
       } catch (error) {
         console.error('Failed to record update dismissal:', { error });
+      }
+    })();
+  }, [notice]);
+
+  const snooze = useCallback(() => {
+    const snoozed = notice?.version;
+    setNotice(undefined);
+    if (!snoozed) return;
+    const snoozedUntil = Date.now() + UPDATE_SNOOZE_MS;
+    suppressedRef.current = { ...suppressedRef.current, snoozedVersion: snoozed, snoozedUntil };
+    void (async () => {
+      try {
+        await persistSuppression({ snoozedVersion: snoozed, snoozedUntil });
+      } catch (error) {
+        console.error('Failed to record update snooze:', { error });
       }
     })();
   }, [notice]);
@@ -346,5 +399,5 @@ export function useUpdateAvailable(): UseUpdateAvailable {
     }
   }, [notice]);
 
-  return { notice, dismiss, applyUpdate };
+  return { notice, dismiss, snooze, applyUpdate };
 }

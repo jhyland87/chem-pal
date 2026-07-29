@@ -23,30 +23,40 @@ const WEBSTORE: UpdateNotice = { version: '1.3.0', source: 'webstore', notes: []
 
 describe('UpdatePrompt', () => {
   it('renders nothing when there is no update', () => {
-    render(<UpdatePrompt notice={undefined} onDismiss={vi.fn()} onApply={vi.fn()} />);
+    render(
+      <UpdatePrompt notice={undefined} onDismiss={vi.fn()} onSnooze={vi.fn()} onApply={vi.fn()} />,
+    );
     expect(screen.queryByTestId('update-snackbar')).not.toBeInTheDocument();
   });
 
   // Asserts the version reaches the message, not the exact wording — the copy
   // lives in _locales and is free to change.
   it('shows the version in the message', () => {
-    render(<UpdatePrompt notice={MANUAL} onDismiss={vi.fn()} onApply={vi.fn()} />);
+    render(
+      <UpdatePrompt notice={MANUAL} onDismiss={vi.fn()} onSnooze={vi.fn()} onApply={vi.fn()} />,
+    );
     expect(screen.getByTestId('update-snackbar')).toHaveTextContent('1.3.0');
   });
 
   it('offers the release page for manual installs', () => {
-    render(<UpdatePrompt notice={MANUAL} onDismiss={vi.fn()} onApply={vi.fn()} />);
+    render(
+      <UpdatePrompt notice={MANUAL} onDismiss={vi.fn()} onSnooze={vi.fn()} onApply={vi.fn()} />,
+    );
     expect(screen.getByTestId('update-apply')).toHaveTextContent('View release');
   });
 
   it('offers a reload for web store installs', () => {
-    render(<UpdatePrompt notice={WEBSTORE} onDismiss={vi.fn()} onApply={vi.fn()} />);
+    render(
+      <UpdatePrompt notice={WEBSTORE} onDismiss={vi.fn()} onSnooze={vi.fn()} onApply={vi.fn()} />,
+    );
     expect(screen.getByTestId('update-apply')).toHaveTextContent('Reload now');
   });
 
   it('calls onApply when the action is clicked', () => {
     const onApply = vi.fn();
-    render(<UpdatePrompt notice={MANUAL} onDismiss={vi.fn()} onApply={onApply} />);
+    render(
+      <UpdatePrompt notice={MANUAL} onDismiss={vi.fn()} onSnooze={vi.fn()} onApply={onApply} />,
+    );
     fireEvent.click(screen.getByTestId('update-apply'));
     expect(onApply).toHaveBeenCalledTimes(1);
   });
@@ -55,7 +65,9 @@ describe('UpdatePrompt', () => {
   // drops its built-in close button as soon as `action` is set.
   it('calls onDismiss when the close button is clicked', () => {
     const onDismiss = vi.fn();
-    render(<UpdatePrompt notice={MANUAL} onDismiss={onDismiss} onApply={vi.fn()} />);
+    render(
+      <UpdatePrompt notice={MANUAL} onDismiss={onDismiss} onSnooze={vi.fn()} onApply={vi.fn()} />,
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
     expect(onDismiss).toHaveBeenCalledTimes(1);
   });
@@ -64,13 +76,27 @@ describe('UpdatePrompt', () => {
     const withNotes: UpdateNotice = { ...MANUAL, notes: NOTES };
 
     it("offers What's new instead of the direct action", () => {
-      render(<UpdatePrompt notice={withNotes} onDismiss={vi.fn()} onApply={vi.fn()} />);
+      render(
+        <UpdatePrompt
+          notice={withNotes}
+          onDismiss={vi.fn()}
+          onSnooze={vi.fn()}
+          onApply={vi.fn()}
+        />,
+      );
       expect(screen.getByTestId('update-apply')).toHaveTextContent("What's new");
     });
 
     it('opens the modal with the notes rather than applying immediately', () => {
       const onApply = vi.fn();
-      render(<UpdatePrompt notice={withNotes} onDismiss={vi.fn()} onApply={onApply} />);
+      render(
+        <UpdatePrompt
+          notice={withNotes}
+          onDismiss={vi.fn()}
+          onSnooze={vi.fn()}
+          onApply={onApply}
+        />,
+      );
 
       expect(screen.queryByTestId('whats-new-modal')).not.toBeInTheDocument();
       fireEvent.click(screen.getByTestId('update-apply'));
@@ -85,7 +111,14 @@ describe('UpdatePrompt', () => {
 
     it("applies from the modal's call to action", () => {
       const onApply = vi.fn();
-      render(<UpdatePrompt notice={withNotes} onDismiss={vi.fn()} onApply={onApply} />);
+      render(
+        <UpdatePrompt
+          notice={withNotes}
+          onDismiss={vi.fn()}
+          onSnooze={vi.fn()}
+          onApply={onApply}
+        />,
+      );
       fireEvent.click(screen.getByTestId('update-apply'));
 
       fireEvent.click(screen.getByTestId('whats-new-apply'));
@@ -93,14 +126,23 @@ describe('UpdatePrompt', () => {
       expect(onApply).toHaveBeenCalledTimes(1);
     });
 
-    it('closes the modal without applying on Later', () => {
+    it('closes the modal and snoozes on Later, without applying', () => {
       const onApply = vi.fn();
-      render(<UpdatePrompt notice={withNotes} onDismiss={vi.fn()} onApply={onApply} />);
+      const onSnooze = vi.fn();
+      render(
+        <UpdatePrompt
+          notice={withNotes}
+          onDismiss={vi.fn()}
+          onSnooze={onSnooze}
+          onApply={onApply}
+        />,
+      );
       fireEvent.click(screen.getByTestId('update-apply'));
 
       fireEvent.click(screen.getByTestId('whats-new-close'));
 
       expect(screen.queryByTestId('whats-new-modal')).not.toBeInTheDocument();
+      expect(onSnooze).toHaveBeenCalledTimes(1);
       expect(onApply).not.toHaveBeenCalled();
     });
 
@@ -108,7 +150,14 @@ describe('UpdatePrompt', () => {
     // The node lingers through MUI's exit transition, so this waits it out
     // rather than asserting on the frame right after the click.
     it('hides the snackbar while the modal is open', async () => {
-      render(<UpdatePrompt notice={withNotes} onDismiss={vi.fn()} onApply={vi.fn()} />);
+      render(
+        <UpdatePrompt
+          notice={withNotes}
+          onDismiss={vi.fn()}
+          onSnooze={vi.fn()}
+          onApply={vi.fn()}
+        />,
+      );
       expect(screen.getByTestId('update-snackbar')).toBeInTheDocument();
 
       fireEvent.click(screen.getByTestId('update-apply'));
@@ -117,35 +166,36 @@ describe('UpdatePrompt', () => {
       await waitForElementToBeRemoved(() => screen.queryByTestId('update-snackbar'));
     });
 
-    // "Later" means stop showing this now — re-opening the snackbar behind the
-    // closing modal reads as the prompt refusing to go away.
-    it('keeps the snackbar closed after Later', async () => {
-      render(<UpdatePrompt notice={withNotes} onDismiss={vi.fn()} onApply={vi.fn()} />);
-      fireEvent.click(screen.getByTestId('update-apply'));
-      await waitForElementToBeRemoved(() => screen.queryByTestId('update-snackbar'));
-
-      fireEvent.click(screen.getByTestId('whats-new-close'));
-
-      await waitFor(() => expect(screen.queryByTestId('whats-new-modal')).not.toBeInTheDocument());
-      expect(screen.queryByTestId('update-snackbar')).not.toBeInTheDocument();
-    });
-
-    // …but it is not a dismissal: nothing is persisted, so the same update still
-    // prompts on the next open.
-    it('does not record a dismissal on Later', async () => {
+    // "Later" snoozes rather than dismisses: it routes through onSnooze (a
+    // per-version snooze in the hook), never the permanent onDismiss.
+    it('snoozes rather than dismisses on Later', async () => {
       const onDismiss = vi.fn();
-      render(<UpdatePrompt notice={withNotes} onDismiss={onDismiss} onApply={vi.fn()} />);
+      const onSnooze = vi.fn();
+      render(
+        <UpdatePrompt
+          notice={withNotes}
+          onDismiss={onDismiss}
+          onSnooze={onSnooze}
+          onApply={vi.fn()}
+        />,
+      );
       fireEvent.click(screen.getByTestId('update-apply'));
 
       fireEvent.click(screen.getByTestId('whats-new-close'));
 
       await waitFor(() => expect(screen.queryByTestId('whats-new-modal')).not.toBeInTheDocument());
+      expect(onSnooze).toHaveBeenCalledTimes(1);
       expect(onDismiss).not.toHaveBeenCalled();
     });
 
     it('labels the modal action per install source', () => {
       const { unmount } = render(
-        <UpdatePrompt notice={withNotes} onDismiss={vi.fn()} onApply={vi.fn()} />,
+        <UpdatePrompt
+          notice={withNotes}
+          onDismiss={vi.fn()}
+          onSnooze={vi.fn()}
+          onApply={vi.fn()}
+        />,
       );
       fireEvent.click(screen.getByTestId('update-apply'));
       expect(screen.getByTestId('whats-new-apply')).toHaveTextContent('View release');
@@ -155,6 +205,7 @@ describe('UpdatePrompt', () => {
         <UpdatePrompt
           notice={{ ...WEBSTORE, notes: NOTES }}
           onDismiss={vi.fn()}
+          onSnooze={vi.fn()}
           onApply={vi.fn()}
         />,
       );

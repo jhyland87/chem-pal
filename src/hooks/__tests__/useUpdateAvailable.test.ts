@@ -156,6 +156,63 @@ describe('useUpdateAvailable', () => {
       );
     });
 
+    it('records the snooze and hides the notice', async () => {
+      mockRelease('v99.0.0');
+      const { result } = renderHook(() => useUpdateAvailable());
+      await waitFor(() => expect(result.current.notice).toBeDefined());
+
+      act(() => result.current.snooze());
+
+      expect(result.current.notice).toBeUndefined();
+      await waitFor(() =>
+        expect(store[CACHE.UPDATE_CHECK]).toMatchObject({
+          snoozedVersion: '99.0.0',
+          snoozedUntil: expect.any(Number),
+        }),
+      );
+    });
+
+    it('stays quiet for a version snoozed and not yet expired', async () => {
+      store[CACHE.UPDATE_CHECK] = {
+        lastCheckedAt: Date.now(),
+        latestVersion: '99.0.0',
+        releaseUrl: 'https://example.com/v99.0.0',
+        snoozedVersion: '99.0.0',
+        snoozedUntil: Date.now() + DAY_MS,
+      };
+      const { result } = renderHook(() => useUpdateAvailable());
+
+      await waitFor(() => expect(fetchMock).not.toHaveBeenCalled());
+      expect(result.current.notice).toBeUndefined();
+    });
+
+    it('prompts again once the snooze has expired', async () => {
+      store[CACHE.UPDATE_CHECK] = {
+        lastCheckedAt: Date.now(),
+        latestVersion: '99.0.0',
+        releaseUrl: 'https://example.com/v99.0.0',
+        snoozedVersion: '99.0.0',
+        snoozedUntil: Date.now() - 1000,
+      };
+      const { result } = renderHook(() => useUpdateAvailable());
+
+      await waitFor(() => expect(result.current.notice?.version).toBe('99.0.0'));
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('still prompts a newer version during an active snooze', async () => {
+      store[CACHE.UPDATE_CHECK] = {
+        lastCheckedAt: Date.now(),
+        latestVersion: '99.0.1',
+        releaseUrl: 'https://example.com/v99.0.1',
+        snoozedVersion: '99.0.0',
+        snoozedUntil: Date.now() + DAY_MS,
+      };
+      const { result } = renderHook(() => useUpdateAvailable());
+
+      await waitFor(() => expect(result.current.notice?.version).toBe('99.0.1'));
+    });
+
     it('opens the release page on applyUpdate', async () => {
       mockRelease('v99.0.0');
       const { result } = renderHook(() => useUpdateAvailable());
@@ -270,6 +327,15 @@ describe('useUpdateAvailable', () => {
 
     it('stays quiet for a staged version the user already dismissed', async () => {
       store[CACHE.UPDATE_CHECK] = { dismissedVersion: '9.9.9' };
+      store[CACHE.UPDATE_PENDING] = { version: '9.9.9', detectedAt: Date.now() };
+      const { result } = renderHook(() => useUpdateAvailable());
+
+      await waitFor(() => expect(fetchMock).not.toHaveBeenCalled());
+      expect(result.current.notice).toBeUndefined();
+    });
+
+    it('stays quiet for a staged version snoozed and not yet expired', async () => {
+      store[CACHE.UPDATE_CHECK] = { snoozedVersion: '9.9.9', snoozedUntil: Date.now() + DAY_MS };
       store[CACHE.UPDATE_PENDING] = { version: '9.9.9', detectedAt: Date.now() };
       const { result } = renderHook(() => useUpdateAvailable());
 

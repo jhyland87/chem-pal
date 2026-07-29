@@ -206,7 +206,7 @@ describe('Chem-Pal update prompt', () => {
     await page.close();
   }, 120_000);
 
-  it('keeps the prompt down after Later, but still prompts on the next open', async () => {
+  it('snoozes the prompt after Later, keeping it down across reopens', async () => {
     const body = '### Added\n\n- Something worth reading.';
     const { page } = await openExtension(`v${NEWER_VERSION}`, body);
 
@@ -221,14 +221,16 @@ describe('Chem-Pal update prompt', () => {
     await page.getByTestId('whats-new-close').click();
     await playwrightExpect(page.getByTestId('whats-new-modal')).toBeHidden();
     await playwrightExpect(snackbar).toBeHidden();
+    // "Later" records a per-version snooze, so it survives a reopen (unlike the
+    // old session-only behavior).
+    await playwrightExpect
+      .poll(async () => (await readUpdateCheck(page)).snoozedVersion, { timeout: 5_000 })
+      .toBe(NEWER_VERSION);
     await page.close();
 
-    // "Later" is session-only — unlike ✕ it records nothing, so a fresh open
-    // still surfaces the update.
     const reopened = await openExtension(`v${NEWER_VERSION}`, body);
-    await playwrightExpect(reopened.page.getByTestId('update-snackbar')).toBeVisible({
-      timeout: 10_000,
-    });
+    await reopened.page.waitForTimeout(2_000);
+    await playwrightExpect(reopened.page.getByTestId('update-snackbar')).toBeHidden();
 
     await reopened.page.close();
   }, 120_000);

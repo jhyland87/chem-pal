@@ -66,7 +66,9 @@ describe.concurrent('suppliersExcludedBySearchFilters', () => {
       expected: ['Intl', 'DomUS', 'LocalUS'],
     },
   ])('$label', ({ filters, expected }) => {
-    expect([...suppliersExcludedBySearchFilters(meta, filters)].sort()).toEqual([...expected].sort());
+    expect([...suppliersExcludedBySearchFilters(meta, filters)].sort()).toEqual(
+      [...expected].sort(),
+    );
   });
 });
 
@@ -76,8 +78,16 @@ describe.concurrent('fulfillableShippingRanges', () => {
   });
 
   it.for([
-    { label: 'a domestic supplier fulfills local + domestic', suppliers: ['DomUS'], expected: ['local', 'domestic'] },
-    { label: 'a local-only supplier fulfills only local', suppliers: ['LocalUS'], expected: ['local'] },
+    {
+      label: 'a domestic supplier fulfills local + domestic',
+      suppliers: ['DomUS'],
+      expected: ['local', 'domestic'],
+    },
+    {
+      label: 'a local-only supplier fulfills only local',
+      suppliers: ['LocalUS'],
+      expected: ['local'],
+    },
     {
       label: 'a worldwide supplier fulfills every scope',
       suppliers: ['Worldly'],
