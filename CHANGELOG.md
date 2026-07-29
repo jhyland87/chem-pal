@@ -13,6 +13,27 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-07-28
+
+### Added
+
+- New supplier: **Albo Chemicals**.
+- A gentle **review prompt** for long-time, active users, with a one-click link to leave a
+  review — and no repeat nagging once you've responded.
+- New advanced setting to override each supplier's **search-time budget** (leave empty for
+  the default, or set `0` to remove the limit).
+
+### Changed
+
+- Settings now show your cache lifetime in days and how many suppliers are excluded or
+  disabled at a glance.
+
+### Fixed
+
+- Choosing **Later** on the "update available" prompt now keeps it hidden across popup
+  reopens and refreshes, instead of reappearing right away. (The **✕** still dismisses a
+  version for good.)
+
 ## [1.6.0] - 2026-07-26
 
 ### Added
