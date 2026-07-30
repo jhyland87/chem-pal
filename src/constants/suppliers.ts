@@ -31,7 +31,6 @@ const liveSupplierModules = import.meta.glob([
   '/src/suppliers/Supplier*.ts',
   '!/src/suppliers/SupplierBase*.ts',
   '!/src/suppliers/SupplierFactory.ts',
-  '!/src/suppliers/SupplierFoobar.ts',
 ]);
 
 /**

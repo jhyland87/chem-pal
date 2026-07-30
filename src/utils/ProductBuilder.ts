@@ -28,6 +28,30 @@ import {
 import { isAvailability, isProductImage, isValidVariant } from '@/utils/typeGuards/productbuilder';
 
 /**
+ * The names of every {@link ProductBuilder} method whose signature is exactly
+ * `(value: unknown) => ProductBuilder<T>` — i.e. the validating single-argument setters
+ * {@link ProductBuilder.setData} can dispatch to purely by name. The overloaded, multi-field
+ * `setPricing` doesn't match; setData routes its constituent fields (`price`, `currencyCode`,
+ * `currencySymbol`) to their individual setters instead.
+ * @typeParam T - The product type the builder produces.
+ * @group Utils
+ */
+type UnarySetterName<T extends Product> = {
+  [K in keyof ProductBuilder<T>]: ProductBuilder<T>[K] extends (value: unknown) => ProductBuilder<T>
+    ? K
+    : never;
+}[keyof ProductBuilder<T>];
+
+/**
+ * A {@link ProductBuilder.setData} dispatch handler for one {@link Product} field: the name of a
+ * validating unary setter (called by name), an inline closure for fields needing bespoke
+ * narrowing, or `null` for display-only fields that are intentionally dropped.
+ * @typeParam T - The product type the builder produces.
+ * @group Utils
+ */
+type SetDataHandler<T extends Product> = UnarySetterName<T> | ((value: unknown) => void) | null;
+
+/**
  * Builder class for constructing Product objects with a fluent interface.
  * Implements the Builder pattern to handle complex product construction with optional fields
  * and data validation.
@@ -108,74 +132,69 @@ export class ProductBuilder<T extends Product> {
     if (data === null || typeof data !== 'object') {
       return this;
     }
+    // setData exists for cache hydration (createFromCache / SupplierBase): it revives builders
+    // from untrusted, unknown-shaped cached data, so every key is routed through its validating
+    // setter rather than a blind Object.assign that could bypass the per-field checks.
     //
-    // @todo: This is AI garbage, and I need to clean it up. Too messy.
-    //
-    // Route every key through its validating setter instead of a blind Object.assign, so values
-    // can't bypass the per-field checks. `Record<keyof Product, …>` forces this map to stay
-    // exhaustive — adding a Product field without a handler is a compile error. Keys not present
-    // here (i.e. not part of Product) are dropped with a warning.
-    const dispatch: Record<keyof Product, (value: unknown) => void> = {
-      title: (v) => this.setTitle(v),
-      supplier: (v) => this.setSupplier(v),
-      url: (v) => this.setURL(v),
-      permalink: (v) => this.setPermalink(v),
-      description: (v) => this.setDescription(v),
-      shortDescription: (v) => this.setShortDescription(v),
-      manufacturer: (v) => this.setManufacturer(v),
-      vendor: (v) => this.setVendor(v),
-      sku: (v) => this.setSku(v),
-      id: (v) => this.setID(v),
-      uuid: (v) => this.setUUID(v),
-      cacheKey: (v) => this.setCacheKey(v),
-      cas: (v) => this.setCAS(v),
-      formula: (v) => this.setFormula(v),
-      smiles: (v) => this.setSmiles(v),
-      iupacName: (v) => this.setIupacName(v),
-      pubchemId: (v) => this.setPubchemId(v),
-      inchiKey: (v) => this.setInChIKey(v),
-      inchi: (v) => this.setInChI(v),
-      moleweight: (v) => this.setMoleweight(v),
-      purity: (v) => this.setPurity(v),
-      grade: (v) => this.setGrade(v),
-      concentration: (v) => this.setConcentration(v),
-      moles: (v) => this.setMoles(v),
-      price: (v) => this.setPrice(v),
-      usdPrice: (v) => this.setUsdPrice(v),
-      localPrice: (v) => this.setLocalPrice(v),
-      currencyCode: (v) => this.setCurrencyCode(v),
-      currencySymbol: (v) => this.setCurrencySymbol(v),
-      uom: (v) => this.setUOM(v),
-      baseUom: (v) => this.setBaseUom(v),
-      baseQuantity: (v) => this.setBaseQuantity(v),
-      quantity: (v) => this.setQuantityValue(v),
-      rating: (v) => this.setRating(v),
-      reviewCount: (v) => this.setReviewCount(v),
-      status: (v) => this.setStatus(v),
-      statusTxt: (v) => this.setStatusTxt(v),
-      shippingInformation: (v) => this.setShippingInformation(v),
-      purchaseRestriction: (v) => this.setPurchaseRestriction(v),
-      attributes: (v) => this.setAttributes(v),
-      availability: (v) => {
-        // setAvailability is overloaded per type, so a `string | boolean` union won't resolve —
-        // narrow to a single type in each branch before calling.
-        if (typeof v === 'string') this.setAvailability(v);
-        else if (typeof v === 'boolean') this.setAvailability(v);
-      },
-      images: (v) => this.addImages(v),
-      sdsUrl: (v) => this.setSDSUrl(v),
-      coaUrl: (v) => this.setCoaUrl(v),
-      specSheetUrl: (v) => this.setSpecSheetUrl(v),
-      docLinks: (v) => this.setDocLinks(v),
-      supplierCountry: (v) => this.setSupplierCountry(v),
-      supplierShipping: (v) => this.setSupplierShipping(v),
-      paymentMethods: (v) => this.setSupplierPaymentMethods(v),
-      supplierEbayStoreURL: (v) => this.setSupplierEbayStoreURL(v),
-      supplierAmazonStoreURL: (v) => this.setSupplierAmazonStoreURL(v),
-      variants: (v) => {
-        if (Array.isArray(v)) this.setVariants(v);
-      },
-      matchPercentage: (v) => this.setMatchPercentage(v),
+    // Each key maps to a handler: the name of a validating unary setter (called by name), an
+    // inline closure for the synthetic _fuzz/_id fields (which have no setter), or null for
+    // display-only fields that are intentionally dropped.
+    // Typing this `Record<keyof Product, …>` keeps it exhaustive — adding a Product field without
+    // a handler is a compile error. Keys not part of Product are dropped with a warning.
+    const handlers: Record<keyof Product, SetDataHandler<T>> = {
+      title: 'setTitle',
+      supplier: 'setSupplier',
+      url: 'setURL',
+      permalink: 'setPermalink',
+      description: 'setDescription',
+      shortDescription: 'setShortDescription',
+      manufacturer: 'setManufacturer',
+      vendor: 'setVendor',
+      sku: 'setSku',
+      id: 'setID',
+      uuid: 'setUUID',
+      cacheKey: 'setCacheKey',
+      cas: 'setCAS',
+      formula: 'setFormula',
+      smiles: 'setSmiles',
+      iupacName: 'setIupacName',
+      pubchemId: 'setPubchemId',
+      inchiKey: 'setInChIKey',
+      inchi: 'setInChI',
+      moleweight: 'setMoleweight',
+      purity: 'setPurity',
+      grade: 'setGrade',
+      concentration: 'setConcentration',
+      moles: 'setMoles',
+      price: 'setPrice',
+      usdPrice: 'setUsdPrice',
+      localPrice: 'setLocalPrice',
+      currencyCode: 'setCurrencyCode',
+      currencySymbol: 'setCurrencySymbol',
+      uom: 'setUOM',
+      baseUom: 'setBaseUom',
+      baseQuantity: 'setBaseQuantity',
+      quantity: 'setQuantity',
+      rating: 'setRating',
+      reviewCount: 'setReviewCount',
+      status: 'setStatus',
+      statusTxt: 'setStatusTxt',
+      shippingInformation: 'setShippingInformation',
+      purchaseRestriction: 'setPurchaseRestriction',
+      attributes: 'setAttributes',
+      images: 'addImages',
+      sdsUrl: 'setSDSUrl',
+      coaUrl: 'setCoaUrl',
+      specSheetUrl: 'setSpecSheetUrl',
+      docLinks: 'setDocLinks',
+      supplierCountry: 'setSupplierCountry',
+      supplierShipping: 'setSupplierShipping',
+      paymentMethods: 'setSupplierPaymentMethods',
+      supplierEbayStoreURL: 'setSupplierEbayStoreURL',
+      supplierAmazonStoreURL: 'setSupplierAmazonStoreURL',
+      matchPercentage: 'setMatchPercentage',
+      availability: 'setAvailability',
+      variants: 'setVariants',
       _fuzz: (v) => {
         if (this.isFuzzMeta(v)) this.product._fuzz = v;
       },
@@ -184,47 +203,33 @@ export class ProductBuilder<T extends Product> {
       _id: (v) => {
         if (typeof v === 'number') this.product._id = v;
       },
-      // Display-only back-reference set by the ungrouped table view, never sourced
-      // from supplier or cached data — dropped here so it can't round-trip in.
-      parentProduct: () => {},
-      // Display-only price-history series id stamped by the ungrouped table view;
-      // like parentProduct, dropped here so it can't round-trip in from cached data.
-      priceSeriesKey: () => {},
-      // Display-only trend sort value stamped by the results table; like
-      // parentProduct, dropped here so it can't round-trip in from cached data.
-      priceTrendValue: () => {},
+      // Display-only fields stamped by the ungrouped/results table view, never sourced from
+      // supplier or cached data — dropped here so they can't round-trip in from cached data.
+      parentProduct: null,
+      priceSeriesKey: null,
+      priceTrendValue: null,
     };
 
-    // `Object.entries` widens each key to `string`; narrow it back to a dispatch
-    // key via `in` (dispatch is keyed by every `keyof Product`) so no cast is needed.
-    const isProductKey = (key: string): key is keyof Product => key in dispatch;
+    // `Object.entries` widens each key to `string`; narrow it back via `in` (handlers is keyed
+    // by every `keyof Product`) so no cast is needed.
+    const isProductKey = (key: string): key is keyof Product => key in handlers;
 
     for (const [key, value] of Object.entries(data)) {
       if (!isProductKey(key)) {
         this.logger.warn('setData| dropping unsupported key', { key, value });
         continue;
       }
-      dispatch[key](value);
-    }
-    return this;
-  }
-
-  /**
-   * Validates and sets the product quantity from an arbitrary value. Unlike {@link setQuantity},
-   * this sets only the numeric quantity (the UOM is set separately via its own key), so it can be
-   * driven by {@link setData} where each field arrives independently.
-   * @param quantity - The quantity to set, or any value (anything that isn't a positive number is ignored)
-   * @returns The builder instance for method chaining
-   * @example
-   * ```typescript
-   * builder.setQuantityValue(500);
-   * ```
-   * @source
-   */
-  setQuantityValue(quantity: unknown): ProductBuilder<T> {
-    const value = typeof quantity === 'string' ? Number(quantity) : quantity;
-    if (typeof value === 'number' && !Number.isNaN(value) && value > 0) {
-      this.product.quantity = value;
+      const handler = handlers[key];
+      if (handler === null) {
+        continue;
+      }
+      if (typeof handler === 'function') {
+        handler(value);
+      } else {
+        // handler is a UnarySetterName<T> — every such setter is (value: unknown) => this, so
+        // calling by name is type-safe without a cast.
+        this[handler](value);
+      }
     }
     return this;
   }
@@ -881,52 +886,24 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
-   * Sets the quantity information for the product.
-   * @overload
-   * @param quantity - QuantityObject format
+   * Sets the quantity information for the product from an arbitrary value, guarding internally.
+   * Accepts a {@link QuantityObject}, a string (`'500g'` — parsed into quantity + uom), or a
+   * numeric quantity with an optional `uom`. When a bare number is given with **no** `uom`, only
+   * the numeric `quantity` is set and the uom is left untouched — this is what lets {@link setData}
+   * drive it, since there `quantity` and `uom` arrive as independent keys. Invalid input is ignored.
+   * @param quantity - A QuantityObject, a `'<amount><unit>'` string, or a numeric quantity (any other value is ignored)
+   * @param uom - The unit of measure (e.g. `'g'`, `'ml'`), used only with a numeric `quantity`; omit to set the amount alone
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
-   * // For 500 grams
-   * builder.setQuantity(parseQuantity('500g'));
-   * // Sets this.product.quantity to 500
-   * // Sets this.product.uom to 'g'
+   * builder.setQuantity(parseQuantity('500g')); // quantity 500, uom 'g'
+   * builder.setQuantity('500g');                // quantity 500, uom 'g'
+   * builder.setQuantity(500, 'g');              // quantity 500, uom 'g'
+   * builder.setQuantity(500);                   // quantity 500, uom unchanged
    * ```
    * @source
    */
-  setQuantity(quantity: QuantityObject): ProductBuilder<T>;
-  /**
-   * Sets the quantity information for the product.
-   * @overload
-   * @param quantity - Quantity in string format
-   * @returns The builder instance for method chaining
-   * @example
-   * ```typescript
-   * // For 500 grams
-   * builder.setQuantity('500g');
-   * // Sets this.product.quantity to 500
-   * // Sets this.product.uom to 'g'
-   * ```
-   * @source
-   */
-  setQuantity(quantity: string): ProductBuilder<T>;
-  /**
-   * Sets the quantity information for the product.
-   * @overload
-   * @param quantity - Quantity in number format
-   * @param uom - The unit of measure (e.g., 'g', 'ml', 'kg')
-   * @returns The builder instance for method chaining
-   * @example
-   * ```typescript
-   * // For 500 grams
-   * builder.setQuantity(500, 'g');
-   * // Sets this.product.quantity to 500
-   * // Sets this.product.uom to 'g'
-   * ```
-   * @source
-   */
-  setQuantity(quantity: number, uom: string): ProductBuilder<T>;
-  setQuantity(quantity: QuantityObject | string | number, uom?: string): ProductBuilder<T> {
+  setQuantity(quantity: unknown, uom?: unknown): ProductBuilder<T> {
     if (typeof quantity === 'undefined') return this;
 
     if (isQuantityObject(quantity)) {
@@ -957,10 +934,12 @@ export class ProductBuilder<T extends Product> {
       return this;
     }
 
-    if (typeof quantity === 'number' || Number.isInteger(quantity)) {
-      this.product.quantity = Number(quantity);
-      this.product.uom = uom ?? 'pieces';
-
+    if (typeof quantity === 'number') {
+      this.product.quantity = quantity;
+      // Only set uom when explicitly provided; setData sets it via its own `uom` key.
+      if (typeof uom === 'string') {
+        this.product.uom = uom;
+      }
       return this;
     }
 
@@ -1542,7 +1521,7 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  determineAvailability(availability?: Availability | boolean | string): Maybe<Availability> {
+  determineAvailability(availability?: unknown): Maybe<Availability> {
     if (typeof availability === 'undefined') return;
 
     if (isAvailability(availability)) {
@@ -1612,10 +1591,7 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setAvailability(availability: Availability): ProductBuilder<T>;
-  setAvailability(availability: boolean): ProductBuilder<T>;
-  setAvailability(availability: string): ProductBuilder<T>;
-  setAvailability(availability: Availability | boolean | string): ProductBuilder<T> {
+  setAvailability(availability: unknown): ProductBuilder<T> {
     const avail = this.determineAvailability(availability);
 
     if (typeof avail === 'undefined') {
@@ -1684,10 +1660,13 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
-   * Sets the variants for the product. Slightly different from addVariants in that it
-   * will replace the existing variants with the new ones.
+   * Sets the variants for the product, replacing any existing variants. Slightly different from
+   * {@link addVariants} in that it replaces rather than appends. Accepts an arbitrary value and
+   * guards internally (per the builder's optional-setter convention): a non-array is ignored, and
+   * each element is validated with {@link isValidVariant}, so malformed variants (e.g. from cached
+   * data) are dropped rather than stored.
    *
-   * @param variants - The variants to set
+   * @param variants - The variants to set, or any value (non-arrays and invalid items are ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -1695,8 +1674,11 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setVariants(variants: Partial<Variant>[]): ProductBuilder<T> {
-    this.product.variants = variants;
+  setVariants(variants: unknown): ProductBuilder<T> {
+    if (!Array.isArray(variants)) {
+      return this;
+    }
+    this.product.variants = variants.filter(isValidVariant);
     return this;
   }
 
