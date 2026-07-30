@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
+import { i18n as i18nConfig } from '@/../config.json';
+
 /** A single translated message plus its optional positional placeholders. */
 interface MessageEntry {
   message: string;
@@ -24,8 +26,9 @@ for (const [path, table] of Object.entries(rawTables)) {
   if (code) messageTables[code] = table;
 }
 
-/** Locale used for the initial render and as the fallback when a key is missing. */
-const DEFAULT_LOCALE = 'en';
+// Locale used for the initial render and as the fallback when a key is missing;
+// sourced from `config.json` (i18n.defaultLocale).
+const DEFAULT_LOCALE = i18nConfig.defaultLocale;
 
 let currentLocale = messageTables[DEFAULT_LOCALE]
   ? DEFAULT_LOCALE

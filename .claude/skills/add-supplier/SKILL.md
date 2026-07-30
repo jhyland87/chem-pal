@@ -1,6 +1,6 @@
 ---
 name: add-supplier
-description: Add, implement, re-enable, or disable a chemical supplier in src/suppliers. Use whenever a new supplier store is being wired into ChemPal, an existing supplier class is being created from a storefront URL, or a supplier is being commented out of the barrel. Covers the full set of files a supplier touches beyond its own class — the barrel, generated constants, manifest host permissions, fixtures, tests, and CHANGELOG.
+description: Add, implement, re-enable, or disable a chemical supplier in src/suppliers. Use whenever a new supplier store is being wired into ChemPal, an existing supplier class is being created from a storefront URL, or a supplier is being commented out of the barrel. Covers the full set of files a supplier touches beyond its own class — the barrel, the disabled/ folder, manifest host permissions, fixtures, tests, and CHANGELOG.
 ---
 
 # Adding a supplier
@@ -67,24 +67,24 @@ sibling's text.
 ## 3. Export it from `src/suppliers/index.ts`
 
 Alphabetical, inside the export block. This barrel is the single source of truth for which
-suppliers are live.
+suppliers are live — it provides both `SupplierFactory`'s `import * as suppliers` and the
+`SupplierClassName` type (`keyof typeof import('@/suppliers')`).
 
-To disable a supplier, comment out its export **with a dated reason**, matching the
-existing style at the top of the file:
+**To disable a supplier, move its file into `src/suppliers/disabled/` and remove its barrel
+export.** Fix the moved file's relative imports (`./SupplierBase…` → `../SupplierBase…`) and
+add a `// DISABLED: <dated reason>` header. The disabled folder is excluded from the
+live-supplier glob, so this is what marks a supplier dead — there are no commented-out
+barrel exports anymore. To re-enable, reverse it: move the file back up and restore the
+export.
 
-```ts
-// N2O3 is offline since 01/20/2026
-//export { SupplierN2O3 } from "./SupplierN2O3";
-```
+## 4. Supplier name list (no build step)
 
-## 4. Regenerate the supplier constants
-
-```bash
-pnpm run generate-supplier-constants
-```
-
-This rewrites `src/constants/suppliers.ts` (auto-generated, but committed). A unit test
-re-checks it against the barrel, so a stale file fails the suite.
+`src/constants/suppliers.ts` derives `SUPPLIER_CLASS_NAMES` at load from a lazy
+`import.meta.glob` of the supplier files — **nothing to regenerate.** It relies on each
+supplier's filename matching its exported class name exactly (case included); the glob keys
+are the filenames. A unit test (`src/constants/__tests__/suppliers.test.ts`) asserts the
+glob-derived list equals the barrel's exports, so a name-only file (no barrel export), a
+filename/class-name mismatch, or a disabled supplier left in `src/suppliers/` fails the suite.
 
 ## 5. Add host permissions to `public/manifest.json`
 

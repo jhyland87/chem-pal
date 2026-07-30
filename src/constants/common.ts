@@ -4,6 +4,8 @@
  * @source
  */
 
+import { extension } from '@/../config.json';
+
 /**
  * Action types for settings panel form state management.
  * Used by the SettingsPanel component.
@@ -132,17 +134,12 @@ export const CACHE = {
 export type Cache = (typeof CACHE)[keyof typeof CACHE];
 
 /**
- * The extension's Chrome Web Store item id, used to build store-facing links.
- * @source
- */
-export const CHROME_WEBSTORE_ID = 'facakdliomkjhegdhjimfjlcggfnpfnd';
-
-/**
  * Deep link to the extension's Chrome Web Store reviews tab — where the review
- * prompt sends users to leave a rating.
+ * prompt sends users to leave a rating. The store item id is read from
+ * `config.json` (`extension.chromeWebstoreId`).
  * @source
  */
-export const CHROME_WEBSTORE_REVIEWS_URL = `https://chromewebstore.google.com/detail/${CHROME_WEBSTORE_ID}/reviews`;
+export const CHROME_WEBSTORE_REVIEWS_URL = `https://chromewebstore.google.com/detail/${extension.chromeWebstoreId}/reviews`;
 
 /**
  * IndexedDB object-store names for the ChemPal database. Centralized here so the

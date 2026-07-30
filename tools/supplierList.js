@@ -2,9 +2,9 @@
  * Shared parser for the active supplier list.
  *
  * `src/suppliers/index.ts` is the single source of truth for which suppliers are
- * live — disabled ones are left in the file as commented-out exports. Several
- * build-time generators need that list, so the parsing lives here rather than
- * being duplicated per script.
+ * live — disabled ones are moved to `src/suppliers/disabled/` and dropped from the
+ * barrel. A build-time generator (the logo files) needs that list, so the parsing
+ * lives here rather than being duplicated per script.
  *
  * @module supplierList
  */
@@ -18,8 +18,9 @@ const INDEX_PATH = path.resolve(_dirname, "../src/suppliers/index.ts");
 
 /**
  * Reads the active supplier class names from the suppliers barrel. Only
- * uncommented `export { SupplierX } from "./SupplierX";` lines count, so a
- * supplier commented out of the barrel drops out of every generated artifact.
+ * `export { SupplierX } from "./SupplierX";` lines count, so a supplier moved to
+ * `src/suppliers/disabled/` (and dropped from the barrel) drops out of every
+ * generated artifact.
  *
  * @returns {Promise<string[]>} Class names in declaration order, e.g. ["SupplierAladdinSci", …]
  */

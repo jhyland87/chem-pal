@@ -1,4 +1,5 @@
-import { SupplierBaseAmazon } from './SupplierBaseAmazon';
+// DISABLED: Akmekem got booted from Amazon.
+import { SupplierBaseAmazon } from '../SupplierBaseAmazon';
 /* @hideconstructor */
 /* @hideden */
 /**

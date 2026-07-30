@@ -20,16 +20,9 @@
  * @source
  */
 
-// Akmekem got booted from Amazon
-//export { SupplierAkmekem } from "./SupplierAkmekem";
-// BunmurraLabs is under construction, new website only has default shopping cart items.
-//export { SupplierBunmurraLabs } from "./supplierBunmurraLabs";
-// N2O3 is offline since 01/20/2026
-//export { SupplierN2O3 } from "./SupplierN2O3";
-//export { SupplierAsesChem2 } from "./SupplierAsesChem2";
-// The Lab Stockroom (formerly HBar Sci) migrated from Searchanise to Shopify;
-// the legacy Searchanise module is kept but disabled.
-//export { SupplierTheLabStockroomSearchanise } from "./SupplierTheLabStockroomSearchanise";
+// Disabled suppliers live in ./disabled/ (each file's header notes why). They are
+// excluded from the live-supplier glob in src/constants/suppliers.ts by living there.
+// To re-enable one: move the file back up to src/suppliers/ and add its export below.
 
 export { SupplierAladdinSci } from './SupplierAladdinSci';
 export { SupplierAlboChemicals } from './SupplierAlboChemicals';
@@ -38,7 +31,7 @@ export { SupplierAllianceChemical } from './SupplierAllianceChemical';
 export { SupplierAmarisChemicalSolutions } from './SupplierAmarisChemicalSolutions';
 export { SupplierAmbeed } from './SupplierAmbeed';
 export { SupplierAsesChem } from './SupplierAsesChem';
-export { SupplierBioFuranChem } from './SupplierBiofuranChem';
+export { SupplierBioFuranChem } from './SupplierBioFuranChem';
 export { SupplierBVV } from './SupplierBVV';
 export { SupplierCarolina } from './SupplierCarolina';
 export { SupplierCarolinaChemical } from './SupplierCarolinaChemical';

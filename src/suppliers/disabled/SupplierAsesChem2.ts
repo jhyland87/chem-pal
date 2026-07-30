@@ -1,6 +1,7 @@
+// DISABLED: superseded by SupplierAsesChem; kept for reference.
 import { FuzzScorerFn } from '@/constants/fuzzScorers';
 import { partial_ratio } from 'fuzzball';
-import { SupplierBaseSearchanise } from './SupplierBaseSearchanise';
+import { SupplierBaseSearchanise } from '../SupplierBaseSearchanise';
 
 /**
  * SupplierAsesChem2 class that extends SupplierBaseSearchanise and implements AsyncIterable<T>.

@@ -26,7 +26,7 @@ Run these from the repo root with `pnpm`.
 | Dev build | `pnpm build` | Output in `build/`. `build:firefox` for `build-firefox/`. |
 | Prod build + pack | `pnpm build:prod` | Produces the signed `.crx`. |
 | API docs | `pnpm run docs` | TypeDoc into `docs/`. `pnpm docs:www` serves them. |
-| Codegen | `pnpm run generate` | Logos + `src/constants/suppliers.ts`. Runs automatically as `prebuild`. |
+| Codegen | `pnpm run generate` | Logos. Runs automatically as `prebuild`. |
 
 Two script names collide with pnpm's own subcommands and **must** be run as
 `pnpm run docs` and `pnpm run pack` — plain `pnpm docs` / `pnpm pack` invoke pnpm's
@@ -39,9 +39,9 @@ per clone:
 git config blame.ignoreRevsFile .git-blame-ignore-revs
 ```
 
-`pnpm run generate` rewrites `public/static/images/logo/*` and
-`src/constants/suppliers.ts` on every build. Expect that churn in `git status` after a
-build — it is not a change you made, and it is not something to "fix".
+`pnpm run generate` rewrites `public/static/images/logo/*` on every build. Expect that
+churn in `git status` after a build — it is not a change you made, and it is not something
+to "fix".
 
 ## Layout
 
@@ -52,7 +52,7 @@ build — it is not a change you made, and it is not something to "fix".
 - `src/components/SearchPanel/` — the results table and search UI (the bulk of the app).
 - `src/_locales/<lang>/messages.json` — 7 locales, Chrome i18n format.
 - `configs/` — vitest, playwright, and typedoc configs. Tests need the config flags.
-- `tools/` — build/codegen node scripts (`generate-supplier-constants.js`,
+- `tools/` — build/codegen node scripts (`generate-logo-files.js`,
   `extractChangelog.js`, `pack-extension.js`).
 - `plugins/` — local TypeDoc plugins, including the taxonomy index.
 - `e2e/` — Playwright-driven extension tests. `demo/` — the scripted demo recording.
@@ -66,8 +66,8 @@ guide plus ChemPal's deviations. Read its first table before writing code; the o
 catches people out is **no `as` / `!` assertions outside test files**.
 
 Formatting is Prettier's job — `pnpm format`, or `pnpm format:check` in CI. Don't hand-fix
-quotes or wrapping. `.prettierignore` deliberately excludes `src/_locales`, the generated
-`src/constants/suppliers.ts`, and the `themes/` submodule; leave those exclusions alone.
+quotes or wrapping. `.prettierignore` deliberately excludes `src/_locales` and the `themes/`
+submodule; leave those exclusions alone.
 
 Project invariants beyond style, all of which have bitten before:
 

@@ -3,10 +3,12 @@ import { SUPPLIER_CLASS_NAMES } from '@/constants/suppliers';
 import * as suppliers from '@/suppliers';
 
 describe('SUPPLIER_CLASS_NAMES', () => {
-  // The constant is generated from the barrel by tools/generate-supplier-constants.js
-  // at prebuild, but it's committed so tests and dev runs work without a build. That
-  // means it can go stale if the barrel is edited and nothing regenerates it — which
-  // would silently drop a supplier from the settings toggle UI. This catches that.
+  // SUPPLIER_CLASS_NAMES is derived at load from a lazy import.meta.glob of the
+  // supplier files (see src/constants/suppliers.ts); the barrel is the separate
+  // source of truth for which suppliers are live. They can drift — a new supplier
+  // file without a barrel export, a disabled supplier left in src/suppliers/, etc.
+  // — which would silently desync the settings toggle UI from what's searchable.
+  // This catches that.
   it('matches the value exports of the suppliers barrel exactly', () => {
     expect([...SUPPLIER_CLASS_NAMES].sort()).toEqual(Object.keys(suppliers).sort());
   });
