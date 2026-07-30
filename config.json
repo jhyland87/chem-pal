@@ -55,6 +55,12 @@
   "updatePrompt": {
     "snoozeHours": 24
   },
+  "i18n": {
+    "defaultLocale": "en"
+  },
+  "extension": {
+    "chromeWebstoreId": "facakdliomkjhegdhjimfjlcggfnpfnd"
+  },
   "hotkeys": {
     "sequenceResetMs": 1500,
     "bindings": [

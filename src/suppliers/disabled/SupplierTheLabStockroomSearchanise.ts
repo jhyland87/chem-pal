@@ -1,4 +1,6 @@
-import { SupplierBaseSearchanise } from './SupplierBaseSearchanise';
+// DISABLED: The Lab Stockroom (formerly HBar Sci) migrated from Searchanise to Shopify;
+// this legacy Searchanise module is kept but inactive. See SupplierTheLabStockroom.
+import { SupplierBaseSearchanise } from '../SupplierBaseSearchanise';
 
 /**
  * Legacy Searchanise-based implementation of The Lab Stockroom (formerly HBar Sci).

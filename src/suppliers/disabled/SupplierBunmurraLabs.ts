@@ -1,4 +1,5 @@
-import { SupplierBaseWix } from './SupplierBaseWix';
+// DISABLED: under construction — the new website only lists default shopping-cart items.
+import { SupplierBaseWix } from '../SupplierBaseWix';
 /* @hideconstructor */
 /* @hideden */
 /**

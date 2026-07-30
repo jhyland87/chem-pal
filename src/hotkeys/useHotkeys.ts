@@ -95,12 +95,18 @@ export interface UseHotkeysOptions {
  * `onTriggered`. A hotkey with only a `flash` and no handler still notifies,
  * so a flash-only shortcut shows its status message. `onTriggered` is skipped
  * when the handler throws, so a failed action doesn't flash a confirmation.
+ * Logs every trigger to the console (before the handler runs, so it's recorded
+ * even if the handler throws).
  */
 function invokeHandler(
   config: HotkeyConfig,
   handlers: HotkeyHandlers,
   onTriggered?: (config: HotkeyConfig) => void,
 ): void {
+  console.log(`Hotkey triggered: "${config.id}"`, {
+    keys: config.keys,
+    description: config.description,
+  });
   const handler = handlers[config.id];
   if (handler) {
     try {

@@ -1,6 +1,7 @@
+// DISABLED: N2O3 has been offline since 01/20/2026.
 import { mapDefined } from '@/helpers/utils';
 import { ProductBuilder } from '@/utils/ProductBuilder';
-import { SupplierBase } from './SupplierBase';
+import { SupplierBase } from '../SupplierBase';
 /* @hideconstructor */
 /* @hideden */
 /**

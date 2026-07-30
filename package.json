@@ -80,8 +80,7 @@
     "build:prod": "pnpm run generate && vite build --mode=production && node tools/pack-extension.js",
     "build:prod:firefox": "pnpm run generate && BROWSER=firefox vite build --mode=production && node tools/pack-firefox.js",
     "show-deprecations": "pnpm outdated --json | jq '.[] | select(.isDeprecated)'",
-    "generate-supplier-constants": "node tools/generate-supplier-constants.js",
-    "generate": "pnpm run generate-logo-files && pnpm run generate-supplier-constants"
+    "generate": "pnpm run generate-logo-files"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
