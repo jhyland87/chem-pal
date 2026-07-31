@@ -1,33 +1,17 @@
 version: 2
 updates:
-
+  # GitHub Actions only. The npm ecosystem was dropped: its grouped bumps
+  # repeatedly failed CI on the pnpm minimumReleaseAge supply-chain guard
+  # (freshly-published transitive deps) and on lockfile merge conflicts.
+  # Action version bumps have no lockfile and never tripped either, so they
+  # stay automated — grouped into one weekly PR with a release cooldown.
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
     cooldown:
       default-days: 7
-
-  - package-ecosystem: npm
-    directory: /
-    schedule:
-      interval: daily
-    cooldown:
-      semver-minor-days: 7
     groups:
-      dev-dependencies:
-        dependency-type: development
-      production-dependencies:
-        dependency-type: production
-        update-types:
-          - minor
-          - patch
-    ignore:
-      # MUI publishes @mui/material and @mui/icons-material in version lockstep,
-      # and icons-material peer-requires a matching @mui/material major. A solo
-      # major bump breaks the build, so MUI majors are a deliberate, manual
-      # full-stack migration — not a Dependabot PR. Minor/patch still flow.
-      - dependency-name: "@mui/*"
-        update-types:
-          - version-update:semver-major
-    versioning-strategy: increase
+      github-actions:
+        patterns:
+          - "*"
