@@ -223,6 +223,7 @@ export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> im
 
       return builder
         .setBasicInfo(title, String(url), this.supplierName)
+        .setMatchPercentage(this.matchScoreOf(element))
         .setDescription(
           element.querySelector('div.caption > p:nth-child(2)')?.textContent?.trim() || '',
         )

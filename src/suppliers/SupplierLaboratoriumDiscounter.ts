@@ -290,6 +290,7 @@ export class SupplierLaboratoriumDiscounter
 
       productBuilder
         .setBasicInfo(product.title, product.url, this.supplierName)
+        .setMatchPercentage(this.matchScoreOf(product))
         .setDescription(product.description)
         .setID(product.id)
         .setCacheKey(this.getUniqueProductKey(product))

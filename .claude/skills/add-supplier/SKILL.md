@@ -59,6 +59,13 @@ Reuse the existing parsers — do not write new ones:
 `ProductBuilder`'s optional-field setters accept `unknown` and guard internally, so pass
 raw scraped values straight through rather than pre-checking them.
 
+**Carry the match score.** In `initProductBuilders`, chain
+`.setMatchPercentage(this.matchScoreOf(item))` (where `item` is the scored raw search item).
+`fuzzyFilterAst` stamps the fuzzy/AST score onto the raw item for ranking, but it's dropped
+unless you copy it onto the builder — `matchScoreOf` reads it back cast-free, and
+`setMatchPercentage` no-ops if the item wasn't scored. Forgetting this leaves
+`product.matchPercentage` undefined.
+
 Give the class a TSDoc block with `@category Suppliers`, an `@example`, and `@source` — see
 the `typedoc-comments` skill. Copy-pasting from a sibling supplier is fine, but fix the
 class name and store description in the doc comment; several files already carry a

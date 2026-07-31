@@ -108,6 +108,13 @@ describe('SupplierBaseShopify initProductBuilders', () => {
     expect(builder.get('purity')).toBe('99%');
   });
 
+  it('carries the fuzzy match score from the scored item onto the product', () => {
+    const supplier = new TestShopify('q', 5, new AbortController());
+    // fuzzyFilterAst stamps matchPercentage on the raw node before initProductBuilders runs.
+    const scored = Object.assign(sampleNode(), { matchPercentage: 87 });
+    expect(supplier.callInitProductBuilders([scored])[0].get('matchPercentage')).toBe(87);
+  });
+
   it("sets top-level availability from the primary variant's stock flag", () => {
     const supplier = new TestShopify('q', 5, new AbortController());
 

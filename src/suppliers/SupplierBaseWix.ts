@@ -343,6 +343,7 @@ export abstract class SupplierBaseWix
           `${this.baseURL}/product-page/${product.urlPart}`,
           this.supplierName,
         )
+        .setMatchPercentage(this.matchScoreOf(product))
         .setPricing(
           parentParsedPrice.price,
           parentParsedPrice.currencyCode,

@@ -249,6 +249,7 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
 
       builder
         .setBasicInfo(productName, productUrl, this.supplierName)
+        .setMatchPercentage(this.matchScoreOf(element))
         .setID(productId)
         .setCacheKey(this.getUniqueProductKey(element))
         .setImage(itemDiv?.querySelector('link[itemprop="image"]')?.getAttribute('href'))

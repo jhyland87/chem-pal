@@ -355,6 +355,7 @@ export class SupplierSynthetika
 
       productBuilder
         .setBasicInfo(product.name, product.url, this.supplierName)
+        .setMatchPercentage(this.matchScoreOf(product))
         .setDescription(product.shortDescription)
         .setID(product.id)
         .setCacheKey(this.getUniqueProductKey(product))

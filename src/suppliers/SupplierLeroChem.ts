@@ -269,6 +269,7 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
 
       builder
         .setBasicInfo(title, url, this.supplierName)
+        .setMatchPercentage(this.matchScoreOf(element))
         .setID(element.getAttribute('data-id-product') ?? this.productIdFromUrl(url))
         .setCacheKey(this.getUniqueProductKey(element))
         .setImage(image)

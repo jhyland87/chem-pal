@@ -291,6 +291,8 @@ export class SupplierAcme extends SupplierBase<AcmeSearchItem, Product> implemen
 
       return new ProductBuilder<Product>(this.baseURL)
         .setBasicInfo(item.name, item.url, this.supplierName)
+        // Carry the fuzzy/AST match score (stamped on the item by fuzzyFilterAst) onto the product.
+        .setMatchPercentage(this.matchScoreOf(item))
         .setPricing(price.price, price.currencyCode, price.currencySymbol)
         .setCAS(findCAS(item.name))
         .setID(item.id)
@@ -463,6 +465,8 @@ export class SupplierBeakerSupply
 
       return new ProductBuilder<Product>(this.baseURL)
         .setBasicInfo(anchor?.textContent?.trim() ?? '', String(url), this.supplierName)
+        // Carry the fuzzy/AST match score (stamped on the element by fuzzyFilterAst) onto the product.
+        .setMatchPercentage(this.matchScoreOf(element))
         .setPricing(price.price, price.currencyCode, price.currencySymbol)
         .setCacheKey(this.getUniqueProductKey(element));
     });

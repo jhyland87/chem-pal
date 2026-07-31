@@ -237,6 +237,12 @@ describe('SupplierAmbeed filterByStructuredQuery', () => {
     expect(supplier.filterByStructuredQuery(items)).toEqual([malPeg]);
   });
 
+  it('stamps a numeric match score onto surviving structured-query results', () => {
+    const supplier = new SupplierAmbeed('1286754-10-6', 15) as AmbeedFilterSupplier;
+    const [survivor] = supplier.filterByStructuredQuery(items);
+    expect(typeof (survivor as { matchPercentage?: unknown }).matchPercentage).toBe('number');
+  });
+
   it('keeps only the formula-matching product for a formula query', () => {
     const supplier = new SupplierAmbeed('C14H21NO8', 15) as AmbeedFilterSupplier;
     expect(supplier.filterByStructuredQuery(items)).toEqual([malPeg]);

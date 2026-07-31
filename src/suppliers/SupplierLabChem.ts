@@ -335,6 +335,7 @@ export class SupplierLabChem
       const builder = new ProductBuilder<Product>(this.baseURL);
       builder
         .setBasicInfo(product.title ?? product.name, url, this.supplierName)
+        .setMatchPercentage(this.matchScoreOf(product))
         .setSku(product.sku)
         .setID(product.productId)
         .setCacheKey(this.getUniqueProductKey(product))

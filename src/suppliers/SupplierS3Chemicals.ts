@@ -276,6 +276,7 @@ export class SupplierS3Chemicals
       builder.setBasicInfo(title, String(url), this.supplierName);
       builder.setID(ordernumber);
       builder.setCacheKey(this.getUniqueProductKey(element));
+      builder.setMatchPercentage(this.matchScoreOf(element));
       return builder;
     });
   }

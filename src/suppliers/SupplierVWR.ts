@@ -316,6 +316,7 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
 
       builder
         .setBasicInfo(title, this.productUrl(item), this.supplierName)
+        .setMatchPercentage(this.matchScoreOf(item))
         .setData(this.productDefaults)
         .setID(item.code)
         .setCacheKey(this.getUniqueProductKey(item))

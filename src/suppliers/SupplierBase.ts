@@ -1640,11 +1640,31 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * ```
    * @source
    */
-  private attachFuzz<X>(obj: X, score: number, idx: number): FuzzyMatchResult<X> {
+  protected attachFuzz<X>(obj: X, score: number, idx: number): FuzzyMatchResult<X> {
     const result = obj as FuzzyMatchResult<X>;
     result._fuzz = { score, idx };
     result.matchPercentage = score;
     return result;
+  }
+
+  /**
+   * Reads the fuzzy/AST match score that {@link fuzzyFilterAst}/{@link attachFuzz} stamped onto a
+   * scored search item, for handing to `builder.setMatchPercentage` in a supplier's
+   * `initProductBuilders`. Returns undefined when the item was never scored (e.g. fuzzy filtering
+   * disabled on a plain query) — `setMatchPercentage` ignores that, leaving the score unset.
+   * @param item - A scored search item (the raw supplier item after `fuzzyFilterAst`).
+   * @returns The stamped match percentage, or undefined when the item carries no score.
+   * @example
+   * ```typescript
+   * builder.setMatchPercentage(this.matchScoreOf(item));
+   * ```
+   * @source
+   */
+  protected matchScoreOf(item: unknown): number | undefined {
+    if (isPopulatedObject(item) && typeof item.matchPercentage === 'number') {
+      return item.matchPercentage;
+    }
+    return undefined;
   }
 
   /**
