@@ -44,12 +44,12 @@ type UnarySetterName<T extends Product> = {
 
 /**
  * A {@link ProductBuilder.setData} dispatch handler for one {@link Product} field: the name of a
- * validating unary setter (called by name), an inline closure for fields needing bespoke
- * narrowing, or `null` for display-only fields that are intentionally dropped.
+ * validating unary setter (called by name), or `null` for synthetic/display-only fields that are
+ * intentionally dropped on hydration.
  * @typeParam T - The product type the builder produces.
  * @group Utils
  */
-type SetDataHandler<T extends Product> = UnarySetterName<T> | ((value: unknown) => void) | null;
+type SetDataHandler<T extends Product> = UnarySetterName<T> | null;
 
 /**
  * Builder class for constructing Product objects with a fluent interface.
@@ -89,8 +89,8 @@ export class ProductBuilder<T extends Product> {
   /** The partial product object being built */
   private product: Partial<T> = {};
 
-  /** The base URL of the supplier's website */
-  private baseURL: string;
+  /** The base URL of the supplier's website. Fixed at construction; used to resolve relative URLs. */
+  private readonly baseURL: string;
 
   /** The logger for the product builder */
   private logger: Logger;
@@ -136,9 +136,8 @@ export class ProductBuilder<T extends Product> {
     // from untrusted, unknown-shaped cached data, so every key is routed through its validating
     // setter rather than a blind Object.assign that could bypass the per-field checks.
     //
-    // Each key maps to a handler: the name of a validating unary setter (called by name), an
-    // inline closure for the synthetic _fuzz/_id fields (which have no setter), or null for
-    // display-only fields that are intentionally dropped.
+    // Each key maps to a handler: the name of a validating unary setter (called by name), or null
+    // for synthetic/display-only fields that are intentionally dropped on hydration.
     // Typing this `Record<keyof Product, …>` keeps it exhaustive — adding a Product field without
     // a handler is a compile error. Keys not part of Product are dropped with a warning.
     const handlers: Record<keyof Product, SetDataHandler<T>> = {
@@ -195,16 +194,10 @@ export class ProductBuilder<T extends Product> {
       matchPercentage: 'setMatchPercentage',
       availability: 'setAvailability',
       variants: 'setVariants',
-      _fuzz: (v) => {
-        if (this.isFuzzMeta(v)) this.product._fuzz = v;
-      },
-      // Positional row index (synthetic, like _fuzz) — carried through if present
-      // but never a real identifier.
-      _id: (v) => {
-        if (typeof v === 'number') this.product._id = v;
-      },
-      // Display-only fields stamped by the ungrouped/results table view, never sourced from
-      // supplier or cached data — dropped here so they can't round-trip in from cached data.
+      // Synthetic/display-only fields that are recomputed after hydration (or redundant with a
+      // field that round-trips on its own) — dropped so stale cached values can't leak back in.
+      _fuzz: null, // redundant with matchPercentage, which round-trips via setMatchPercentage
+      _id: null, // positional row index, re-stamped by useSearch after every search
       parentProduct: null,
       priceSeriesKey: null,
       priceTrendValue: null,
@@ -223,37 +216,11 @@ export class ProductBuilder<T extends Product> {
       if (handler === null) {
         continue;
       }
-      if (typeof handler === 'function') {
-        handler(value);
-      } else {
-        // handler is a UnarySetterName<T> — every such setter is (value: unknown) => this, so
-        // calling by name is type-safe without a cast.
-        this[handler](value);
-      }
+      // handler is a UnarySetterName<T> — every such setter is (value: unknown) => this, so
+      // calling by name is type-safe without a cast.
+      this[handler](value);
     }
     return this;
-  }
-
-  /**
-   * Narrows an unknown value to the `{ score: number; idx: number }` shape of {@link Product._fuzz}.
-   * @param value - The value to test
-   * @returns True when the value is a valid fuzz-metadata object
-   * @example
-   * ```typescript
-   * this.isFuzzMeta({ score: 0.9, idx: 3 }); // true
-   * this.isFuzzMeta({ score: "high" });       // false
-   * ```
-   * @source
-   */
-  private isFuzzMeta(value: unknown): value is { score: number; idx: number } {
-    return (
-      typeof value === 'object' &&
-      value !== null &&
-      'score' in value &&
-      typeof value.score === 'number' &&
-      'idx' in value &&
-      typeof value.idx === 'number'
-    );
   }
 
   /**

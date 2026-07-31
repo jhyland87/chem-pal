@@ -186,6 +186,7 @@ export abstract class SupplierBaseMySimpleStore
 
       builder
         .setBasicInfo(product.name, this.productUrl(product), this.supplierName)
+        .setMatchPercentage(this.matchScoreOf(product))
         .setID(product.id)
         .setCacheKey(this.getUniqueProductKey(product))
         .setImage(image, product.name)

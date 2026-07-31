@@ -618,6 +618,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
           `${this.baseURL}/en/products/${product.item_code}`,
           this.supplierName,
         )
+        .setMatchPercentage(this.matchScoreOf(product))
         .setID(product.item_id)
         .setCacheKey(this.getUniqueProductKey(product))
         .setUUID(product.item_code)

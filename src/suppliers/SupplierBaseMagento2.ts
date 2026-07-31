@@ -326,6 +326,7 @@ export abstract class SupplierBaseMagento2
 
       builder
         .setBasicInfo(item.name, productUrl, this.supplierName)
+        .setMatchPercentage(this.matchScoreOf(item))
         .setPricing(primaryPrice.price, primary.raw.currency, primaryPrice.currencySymbol)
         .setSku(item.sku)
         .setID(item.uid)

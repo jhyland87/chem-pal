@@ -886,7 +886,9 @@ export class SupplierAmbeed
     });
 
     scored.sort((a, b) => b.score - a.score);
-    return scored.map((entry) => entry.item);
+    // Stamp the AST score onto each item (like fuzzyFilterAst's plain-query path) so
+    // initProductBuilders can carry it onto the Product via setMatchPercentage.
+    return scored.map((entry, idx) => this.attachFuzz(entry.item, entry.score, idx));
   }
 
   /**
@@ -1076,6 +1078,7 @@ export class SupplierAmbeed
       return productBuilder
         .setData(mainVariant as Partial<Product>)
         .setBasicInfo(productTitle, `/products/${product.s_url}`, this.supplierName)
+        .setMatchPercentage(this.matchScoreOf(product))
         .setID(product.p_id)
         .setCacheKey(this.getUniqueProductKey(product))
         .setSku(product.p_bd)

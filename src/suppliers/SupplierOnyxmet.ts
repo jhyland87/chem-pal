@@ -181,6 +181,7 @@ export class SupplierOnyxmet
 
       return new ProductBuilder<Product>(this.baseURL)
         .setBasicInfo(item.label, item.href, this.supplierName)
+        .setMatchPercentage(this.matchScoreOf(item))
         .setCAS(findCAS(item.description))
         .setImage(item.image)
         .setID(productId)

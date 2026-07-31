@@ -210,6 +210,7 @@ export abstract class SupplierBaseSearchanise
         // description, keeping the first value found.
         builder
           .setBasicInfo(item.title, item.link, this.supplierName)
+          .setMatchPercentage(this.matchScoreOf(item))
           .setData(this.productDefaults)
           .setPricing(
             Number(item.price),

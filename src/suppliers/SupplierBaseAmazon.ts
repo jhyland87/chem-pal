@@ -464,6 +464,7 @@ export abstract class SupplierBaseAmazon
       const builder = new ProductBuilder(this.baseURL);
       builder
         .setBasicInfo(item.title, item.url, this.supplierName)
+        .setMatchPercentage(this.matchScoreOf(item))
         .setPricing(item.price, getCurrencyCodeFromSymbol(item.currencySymbol), item.currencySymbol)
         .setAvailability(item.availability ?? AVAILABILITY.UNKNOWN)
         .setVendor('Amazon')

@@ -193,6 +193,7 @@ export class SupplierCarolina
       // e.g. "FAM_889460") — capture it and freeze it as the cache/exclusion key.
       builder.setID(result['product.productId']);
       builder.setCacheKey(this.getUniqueProductKey(result));
+      builder.setMatchPercentage(this.matchScoreOf(result));
       return builder;
       //.setQuantity(result.qtyDiscountAvailable, "1")
       //.setDescription(result.shortDescription)

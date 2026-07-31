@@ -256,6 +256,7 @@ export abstract class SupplierBaseShopify
 
       builder
         .setBasicInfo(product.title, url, this.supplierName)
+        .setMatchPercentage(this.matchScoreOf(product))
         .setPricing(parsedPrice)
         .setAvailability(
           primaryVariant.currentlyNotInStock ? AVAILABILITY.OUT_OF_STOCK : AVAILABILITY.IN_STOCK,

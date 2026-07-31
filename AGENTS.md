@@ -151,3 +151,5 @@ corresponding task even if you're not using Claude Code:
 - `add-i18n-key` — adding or changing a message key across all 7 locales.
 - `verify-changes` — what to run, and what each check does and doesn't prove.
 - `cut-release` — cutting and publishing a release.
+- `add-migration-step` — adding a cache migration step when a release changes the shape of
+  data already cached in IndexedDB (vs. a `DB_VERSION` bump or a plain cache clear).
