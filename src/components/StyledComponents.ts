@@ -20,7 +20,7 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { createElement } from 'react';
-import { darkPalette, designTokens, lightPalette } from '../themes';
+import { designTokens } from '../themes';
 
 // === STATUS BAR ===
 
@@ -412,20 +412,6 @@ export const SearchFormDivider = styled(Box)(({ theme }) => ({
   margin: theme.spacing(0.5),
   borderLeft: `1px solid ${theme.palette.divider}`,
 }));
-
-// === THEME SWITCHER COMPONENTS ===
-
-export const ThemeSwitcherButton = styled(IconButton, {
-  shouldForwardProp: (prop) => prop !== 'currentPalette' && prop !== 'mode',
-})<{ currentPalette: typeof lightPalette | typeof darkPalette; mode: string }>(
-  ({ currentPalette, mode }) => ({
-    color: currentPalette.text,
-    '&:hover': {
-      backgroundColor:
-        mode === 'light' ? `${currentPalette.notificationBg}15` : `${currentPalette.text}15`,
-    },
-  }),
-);
 
 export const AppMainBox = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.background.default,
@@ -1011,18 +997,6 @@ export const ErrorRetryButton = styled('button')(() => ({
 
 // === TABLE HEADER COMPONENTS ===
 
-// Table header cell with dynamic sizing
-export const TableHeaderCell = styled('th', {
-  shouldForwardProp: (prop) => prop !== 'headerSize' && prop !== 'colSize',
-})<{
-  headerSize: number;
-  colSize: number;
-}>(({ headerSize, colSize }) => ({
-  width: `${headerSize}px`,
-  '--header-size': `${headerSize}px`,
-  '--col-size': `${colSize}px`,
-}));
-
 // Column resizer handle
 export const ColumnResizer = styled('div', {
   shouldForwardProp: (prop) => prop !== 'isResizing',
@@ -1042,19 +1016,6 @@ export const ColumnResizer = styled('div', {
   '&.isResizing': {
     backgroundColor: '#1976d2',
   },
-}));
-
-// Sortable header content container
-export const SortableHeaderContent = styled('div', {
-  shouldForwardProp: (prop) => prop !== 'canSort',
-})<{ canSort: boolean }>(({ canSort }) => ({
-  cursor: canSort ? 'pointer' : 'default',
-  userSelect: canSort ? 'none' : 'auto',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  padding: '8px',
-  position: 'relative',
 }));
 
 // Country flag tooltip with consistent styling

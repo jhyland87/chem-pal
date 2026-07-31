@@ -60,7 +60,7 @@
     "demo": "pnpm run generate-logo-files && vite build --mode=production && playwright test --config configs/playwright.demo.config.ts",
     "test": "vitest run --config configs/vitest.config.ts",
     "test:full": "pnpm run lint && pnpm run test:all && pnpm run docs",
-    "test:all": "pnpm test && pnpm test:e2e",
+    "test:all": "pnpm test:coverage && pnpm test:e2e",
     "test:ui": "vitest --ui --coverage --open=true --config configs/vitest.config.ts",
     "test:ui:open": "vitest --ui --coverage --open=true --config configs/vitest.config.ts",
     "test:coverage": "vitest run --coverage --open=true --config configs/vitest.config.ts",
