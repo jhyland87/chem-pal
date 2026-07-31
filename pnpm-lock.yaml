@@ -51,8 +51,8 @@ importers:
         specifier: ^1.9.0
         version: 1.9.0
       content-type:
-        specifier: ^1.0.5
-        version: 1.0.5
+        specifier: ^2.0.0
+        version: 2.0.0
       countries-list:
         specifier: ^3.3.0
         version: 3.3.0
@@ -208,8 +208,8 @@ importers:
         specifier: ^0.0.317
         version: 0.0.317
       '@types/content-type':
-        specifier: ^1.1.8
-        version: 1.1.8
+        specifier: ^2.0.0
+        version: 2.0.0
       '@types/country-list-js':
         specifier: ^3.1.5
         version: 3.1.5
@@ -2299,8 +2299,9 @@ packages:
   '@types/chrome@0.0.317':
     resolution: {integrity: sha512-ibKycbXX8ZZToFshjgWg98BTvFUSvQht8m53Xc+87ye3Z6ZoHJubLjoiDsil8rtW+noWE+Z0+7y0nwLxArU+CQ==}
 
-  '@types/content-type@1.1.8':
-    resolution: {integrity: sha512-1tBhmVUeso3+ahfyaKluXe38p+94lovUZdoVfQ3OnJo9uJC42JT7CBoN3k9HYhAae+GwiBYmHu+N9FZhOG+2Pg==}
+  '@types/content-type@2.0.0':
+    resolution: {integrity: sha512-wZQlLoRx3carjGy5yHA6GnCBGChd/9DDYTAOPbISfXGjhI4j70U6SU/tu5EEz7NpX2MxpUVgbbYFIgLqDItbVQ==}
+    deprecated: This is a stub types definition. content-type provides its own type definitions, so you do not need this installed.
 
   '@types/cookie@0.6.0':
     resolution: {integrity: sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA==}
@@ -2994,9 +2995,9 @@ packages:
     resolution: {integrity: sha512-hIP3EEPs8tB9AT1L+NUqtwOAps4mk2Zob89MWXMHjHWg9milF/j4osnnQLXBCBFBk/tvIG/tUc9mOUJiPBhPXA==}
     engines: {node: '>= 0.6'}
 
-  content-type@1.0.5:
-    resolution: {integrity: sha512-nTjqfcBFEipKdXCv4YDQWCfmcLZKm81ldF0pAopTvyrFGVbcR6P/VAAd5G7N+0tTr8QqiU0tFadD6FK4NtJwOA==}
-    engines: {node: '>= 0.6'}
+  content-type@2.0.0:
+    resolution: {integrity: sha512-j/O/d7GcZCyNl7/hwZAb606rzqkyvaDctLmckbxLzHvFBzTJHuGEdodATcP3yIRoDrLHkIATJuvzbFlp/ki2cQ==}
+    engines: {node: '>=18'}
 
   convert-source-map@1.9.0:
     resolution: {integrity: sha512-ASFBup0Mz1uyiIjANan1jzLQami9z1PoYSZCiiYW2FczPbenXc45FZdBZLzOT+r6+iciuEModtmCti+hjaAk0A==}
@@ -7917,7 +7918,9 @@ snapshots:
       '@types/filesystem': 0.0.36
       '@types/har-format': 1.2.16
 
-  '@types/content-type@1.1.8': {}
+  '@types/content-type@2.0.0':
+    dependencies:
+      content-type: 2.0.0
 
   '@types/cookie@0.6.0': {}
 
@@ -8725,7 +8728,7 @@ snapshots:
 
   content-type@1.0.4: {}
 
-  content-type@1.0.5: {}
+  content-type@2.0.0: {}
 
   convert-source-map@1.9.0: {}
 
