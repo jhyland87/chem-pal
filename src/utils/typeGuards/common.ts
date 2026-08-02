@@ -916,7 +916,6 @@ function buildUserSettingsSchema() {
     fontSize: v.optional(v.picklist(['small', 'medium', 'large'])),
     suppliers: v.optional(
       v.object({
-        enabled: v.optional(v.array(v.picklist(SUPPLIER_CLASS_NAMES))),
         disabled: v.optional(v.array(v.picklist(SUPPLIER_CLASS_NAMES))),
         excludeNonShipping: v.optional(v.boolean()),
         resultLimit: v.optional(coercedNonnegativeInt),

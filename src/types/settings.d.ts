@@ -25,10 +25,8 @@ declare global {
     ttlMinutes?: number;
   };
 
-  /** Supplier selection and limits config. */
+  /** Supplier deny-list and limits config. */
   type SupplierSettings = {
-    /** Enabled supplier class names; empty means all suppliers. */
-    enabled?: Array<SupplierClassName>;
     /** Supplier class names the user has disabled (deny-list). */
     disabled?: Array<SupplierClassName>;
     /** When `true` (the default), exclude suppliers that don't ship to the user's location. */
@@ -198,15 +196,14 @@ declare global {
     shareUsageData?: boolean;
 
     /**
-     * Supplier selection and limits, grouping the enabled list, the disabled
-     * deny-list, the ship-to filter, and the per-supplier result cap. `enabled`
-     * empty means all suppliers; `disabled` names are excluded from every search
-     * and hidden from the filter menu; `excludeNonShipping` (default `true`) drops
-     * suppliers that don't ship to the user's `location`; `resultLimit` caps
-     * results requested per supplier.
+     * Supplier deny-list and limits. `disabled` names are excluded from every
+     * search and hidden from the filter menu; `excludeNonShipping` (default `true`)
+     * drops suppliers that don't ship to the user's `location`; `resultLimit` caps
+     * results requested per supplier. (The live "which suppliers to search"
+     * selection is session-scoped, not stored here.)
      * @example
      * ```ts
-     * const suppliers = { enabled: [], disabled: [], excludeNonShipping: true, resultLimit: 5 };
+     * const suppliers = { disabled: [], excludeNonShipping: true, resultLimit: 5 };
      * ```
      */
     suppliers?: SupplierSettings;

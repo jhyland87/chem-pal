@@ -15,7 +15,6 @@ import {
   seedVersionIfUnset,
 } from '@/migrations/registry';
 import type { Migration } from '@/migrations/types';
-import { SupplierFactory } from '@/suppliers/SupplierFactory';
 import { SupplierCache } from '@/utils/SupplierCache';
 import { useSearchAnalytics } from '@/hooks/useSearchAnalytics';
 import { useBadgeController } from '@/utils/badgeController';
@@ -125,7 +124,6 @@ Object.assign(initialAppState, {
     language: getUserLanguage(),
     suppliers: {
       ...initialAppState.userSettings?.suppliers,
-      enabled: SupplierFactory.supplierList(),
       resultLimit: search.defaultResultsLimitPerSupplier,
     },
   } satisfies UserSettings,

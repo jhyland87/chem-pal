@@ -184,6 +184,32 @@ describe('SettingsPanel', () => {
     );
   });
 
+  it('restore rebuilds a clean object, dropping stale/corrupted keys', async () => {
+    // Seed a profile carrying legacy + corrupted keys that must not survive.
+    const corrupted = {
+      ...baseSettings(),
+      trackPriceHistory: true,
+      suppliers: { 0: 'SupplierAladdinSci', 1: 'SupplierAmbeed' },
+    } as unknown as UserSettings;
+    const ctx = setContext(corrupted);
+    render(<SettingsPanel />);
+    openSection('settings_section_actions');
+
+    fireEvent.click(screen.getByText('settings_restore_defaults'));
+
+    await waitFor(() => {
+      const call = ctx.setUserSettings.mock.calls.find(
+        ([s]) => s?.suppliers?.disabled?.length === 0,
+      );
+      expect(call).toBeDefined();
+      const restored = call![0];
+      expect(restored).not.toHaveProperty('trackPriceHistory');
+      expect(restored.suppliers).not.toHaveProperty('0');
+      // Locale is preserved; the rest comes from clean defaults.
+      expect(restored.currency).toBe('USD');
+    });
+  });
+
   it('toggling a supplier off adds it to disabledSuppliers', async () => {
     const supplier = SUPPLIER_CLASS_NAMES[0];
     const ctx = setContext(baseSettings({ suppliers: { disabled: [] } }));

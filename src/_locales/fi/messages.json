@@ -376,6 +376,7 @@
   "column_unit": { "message": "Yksikkö", "description": "Table column header." },
   "column_unit_price": { "message": "Yksikköhinta", "description": "Table column header for price per base unit." },
   "column_price_trend": { "message": "Trendi", "description": "Table column header for the price-history trend sparkline." },
+  "column_price_change": { "message": "Muutos", "description": "Table column header for the numeric price change (signed delta and percent)." },
   "column_sds": { "message": "KTT", "description": "Table column header." },
   "column_specs": { "message": "Tekn. tiedot", "description": "Table column header." },
   "column_coa": { "message": "COA", "description": "Table column header." },

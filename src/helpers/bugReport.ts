@@ -1,7 +1,9 @@
 import { report as reportConfig } from '@/../config.json';
+import { CACHE } from '@/constants/common';
 import { formatErrorChain, getRecentErrors, type CapturedError } from '@/helpers/errorBuffer';
 import { getInstallSource } from '@/helpers/updates';
-import { getIdbStorageBreakdown } from '@/utils/idbCache';
+import { getIdbStorageBreakdown, getSearchResultsRecord } from '@/utils/idbCache';
+import { cstorage } from '@/utils/storage';
 
 /**
  * Assembles diagnostics for a bug report and builds prefilled submission URLs
@@ -51,6 +53,10 @@ export interface Diagnostics {
   installSource: string;
   /** Compact per-store IndexedDB usage summary. */
   storage: string;
+  /** The user's current settings, pretty-printed (non-PII). */
+  settings: string;
+  /** The persisted current search (query + result count), or a "none" note. */
+  search: string;
   /** Recent captured exceptions from the ring buffer. */
   recentErrors: CapturedError[];
   /** Any caller-supplied extra payload. */
@@ -125,6 +131,46 @@ async function readStorageSummary(): Promise<string> {
 }
 
 /**
+ * Reads and pretty-prints the user's current settings for the report, in full.
+ * Never throws; returns a short note when settings can't be read or aren't set.
+ * The settings are non-PII (preferences, supplier selection, display options) and
+ * the user reviews the report before submitting.
+ * @returns The settings as formatted JSON, or a fallback note.
+ * @source
+ */
+async function readSettings(): Promise<string> {
+  try {
+    const stored = await cstorage.local.get(CACHE.USER_SETTINGS);
+    const settings = stored[CACHE.USER_SETTINGS];
+    if (settings === undefined || settings === null) return '(none)';
+    return JSON.stringify(settings, null, 2);
+  } catch {
+    return 'unavailable';
+  }
+}
+
+/**
+ * Summarizes the persisted current search — the query and how many results are
+ * cached — so a report captures what the user was looking at. Never throws.
+ * @returns A one-line search summary, or `(none)` when there's no active search.
+ * @example
+ * ```ts
+ * await readSearch(); // => '"acetone" — 42 results'
+ * ```
+ * @source
+ */
+async function readSearch(): Promise<string> {
+  try {
+    const { data, query } = await getSearchResultsRecord();
+    if (data.length === 0 && !query) return '(none)';
+    const label = query ? `"${query}"` : '(unknown query)';
+    return `${label} — ${data.length} result${data.length === 1 ? '' : 's'}`;
+  } catch {
+    return 'unavailable';
+  }
+}
+
+/**
  * Reads the install source, tolerating a missing `chrome.runtime`.
  * @returns `"webstore"`, `"manual"`, or `"unknown"`.
  * @source
@@ -170,6 +216,8 @@ export async function collectDiagnostics(
     action: context.action ?? 'n/a',
     installSource: readInstallSource(),
     storage: await readStorageSummary(),
+    settings: await readSettings(),
+    search: await readSearch(),
     recentErrors,
     extra: context.extra,
     timestamp: new Date().toISOString(),
@@ -191,9 +239,13 @@ export function formatMetadata(d: Diagnostics): string {
     `Page:      ${d.url}`,
     `Browser:   ${d.userAgent}`,
     `Locale:    ${d.language}`,
+    `Search:    ${d.search}`,
     '',
     'Storage:',
     d.storage,
+    '',
+    'Settings:',
+    d.settings,
   ].join('\n');
 }
 

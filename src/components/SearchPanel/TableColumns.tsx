@@ -387,6 +387,43 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       },
     },
     {
+      id: 'priceChange',
+      header: i18n('column_price_change'),
+      // The numeric form of the price trend: the same signed delta and percent
+      // shown in the sparkline column's hover tooltip, but always visible. Sorts
+      // by the stamped `priceTrendValue` (signed percent change), matching the
+      // sparkline column; `sortUndefined: 'last'` and `meta.skipEmptyHide` behave
+      // the same way too.
+      accessorFn: (product) => product.priceTrendValue,
+      cell: ({ row, table }: CellContext<Product, unknown>) => {
+        const history = table.options.meta?.priceHistory;
+        if (history === undefined) return null;
+        const product = row.original;
+        const variants: Variant[] =
+          row.subRows.length > 0
+            ? row.subRows.map((sub) => sub.original)
+            : (product.variants ?? []);
+        const points = resolveRowTrendPoints(
+          product,
+          resolveDisplayedVariants(product, variants),
+          history,
+        );
+        if (!points) return null;
+        return <PriceTrend points={points} userSettings={table.options.meta?.userSettings} />;
+      },
+      enableColumnFilter: false,
+      sortUndefined: 'last',
+      size: 150,
+      minSize: 120,
+      maxSize: 200,
+      meta: {
+        skipEmptyHide: true,
+        style: {
+          textAlign: 'center',
+        },
+      },
+    },
+    {
       id: 'sds',
       header: i18n('column_sds'),
       cell: ({ row }: ProductRow) => {

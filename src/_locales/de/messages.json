@@ -376,6 +376,7 @@
   "column_unit": { "message": "Einheit", "description": "Table column header." },
   "column_unit_price": { "message": "Stückpreis", "description": "Table column header for price per base unit." },
   "column_price_trend": { "message": "Trend", "description": "Table column header for the price-history trend sparkline." },
+  "column_price_change": { "message": "Änderung", "description": "Table column header for the numeric price change (signed delta and percent)." },
   "column_sds": { "message": "SDS", "description": "Table column header." },
   "column_specs": { "message": "Spez.", "description": "Table column header." },
   "column_coa": { "message": "COA", "description": "Table column header." },
