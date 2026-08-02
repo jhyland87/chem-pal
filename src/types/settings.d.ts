@@ -7,11 +7,43 @@ import { ACTION_TYPE } from '@/constants/common';
 export {};
 
 declare global {
+  /** Price-history tracking config: whether it's on and how many points to keep. */
+  type PriceTracking = {
+    /** Master switch; tracking is on unless explicitly `false`. */
+    enabled?: boolean;
+    /** Max points retained per series; `0` means unlimited. */
+    maxDataPoints?: number;
+  };
+
+  /** Query-cache config: whether caching is on, empty-result handling, and TTL. */
+  type CacheSettings = {
+    /** Master switch; caching is on unless explicitly `false`. */
+    enabled?: boolean;
+    /** When `true`, zero-result queries are not cached. */
+    doNotCacheEmptyResults?: boolean;
+    /** Max age of a cache entry in minutes; `0` disables TTL expiration. */
+    ttlMinutes?: number;
+  };
+
+  /** Supplier selection and limits config. */
+  type SupplierSettings = {
+    /** Enabled supplier class names; empty means all suppliers. */
+    enabled?: Array<SupplierClassName>;
+    /** Supplier class names the user has disabled (deny-list). */
+    disabled?: Array<SupplierClassName>;
+    /** When `true` (the default), exclude suppliers that don't ship to the user's location. */
+    excludeNonShipping?: boolean;
+    /** Max results to request per supplier. */
+    resultLimit?: number;
+  };
+
   type SettingAction =
     | { type: typeof ACTION_TYPE.SWITCH_CHANGE; name: string; checked: boolean }
     | { type: typeof ACTION_TYPE.INPUT_CHANGE; name: string; value: string }
     | { type: typeof ACTION_TYPE.BUTTON_CLICK; name: string; value: string }
     | { type: typeof ACTION_TYPE.SUPPLIER_TOGGLE; value: Array<SupplierClassName> }
+    | { type: typeof ACTION_TYPE.PRICE_TRACKING_CHANGE; value: PriceTracking }
+    | { type: typeof ACTION_TYPE.CACHE_CHANGE; value: CacheSettings }
     | { type: typeof ACTION_TYPE.RESTORE_DEFAULTS };
 
   /**
@@ -38,46 +70,34 @@ declare global {
     showHelp?: boolean;
 
     /**
-     * Enables or disables data caching functionality.
-     * Defaults to true.
+     * Query-cache configuration, grouping the master switch, empty-result
+     * handling, and TTL. When `enabled` (the default), supplier query results are
+     * cached; `doNotCacheEmptyResults` skips caching zero-result queries so a
+     * previously-out-of-stock supplier can surface fresh results next time;
+     * `ttlMinutes` evicts entries older than the given age on read (`0` disables
+     * TTL expiration, leaving entries to LRU/version eviction). Defaults to
+     * `{ enabled: true, doNotCacheEmptyResults: true, ttlMinutes: 7200 }`.
+     * @example
+     * ```ts
+     * const caching = { enabled: true, doNotCacheEmptyResults: true, ttlMinutes: 7200 };
+     * ```
      */
-    caching?: boolean;
+    caching?: CacheSettings;
 
     /**
-     * When true, suppliers that return zero results for a query will not write
-     * a cache entry for that query. Lets a previously-out-of-stock supplier
-     * surface fresh results on the next search instead of returning the cached
-     * empty list. Defaults to false.
+     * Price-history tracking, grouping the master switch and the retention cap.
+     * When `enabled` (the default), each search records every product's and
+     * variant's standardized USD price into the `priceHistory` IndexedDB store,
+     * appending a point only when the price changes — letting users see whether a
+     * product got cheaper or more expensive since they last checked. `maxDataPoints`
+     * bounds each series (oldest points dropped past the cap); `0` means unlimited.
+     * Defaults to `{ enabled: true, maxDataPoints: 5 }`. Independent of `caching`.
+     * @example
+     * ```ts
+     * const priceTracking = { enabled: true, maxDataPoints: 5 };
+     * ```
      */
-    doNotCacheEmptyResults?: boolean;
-
-    /**
-     * Maximum age of a query cache entry, in minutes. On read, entries older
-     * than this are evicted and treated as a cache miss, forcing a fresh
-     * fetch. Set to `0` (the default) to disable TTL expiration entirely —
-     * entries then live until LRU eviction or version-mismatch eviction.
-     * @example 60
-     */
-    cacheTtlMinutes?: number;
-
-    /**
-     * Master switch for price-history tracking. When enabled (the default), each
-     * search records every product's and variant's standardized USD price into the
-     * `priceHistory` IndexedDB store, appending a point only when the price changes.
-     * Lets users see whether a product got cheaper or more expensive since they last
-     * checked. Set to `false` to stop recording entirely. Independent of `caching`.
-     * @example true
-     */
-    trackPriceHistory?: boolean;
-
-    /**
-     * Maximum number of price points retained per product/variant series. When a
-     * series exceeds this, the oldest points are dropped so only the newest N remain.
-     * Set to `0` (the default) for no limit. Only applies while `trackPriceHistory`
-     * is enabled.
-     * @example 30
-     */
-    priceHistoryMaxPoints?: number;
+    priceTracking?: PriceTracking;
 
     /**
      * HTTP status codes that, when hit while fetching a product's detail/enrichment data,
@@ -170,28 +190,26 @@ declare global {
     groupProductVariants?: boolean;
 
     /**
-     * List of supplier class names that are enabled for searching
-     * @example ["SupplierCarolina", "SupplierLaballey"]
-     */
-    suppliers?: Array<SupplierClassName>;
-
-    /**
-     * Supplier class names (e.g. "SupplierCarolina") the user has disabled. Any supplier
-     * in this list is excluded from every search, regardless of the enabled-supplier
-     * selection, and is hidden from the supplier list in the search filter menu. Toggled
-     * in the Suppliers section of the settings panel.
-     * @example ["SupplierCarolina", "SupplierLaballey"]
-     */
-    disabledSuppliers?: Array<SupplierClassName>;
-
-    /**
-     * When true (the default), searches exclude any supplier that does not ship
-     * to the user's `location`. Toggled via the checkbox under Suppliers in the
-     * search drawer. Ship-to is decided by the supplier's `shipsTo` list when
-     * present, otherwise by its `ShippingRange` scope.
+     * When true (the default), ChemPal sends anonymous usage and error statistics
+     * (searches, result counts, render errors) to Google Analytics to help guide
+     * improvements. Set to false to opt out; nothing is then sent to analytics.
      * @example true
      */
-    excludeNonShippingSuppliers?: boolean;
+    shareUsageData?: boolean;
+
+    /**
+     * Supplier selection and limits, grouping the enabled list, the disabled
+     * deny-list, the ship-to filter, and the per-supplier result cap. `enabled`
+     * empty means all suppliers; `disabled` names are excluded from every search
+     * and hidden from the filter menu; `excludeNonShipping` (default `true`) drops
+     * suppliers that don't ship to the user's `location`; `resultLimit` caps
+     * results requested per supplier.
+     * @example
+     * ```ts
+     * const suppliers = { enabled: [], disabled: [], excludeNonShipping: true, resultLimit: 5 };
+     * ```
+     */
+    suppliers?: SupplierSettings;
 
     /**
      * When true (the default), searches hide products the user cannot buy — either
@@ -214,12 +232,6 @@ declare global {
      * @example ["price", "quantity"]
      */
     hideColumns?: Array<string>;
-
-    /**
-     * Number of results to display per supplier
-     * @example 20
-     */
-    supplierResultLimit?: number | undefined;
 
     /**
      * Minimum price (in the user's selected currency) to include in results.

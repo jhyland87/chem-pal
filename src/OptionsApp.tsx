@@ -8,6 +8,7 @@ import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useMemo, useState } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
+import OfflineOverlay from './components/OfflineOverlay';
 import SettingsPanel from './components/SettingsPanel';
 import { ThemeProvider } from './components/ThemeProvider';
 
@@ -80,6 +81,7 @@ export function OptionsApp() {
       <AppContext.Provider value={contextValue}>
         <ThemeProvider>
           <CssBaseline />
+          <OfflineOverlay />
           <Box sx={{ width: '100%', maxWidth: 720, mx: 'auto', p: 2, boxSizing: 'border-box' }}>
             <SettingsPanel />
           </Box>

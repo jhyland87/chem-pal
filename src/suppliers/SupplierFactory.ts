@@ -1,4 +1,5 @@
 import { search } from '@/../config.json';
+import { recordException } from '@/helpers/errorBuffer';
 import { resolveIdentifierNames } from '@/helpers/pubchem';
 import { filterRestrictedProduct } from '@/helpers/purchaseRestriction';
 import {
@@ -24,6 +25,21 @@ type SupplierConstructor<P extends Product> = new (
   limit: number,
   controller: AbortController,
 ) => SupplierBase<unknown, P>;
+
+/**
+ * True for an `AbortError` — a user-initiated stop or a search-budget timeout,
+ * which is expected and must not be aggregated as a supplier failure.
+ * @param error - The error thrown by a supplier's `execute()`.
+ * @returns `true` when the error represents an abort.
+ * @example
+ * ```ts
+ * isAbortError(new DOMException("stop", "AbortError")); // => true
+ * ```
+ * @source
+ */
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === 'AbortError';
+}
 
 /**
  * Options for constructing a {@link SupplierFactory}. `controller` is required; every other field
@@ -171,6 +187,10 @@ export class SupplierFactory<P extends Product> {
   // but shipping filtering removed every one of them (i.e. no selected supplier
   // ships to the user's location). Lets the UI explain an empty result set.
   public shippingExcludedAll: boolean = false;
+
+  // Per-supplier exceptions from the most recent run (aborts excluded). Also
+  // aggregated into an AggregateError recorded to the shared error buffer.
+  public executionErrors: SupplierExecutionError<P>[] = [];
 
   /**
    * Factory class for querying all suppliers.
@@ -565,15 +585,15 @@ export class SupplierFactory<P extends Product> {
         } catch (e) {
           this.logger.error('Error executing supplier', { error: e, supplier });
           incrementParseError(supplier.supplierName);
-          errors.push({ error: e, supplier });
+          if (!isAbortError(e)) errors.push({ error: e, supplier });
         }
       }),
     );
 
     await Promise.all(tasks);
 
-    // Optionally, you can return errors as well
-    // return { products: allResults, errors };
+    // Aggregate any per-supplier failures into the shared error buffer.
+    this.reportExecutionErrors(errors);
     return allResults;
   }
 
@@ -629,6 +649,7 @@ export class SupplierFactory<P extends Product> {
     const queue = new Queue(concurrency, 100);
 
     const channel: P[] = [];
+    const errors: SupplierExecutionError<P>[] = [];
     let doneCount = 0;
 
     permittedInstances.forEach((supplier) => {
@@ -644,6 +665,7 @@ export class SupplierFactory<P extends Product> {
         } catch (e) {
           this.logger.error('Error executing supplier', { error: e, supplier });
           incrementParseError(supplier.supplierName);
+          if (!isAbortError(e)) errors.push({ error: e, supplier });
         } finally {
           doneCount++;
         }
@@ -658,5 +680,34 @@ export class SupplierFactory<P extends Product> {
         await sleep(25);
       }
     }
+
+    // All suppliers have settled; partial results were already streamed, so record
+    // (rather than throw) any failures as one AggregateError for bug reports.
+    this.reportExecutionErrors(errors);
+  }
+
+  /**
+   * Records the per-supplier exceptions from a search run as a single
+   * {@link AggregateError} in the shared error buffer, so a later bug report can
+   * include them, and stashes them on {@link executionErrors}. Aborts are
+   * excluded by the callers. A no-op when nothing failed.
+   * @param errors - The per-supplier execution errors collected during the run.
+   * @returns Nothing.
+   * @example
+   * ```ts
+   * this.reportExecutionErrors([{ error: new Error("boom"), supplier }]);
+   * ```
+   * @source
+   */
+  private reportExecutionErrors(errors: SupplierExecutionError<P>[]): void {
+    this.executionErrors = errors;
+    if (errors.length === 0) return;
+
+    const names = errors.map((e) => e.supplier.supplierName).join(', ');
+    const aggregate = new AggregateError(
+      errors.map((e) => e.error),
+      `${errors.length} supplier(s) failed during search: ${names}`,
+    );
+    void recordException(aggregate, 'search');
   }
 }

@@ -1,4 +1,5 @@
 import { default as Link } from '@/components/TabLink';
+import { showReportDialog } from '@/components/ReportDialog';
 import { i18n } from '@/helpers/i18n';
 import { getAvailableUpdate } from '@/helpers/updates';
 import GitHubIcon from '@/icons/GitHubIcon';
@@ -157,6 +158,11 @@ export default function AboutModal({
             target="_blank"
             title={i18n('about_bugs_link_title')}
             rel="noopener noreferrer"
+            onClick={(e: React.MouseEvent) => {
+              // Open the prefilled report dialog instead of the bare issues page.
+              e.preventDefault();
+              void showReportDialog();
+            }}
           >
             <BugReportIcon />
           </AboutModalLink>

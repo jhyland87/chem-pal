@@ -409,7 +409,7 @@ export function useSearch() {
   const performSearch = useCallback(
     async ({
       query,
-      supplierResultLimit = appContext.userSettings.supplierResultLimit ?? 15,
+      supplierResultLimit = appContext.userSettings.suppliers?.resultLimit ?? 15,
       suppliers = appContext.selectedSuppliers ?? [],
     }: {
       query: string;
@@ -472,7 +472,7 @@ export function useSearch() {
       emitSearchEvent(SearchEvent.STARTED, { query });
 
       const columnFilterConfig = getColumnFilterConfig();
-      const userLimit = appContext.userSettings.supplierResultLimit ?? 15;
+      const userLimit = appContext.userSettings.suppliers?.resultLimit ?? 15;
 
       // When filters are active, fetch more results so there's enough after filtering.
       // The per-supplier limit is applied post-filter, so we ask each supplier for more.
@@ -481,7 +481,7 @@ export function useSearch() {
         fetchLimit,
         userLimit,
         filtersActive,
-        supplierResultLimit: appContext.userSettings.supplierResultLimit,
+        supplierResultLimit: appContext.userSettings.suppliers?.resultLimit,
       });
 
       // Create new abort controller for this search
@@ -512,22 +512,23 @@ export function useSearch() {
           limit: fetchLimit,
           controller: fetchControllerRef.current,
           suppliers: suppliersToQuery,
-          caching: appContext.userSettings.caching,
+          caching: appContext.userSettings.caching?.enabled,
           // The scorer selector lives behind advanced mode, so only honor the
           // override there; otherwise a stale value can't strand a normal user
           // on a non-default scorer — they fall through to the WRatio default.
           fuzzScorerOverride: appContext.advancedMode
             ? appContext.userSettings.fuzzScorerOverride
             : undefined,
-          doNotCacheEmptyResults: appContext.userSettings.doNotCacheEmptyResults,
-          cacheTtlMinutes: appContext.userSettings.cacheTtlMinutes,
+          doNotCacheEmptyResults: appContext.userSettings.caching?.doNotCacheEmptyResults,
+          cacheTtlMinutes: appContext.userSettings.caching?.ttlMinutes,
           noCacheStatusCodes: appContext.userSettings.noCacheStatusCodes,
           supplierSearchTimeBudgetSec: appContext.userSettings.supplierSearchTimeBudgetSec,
           fuzzyFilteringDisabled: appContext.userSettings.fuzzyFilteringDisabled,
           location: appContext.userSettings.location,
-          excludeNonShippingSuppliers: appContext.userSettings.excludeNonShippingSuppliers ?? true,
+          excludeNonShippingSuppliers:
+            appContext.userSettings.suppliers?.excludeNonShipping ?? true,
           hideRestrictedProducts: appContext.userSettings.hideRestrictedProducts ?? true,
-          disabledSuppliers: appContext.userSettings.disabledSuppliers,
+          disabledSuppliers: appContext.userSettings.suppliers?.disabled,
         });
 
         const startSearchTime = performance.now();

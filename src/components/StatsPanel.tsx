@@ -122,10 +122,10 @@ const StatsPanel: FC = () => {
   // Stats are keyed by supplierName ("Carolina"), but userSettings.disabledSuppliers
   // holds class names ("SupplierCarolina"), so translate before comparing.
   const disabledSupplierNames = useMemo(() => {
-    const disabledClassNames = appContext?.userSettings?.disabledSuppliers ?? [];
+    const disabledClassNames = appContext?.userSettings?.suppliers?.disabled ?? [];
     const displayNames = SupplierFactory.supplierDisplayNames();
     return new Set(disabledClassNames.map((className) => displayNames[className] ?? className));
-  }, [appContext?.userSettings?.disabledSuppliers]);
+  }, [appContext?.userSettings?.suppliers?.disabled]);
 
   // Every view (pies, daily chart, totals) reflects the selected range.
   const rangedStats = useMemo(() => filterStatsByRange(stats, range), [stats, range]);

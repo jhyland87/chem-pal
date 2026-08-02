@@ -13,6 +13,21 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+### Added
+
+- **Report a bug** from the About dialog, the quick-actions menu, and Settings. It opens a
+  prefilled report — a GitHub issue, or an account-free Google form — with helpful diagnostics
+  already filled in for you to review and edit. Nothing is sent until you submit it yourself.
+- A **Report Error** option now appears if ChemPal hits an unexpected error, so you can send
+  the details in a couple of clicks instead of hitting a dead end.
+- Lightweight usage and error analytics (searches run, result counts, and crashes) to help
+  prioritize fixes and improvements. No accounts and no personal data.
+
+### Changed
+
+- Updated the **privacy policy** to cover the new usage/error analytics and the bug‑reporting
+  flow — what's sent, to whom, and what stays on your device.
+
 ## [1.6.1] - 2026-07-28
 
 ### Added

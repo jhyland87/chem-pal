@@ -1,11 +1,8 @@
 {
   "defaultSettings": {
     "showHelp": false,
-    "caching": true,
-    "doNotCacheEmptyResults": true,
-    "cacheTtlMinutes": 7200,
-    "trackPriceHistory": true,
-    "priceHistoryMaxPoints": 0,
+    "caching": { "enabled": true, "doNotCacheEmptyResults": true, "ttlMinutes": 7200 },
+    "priceTracking": { "enabled": true, "maxDataPoints": 5 },
     "currency": "USD",
     "location": "US",
     "language": "en-US",
@@ -14,10 +11,10 @@
     "openInTab": true,
     "autoHideEmptyColumns": true,
     "groupProductVariants": true,
+    "shareUsageData": true,
     "theme": "light",
-    "excludeNonShippingSuppliers": true,
+    "suppliers": { "disabled": [], "excludeNonShipping": true },
     "hideRestrictedProducts": true,
-    "disabledSuppliers": [],
     "hideColumns": [
       "description",
       "uom",
@@ -60,6 +57,29 @@
   },
   "extension": {
     "chromeWebstoreId": "facakdliomkjhegdhjimfjlcggfnpfnd"
+  },
+  "analytics": {
+    "measurementId": "G-QC2T73LJ8T"
+  },
+  "report": {
+    "github": {
+      "template": "bug_report.yml",
+      "labels": ["bug", "user_report"]
+    },
+    "googleForm": {
+      "id": "1FAIpQLSeZSKNiVXperjnMEOqZjBq7eyxcVnDRXZabT3BU1b8k55lOXA",
+      "entries": {
+        "summary": "entry.1413664463",
+        "version": "entry.956142326",
+        "description": "entry.1759085202",
+        "logs": "entry.1356355358",
+        "diagnostics": "entry.647865246"
+      }
+    },
+    "maxChars": {
+      "github": 5000,
+      "formLogs": 1200
+    }
   },
   "hotkeys": {
     "sequenceResetMs": 1500,

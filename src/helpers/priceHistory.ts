@@ -12,7 +12,7 @@ import { getProductIdentityKey } from '@/helpers/productIdentity';
 import { getPriceSeries, getPriceSeriesByProduct, putPriceSeries } from '@/utils/idbCache';
 
 /** The user settings that gate and bound price-history recording. */
-type PriceHistorySettings = Pick<UserSettings, 'trackPriceHistory' | 'priceHistoryMaxPoints'>;
+type PriceHistorySettings = Pick<UserSettings, 'priceTracking'>;
 
 /** Direction of the most recent price move, from {@link describeTrend}. */
 type TrendDirection = 'up' | 'down' | 'flat';
@@ -76,7 +76,7 @@ function round2(usd: number): number {
  * numeric settings inputs persist their value as a string, so this coerces via
  * `Number()` (not `parseInt`, which would swallow trailing junk). Any invalid
  * or non-positive value falls back to `0` (unlimited).
- * @param maxPoints - The raw `priceHistoryMaxPoints` setting (number or string).
+ * @param maxPoints - The raw `priceTracking.maxDataPoints` setting (number or string).
  * @returns A safe cap: `0` means unlimited, otherwise the integer count to keep.
  * @example
  * ```ts
@@ -324,8 +324,8 @@ async function recordSeries(input: SeriesInput, maxPoints: number, now: number):
  * changes, so repeated searches over cached results add nothing.
  * @category Helpers
  * @param products - The products to record; each may carry variants.
- * @param settings - The user's price-history settings (`trackPriceHistory`,
- *   `priceHistoryMaxPoints`). Tracking is on unless explicitly disabled.
+ * @param settings - The user's `priceTracking` settings (`enabled`,
+ *   `maxDataPoints`). Tracking is on unless explicitly disabled.
  * @returns Resolves once all series have been processed.
  * @example
  * ```ts
@@ -337,11 +337,11 @@ export async function recordProductPrices(
   products: Product[],
   settings?: PriceHistorySettings,
 ): Promise<void> {
-  if (settings?.trackPriceHistory === false) {
+  if (settings?.priceTracking?.enabled === false) {
     return;
   }
 
-  const maxPoints = normalizeMaxPoints(settings?.priceHistoryMaxPoints);
+  const maxPoints = normalizeMaxPoints(settings?.priceTracking?.maxDataPoints);
   const now = Date.now();
 
   for (const product of products) {

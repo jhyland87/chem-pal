@@ -942,6 +942,20 @@
     "message": "О приложении",
     "description": "Speed-dial action."
   },
+  "speed_dial_report_bug": { "message": "Сообщить об ошибке", "description": "Speed-dial action." },
+  "settings_report_bug": { "message": "Сообщить об ошибке", "description": "Settings action button label." },
+  "error_boundary_report": { "message": "Сообщить об ошибке", "description": "Button in the crash fallback to report the error." },
+  "report_dialog_title": { "message": "Сообщить об этой ошибке", "description": "Title of the bug-report dialog." },
+  "report_dialog_desc": { "message": "Мы заранее заполним данные ниже. Вы можете отредактировать всё перед отправкой.", "description": "Explains that report details are prefilled and editable." },
+  "report_via_github": { "message": "Сообщить через GitHub", "description": "Button: open a prefilled GitHub issue." },
+  "report_via_google": { "message": "Сообщить через Google", "description": "Button: open a prefilled Google Form." },
+  "report_copy": { "message": "Копировать данные", "description": "Button: copy report details to the clipboard." },
+  "report_copied": { "message": "Скопировано", "description": "Confirmation shown after copying report details." },
+  "report_close": { "message": "Закрыть", "description": "Button: dismiss the bug-report dialog." },
+  "offline_title": { "message": "Нет подключения к интернету", "description": "Title of the full-screen offline overlay." },
+  "offline_message": { "message": "Возникла проблема с сетевым подключением. Это сообщение исчезнет, как только соединение восстановится.", "description": "Body of the offline overlay." },
+  "settings_share_usage_data": { "message": "Делиться анонимными данными об использовании", "description": "Settings toggle label: opt in/out of usage analytics." },
+  "settings_share_usage_data_desc": { "message": "Отправлять анонимную статистику использования и ошибок (поиски, число результатов, сбои), чтобы улучшать ChemPal. Без персональных данных.", "description": "Description under the usage-data toggle." },
   "speed_dial_aria": {
     "message": "Меню SpeedDial",
     "description": "Accessible label for the speed dial."
