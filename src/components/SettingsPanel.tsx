@@ -1,4 +1,4 @@
-import { search } from '@/../config.json';
+import { defaultSettings, search } from '@/../config.json';
 import { useAppContext } from '@/components/SearchPanel/hooks/useContext';
 import { ACTION_TYPE, IDB_STORE } from '@/constants/common';
 import { COUNTRIES } from '@/constants/countries';
@@ -14,6 +14,7 @@ import { getAvailableLocales, i18n } from '@/helpers/i18n';
 import { formatBytes, formatTimestamp, getLanguageName } from '@/helpers/utils';
 // Names only, from a dependency-free constant — importing SupplierFactory here
 // would pull every supplier implementation into the options-page bundle.
+import { showReportDialog } from '@/components/ReportDialog';
 import { SUPPLIER_CLASS_NAMES } from '@/constants/suppliers';
 import {
   clearExcludedProducts,
@@ -23,8 +24,7 @@ import {
   getAllPriceSeries,
   getIdbStorageBreakdown,
 } from '@/utils/idbCache';
-import { showReportDialog } from '@/components/ReportDialog';
-import { isButtonElement } from '@/utils/typeGuards/common';
+import { isButtonElement, isValidUserSettings } from '@/utils/typeGuards/common';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -67,6 +67,10 @@ import styles from './SettingsPanel.module.scss';
 // Languages the extension ships a translation (`messages.json`) for. Derived at
 // build time from src/_locales, so adding a locale folder adds a dropdown option.
 const AVAILABLE_LOCALES = getAvailableLocales();
+
+// Clean, validated shipped defaults. "Restore Defaults" rebuilds the settings
+// object from this so stale/corrupted keys don't survive (see RESTORE_DEFAULTS).
+const DEFAULT_SETTINGS: UserSettings = isValidUserSettings(defaultSettings) ? defaultSettings : {};
 
 // SettingAction type is declared globally in types/settings.d.ts
 
@@ -156,29 +160,17 @@ export default function SettingsPanel() {
           newSettings = { ...currentSettings, caching: action.value };
           break;
         case ACTION_TYPE.RESTORE_DEFAULTS:
+          // Rebuild the whole object from the clean shipped defaults (not a spread
+          // of currentSettings), so any stale or corrupted keys are dropped — the
+          // persisted `user_settings` value is replaced wholesale. The user's
+          // locale, currency, and theme are kept.
           newSettings = {
-            ...currentSettings,
-            showHelp: false,
-            caching: { enabled: true, doNotCacheEmptyResults: true, ttlMinutes: 7200 },
-            priceTracking: { enabled: true, maxDataPoints: 5 },
-            fontSize: 'medium',
-            openInTab: false,
-            autoHideEmptyColumns: true,
-            groupProductVariants: true,
-            suppliers: { ...currentSettings.suppliers, disabled: [] },
-            hideColumns: [
-              'description',
-              'uom',
-              'sds',
-              'specs',
-              'coa',
-              'cas',
-              'pubchem',
-              'formula',
-              'moleweight',
-              'purity',
-              'concentration',
-            ],
+            ...DEFAULT_SETTINGS,
+            currency: currentSettings.currency ?? DEFAULT_SETTINGS.currency,
+            location: currentSettings.location ?? DEFAULT_SETTINGS.location,
+            language: currentSettings.language ?? DEFAULT_SETTINGS.language,
+            currencyRate: currentSettings.currencyRate ?? DEFAULT_SETTINGS.currencyRate,
+            theme: currentSettings.theme ?? DEFAULT_SETTINGS.theme,
           };
           break;
         default:
@@ -628,7 +620,7 @@ export default function SettingsPanel() {
                     type="number"
                     variant="outlined"
                     size="small"
-                    className={styles['settings-panel__input']}
+                    className={`${styles['settings-panel__input']} ${styles['settings-panel__number-input']}`}
                     disabled={isPending}
                     slotProps={{ htmlInput: { min: 0, step: 1 } }}
                   />
@@ -727,7 +719,7 @@ export default function SettingsPanel() {
                   type="number"
                   variant="outlined"
                   size="small"
-                  className={styles['settings-panel__input']}
+                  className={`${styles['settings-panel__input']} ${styles['settings-panel__number-input']}`}
                   disabled={isPending || currentSettings.priceTracking?.enabled === false}
                   slotProps={{ htmlInput: { min: 0, step: 1 } }}
                 />
@@ -787,6 +779,8 @@ export default function SettingsPanel() {
                   aria-label={i18n('settings_font_size')}
                   onClick={handleButtonClick}
                   disabled={isPending}
+                  // Default grouped-button min-width (40px) overflows the row; 35px fits.
+                  sx={{ '& .MuiButtonGroup-grouped': { minWidth: 35 } }}
                 >
                   <Button
                     name="fontSize"

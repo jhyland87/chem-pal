@@ -363,6 +363,7 @@
   "column_unit": { "message": "इकाई", "description": "Table column header." },
   "column_unit_price": { "message": "इकाई मूल्य", "description": "Table column header for price per base unit." },
   "column_price_trend": { "message": "रुझान", "description": "Table column header for the price-history trend sparkline." },
+  "column_price_change": { "message": "बदलाव", "description": "Table column header for the numeric price change (signed delta and percent)." },
   "column_sds": { "message": "SDS", "description": "Table column header." },
   "column_specs": { "message": "विशिष्टताएँ", "description": "Table column header." },
   "column_coa": { "message": "COA", "description": "Table column header." },

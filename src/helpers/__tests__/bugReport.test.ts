@@ -14,11 +14,18 @@ vi.mock('@/helpers/updates', () => ({
 }));
 vi.mock('@/utils/idbCache', () => ({
   getIdbStorageBreakdown: async () => ({ byStore: {}, totalBytes: 0 }),
+  getSearchResultsRecord: async () => ({ data: [{}, {}, {}], query: 'acetone' }),
+}));
+vi.mock('@/utils/storage', () => ({
+  cstorage: {
+    local: {
+      get: async (key: string) => ({ [key]: { currency: 'USD', theme: 'dark' } }),
+    },
+  },
 }));
 
-const { collectDiagnostics, buildGithubUrl, buildGoogleFormUrl, formatLogs } = await import(
-  '@/helpers/bugReport'
-);
+const { collectDiagnostics, buildGithubUrl, buildGoogleFormUrl, formatLogs, formatMetadata } =
+  await import('@/helpers/bugReport');
 
 /**
  * Builds a complete Diagnostics object for the URL-builder tests, overridable
@@ -35,6 +42,8 @@ function makeDiag(over: Partial<Diagnostics> = {}): Diagnostics {
     action: 'n/a',
     installSource: 'manual',
     storage: 'Total: 0 KB across 0 store(s)',
+    settings: '{ "currency": "USD" }',
+    search: '(none)',
     recentErrors: [],
     timestamp: '2026-08-01T00:00:00.000Z',
     ...over,
@@ -107,5 +116,20 @@ describe('collectDiagnostics', () => {
     expect(diag.stack).toBe('');
     expect(diag.recentErrors).toHaveLength(1);
     expect(formatLogs(diag)).toContain('prior failure');
+  });
+
+  it('includes the current user settings, surfaced in the metadata block', async () => {
+    const diag = await collectDiagnostics();
+    expect(diag.settings).toContain('"currency": "USD"');
+    expect(diag.settings).toContain('"theme": "dark"');
+    expect(formatMetadata(diag)).toContain('Settings:');
+    expect(formatMetadata(diag)).toContain('"theme": "dark"');
+  });
+
+  it('includes the active search query and result count', async () => {
+    const diag = await collectDiagnostics();
+    expect(diag.search).toBe('"acetone" — 3 results');
+    expect(formatMetadata(diag)).toContain('Search:');
+    expect(formatMetadata(diag)).toContain('acetone');
   });
 });

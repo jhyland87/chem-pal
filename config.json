@@ -25,7 +25,8 @@
       "formula",
       "moleweight",
       "purity",
-      "concentration"
+      "concentration",
+      "priceChange"
     ]
   },
   "search": {

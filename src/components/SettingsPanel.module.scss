@@ -44,25 +44,32 @@
   // Keep the fixed-width input from being squeezed by a long label. Without this
   // the FormControl shrinks below the input's width and the input overflows the
   // panel's right edge (e.g. the price-history "Max points per product" row).
-  & > .MuiFormControl-root {
+  // `:global` is required — CSS Modules otherwise hashes the MUI class so it
+  // never matches the real element.
+  & > :global(.MuiFormControl-root) {
     flex-shrink: 0;
+    max-width: 110px;
   }
 }
 
 .settings-panel__input {
   width: 110px;
 
-  .MuiInputBase-root {
+  // `:global` so these reach MUI's real elements (the Autocomplete input, the
+  // Select value, menu items); without it CSS Modules hashes the class away and
+  // the rule is dead — which left the Language Select at MUI's default size.
+  :global(.MuiInputBase-root),
+  :global(.MuiSelect-select),
+  :global(.MuiMenuItem-root) {
     font-size: 0.8rem;
   }
+}
 
-  .MuiSelect-select {
-    font-size: 0.8rem;
-  }
-
-  .MuiMenuItem-root {
-    font-size: 0.8rem;
-  }
+// Narrower width for the compact integer inputs (cache TTL, max price points) —
+// they only hold a small number, unlike the wider dropdowns. Combined with
+// `.settings-panel__input`; declared after it so this width wins.
+.settings-panel__number-input {
+  width: 72px;
 }
 
 .settings-panel__excluded-item {

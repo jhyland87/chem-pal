@@ -426,6 +426,10 @@
     "message": "Тренд",
     "description": "Table column header for the price-history trend sparkline."
   },
+  "column_price_change": {
+    "message": "Изменение",
+    "description": "Table column header for the numeric price change (signed delta and percent)."
+  },
   "column_sds": {
     "message": "SDS",
     "description": "Table column header."

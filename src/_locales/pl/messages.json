@@ -425,6 +425,10 @@
     "message": "Trend",
     "description": "Table column header for the price-history trend sparkline."
   },
+  "column_price_change": {
+    "message": "Zmiana",
+    "description": "Table column header for the numeric price change (signed delta and percent)."
+  },
   "column_sds": {
     "message": "SDS",
     "description": "Table column header."

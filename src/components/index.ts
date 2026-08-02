@@ -7,7 +7,6 @@ export { default as IconTextFader } from './IconTextFader';
 export { default as LoadingBackdrop } from './LoadingBackdrop';
 export { default as SettingsPanel } from './SettingsPanel';
 export { default as SpeedDialMenu } from './SpeedDialMenu';
-export { default as SuppliersPanel } from './SuppliersPanel';
 export { default as TabHeader } from './TabHeader';
 export { default as TabLink } from './TabLink';
 export { default as TabPanel } from './TabPanel';
