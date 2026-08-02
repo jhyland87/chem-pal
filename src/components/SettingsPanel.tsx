@@ -23,7 +23,9 @@ import {
   getAllPriceSeries,
   getIdbStorageBreakdown,
 } from '@/utils/idbCache';
+import { showReportDialog } from '@/components/ReportDialog';
 import { isButtonElement } from '@/utils/typeGuards/common';
+import BugReportIcon from '@mui/icons-material/BugReport';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import TextDecreaseIcon from '@mui/icons-material/TextDecrease';
@@ -142,20 +144,28 @@ export default function SettingsPanel() {
           newSettings = { ...currentSettings, [action.name]: action.value };
           break;
         case ACTION_TYPE.SUPPLIER_TOGGLE:
-          newSettings = { ...currentSettings, disabledSuppliers: action.value };
+          newSettings = {
+            ...currentSettings,
+            suppliers: { ...currentSettings.suppliers, disabled: action.value },
+          };
+          break;
+        case ACTION_TYPE.PRICE_TRACKING_CHANGE:
+          newSettings = { ...currentSettings, priceTracking: action.value };
+          break;
+        case ACTION_TYPE.CACHE_CHANGE:
+          newSettings = { ...currentSettings, caching: action.value };
           break;
         case ACTION_TYPE.RESTORE_DEFAULTS:
           newSettings = {
             ...currentSettings,
             showHelp: false,
-            caching: true,
-            trackPriceHistory: true,
-            priceHistoryMaxPoints: 0,
+            caching: { enabled: true, doNotCacheEmptyResults: true, ttlMinutes: 7200 },
+            priceTracking: { enabled: true, maxDataPoints: 5 },
             fontSize: 'medium',
             openInTab: false,
             autoHideEmptyColumns: true,
             groupProductVariants: true,
-            disabledSuppliers: [],
+            suppliers: { ...currentSettings.suppliers, disabled: [] },
             hideColumns: [
               'description',
               'uom',
@@ -322,12 +332,12 @@ export default function SettingsPanel() {
   const excludedCount = excludedEntries.length;
 
   const currentSettings = formState || appContext.userSettings;
-  const disabledSupplierCount = (currentSettings.disabledSuppliers ?? []).length;
+  const disabledSupplierCount = (currentSettings.suppliers?.disabled ?? []).length;
 
   // Toggles a supplier's disabled state. Switch on = enabled, so toggling off adds the
-  // supplier's class name to the disabledSuppliers deny-list and toggling on removes it.
+  // supplier's class name to the disabled deny-list and toggling on removes it.
   const handleSupplierToggle = (supplierClassName: SupplierClassName) => () => {
-    const disabled = currentSettings.disabledSuppliers ?? [];
+    const disabled = currentSettings.suppliers?.disabled ?? [];
     const next = disabled.includes(supplierClassName)
       ? disabled.filter((name) => name !== supplierClassName)
       : [...disabled, supplierClassName];
@@ -347,7 +357,7 @@ export default function SettingsPanel() {
   // equivalent, recomputed 0.5s after the user stops typing so it doesn't churn on
   // every keystroke. The debounced value holds minutes; the label is formatted each
   // render so it also follows a locale switch.
-  const cacheTtlMinutes = Number(currentSettings.cacheTtlMinutes ?? 0);
+  const cacheTtlMinutes = Number(currentSettings.caching?.ttlMinutes ?? 0);
   const [debouncedTtlMinutes, setDebouncedTtlMinutes] = useState(cacheTtlMinutes);
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedTtlMinutes(cacheTtlMinutes), 500);
@@ -508,6 +518,26 @@ export default function SettingsPanel() {
                 </Select>
               </FormControl>
             </ListItem>
+            {/* Share anonymous usage data — gates the Google Analytics usage/error
+                events (default on; toggling off opts out entirely). */}
+            <ListItem className={styles['settings-panel__helper-on-hover']}>
+              <ListItemText
+                primary={i18n('settings_share_usage_data')}
+                secondary={i18n('settings_share_usage_data_desc')}
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={currentSettings.shareUsageData ?? true}
+                    onChange={handleSwitchChange}
+                    name="shareUsageData"
+                    disabled={isPending}
+                  />
+                }
+                labelPlacement="start"
+                label=""
+              />
+            </ListItem>
           </List>
         </AccordionDetails>
       </Accordion>
@@ -532,8 +562,13 @@ export default function SettingsPanel() {
               <FormControlLabel
                 control={
                   <Switch
-                    checked={currentSettings.caching}
-                    onChange={handleSwitchChange}
+                    checked={currentSettings.caching?.enabled ?? true}
+                    onChange={(event) =>
+                      updateSetting({
+                        type: ACTION_TYPE.CACHE_CHANGE,
+                        value: { ...currentSettings.caching, enabled: event.target.checked },
+                      })
+                    }
                     name="caching"
                     disabled={isPending}
                   />
@@ -548,8 +583,16 @@ export default function SettingsPanel() {
               <FormControlLabel
                 control={
                   <Switch
-                    checked={Boolean(currentSettings.doNotCacheEmptyResults)}
-                    onChange={handleSwitchChange}
+                    checked={Boolean(currentSettings.caching?.doNotCacheEmptyResults)}
+                    onChange={(event) =>
+                      updateSetting({
+                        type: ACTION_TYPE.CACHE_CHANGE,
+                        value: {
+                          ...currentSettings.caching,
+                          doNotCacheEmptyResults: event.target.checked,
+                        },
+                      })
+                    }
                     name="doNotCacheEmptyResults"
                     disabled={isPending}
                   />
@@ -571,9 +614,17 @@ export default function SettingsPanel() {
               >
                 <FormControl>
                   <TextField
-                    value={currentSettings.cacheTtlMinutes ?? 0}
+                    value={currentSettings.caching?.ttlMinutes ?? 0}
                     name="cacheTtlMinutes"
-                    onChange={handleInputChange}
+                    onChange={(event) =>
+                      updateSetting({
+                        type: ACTION_TYPE.CACHE_CHANGE,
+                        value: {
+                          ...currentSettings.caching,
+                          ttlMinutes: Math.trunc(Number(event.target.value)),
+                        },
+                      })
+                    }
                     type="number"
                     variant="outlined"
                     size="small"
@@ -642,9 +693,14 @@ export default function SettingsPanel() {
               <FormControlLabel
                 control={
                   <Switch
-                    checked={currentSettings.trackPriceHistory ?? true}
-                    onChange={handleSwitchChange}
-                    name="trackPriceHistory"
+                    checked={currentSettings.priceTracking?.enabled ?? true}
+                    onChange={(event) =>
+                      updateSetting({
+                        type: ACTION_TYPE.PRICE_TRACKING_CHANGE,
+                        value: { ...currentSettings.priceTracking, enabled: event.target.checked },
+                      })
+                    }
+                    name="priceTrackingEnabled"
                     disabled={isPending}
                   />
                 }
@@ -657,14 +713,22 @@ export default function SettingsPanel() {
               <ListItemText primary={i18n('settings_max_price_points')} />
               <FormControl>
                 <TextField
-                  value={currentSettings.priceHistoryMaxPoints ?? 0}
-                  name="priceHistoryMaxPoints"
-                  onChange={handleInputChange}
+                  value={currentSettings.priceTracking?.maxDataPoints ?? 5}
+                  name="priceTrackingMaxDataPoints"
+                  onChange={(event) =>
+                    updateSetting({
+                      type: ACTION_TYPE.PRICE_TRACKING_CHANGE,
+                      value: {
+                        ...currentSettings.priceTracking,
+                        maxDataPoints: Math.trunc(Number(event.target.value)),
+                      },
+                    })
+                  }
                   type="number"
                   variant="outlined"
                   size="small"
                   className={styles['settings-panel__input']}
-                  disabled={isPending || currentSettings.trackPriceHistory === false}
+                  disabled={isPending || currentSettings.priceTracking?.enabled === false}
                   slotProps={{ htmlInput: { min: 0, step: 1 } }}
                 />
               </FormControl>
@@ -963,7 +1027,7 @@ export default function SettingsPanel() {
                   control={
                     <Switch
                       checked={
-                        !(currentSettings.disabledSuppliers ?? []).includes(supplierClassName)
+                        !(currentSettings.suppliers?.disabled ?? []).includes(supplierClassName)
                       }
                       onChange={handleSupplierToggle(supplierClassName)}
                       name={supplierClassName}
@@ -1081,7 +1145,7 @@ export default function SettingsPanel() {
           </Typography>
         </AccordionSummary>
         <AccordionDetails className={styles['settings-panel__accordion-details--actions']}>
-          <Stack direction="row" spacing={2}>
+          <Stack direction="column" spacing={2}>
             <Button
               fullWidth
               variant="outlined"
@@ -1091,6 +1155,15 @@ export default function SettingsPanel() {
               disabled={isPending}
             >
               {i18n('settings_restore_defaults')}
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              size="small"
+              startIcon={<BugReportIcon />}
+              onClick={() => void showReportDialog()}
+            >
+              {i18n('settings_report_bug')}
             </Button>
           </Stack>
         </AccordionDetails>

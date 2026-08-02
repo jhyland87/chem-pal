@@ -883,11 +883,19 @@ function buildUserSettingsSchema() {
   );
   return v.object({
     showHelp: v.optional(v.boolean()),
-    caching: v.optional(v.boolean()),
-    doNotCacheEmptyResults: v.optional(v.boolean()),
-    cacheTtlMinutes: v.optional(coercedNonnegative),
-    trackPriceHistory: v.optional(v.boolean()),
-    priceHistoryMaxPoints: v.optional(coercedNonnegativeInt),
+    caching: v.optional(
+      v.object({
+        enabled: v.optional(v.boolean()),
+        doNotCacheEmptyResults: v.optional(v.boolean()),
+        ttlMinutes: v.optional(coercedNonnegative),
+      }),
+    ),
+    priceTracking: v.optional(
+      v.object({
+        enabled: v.optional(v.boolean()),
+        maxDataPoints: v.optional(coercedNonnegativeInt),
+      }),
+    ),
     noCacheStatusCodes: v.optional(v.array(v.pipe(v.number(), v.integer(), v.minValue(1)))),
     supplierSearchTimeBudgetSec: v.optional(coercedNonnegative),
     currencyRate: v.optional(v.number()),
@@ -906,8 +914,14 @@ function buildUserSettingsSchema() {
     ),
     theme: v.optional(v.picklist(['light', 'dark'])),
     fontSize: v.optional(v.picklist(['small', 'medium', 'large'])),
-    suppliers: v.optional(v.array(v.picklist(SUPPLIER_CLASS_NAMES))),
-    excludeNonShippingSuppliers: v.optional(v.boolean()),
+    suppliers: v.optional(
+      v.object({
+        enabled: v.optional(v.array(v.picklist(SUPPLIER_CLASS_NAMES))),
+        disabled: v.optional(v.array(v.picklist(SUPPLIER_CLASS_NAMES))),
+        excludeNonShipping: v.optional(v.boolean()),
+        resultLimit: v.optional(coercedNonnegativeInt),
+      }),
+    ),
     hideRestrictedProducts: v.optional(v.boolean()),
     hideColumns: v.optional(v.array(v.string())),
     fuzzScorerOverride: v.optional(v.string()),
@@ -929,8 +943,8 @@ function getUserSettingsSchema() {
  * @returns Type predicate indicating if the value is a valid UserSettings object
  * @example
  * ```typescript
- * isValidUserSettings({ showHelp: true, caching: true, currencyRate: 1.0, currency: "USD", location: "US" }) // Returns true
- * isValidUserSettings({ showHelp: "test", caching: true, currencyRate: 1.0, currency: "USD", location: "US" }) // Returns false
+ * isValidUserSettings({ showHelp: true, caching: { enabled: true }, currencyRate: 1.0, currency: "USD", location: "US" }) // Returns true
+ * isValidUserSettings({ showHelp: "test", caching: { enabled: true }, currencyRate: 1.0, currency: "USD", location: "US" }) // Returns false
  * ```
  * @source
  */

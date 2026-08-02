@@ -17,6 +17,7 @@ import {
 import type { Migration } from '@/migrations/types';
 import { SupplierFactory } from '@/suppliers/SupplierFactory';
 import { SupplierCache } from '@/utils/SupplierCache';
+import { useSearchAnalytics } from '@/hooks/useSearchAnalytics';
 import { useBadgeController } from '@/utils/badgeController';
 import { isTabView } from '@/utils/displayContext';
 import { clearSearchResults, getSearchResults, IDB_SEARCH_RESULTS_CLEARED } from '@/utils/idbCache';
@@ -37,6 +38,7 @@ import './App.scss';
 import DrawerSystem from './components/DrawerSystem';
 import ErrorBoundary from './components/ErrorBoundary';
 import { MigrationPrompt } from './components/MigrationPrompt';
+import OfflineOverlay from './components/OfflineOverlay';
 import { ReviewPrompt } from './components/ReviewPrompt';
 import SearchPanel from './components/SearchPanel/SearchPanel';
 import SearchPanelHome from './components/SearchPanelHome';
@@ -121,8 +123,11 @@ Object.assign(initialAppState, {
     location: getUserLocation(),
     country: getCountryName(getUserLocation()),
     language: getUserLanguage(),
-    supplierResultLimit: search.defaultResultsLimitPerSupplier,
-    suppliers: SupplierFactory.supplierList(),
+    suppliers: {
+      ...initialAppState.userSettings?.suppliers,
+      enabled: SupplierFactory.supplierList(),
+      resultLimit: search.defaultResultsLimitPerSupplier,
+    },
   } satisfies UserSettings,
   panel: PANEL.SEARCH_HOME,
   speedDialVisibility: false,
@@ -196,6 +201,9 @@ function HotkeyLayer({ handlers }: { handlers: HotkeyHandlers }) {
 function App() {
   // Single owner of all extension-badge updates (reacts to search events).
   useBadgeController();
+
+  // Forward search-lifecycle events to GA4 (search_query / search_results).
+  useSearchAnalytics();
 
   // Subscribe to the active UI locale. This is the single high-in-the-tree
   // subscriber that makes a language switch re-render the whole app — bare
@@ -787,7 +795,14 @@ function App() {
     advancedMode,
     setAdvancedMode,
   };
-
+  const searchParams = new URLSearchParams(location.search);
+  if (searchParams.has('test-crash')) {
+    const errorOpts: ErrorOptions = {};
+    if (searchParams.has('cause')) {
+      errorOpts.cause = searchParams.get('cause');
+    }
+    throw new Error(`Test crash: ${searchParams.get('test-crash')}`, errorOpts);
+  }
   return (
     <ErrorBoundary fallback={<p>{i18n('app_error_generic')}</p>}>
       <AppContext.Provider value={appContextValue}>
@@ -795,6 +810,7 @@ function App() {
           <StatusBarProvider>
             <HotkeyLayer handlers={hotkeyHandlers} />
             <CssBaseline />
+            <OfflineOverlay />
             <div className="app-container">
               {/* Show loading indicator when settings are updating */}
               {isPending && <div className="loading-indicator-box" />}

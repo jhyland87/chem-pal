@@ -55,19 +55,19 @@ describe('recordProductPrices', () => {
 
   it.for([
     {
-      label: 'trims to the newest N points when priceHistoryMaxPoints is positive',
+      label: 'trims to the newest N points when maxDataPoints is positive',
       maxPoints: 3,
       prices: [10, 11, 12, 13, 14],
       expected: [12, 13, 14],
     },
     {
-      label: 'keeps every point when priceHistoryMaxPoints is 0 (unlimited)',
+      label: 'keeps every point when maxDataPoints is 0 (unlimited)',
       maxPoints: 0,
       prices: [10, 11, 12, 13, 14],
       expected: [10, 11, 12, 13, 14],
     },
     {
-      // priceHistoryMaxPoints arrives as a string from the settings reducer.
+      // maxDataPoints arrives as a string from the settings reducer.
       label: 'coerces a string max-points setting (settings persist numbers as strings)',
       maxPoints: '2' as unknown as number,
       prices: [10, 11, 12],
@@ -77,7 +77,9 @@ describe('recordProductPrices', () => {
     // Sequential, order-dependent seeding: each record appends to the same series,
     // so the cap is applied against the accumulated points.
     for (const price of prices) {
-      await recordProductPrices([baseProduct(price)], { priceHistoryMaxPoints: maxPoints });
+      await recordProductPrices([baseProduct(price)], {
+        priceTracking: { maxDataPoints: maxPoints },
+      });
     }
     expect(await usdValues(productSeriesKey(baseProduct(0)))).toEqual(expected);
   });
@@ -212,9 +214,9 @@ describe('recordProductPrices', () => {
     expect(await usdValues(variantSeriesKey(p, p.variants![0]))).toEqual([60]);
   });
 
-  it('records nothing when trackPriceHistory is disabled', async () => {
+  it('records nothing when price tracking is disabled', async () => {
     const p = baseProduct(19.99);
-    await recordProductPrices([p], { trackPriceHistory: false });
+    await recordProductPrices([p], { priceTracking: { enabled: false } });
     expect(await getPriceSeries(productSeriesKey(p)!)).toBeUndefined();
   });
 

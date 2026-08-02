@@ -36,5 +36,7 @@ describe('ErrorBoundary', () => {
 
     expect(screen.getByText('fallback')).toBeInTheDocument();
     expect(errorSpy).toHaveBeenCalled();
+    // The fallback also offers a way to report the crash.
+    expect(screen.getByTestId('error-boundary-report')).toBeInTheDocument();
   });
 });

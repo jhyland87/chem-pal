@@ -1,17 +1,19 @@
 # ChemPal — Privacy Policy
 
-**Effective date:** July 10, 2026
+**Effective date:** August 1, 2026
 
 ChemPal ("the extension") is a browser extension that lets you search and compare
 laboratory chemical product listings across supported supplier websites. This
 policy explains what data the extension handles, where it goes, and why.
 
-**Short version:** ChemPal has no backend server of its own. It does not collect,
-sell, or transmit your data to the developer. It contains no analytics, tracking,
-or advertising code. The only data that leaves your browser is the search terms
-and chemical identifiers you enter, which are sent directly to the third‑party
-supplier and public chemistry services you choose to search — the same way your
-browser would send them if you visited those sites yourself.
+**Short version:** ChemPal has no backend server of its own, shows no ads, and
+never sells your data. It does use Google Analytics to collect basic usage and
+error statistics — which searches are run, how many results they return, and when
+the extension hits an error — associated only with a random, per‑install
+identifier, never your name or an account. Beyond that, the data that leaves your
+browser is the search terms and chemical identifiers you enter, sent directly to
+the third‑party supplier and public chemistry services you choose to search — the
+same way your browser would send them if you visited those sites yourself.
 
 ---
 
@@ -75,6 +77,34 @@ the page URL) to provide context for opening product pages, search selections, a
 related links. This information is used only at the moment you take an action and
 is not logged or transmitted to the developer.
 
+### 2.6 Usage and error analytics (sent to Google Analytics)
+
+ChemPal uses Google Analytics 4 to understand how the extension is used, so the
+developer can prioritize fixes and improvements. It sends an event to Google
+Analytics when you:
+
+- **run a search** — including the search term you entered and the number of
+  results it returned; and
+- **encounter an error** — including the extension version, the error type, and a
+  short, truncated error message (no stack traces).
+
+These events are associated with a random identifier generated and stored on your
+device, not with your name, email, or any account, and the extension loads no
+advertising or third‑party tracking code. As with any web request, Google also
+receives standard technical information such as your IP address, which it
+processes under its own privacy policy (Google Analytics does not log full IP
+addresses). ChemPal does not use this data for advertising or to profile you.
+
+### 2.7 Bug reports (only when you choose to send one)
+
+If you use the **Report a bug** or **Report Error** actions, ChemPal opens a
+prefilled GitHub issue or Google Form in a new browser tab. The prefill includes
+diagnostic details — such as the extension version, your browser and operating
+system, and recent error messages captured on your device — to help diagnose the
+problem. **Nothing is submitted automatically:** the report opens for you to
+review and edit, you send it under your own GitHub or Google account, and you can
+remove anything first or simply close the tab.
+
 ---
 
 ## 3. Third‑party services the extension contacts
@@ -94,6 +124,10 @@ may send requests to:
   included.
 - **GitHub** (`api.github.com`) — to check whether a newer version of the
   extension is available. No personal data is sent.
+- **Google Analytics** (`www.google-analytics.com`) — to collect the usage and
+  error statistics described in section 2.6, tied only to a random identifier.
+- **GitHub or Google Forms** — only if you choose to submit a bug report
+  (section 2.7), and only with the details you review and send yourself.
 
 Each of these third parties handles the data it receives under its own privacy
 policy. ChemPal has no control over, and takes no responsibility for, the data
@@ -103,14 +137,15 @@ practices of these independent services.
 
 ## 4. What the extension does NOT do
 
-- It does **not** collect, store, or transmit your data to the developer or any
-  developer‑operated server (there is none).
-- It does **not** include analytics, telemetry, crash reporting, advertising, or
-  any third‑party tracking SDKs.
-- It does **not** sell or share your data with third parties for advertising or
-  any unrelated purpose.
+- It does **not** run its own server or transmit your data to a developer‑operated
+  backend (there is none); the usage and error statistics in section 2.6 go to
+  Google Analytics.
+- It does **not** show advertising, use advertising or cross‑site tracking SDKs,
+  or sell or share your data for advertising or any unrelated purpose.
 - It does **not** collect personal information such as your name, email address,
-  or payment details.
+  or payment details, and the analytics identifier is random and not linked to you.
+- It does **not** submit bug reports automatically — that happens only when you
+  choose to, and only with the details you review and send.
 
 ---
 

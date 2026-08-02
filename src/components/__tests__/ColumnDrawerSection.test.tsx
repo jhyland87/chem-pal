@@ -116,7 +116,7 @@ describe('ColumnDrawerSection', () => {
     it('greys out suppliers that cannot ship to the user location', () => {
       mocks.supplierShipsTo.mockReturnValue({ SupplierBeta: false });
       setContext({
-        userSettings: { location: 'US', excludeNonShippingSuppliers: true },
+        userSettings: { location: 'US', suppliers: { excludeNonShipping: true } },
       });
       renderSection('supplier', config);
 
@@ -147,7 +147,9 @@ describe('ColumnDrawerSection', () => {
       fireEvent.click(switches[1]);
 
       expect(setUserSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ excludeNonShippingSuppliers: false }),
+        expect.objectContaining({
+          suppliers: expect.objectContaining({ excludeNonShipping: false }),
+        }),
       );
       expect(setUserSettings).toHaveBeenCalledWith(
         expect.objectContaining({ hideRestrictedProducts: false }),
@@ -222,9 +224,7 @@ describe('ColumnDrawerSection', () => {
       fireEvent.mouseDown(screen.getByRole('combobox'));
       fireEvent.click(screen.getByRole('option', { name: 'Germany' }));
 
-      expect(setSearchFilters).toHaveBeenCalledWith(
-        expect.objectContaining({ country: ['DE'] }),
-      );
+      expect(setSearchFilters).toHaveBeenCalledWith(expect.objectContaining({ country: ['DE'] }));
     });
 
     it('greys out countries no selected supplier resides in', () => {
@@ -283,9 +283,7 @@ describe('ColumnDrawerSection', () => {
 
       fireEvent.click(screen.getByText('LOCAL'));
 
-      expect(setSearchFilters).toHaveBeenCalledWith(
-        expect.objectContaining({ shippingType: [] }),
-      );
+      expect(setSearchFilters).toHaveBeenCalledWith(expect.objectContaining({ shippingType: [] }));
     });
 
     it('disables chips no selected supplier can fulfill', () => {
@@ -351,7 +349,9 @@ describe('ColumnDrawerSection', () => {
 
       fireEvent.change(screen.getByLabelText('drawer_range_max'), { target: { value: '' } });
 
-      expect(setUserSettings).toHaveBeenCalledWith(expect.objectContaining({ priceMax: undefined }));
+      expect(setUserSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ priceMax: undefined }),
+      );
     });
 
     it('returns null when not bound to a userSettings range', () => {
