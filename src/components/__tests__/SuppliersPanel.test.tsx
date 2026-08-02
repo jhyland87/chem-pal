@@ -8,7 +8,7 @@ vi.mock('@/suppliers/SupplierFactory', () => ({
 }));
 
 let mockContext: {
-  userSettings: { suppliers?: string[] };
+  userSettings: { suppliers?: { enabled?: string[] } };
   setUserSettings: ReturnType<typeof vi.fn>;
 };
 
@@ -21,7 +21,7 @@ import SuppliersPanel from '../SuppliersPanel';
 /** Installs a fresh context whose settings hold the given selected suppliers. */
 function setContext(suppliers?: string[]) {
   mockContext = {
-    userSettings: suppliers === undefined ? {} : { suppliers },
+    userSettings: suppliers === undefined ? {} : { suppliers: { enabled: suppliers } },
     setUserSettings: vi.fn(),
   };
   return mockContext;
@@ -60,7 +60,9 @@ describe('SuppliersPanel', () => {
     fireEvent.click(checkbox('SupplierAlpha'));
 
     expect(ctx.setUserSettings).toHaveBeenCalledWith(
-      expect.objectContaining({ suppliers: ['SupplierAlpha'] }),
+      expect.objectContaining({
+        suppliers: expect.objectContaining({ enabled: ['SupplierAlpha'] }),
+      }),
     );
   });
 
@@ -71,7 +73,9 @@ describe('SuppliersPanel', () => {
     fireEvent.click(checkbox('SupplierAlpha'));
 
     expect(ctx.setUserSettings).toHaveBeenCalledWith(
-      expect.objectContaining({ suppliers: ['SupplierBeta'] }),
+      expect.objectContaining({
+        suppliers: expect.objectContaining({ enabled: ['SupplierBeta'] }),
+      }),
     );
   });
 
@@ -82,7 +86,9 @@ describe('SuppliersPanel', () => {
     fireEvent.click(checkbox('SupplierGamma'));
 
     expect(ctx.setUserSettings).toHaveBeenCalledWith(
-      expect.objectContaining({ suppliers: ['SupplierGamma'] }),
+      expect.objectContaining({
+        suppliers: expect.objectContaining({ enabled: ['SupplierGamma'] }),
+      }),
     );
   });
 
@@ -94,7 +100,7 @@ describe('SuppliersPanel', () => {
       fireEvent.click(checkbox('all'));
 
       expect(ctx.setUserSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ suppliers: SUPPLIERS }),
+        expect.objectContaining({ suppliers: expect.objectContaining({ enabled: SUPPLIERS }) }),
       );
     });
 
@@ -107,7 +113,7 @@ describe('SuppliersPanel', () => {
       fireEvent.click(checkbox('all'));
 
       expect(ctx.setUserSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ suppliers: [] }),
+        expect.objectContaining({ suppliers: expect.objectContaining({ enabled: [] }) }),
       );
     });
   });

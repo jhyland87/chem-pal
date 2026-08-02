@@ -15,11 +15,16 @@
  */
 
 import { CACHE, MESSAGE_TYPE } from '@/constants/common';
+import { installErrorCapture } from '@/helpers/errorBuffer';
 
 /** Context-menu item id for the "Search selection in ChemPal" entry. */
 const CONTEXT_MENU_ID = 'chempal-search-selection';
 /** Full-tab view URL; `?view=tab` is recognized by the app (see utils/displayContext.ts). */
 const TAB_VIEW_PATH = 'index.html?view=tab';
+
+// Capture background-context errors into the shared ring buffer so they can be
+// attached to a bug report opened from the UI.
+installErrorCapture();
 
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   if (reason === chrome.runtime.OnInstalledReason.INSTALL) {

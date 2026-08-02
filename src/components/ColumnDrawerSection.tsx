@@ -108,7 +108,7 @@ export default function ColumnDrawerSection({
   // won't ship to the user's location (gated by the toggle), plus those ruled out
   // by the active shipping-type / country search filters. Empty unless this is the
   // supplier selector.
-  const excludeSuppliers = userSettings.excludeNonShippingSuppliers ?? true;
+  const excludeSuppliers = userSettings.suppliers?.excludeNonShipping ?? true;
   const { location } = userSettings;
   const isSupplierSelector =
     config.widget === 'autocompleteStrings' && config.bind.kind === 'selectedSuppliers';
@@ -221,7 +221,10 @@ export default function ColumnDrawerSection({
                   onChange={(e) =>
                     setUserSettings({
                       ...userSettings,
-                      excludeNonShippingSuppliers: e.target.checked,
+                      suppliers: {
+                        ...userSettings.suppliers,
+                        excludeNonShipping: e.target.checked,
+                      },
                     })
                   }
                 />

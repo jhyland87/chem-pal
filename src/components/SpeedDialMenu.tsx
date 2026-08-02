@@ -5,9 +5,11 @@ import AutoDeleteIcon from '@/icons/AutoDeleteIcon';
 import ClearIcon from '@/icons/ClearIcon';
 import ContrastIcon from '@/icons/ContrastIcon';
 import InfoOutlineIcon from '@/icons/InfoOutlineIcon';
+import { showReportDialog } from '@/components/ReportDialog';
 import { SupplierCache } from '@/utils/SupplierCache';
 import { clearSearchResults } from '@/utils/idbCache';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import BugReportIcon from '@mui/icons-material/BugReport';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
@@ -96,6 +98,12 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
    */
   const handleAboutOpen = () => setAboutOpen(true);
 
+  /**
+   * Opens the bug-report dialog, prefilled with recent-exception diagnostics.
+   * @source
+   */
+  const handleReportBug = () => void showReportDialog();
+
   // Stats are recorded in every build; the graphs appear only once the Konami
   // hotkey unlocks advanced mode — in dev builds too, so the toggle is honest.
   const statsVisible = appContext.advancedMode;
@@ -123,6 +131,7 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
     ...(statsVisible
       ? [{ icon: <BarChartIcon />, name: i18n('speed_dial_stats'), onClick: handleStatsOpen }]
       : []),
+    { icon: <BugReportIcon />, name: i18n('speed_dial_report_bug'), onClick: handleReportBug },
     { icon: <InfoOutlineIcon />, name: i18n('speed_dial_about'), onClick: handleAboutOpen },
   ];
 

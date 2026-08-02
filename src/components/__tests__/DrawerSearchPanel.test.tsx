@@ -60,9 +60,7 @@ const noopAccordion = () => () => {};
 
 /** Renders the panel with a no-op accordion handler. */
 function renderPanel() {
-  return render(
-    <DrawerSearchPanel expandedAccordion={false} onAccordionChange={noopAccordion} />,
-  );
+  return render(<DrawerSearchPanel expandedAccordion={false} onAccordionChange={noopAccordion} />);
 }
 
 describe('DrawerSearchPanel', () => {
@@ -115,9 +113,7 @@ describe('DrawerSearchPanel', () => {
     await waitFor(() => expect(ctx.setPendingSearchQuery).toHaveBeenCalledWith('acetone'));
     expect(ctx.setDrawerTab).toHaveBeenCalledWith(DRAWER_INDEX.CLOSED);
     expect(ctx.setPanel).toHaveBeenCalledWith(PANEL.RESULTS);
-    expect(ctx.setSearchFilters).toHaveBeenCalledWith(
-      expect.objectContaining({ titleQuery: '' }),
-    );
+    expect(ctx.setSearchFilters).toHaveBeenCalledWith(expect.objectContaining({ titleQuery: '' }));
   });
 
   it('runs a search on Enter in the title field', async () => {
@@ -167,14 +163,14 @@ describe('DrawerSearchPanel', () => {
 
   describe('results limit', () => {
     it('shows the limit hint when a limit is set', () => {
-      setContext({ userSettings: { supplierResultLimit: 15 } });
+      setContext({ userSettings: { suppliers: { resultLimit: 15 } } });
       renderPanel();
 
       expect(screen.getByText('drawer_results_limit_hint:15')).toBeInTheDocument();
     });
 
     it('updates the supplier result limit on change', () => {
-      const ctx = setContext({ userSettings: { supplierResultLimit: 15 } });
+      const ctx = setContext({ userSettings: { suppliers: { resultLimit: 15 } } });
       renderPanel();
 
       fireEvent.change(screen.getByLabelText('drawer_results_limit_label'), {
@@ -182,7 +178,7 @@ describe('DrawerSearchPanel', () => {
       });
 
       expect(ctx.setUserSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ supplierResultLimit: 25 }),
+        expect.objectContaining({ suppliers: expect.objectContaining({ resultLimit: 25 }) }),
       );
     });
   });

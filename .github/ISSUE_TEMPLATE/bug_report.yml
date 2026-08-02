@@ -1,0 +1,49 @@
+name: Bug report
+description: Report a problem with the ChemPal extension
+title: "[Bug] "
+labels: ["bug", "user_report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! When you open this form from inside the extension,
+        the **version**, **diagnostics**, and **logs** fields are prefilled for you.
+        Please review them and delete anything you'd rather not share before submitting.
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: What were you doing, and what went wrong? Steps to reproduce help a lot.
+      placeholder: I searched for "acetone" and the results table stayed blank…
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Extension version
+      placeholder: e.g. 1.6.1
+    validations:
+      required: false
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: Auto-filled environment details (browser, install source, storage). Safe to edit.
+      render: text
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / recent errors
+      description: Auto-filled stack traces and recent exceptions. Safe to trim.
+      render: text
+    validations:
+      required: false
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and didn't find a duplicate.
+          required: true

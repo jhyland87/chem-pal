@@ -284,7 +284,7 @@ describe('Common TypeGuards', () => {
       expect(
         isValidUserSettings({
           showHelp: false,
-          caching: true,
+          caching: { enabled: true },
           currencyRate: 1.0,
           currency: 'USD',
           location: 'US',
@@ -307,17 +307,17 @@ describe('Common TypeGuards', () => {
       expect(isValidUserSettings({ fontSize: 'enormous' })).toBe(false);
     });
 
-    it('accepts the price-history settings, coercing a string point count', () => {
-      expect(isValidUserSettings({ trackPriceHistory: true })).toBe(true);
-      expect(isValidUserSettings({ priceHistoryMaxPoints: 30 })).toBe(true);
+    it('accepts the price-tracking settings, coercing a string point count', () => {
+      expect(isValidUserSettings({ priceTracking: { enabled: true } })).toBe(true);
+      expect(isValidUserSettings({ priceTracking: { maxDataPoints: 30 } })).toBe(true);
       // The numeric input persists as a string; the schema coerces it.
-      expect(isValidUserSettings({ priceHistoryMaxPoints: '30' })).toBe(true);
+      expect(isValidUserSettings({ priceTracking: { maxDataPoints: '30' } })).toBe(true);
     });
 
-    it('rejects invalid price-history settings', () => {
-      expect(isValidUserSettings({ trackPriceHistory: 'yes' })).toBe(false);
-      expect(isValidUserSettings({ priceHistoryMaxPoints: -1 })).toBe(false);
-      expect(isValidUserSettings({ priceHistoryMaxPoints: 2.5 })).toBe(false);
+    it('rejects invalid price-tracking settings', () => {
+      expect(isValidUserSettings({ priceTracking: { enabled: 'yes' } })).toBe(false);
+      expect(isValidUserSettings({ priceTracking: { maxDataPoints: -1 } })).toBe(false);
+      expect(isValidUserSettings({ priceTracking: { maxDataPoints: 2.5 } })).toBe(false);
     });
 
     it('rejects non-object roots', () => {

@@ -63,9 +63,9 @@ function baseSettings(overrides: Partial<UserSettings> = {}): UserSettings {
     currency: 'USD',
     location: 'US',
     language: 'en',
-    caching: true,
+    caching: { enabled: true },
     fontSize: 'medium',
-    disabledSuppliers: [],
+    suppliers: { disabled: [] },
     ...overrides,
   } as UserSettings;
 }
@@ -124,7 +124,7 @@ describe('SettingsPanel', () => {
   });
 
   it('persists a switch toggle through setUserSettings', async () => {
-    const ctx = setContext(baseSettings({ caching: true }));
+    const ctx = setContext(baseSettings({ caching: { enabled: true } }));
     render(<SettingsPanel />);
     openSection('settings_section_cache');
 
@@ -133,13 +133,13 @@ describe('SettingsPanel', () => {
 
     await waitFor(() =>
       expect(ctx.setUserSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ caching: false }),
+        expect.objectContaining({ caching: expect.objectContaining({ enabled: false }) }),
       ),
     );
   });
 
   it('persists a numeric input change through setUserSettings', async () => {
-    const ctx = setContext(baseSettings({ cacheTtlMinutes: 10 }));
+    const ctx = setContext(baseSettings({ caching: { enabled: true, ttlMinutes: 10 } }));
     render(<SettingsPanel />);
     openSection('settings_section_cache');
 
@@ -148,7 +148,7 @@ describe('SettingsPanel', () => {
 
     await waitFor(() =>
       expect(ctx.setUserSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ cacheTtlMinutes: '30' }),
+        expect.objectContaining({ caching: expect.objectContaining({ ttlMinutes: 30 }) }),
       ),
     );
   });
@@ -168,7 +168,7 @@ describe('SettingsPanel', () => {
   });
 
   it('restores defaults, clearing the disabled-supplier list', async () => {
-    const ctx = setContext(baseSettings({ disabledSuppliers: [SUPPLIER_CLASS_NAMES[0]] }));
+    const ctx = setContext(baseSettings({ suppliers: { disabled: [SUPPLIER_CLASS_NAMES[0]] } }));
     render(<SettingsPanel />);
     openSection('settings_section_actions');
 
@@ -176,25 +176,26 @@ describe('SettingsPanel', () => {
 
     await waitFor(() =>
       expect(ctx.setUserSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ disabledSuppliers: [], fontSize: 'medium' }),
+        expect.objectContaining({
+          suppliers: expect.objectContaining({ disabled: [] }),
+          fontSize: 'medium',
+        }),
       ),
     );
   });
 
   it('toggling a supplier off adds it to disabledSuppliers', async () => {
     const supplier = SUPPLIER_CLASS_NAMES[0];
-    const ctx = setContext(baseSettings({ disabledSuppliers: [] }));
+    const ctx = setContext(baseSettings({ suppliers: { disabled: [] } }));
     render(<SettingsPanel />);
     openSection('settings_section_supplier_status');
 
-    const supplierSwitch = document.querySelector(
-      `input[name="${supplier}"]`,
-    ) as HTMLInputElement;
+    const supplierSwitch = document.querySelector(`input[name="${supplier}"]`) as HTMLInputElement;
     fireEvent.click(supplierSwitch);
 
     await waitFor(() =>
       expect(ctx.setUserSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ disabledSuppliers: [supplier] }),
+        expect.objectContaining({ suppliers: expect.objectContaining({ disabled: [supplier] }) }),
       ),
     );
   });
@@ -244,9 +245,7 @@ describe('SettingsPanel', () => {
       expect(link).toBeInTheDocument();
 
       fireEvent.click(screen.getByRole('button', { name: /settings_remove_item/ }));
-      await waitFor(() =>
-        expect(mocks.removeExcludedProduct).toHaveBeenCalledWith('supplier|123'),
-      );
+      await waitFor(() => expect(mocks.removeExcludedProduct).toHaveBeenCalledWith('supplier|123'));
     });
 
     it('shows the empty state when there are no excluded products', async () => {
@@ -268,26 +267,22 @@ describe('SettingsPanel', () => {
       fireEvent.click(screen.getByText('settings_clear_all'));
 
       await waitFor(() => expect(mocks.clearExcludedProducts).toHaveBeenCalledOnce());
-      await waitFor(() =>
-        expect(screen.queryByText('Sodium Chloride')).not.toBeInTheDocument(),
-      );
+      await waitFor(() => expect(screen.queryByText('Sodium Chloride')).not.toBeInTheDocument());
     });
   });
 
   it('toggling a disabled supplier back on removes it from disabledSuppliers', async () => {
     const supplier = SUPPLIER_CLASS_NAMES[0];
-    const ctx = setContext(baseSettings({ disabledSuppliers: [supplier] }));
+    const ctx = setContext(baseSettings({ suppliers: { disabled: [supplier] } }));
     render(<SettingsPanel />);
     openSection('settings_section_supplier_status');
 
-    const supplierSwitch = document.querySelector(
-      `input[name="${supplier}"]`,
-    ) as HTMLInputElement;
+    const supplierSwitch = document.querySelector(`input[name="${supplier}"]`) as HTMLInputElement;
     fireEvent.click(supplierSwitch);
 
     await waitFor(() =>
       expect(ctx.setUserSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ disabledSuppliers: [] }),
+        expect.objectContaining({ suppliers: expect.objectContaining({ disabled: [] }) }),
       ),
     );
   });
