@@ -419,7 +419,7 @@ function ProductPriceHistory({
   userSettings?: PriceHistorySettings;
 }): ReactElement | null {
   const hasTrend = points !== undefined && points.length >= 2;
-  if (!hasTrend && userSettings?.trackPriceHistory === false) {
+  if (!hasTrend && userSettings?.priceTracking?.enabled === false) {
     return null;
   }
 

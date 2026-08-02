@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: ChemPal Wiki & Troubleshooting
+    url: https://github.com/jhyland87/chem-pal/wiki
+    about: Check the wiki and FAQ first — your question may already be answered there.

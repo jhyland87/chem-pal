@@ -20,6 +20,10 @@ export const ACTION_TYPE = {
   BUTTON_CLICK: 'BUTTON_CLICK',
   /** A supplier was enabled/disabled; replaces the disabled-suppliers list */
   SUPPLIER_TOGGLE: 'SUPPLIER_TOGGLE',
+  /** Price-tracking config changed; replaces the nested `priceTracking` object */
+  PRICE_TRACKING_CHANGE: 'PRICE_TRACKING_CHANGE',
+  /** Cache config changed; replaces the nested `caching` object */
+  CACHE_CHANGE: 'CACHE_CHANGE',
   /** Resets the settings to their defaults */
   RESTORE_DEFAULTS: 'RESTORE_DEFAULTS',
 } as const;
@@ -129,6 +133,10 @@ export const CACHE = {
   LAST_SEEN_VERSION: 'last_seen_version',
   /** Review-prompt bookkeeping: install date, lifetime search/result counts, dismissal state */
   REVIEW_PROMPT: 'review_prompt',
+  /** Bounded ring buffer of recent exceptions, attached to bug reports */
+  ERROR_RING_BUFFER: 'error_ring_buffer',
+  /** Stable per-install GA4 client id for Measurement Protocol events */
+  ANALYTICS_CLIENT_ID: 'analytics_client_id',
 } as const;
 
 export type Cache = (typeof CACHE)[keyof typeof CACHE];

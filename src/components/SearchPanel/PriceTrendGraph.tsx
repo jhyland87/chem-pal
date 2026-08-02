@@ -7,7 +7,7 @@ import { type ReactElement } from 'react';
 /** The user settings the price-history views read to convert USD for display. */
 export type PriceHistorySettings = Pick<
   UserSettings,
-  'currency' | 'currencyRate' | 'trackPriceHistory'
+  'currency' | 'currencyRate' | 'priceTracking'
 >;
 
 /** MUI theme color token per trend direction (rising price = bad = red). */

@@ -23,11 +23,18 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App.tsx';
+import { showCrashReport } from './components/crashReport';
+import { trackRenderError } from './helpers/analytics';
+import { formatErrorChain, installErrorCapture, recordError } from './helpers/errorBuffer';
 import { i18n } from './helpers/i18n';
 import './main.scss';
 import { isTabView } from './utils/displayContext';
 import { IS_DEV_BUILD } from './utils/isDevBuild';
 import { initThemeAwareToolbarIcon } from './utils/themeIcon';
+
+// Capture uncaught errors and unhandled rejections into the shared ring buffer,
+// so a later bug report can include recent exceptions.
+installErrorCapture();
 
 // Expose chemistry helpers on window.chempal for manual console testing. Dynamically imported and
 // gated by IS_DEV_BUILD so it (and its dependencies) are tree-shaken out of production builds.
@@ -54,9 +61,24 @@ if (IS_DEV_BUILD) {
   createRoot(document.getElementById('root')!, {
     onUncaughtError: (error, errorInfo) => {
       console.error('Uncaught error:', error, errorInfo);
+      void recordError({
+        source: 'react',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? formatErrorChain(error) : undefined,
+      });
+      // Report to GA4 (fatal: it escaped every boundary).
+      void trackRenderError(error, { fatal: 1 });
+      // The error escaped every React boundary, so the app tree is gone. Surface
+      // a non-React report path that doesn't depend on the crashed React runtime.
+      void showCrashReport(error, { action: 'uncaught render error' });
     },
     onCaughtError: (error, errorInfo) => {
       console.error('Caught error:', error, errorInfo);
+      void recordError({
+        source: 'react',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? formatErrorChain(error) : undefined,
+      });
     },
   }).render(
     <StrictMode>

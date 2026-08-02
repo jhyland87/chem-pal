@@ -23,6 +23,29 @@ extension as opposed to a downloadable app, server side app or hosted web page.
    we were encountering like setting up the right cookies, dealing with Cloudflare
    or DataDome, saving session data, etc.
 
+_**How do I report an issue?**_
+
+The easiest way is from inside ChemPal. Use **Report a bug** — in the **About**
+dialog, the **quick-actions menu**, or **Settings → Actions** — or the **Report
+Error** button that appears if the extension hits an unexpected error. It opens a
+prefilled report with helpful diagnostics already filled in (the extension version,
+your browser, and any recent error details) and offers two ways to send it: a
+**GitHub issue**, or an **account-free Google form** for those without a GitHub
+account. Nothing is submitted automatically — you review, edit, and send it
+yourself, and can remove anything first.
+
+You can still open a [new issue](https://github.com/jhyland87/chem-pal/issues/new)
+directly (add the `bug` label) or email
+[chempalsupport@gmail.com](mailto:chempalsupport@gmail.com). A tracked GitHub issue
+is our preferred method, but not everyone has a GitHub account.
+
+_**How do I submit a feature request or enhancement?**_
+
+You can do this using the same procedure as reporting a bug, except if done via Github, you
+should use the `enhancement` label instead.
+
+
+
 ## Searching
 
 _**My search returned no results.**_
@@ -93,6 +116,15 @@ _**Where is my data stored? Does the developer see it?**_
 
 It's all stored locally in your browser and never sent to the developer. See
 [Privacy](Privacy).
+
+_**Does ChemPal track my data?**_
+
+ChemPal sends basic, anonymous usage statistics to Google Analytics — which
+searches are run, how many results they return, and when the extension hits an
+error — tied only to a random identifier, never your name or an account. There are
+no ads and no cross-site tracking, and your searches, history, and settings stay on
+your device. You can turn this off anytime under **Settings → Behavior → Share
+anonymous usage data**. See [Privacy](Privacy).
 
 ## Reporting a problem
 

@@ -39,7 +39,7 @@ export default function SuppliersPanel() {
     // `suppliers` is optional on UserSettings; fall back to an empty list so
     // toggling works even before App.tsx's mount effect seeds the default
     // supplier set.
-    const selectedSuppliers = appContext.userSettings.suppliers ?? [];
+    const selectedSuppliers = appContext.userSettings.suppliers?.enabled ?? [];
     const currentIndex = selectedSuppliers.indexOf(supplierName);
     const newChecked = [...selectedSuppliers];
 
@@ -51,7 +51,7 @@ export default function SuppliersPanel() {
 
     appContext.setUserSettings({
       ...appContext.userSettings,
-      suppliers: newChecked,
+      suppliers: { ...appContext.userSettings.suppliers, enabled: newChecked },
     });
   };
 
@@ -64,7 +64,7 @@ export default function SuppliersPanel() {
 
     appContext.setUserSettings({
       ...appContext.userSettings,
-      suppliers: newChecked,
+      suppliers: { ...appContext.userSettings.suppliers, enabled: newChecked },
     });
   };
 
@@ -77,7 +77,7 @@ export default function SuppliersPanel() {
           edge="end"
           onChange={handleToggleAll}
           checked={
-            (appContext.userSettings.suppliers?.length ?? 0) ===
+            (appContext.userSettings.suppliers?.enabled?.length ?? 0) ===
             SupplierFactory.supplierList().length
           }
           aria-labelledby="checkbox-list-secondary-label-all"
@@ -95,7 +95,7 @@ export default function SuppliersPanel() {
                 value={supplierName}
                 edge="end"
                 onChange={handleToggle(supplierName)}
-                checked={appContext.userSettings.suppliers?.includes(supplierName) ?? false}
+                checked={appContext.userSettings.suppliers?.enabled?.includes(supplierName) ?? false}
                 aria-labelledby={labelId}
                 size="small"
               />

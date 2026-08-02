@@ -170,10 +170,10 @@ const DrawerSearchPanel: FC<{
       <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Typography>
           {i18n('drawer_results_limit')}
-          {userSettings.supplierResultLimit != null && (
+          {userSettings.suppliers?.resultLimit != null && (
             <span className={styles['accordion-hint']}>
               {' '}
-              {i18n('drawer_results_limit_hint', [String(userSettings.supplierResultLimit)])}
+              {i18n('drawer_results_limit_hint', [String(userSettings.suppliers.resultLimit)])}
             </span>
           )}
         </Typography>
@@ -182,11 +182,14 @@ const DrawerSearchPanel: FC<{
         <TextField
           style={{ width: '100%' }}
           label={i18n('drawer_results_limit_label')}
-          value={userSettings.supplierResultLimit}
+          value={userSettings.suppliers?.resultLimit}
           onChange={(e) =>
             setUserSettings({
               ...userSettings,
-              supplierResultLimit: Number(e.target.value) || undefined,
+              suppliers: {
+                ...userSettings.suppliers,
+                resultLimit: Number(e.target.value) || undefined,
+              },
             })
           }
         />
