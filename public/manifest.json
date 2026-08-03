@@ -95,7 +95,8 @@
     "https://aseschem.myshopify.com/*",
     "https://amarischemicalsolutions.com/*",
     "https://*.mysimplestore.com/*",
-    "https://orbitnaturalproductderivatives.com/*"
+    "https://orbitnaturalproductderivatives.com/*",
+    "https://www.labproservices.com/*"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
