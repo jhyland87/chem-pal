@@ -16,8 +16,10 @@ import { SupplierBase } from './SupplierBase';
  * (Grouped sub-products, Configurable variants, or a synthesized single
  * variant for Simple/unknown product types) before they are written onto a
  * `ProductBuilder`.
+ *
+ * @category Suppliers
  */
-interface RawMagento2Variant {
+export interface RawMagento2Variant {
   /** SKU of the variant (typically encodes the size, e.g. "S770339-100g") */
   sku: string;
   /** Display name of the variant */
@@ -113,6 +115,24 @@ export abstract class SupplierBaseMagento2
       return url;
     }
     return `${item.url_key}${item.url_suffix ?? '.html'}`;
+  }
+
+  /**
+   * Builds the absolute product permalink from the store-relative product URL. The default
+   * scopes the path by {@link storeCode} (e.g. `.../us_en/foo.html`), matching Magento
+   * storefronts that serve product pages under a locale segment. Subclasses whose storefront
+   * has no such segment should override this.
+   *
+   * @param productUrl - The store-relative product URL (from {@link getProductUrl})
+   * @returns The absolute permalink URL
+   * @example
+   * ```typescript
+   * this.getPermalink("foo.html"); // "https://www.example.com/us_en/foo.html"
+   * ```
+   * @source
+   */
+  protected getPermalink(productUrl: string): string {
+    return `${this.baseURL}/${this.storeCode}/${productUrl}`;
   }
 
   /**
@@ -334,7 +354,7 @@ export abstract class SupplierBaseMagento2
         // The picture is the only new field surfaced from the GraphQL search response; the
         // remaining chemical identifiers are scraped per-supplier in getProductData.
         .setImage(item.image?.url, item.image?.label ?? undefined)
-        .setPermalink(`${this.baseURL}/${this.storeCode}/${productUrl}`);
+        .setPermalink(this.getPermalink(productUrl));
 
       if (item.stock_status) {
         builder.setAvailability(item.stock_status);
