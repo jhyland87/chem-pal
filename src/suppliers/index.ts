@@ -41,6 +41,7 @@ export { SupplierDailyBioUSA } from './SupplierDailyBioUSA';
 export { SupplierFtfScientific } from './SupplierFtfScientific';
 export { SupplierGoldAndSilverTesting } from './SupplierGoldAndSilverTesting';
 export { SupplierHimedia } from './SupplierHimedia';
+export { SupplierHyperFuels } from './SupplierHyperFuels';
 export { SupplierInnovatingScience } from './SupplierInnovatingScience';
 export { SupplierLaballey } from './SupplierLaballey';
 export { SupplierLabChem } from './SupplierLabChem';
