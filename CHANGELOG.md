@@ -13,6 +13,8 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+## [1.7.1] - 2026-08-04
+
 ### Added
 
 - New supplier: **LabPro Services**.
