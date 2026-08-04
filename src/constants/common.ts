@@ -14,10 +14,12 @@ import { extension } from '@/../config.json';
 export const ACTION_TYPE = {
   /** A toggle Switch changed; writes `checked` to the named setting */
   SWITCH_CHANGE: 'SWITCH_CHANGE',
+  /** A toggle Switch inside a nested group changed; writes `checked` to `group.name` */
+  NESTED_SWITCH_CHANGE: 'NESTED_SWITCH_CHANGE',
+  /** A button-group option inside a nested group was clicked; writes `value` to `group.name` */
+  NESTED_BUTTON_CLICK: 'NESTED_BUTTON_CLICK',
   /** A text field or Select changed; writes `value` to the named setting */
   INPUT_CHANGE: 'INPUT_CHANGE',
-  /** A button-group option was clicked (e.g. font size); writes `value` to the named setting */
-  BUTTON_CLICK: 'BUTTON_CLICK',
   /** A supplier was enabled/disabled; replaces the disabled-suppliers list */
   SUPPLIER_TOGGLE: 'SUPPLIER_TOGGLE',
   /** Price-tracking config changed; replaces the nested `priceTracking` object */

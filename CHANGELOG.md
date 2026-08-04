@@ -17,6 +17,21 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 - New supplier: **LabPro Services**.
 - New supplier: **HyperFuels**.
+- **Full Reset** in Settings → Actions: clears all stored data (settings, history, caches,
+  price history, and saved exports) and reloads, after a confirmation prompt.
+
+### Changed
+
+- Cache and price-tracking sub-options are now disabled while their feature is turned off,
+  so there are no settings that quietly do nothing.
+
+### Fixed
+
+- The Purity column now hides correctly when auto-hide is on and no result has a grade or
+  purity value (previously it stayed visible even when empty).
+- The price Trend and Change columns now auto-hide when a result set has no price-history
+  data (e.g. a first-time search), and come back when it does — they no longer stay stuck
+  visible-but-empty.
 
 ## [1.7.0] - 2026-08-01
 

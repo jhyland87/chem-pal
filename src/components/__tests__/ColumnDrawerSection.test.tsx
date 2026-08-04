@@ -152,7 +152,9 @@ describe('ColumnDrawerSection', () => {
         }),
       );
       expect(setUserSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ hideRestrictedProducts: false }),
+        expect.objectContaining({
+          search: expect.objectContaining({ hideRestrictedProducts: false }),
+        }),
       );
     });
   });

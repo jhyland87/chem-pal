@@ -20,12 +20,15 @@ const mocks = vi.hoisted(() => ({
   getCurrencyRate: vi.fn(),
   loadExcludedProducts: vi.fn(),
   removeExcludedProduct: vi.fn(),
+  clearAllCaches: vi.fn(),
   clearExcludedProducts: vi.fn(),
+  clearExports: vi.fn(),
   clearPriceHistory: vi.fn(),
   clearSupplierProductDataCache: vi.fn(),
   clearSupplierQueryCache: vi.fn(),
   getAllPriceSeries: vi.fn(),
   getIdbStorageBreakdown: vi.fn(),
+  storageClear: vi.fn(),
 }));
 
 vi.mock('@/helpers/currency', () => ({ getCurrencyRate: mocks.getCurrencyRate }));
@@ -36,12 +39,18 @@ vi.mock('@/helpers/excludedProducts', () => ({
 }));
 
 vi.mock('@/utils/idbCache', () => ({
+  clearAllCaches: mocks.clearAllCaches,
   clearExcludedProducts: mocks.clearExcludedProducts,
+  clearExports: mocks.clearExports,
   clearPriceHistory: mocks.clearPriceHistory,
   clearSupplierProductDataCache: mocks.clearSupplierProductDataCache,
   clearSupplierQueryCache: mocks.clearSupplierQueryCache,
   getAllPriceSeries: mocks.getAllPriceSeries,
   getIdbStorageBreakdown: mocks.getIdbStorageBreakdown,
+}));
+
+vi.mock('@/utils/storage', () => ({
+  cstorage: { local: { clear: mocks.storageClear, get: vi.fn(), set: vi.fn(), remove: vi.fn() } },
 }));
 
 let mockContext: {
@@ -64,7 +73,7 @@ function baseSettings(overrides: Partial<UserSettings> = {}): UserSettings {
     location: 'US',
     language: 'en',
     caching: { enabled: true },
-    fontSize: 'medium',
+    display: { fontSize: 'medium' },
     suppliers: { disabled: [] },
     ...overrides,
   } as UserSettings;
@@ -92,10 +101,13 @@ describe('SettingsPanel', () => {
     mocks.getCurrencyRate.mockResolvedValue(1.1);
     mocks.loadExcludedProducts.mockResolvedValue({});
     mocks.removeExcludedProduct.mockResolvedValue(undefined);
+    mocks.clearAllCaches.mockResolvedValue(undefined);
     mocks.clearExcludedProducts.mockResolvedValue(undefined);
+    mocks.clearExports.mockResolvedValue(undefined);
     mocks.clearPriceHistory.mockResolvedValue(undefined);
     mocks.clearSupplierProductDataCache.mockResolvedValue(undefined);
     mocks.clearSupplierQueryCache.mockResolvedValue(undefined);
+    mocks.storageClear.mockResolvedValue(undefined);
     mocks.getAllPriceSeries.mockResolvedValue([]);
     mocks.getIdbStorageBreakdown.mockResolvedValue({
       totalBytes: 0,
@@ -138,6 +150,17 @@ describe('SettingsPanel', () => {
     );
   });
 
+  it('disables the cache-dependent controls when caching is off', () => {
+    setContext(baseSettings({ caching: { enabled: false } }));
+    render(<SettingsPanel />);
+    openSection('settings_section_cache');
+
+    expect(document.querySelector('input[name="doNotCacheEmptyResults"]')).toBeDisabled();
+    expect(document.querySelector('input[name="cacheTtlMinutes"]')).toBeDisabled();
+    // The master switch stays enabled so caching can be turned back on.
+    expect(document.querySelector('input[name="caching"]')).not.toBeDisabled();
+  });
+
   it('persists a numeric input change through setUserSettings', async () => {
     const ctx = setContext(baseSettings({ caching: { enabled: true, ttlMinutes: 10 } }));
     render(<SettingsPanel />);
@@ -154,7 +177,7 @@ describe('SettingsPanel', () => {
   });
 
   it('persists a font-size button click through setUserSettings', async () => {
-    const ctx = setContext(baseSettings({ fontSize: 'medium' }));
+    const ctx = setContext(baseSettings({ display: { fontSize: 'medium' } }));
     render(<SettingsPanel />);
     openSection('settings_section_display');
 
@@ -162,7 +185,7 @@ describe('SettingsPanel', () => {
 
     await waitFor(() =>
       expect(ctx.setUserSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ fontSize: 'small' }),
+        expect.objectContaining({ display: expect.objectContaining({ fontSize: 'small' }) }),
       ),
     );
   });
@@ -178,7 +201,7 @@ describe('SettingsPanel', () => {
       expect(ctx.setUserSettings).toHaveBeenCalledWith(
         expect.objectContaining({
           suppliers: expect.objectContaining({ disabled: [] }),
-          fontSize: 'medium',
+          display: expect.objectContaining({ fontSize: 'medium' }),
         }),
       ),
     );
@@ -208,6 +231,42 @@ describe('SettingsPanel', () => {
       // Locale is preserved; the rest comes from clean defaults.
       expect(restored.currency).toBe('USD');
     });
+  });
+
+  it('full reset clears every store except app_meta after confirmation', async () => {
+    // The handler ends with window.location.reload(); jsdom logs a benign
+    // "Not implemented: navigation" for it, which doesn't affect these assertions.
+    setContext(baseSettings());
+    render(<SettingsPanel />);
+    openSection('settings_section_actions');
+
+    fireEvent.click(screen.getByText('settings_full_reset'));
+    // The confirmation dialog is shown; nothing is cleared yet.
+    expect(screen.getByText('settings_full_reset_confirm_title')).toBeInTheDocument();
+    expect(mocks.storageClear).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByText('settings_full_reset_confirm'));
+
+    await waitFor(() => {
+      // clearAllCaches + clearPriceHistory + clearExports cover every IndexedDB
+      // store except app_meta; storageClear wipes all of chrome.storage.local.
+      expect(mocks.clearAllCaches).toHaveBeenCalled();
+      expect(mocks.clearPriceHistory).toHaveBeenCalled();
+      expect(mocks.clearExports).toHaveBeenCalled();
+      expect(mocks.storageClear).toHaveBeenCalled();
+    });
+  });
+
+  it('full reset does nothing when cancelled', () => {
+    setContext(baseSettings());
+    render(<SettingsPanel />);
+    openSection('settings_section_actions');
+
+    fireEvent.click(screen.getByText('settings_full_reset'));
+    fireEvent.click(screen.getByText('migration_cancel'));
+
+    expect(mocks.clearAllCaches).not.toHaveBeenCalled();
+    expect(mocks.storageClear).not.toHaveBeenCalled();
   });
 
   it('toggling a supplier off adds it to disabledSuppliers', async () => {

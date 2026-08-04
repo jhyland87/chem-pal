@@ -925,6 +925,23 @@
     "message": "Przywróć domyślne",
     "description": "Button label."
   },
+
+  "settings_full_reset": {
+    "message": "Pełny reset",
+    "description": "Button label; clears all stored data and reloads."
+  },
+  "settings_full_reset_confirm_title": {
+    "message": "Pełny reset?",
+    "description": "Confirmation dialog title."
+  },
+  "settings_full_reset_confirm_body": {
+    "message": "Spowoduje to trwałe usunięcie wszystkich danych ChemPal — ustawień, historii wyszukiwania, pamięci podręcznych, historii cen i zapisanych eksportów — a następnie ponowne załadowanie rozszerzenia. Tej operacji nie można cofnąć.",
+    "description": "Confirmation dialog body."
+  },
+  "settings_full_reset_confirm": {
+    "message": "Zresetuj wszystko",
+    "description": "Confirm button in the full-reset dialog."
+  },
   "speed_dial_clear_results": {
     "message": "Wyczyść wyniki",
     "description": "Speed-dial action."

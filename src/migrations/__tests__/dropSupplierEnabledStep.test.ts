@@ -60,4 +60,39 @@ describe('v1.7.0-to-v1.7.1 migration', () => {
     await migration.up(ctx);
     expect(store[CACHE.USER_SETTINGS]).toBeUndefined();
   });
+
+  it('nests flat search/results/display keys and drops the old flat keys', async () => {
+    const out = await runOn({
+      groupProductVariants: false,
+      hideRestrictedProducts: false,
+      autoHideEmptyColumns: false,
+      hideColumns: ['cas', 'formula'],
+      theme: 'dark',
+      fontSize: 'large',
+      openInTab: true,
+    });
+    expect(out?.search).toEqual({ groupProductVariants: false, hideRestrictedProducts: false });
+    expect(out?.results).toEqual({ autoHideEmpty: false, hidden: ['cas', 'formula'] });
+    expect(out?.display).toEqual({ theme: 'dark', fontSize: 'large', openInTab: true });
+    for (const key of [
+      'groupProductVariants',
+      'hideRestrictedProducts',
+      'autoHideEmptyColumns',
+      'hideColumns',
+      'theme',
+      'fontSize',
+      'openInTab',
+    ]) {
+      expect(out).not.toHaveProperty(key);
+    }
+  });
+
+  it('leaves already-nested search/results/display untouched (idempotent)', async () => {
+    const nested = {
+      search: { groupProductVariants: true, hideRestrictedProducts: true },
+      results: { autoHideEmpty: true, hidden: ['purity'] },
+      display: { theme: 'light', fontSize: 'medium', openInTab: false },
+    };
+    expect(await runOn(nested)).toEqual(nested);
+  });
 });

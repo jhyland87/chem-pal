@@ -912,8 +912,13 @@ function buildUserSettingsSchema() {
         v.check((value) => value === '' || isCountryCode(value), 'Invalid country code'),
       ),
     ),
-    theme: v.optional(v.picklist(['light', 'dark'])),
-    fontSize: v.optional(v.picklist(['small', 'medium', 'large'])),
+    display: v.optional(
+      v.object({
+        theme: v.optional(v.picklist(['light', 'dark'])),
+        fontSize: v.optional(v.picklist(['small', 'medium', 'large'])),
+        openInTab: v.optional(v.boolean()),
+      }),
+    ),
     suppliers: v.optional(
       v.object({
         disabled: v.optional(v.array(v.picklist(SUPPLIER_CLASS_NAMES))),
@@ -921,8 +926,18 @@ function buildUserSettingsSchema() {
         resultLimit: v.optional(coercedNonnegativeInt),
       }),
     ),
-    hideRestrictedProducts: v.optional(v.boolean()),
-    hideColumns: v.optional(v.array(v.string())),
+    search: v.optional(
+      v.object({
+        groupProductVariants: v.optional(v.boolean()),
+        hideRestrictedProducts: v.optional(v.boolean()),
+      }),
+    ),
+    results: v.optional(
+      v.object({
+        autoHideEmpty: v.optional(v.boolean()),
+        hidden: v.optional(v.array(v.string())),
+      }),
+    ),
     fuzzScorerOverride: v.optional(v.string()),
   });
 }

@@ -171,8 +171,11 @@ function HotkeyLayer({ handlers }: { handlers: HotkeyHandlers }) {
       // reducer the Settings switch uses; flash text depends on the new state,
       // so it lives here rather than in the plain handler map.
       toggleGroupVariants: () => {
-        const next = !(userSettings.groupProductVariants ?? true);
-        setUserSettings({ ...userSettings, groupProductVariants: next });
+        const next = !(userSettings.search?.groupProductVariants ?? true);
+        setUserSettings({
+          ...userSettings,
+          search: { ...userSettings.search, groupProductVariants: next },
+        });
         flashStatusText(
           i18n(next ? 'hotkeys_flash_group_variants_on' : 'hotkeys_flash_group_variants_off'),
         );

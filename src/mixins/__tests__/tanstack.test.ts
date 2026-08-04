@@ -227,6 +227,43 @@ describe('Tanstack Mixins', () => {
       expect(getEmptyHideableColumnIds(table)).toEqual(['cas']);
     });
 
+    it('judges an accessor column by meta.dataKeys when present, ignoring the accessor fallback', () => {
+      // Mirrors the purity column: the accessor always returns a non-empty
+      // 'Ungraded' fallback, but dataKeys point at the raw grade/purity fields,
+      // so the column is still reported empty when no row has real data.
+      const table = buildTable(
+        [
+          { grade: undefined, purity: undefined },
+          { grade: null, purity: '' },
+        ],
+        [
+          {
+            id: 'purity',
+            accessorFn: (row) => row.grade ?? row.purity ?? 'Ungraded',
+            dataKeys: ['grade', 'purity'],
+          },
+        ],
+      );
+      expect(getEmptyHideableColumnIds(table)).toEqual(['purity']);
+    });
+
+    it('keeps an accessor+dataKeys column when a raw field has data', () => {
+      const table = buildTable(
+        [
+          { grade: undefined, purity: undefined },
+          { grade: 'ACS Grade', purity: undefined },
+        ],
+        [
+          {
+            id: 'purity',
+            accessorFn: (row) => row.grade ?? row.purity ?? 'Ungraded',
+            dataKeys: ['grade', 'purity'],
+          },
+        ],
+      );
+      expect(getEmptyHideableColumnIds(table)).toEqual([]);
+    });
+
     it('treats blank strings and empty arrays as empty but 0 as data', () => {
       const table = buildTable(
         [

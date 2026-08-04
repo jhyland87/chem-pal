@@ -291,60 +291,69 @@ export default function ResultsTable({
     prevIsLoadingRef.current = isLoading;
   }, [isLoading]);
 
-  // When a search finishes, auto-hide hideable columns that have no data in any
-  // row (across all results and their variants, not just the visible page), and
-  // restore any column we previously auto-hid once it has data again. Only the
-  // columns we hid are touched, so manual visibility choices and default-hidden
-  // columns are left intact. Gated by the `autoHideEmptyColumns` setting (default
-  // on); when off, no columns are auto-hidden and any we previously hid are
-  // restored so the toggle takes effect immediately.
-  const autoHideEmptyColumns = appContext?.userSettings?.autoHideEmptyColumns ?? true;
-  const autoHiddenColumnsRef = useRef<Set<string>>(new Set());
-  const prevIsLoadingForAutoHideRef = useRef(false);
+  // Once a search settles, auto-hide hideable columns that have no data in any row
+  // (across all results and their variants, not just the visible page), and restore
+  // any column we auto-hid once it has data again — to the visibility it had before
+  // we hid it, so a user's own show/hide choice survives. Only columns we hid are
+  // touched, so unrelated manual choices are left intact. Recomputed both when the
+  // search finishes and when the asynchronously-loaded price history settles, so the
+  // late-arriving trend columns (Trend/Change) are judged on their real data rather
+  // than the empty pre-load state. Gated by the `autoHideEmptyColumns` setting
+  // (default on); when off, everything we hid is restored so the toggle applies
+  // immediately.
+  const autoHideEmptyColumns = appContext?.userSettings?.results?.autoHideEmpty ?? true;
+  // Maps each auto-hidden column id to the visibility it had before we hid it
+  // (`undefined` = no explicit entry, i.e. its default), so restore is exact.
+  const autoHiddenColumnsRef = useRef<Map<string, boolean | undefined>>(new Map());
+  // Price history loads asynchronously into table meta after a search; depending on
+  // it re-runs this effect once it settles (see useResultsTable).
+  const priceHistory = table.options.meta?.priceHistory;
   useEffect(() => {
-    const searchJustFinished = prevIsLoadingForAutoHideRef.current && !isLoading;
-    prevIsLoadingForAutoHideRef.current = isLoading;
-
-    // Feature disabled: restore anything we auto-hid, then do nothing further.
+    // Feature disabled: restore anything we auto-hid to its pre-hide visibility.
     if (!autoHideEmptyColumns) {
       if (autoHiddenColumnsRef.current.size === 0) return;
-      const defaultVisibility = table.initialState.columnVisibility ?? {};
+      const hidden = autoHiddenColumnsRef.current;
       setTableState((prev) => {
         const columnVisibility = { ...prev.columnVisibility };
-        for (const id of autoHiddenColumnsRef.current) {
-          const defaultVisible = defaultVisibility[id];
-          if (defaultVisible === undefined) delete columnVisibility[id];
-          else columnVisibility[id] = defaultVisible;
+        for (const [id, prior] of hidden) {
+          if (prior === undefined) delete columnVisibility[id];
+          else columnVisibility[id] = prior;
         }
         return { ...prev, columnVisibility };
       });
-      autoHiddenColumnsRef.current = new Set();
+      autoHiddenColumnsRef.current = new Map();
       return;
     }
 
-    if (!searchJustFinished || searchResults.length === 0) return;
+    // Only act on a settled result set — not mid-search, and only with results.
+    if (isLoading || searchResults.length === 0) return;
 
     const emptyColumnIds = new Set(getEmptyHideableColumnIds(table));
-    const defaultVisibility = table.initialState.columnVisibility ?? {};
+    // `table.setOptions` binds the table's state to `tableState` each render, so
+    // `getState()` is the current visibility we compute the next one from.
+    const current = table.getState().columnVisibility ?? {};
+    const columnVisibility: Record<string, boolean> = { ...current };
+    const nextHidden = new Map<string, boolean | undefined>();
 
-    setTableState((prev) => {
-      const columnVisibility = { ...prev.columnVisibility };
-      // Restore columns we previously auto-hid that now have data, back to their
-      // default visibility (keeps default-hidden columns like `availability` hidden).
-      for (const id of autoHiddenColumnsRef.current) {
-        if (emptyColumnIds.has(id)) continue;
-        const defaultVisible = defaultVisibility[id];
-        if (defaultVisible === undefined) delete columnVisibility[id];
-        else columnVisibility[id] = defaultVisible;
+    // Restore columns we previously auto-hid that now have data to their pre-hide
+    // visibility; keep the still-empty ones hidden (remembering their prior value).
+    for (const [id, prior] of autoHiddenColumnsRef.current) {
+      if (emptyColumnIds.has(id)) {
+        nextHidden.set(id, prior);
+        continue;
       }
-      // Hide columns that have no data in this result set.
-      for (const id of emptyColumnIds) columnVisibility[id] = false;
-      return { ...prev, columnVisibility };
-    });
-    autoHiddenColumnsRef.current = emptyColumnIds;
-    // `table` is a stable instance from useResultsTable; recompute is driven by
-    // the search lifecycle (isLoading), the resulting data, and the toggle.
-  }, [isLoading, searchResults, autoHideEmptyColumns]);
+      if (prior === undefined) delete columnVisibility[id];
+      else columnVisibility[id] = prior;
+    }
+    // Hide columns with no data, recording each one's pre-hide visibility once.
+    for (const id of emptyColumnIds) {
+      if (!nextHidden.has(id)) nextHidden.set(id, current[id]);
+      columnVisibility[id] = false;
+    }
+    autoHiddenColumnsRef.current = nextHidden;
+    setTableState((prev) => ({ ...prev, columnVisibility }));
+    // `table` is a stable instance from useResultsTable.
+  }, [isLoading, searchResults, autoHideEmptyColumns, priceHistory, table]);
 
   // Load persisted state once on mount
   useEffect(() => {
@@ -517,14 +526,14 @@ export default function ResultsTable({
 
   // Initialize column visibility - this effect is still needed
   useEffect(() => {
-    if (appContext && !isEmpty(appContext.userSettings.hideColumns)) {
+    if (appContext && !isEmpty(appContext.userSettings.results?.hidden)) {
       table.getAllLeafColumns().map((column: Column<Product>) => {
-        if (appContext.userSettings?.hideColumns?.includes(column.id)) {
+        if (appContext.userSettings?.results?.hidden?.includes(column.id)) {
           column.toggleVisibility(false);
         }
       });
     }
-  }, [appContext?.userSettings.hideColumns, table]);
+  }, [appContext?.userSettings.results?.hidden, table]);
 
   // Auto column sizing is driven by the raw searchResults (not the filtered
   // row model) so that filter input keystrokes don't trigger column remeasuring.

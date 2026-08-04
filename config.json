@@ -7,27 +7,26 @@
     "location": "US",
     "language": "en-US",
     "currencyRate": 1.0,
-    "fontSize": "medium",
-    "openInTab": true,
-    "autoHideEmptyColumns": true,
-    "groupProductVariants": true,
+    "display": { "theme": "light", "fontSize": "medium", "openInTab": true },
+    "search": { "groupProductVariants": true, "hideRestrictedProducts": true },
+    "results": {
+      "autoHideEmpty": true,
+      "hidden": [
+        "description",
+        "uom",
+        "sds",
+        "specs",
+        "coa",
+        "cas",
+        "formula",
+        "moleweight",
+        "purity",
+        "concentration",
+        "priceChange"
+      ]
+    },
     "shareUsageData": true,
-    "theme": "light",
-    "suppliers": { "disabled": [], "excludeNonShipping": true },
-    "hideRestrictedProducts": true,
-    "hideColumns": [
-      "description",
-      "uom",
-      "sds",
-      "specs",
-      "coa",
-      "cas",
-      "formula",
-      "moleweight",
-      "purity",
-      "concentration",
-      "priceChange"
-    ]
+    "suppliers": { "disabled": [], "excludeNonShipping": true }
   },
   "search": {
     "defaultResultsLimitPerSupplier": 5,

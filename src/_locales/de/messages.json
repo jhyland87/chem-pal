@@ -728,6 +728,23 @@
     "description": "Button label."
   },
 
+  "settings_full_reset": {
+    "message": "Vollständig zurücksetzen",
+    "description": "Button label; clears all stored data and reloads."
+  },
+  "settings_full_reset_confirm_title": {
+    "message": "Vollständig zurücksetzen?",
+    "description": "Confirmation dialog title."
+  },
+  "settings_full_reset_confirm_body": {
+    "message": "Dadurch werden alle ChemPal-Daten dauerhaft gelöscht – Einstellungen, Suchverlauf, Caches, Preisverlauf und gespeicherte Exporte – und die Erweiterung wird neu geladen. Dies kann nicht rückgängig gemacht werden.",
+    "description": "Confirmation dialog body."
+  },
+  "settings_full_reset_confirm": {
+    "message": "Alles zurücksetzen",
+    "description": "Confirm button in the full-reset dialog."
+  },
+
   "speed_dial_clear_results": {
     "message": "Ergebnisse löschen",
     "description": "Speed-dial action."

@@ -218,7 +218,7 @@ describe('service worker toolbar-icon behavior', () => {
   });
 
   it('clears the action popup on install when openInTab is enabled', async () => {
-    mock.localGet.mockResolvedValueOnce({ user_settings: { openInTab: true } });
+    mock.localGet.mockResolvedValueOnce({ user_settings: { display: { openInTab: true } } });
 
     for (const listener of mock.onInstalled) await listener({ reason: 'install' });
 
@@ -226,7 +226,7 @@ describe('service worker toolbar-icon behavior', () => {
   });
 
   it('keeps the default popup when openInTab is off or absent', async () => {
-    mock.localGet.mockResolvedValueOnce({ user_settings: { fontSize: 'medium' } });
+    mock.localGet.mockResolvedValueOnce({ user_settings: { display: { fontSize: 'medium' } } });
 
     for (const listener of mock.onStartup) await listener();
 
@@ -242,10 +242,10 @@ describe('service worker toolbar-icon behavior', () => {
   });
 
   it('re-applies the popup state when user settings change', async () => {
-    mock.localGet.mockResolvedValueOnce({ user_settings: { openInTab: true } });
+    mock.localGet.mockResolvedValueOnce({ user_settings: { display: { openInTab: true } } });
 
     const [onChanged] = mock.storageChanged;
-    onChanged({ user_settings: { newValue: { openInTab: true } } }, 'local');
+    onChanged({ user_settings: { newValue: { display: { openInTab: true } } } }, 'local');
     // Let the async applyActionBehavior settle.
     await Promise.resolve();
     await Promise.resolve();

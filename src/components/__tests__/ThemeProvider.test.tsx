@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useTheme } from '../../themes';
 
 let mockContext: {
-  userSettings: { fontSize?: string; theme?: string };
+  userSettings: { display?: { fontSize?: string; theme?: string } };
   setUserSettings: ReturnType<typeof vi.fn>;
 };
 
@@ -22,9 +22,9 @@ function ThemeProbe() {
   );
 }
 
-/** Installs a fresh app-context mock with the given settings. */
-function setContext(userSettings: { fontSize?: string; theme?: string } = {}) {
-  mockContext = { userSettings, setUserSettings: vi.fn() };
+/** Installs a fresh app-context mock with the given display settings. */
+function setContext(display: { fontSize?: string; theme?: string } = {}) {
+  mockContext = { userSettings: { display }, setUserSettings: vi.fn() };
   return mockContext;
 }
 
@@ -91,6 +91,8 @@ describe('ThemeProvider', () => {
 
     fireEvent.click(screen.getByText('toggle'));
 
-    expect(ctx.setUserSettings).toHaveBeenCalledWith(expect.objectContaining({ theme: 'dark' }));
+    expect(ctx.setUserSettings).toHaveBeenCalledWith(
+      expect.objectContaining({ display: expect.objectContaining({ theme: 'dark' }) }),
+    );
   });
 });

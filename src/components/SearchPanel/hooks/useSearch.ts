@@ -527,7 +527,7 @@ export function useSearch() {
           location: appContext.userSettings.location,
           excludeNonShippingSuppliers:
             appContext.userSettings.suppliers?.excludeNonShipping ?? true,
-          hideRestrictedProducts: appContext.userSettings.hideRestrictedProducts ?? true,
+          hideRestrictedProducts: appContext.userSettings.search?.hideRestrictedProducts ?? true,
           disabledSuppliers: appContext.userSettings.suppliers?.disabled,
         });
 

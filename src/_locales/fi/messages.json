@@ -725,6 +725,11 @@
   },
   "settings_restore_defaults": { "message": "Palauta oletukset", "description": "Button label." },
 
+  "settings_full_reset": { "message": "Täydellinen nollaus", "description": "Button label; clears all stored data and reloads." },
+  "settings_full_reset_confirm_title": { "message": "Täydellinen nollaus?", "description": "Confirmation dialog title." },
+  "settings_full_reset_confirm_body": { "message": "Tämä poistaa pysyvästi kaikki ChemPalin tiedot – asetukset, hakuhistorian, välimuistit, hintahistorian ja tallennetut viennit – ja lataa laajennuksen uudelleen. Tätä ei voi kumota.", "description": "Confirmation dialog body." },
+  "settings_full_reset_confirm": { "message": "Nollaa kaikki", "description": "Confirm button in the full-reset dialog." },
+
   "speed_dial_clear_results": {
     "message": "Tyhjennä tulokset",
     "description": "Speed-dial action."

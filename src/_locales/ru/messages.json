@@ -926,6 +926,23 @@
     "message": "Восстановить по умолчанию",
     "description": "Button label."
   },
+
+  "settings_full_reset": {
+    "message": "Полный сброс",
+    "description": "Button label; clears all stored data and reloads."
+  },
+  "settings_full_reset_confirm_title": {
+    "message": "Полный сброс?",
+    "description": "Confirmation dialog title."
+  },
+  "settings_full_reset_confirm_body": {
+    "message": "Это безвозвратно удалит все данные ChemPal — настройки, историю поиска, кэши, историю цен и сохранённые экспорты — и перезагрузит расширение. Это действие нельзя отменить.",
+    "description": "Confirmation dialog body."
+  },
+  "settings_full_reset_confirm": {
+    "message": "Сбросить всё",
+    "description": "Confirm button in the full-reset dialog."
+  },
   "speed_dial_clear_results": {
     "message": "Очистить результаты",
     "description": "Speed-dial action."

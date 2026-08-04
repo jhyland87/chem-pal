@@ -57,7 +57,6 @@ export default function HelpTooltip({
           textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
           opacity: 0.8,
           transition: 'opacity 0.3s ease-in-out',
-
           '&:hover': {
             opacity: 1,
           },

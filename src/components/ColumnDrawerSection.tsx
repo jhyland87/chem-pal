@@ -238,11 +238,11 @@ export default function ColumnDrawerSection({
               control={
                 <Switch
                   size="small"
-                  checked={userSettings.hideRestrictedProducts ?? true}
+                  checked={userSettings.search?.hideRestrictedProducts ?? true}
                   onChange={(e) =>
                     setUserSettings({
                       ...userSettings,
-                      hideRestrictedProducts: e.target.checked,
+                      search: { ...userSettings.search, hideRestrictedProducts: e.target.checked },
                     })
                   }
                 />
