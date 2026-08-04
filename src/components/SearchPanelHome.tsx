@@ -143,6 +143,7 @@ const SearchPanelHome: FC = () => {
           onSearch={handleSearch}
           placeholder={i18n('search_placeholder')}
           showAdvancedButton={false}
+          autoFocus
         />
       </div>
     </SearchPanelHomeContainer>

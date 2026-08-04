@@ -24,10 +24,10 @@ interface ThemeProviderProps {
   children: ReactNode;
 }
 
-// `UserSettings.fontSize` is optional — narrow to the non-undefined union so
+// `DisplaySettings.fontSize` is optional — narrow to the non-undefined union so
 // Record can key off valid size names only. The fallback path in the effect
 // below handles the undefined case at runtime.
-type FontSize = NonNullable<UserSettings['fontSize']>;
+type FontSize = NonNullable<DisplaySettings['fontSize']>;
 const FONT_SIZE_PX: Record<FontSize, string> = {
   small: '14px',
   medium: '16px',
@@ -60,15 +60,18 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({ children }) => {
   const { userSettings, setUserSettings } = useAppContext();
 
   useEffect(() => {
-    const size = userSettings.fontSize;
+    const size = userSettings.display?.fontSize;
     document.documentElement.style.fontSize =
       (size !== undefined && FONT_SIZE_PX[size]) || FONT_SIZE_PX.medium;
-  }, [userSettings.fontSize]);
+  }, [userSettings.display?.fontSize]);
 
-  const mode: ThemeMode = userSettings.theme === 'dark' ? 'dark' : 'light';
+  const mode: ThemeMode = userSettings.display?.theme === 'dark' ? 'dark' : 'light';
 
   const toggleTheme = () => {
-    setUserSettings({ ...userSettings, theme: mode === 'light' ? 'dark' : 'light' });
+    setUserSettings({
+      ...userSettings,
+      display: { ...userSettings.display, theme: mode === 'light' ? 'dark' : 'light' },
+    });
   };
 
   const currentTheme = mode === 'light' ? lightTheme : darkTheme;

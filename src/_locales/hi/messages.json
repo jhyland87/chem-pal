@@ -701,6 +701,23 @@
     "description": "Button label."
   },
 
+  "settings_full_reset": {
+    "message": "पूर्ण रीसेट",
+    "description": "Button label; clears all stored data and reloads."
+  },
+  "settings_full_reset_confirm_title": {
+    "message": "पूर्ण रीसेट करें?",
+    "description": "Confirmation dialog title."
+  },
+  "settings_full_reset_confirm_body": {
+    "message": "यह ChemPal के सभी डेटा — सेटिंग्स, खोज इतिहास, कैश, मूल्य इतिहास और सहेजे गए निर्यात — को स्थायी रूप से हटा देता है और फिर एक्सटेंशन को पुनः लोड करता है। इसे पूर्ववत नहीं किया जा सकता।",
+    "description": "Confirmation dialog body."
+  },
+  "settings_full_reset_confirm": {
+    "message": "सब कुछ रीसेट करें",
+    "description": "Confirm button in the full-reset dialog."
+  },
+
   "speed_dial_clear_results": {
     "message": "परिणाम साफ़ करें",
     "description": "Speed-dial action."

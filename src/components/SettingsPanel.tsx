@@ -17,13 +17,16 @@ import { formatBytes, formatTimestamp, getLanguageName } from '@/helpers/utils';
 import { showReportDialog } from '@/components/ReportDialog';
 import { SUPPLIER_CLASS_NAMES } from '@/constants/suppliers';
 import {
+  clearAllCaches,
   clearExcludedProducts,
+  clearExports,
   clearPriceHistory,
   clearSupplierProductDataCache,
   clearSupplierQueryCache,
   getAllPriceSeries,
   getIdbStorageBreakdown,
 } from '@/utils/idbCache';
+import { cstorage } from '@/utils/storage';
 import { isButtonElement, isValidUserSettings } from '@/utils/typeGuards/common';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -38,6 +41,11 @@ import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 //import FormHelperText from "@mui/material/FormHelperText";
@@ -141,10 +149,19 @@ export default function SettingsPanel() {
         case ACTION_TYPE.SWITCH_CHANGE:
           newSettings = { ...currentSettings, [action.name]: action.checked };
           break;
-        case ACTION_TYPE.INPUT_CHANGE:
-          newSettings = { ...currentSettings, [action.name]: action.value };
+        case ACTION_TYPE.NESTED_SWITCH_CHANGE:
+          newSettings = {
+            ...currentSettings,
+            [action.group]: { ...currentSettings[action.group], [action.name]: action.checked },
+          };
           break;
-        case ACTION_TYPE.BUTTON_CLICK:
+        case ACTION_TYPE.NESTED_BUTTON_CLICK:
+          newSettings = {
+            ...currentSettings,
+            [action.group]: { ...currentSettings[action.group], [action.name]: action.value },
+          };
+          break;
+        case ACTION_TYPE.INPUT_CHANGE:
           newSettings = { ...currentSettings, [action.name]: action.value };
           break;
         case ACTION_TYPE.SUPPLIER_TOGGLE:
@@ -170,7 +187,10 @@ export default function SettingsPanel() {
             location: currentSettings.location ?? DEFAULT_SETTINGS.location,
             language: currentSettings.language ?? DEFAULT_SETTINGS.language,
             currencyRate: currentSettings.currencyRate ?? DEFAULT_SETTINGS.currencyRate,
-            theme: currentSettings.theme ?? DEFAULT_SETTINGS.theme,
+            display: {
+              ...DEFAULT_SETTINGS.display,
+              theme: currentSettings.display?.theme ?? DEFAULT_SETTINGS.display?.theme,
+            },
           };
           break;
         default:
@@ -196,6 +216,24 @@ export default function SettingsPanel() {
     });
   };
 
+  const handleNestedSwitchChange =
+    (group: SettingGroup) => (event: ChangeEvent<HTMLInputElement>) => {
+      updateSetting({
+        type: ACTION_TYPE.NESTED_SWITCH_CHANGE,
+        group,
+        name: event.target.name,
+        checked: event.target.checked,
+      });
+    };
+
+  const handleNestedButtonClick = (group: SettingGroup) => (event: MouseEvent<HTMLDivElement>) => {
+    if (!isButtonElement(event.target)) return;
+    const { name, value } = event.target;
+    if (name && value) {
+      updateSetting({ type: ACTION_TYPE.NESTED_BUTTON_CLICK, group, name, value });
+    }
+  };
+
   const handleInputChange = (
     event: SelectChangeEvent | ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
@@ -206,14 +244,6 @@ export default function SettingsPanel() {
     });
   };
 
-  const handleButtonClick = (event: MouseEvent<HTMLDivElement>) => {
-    if (!isButtonElement(event.target)) return;
-    const { name, value } = event.target;
-    if (name && value) {
-      updateSetting({ type: ACTION_TYPE.BUTTON_CLICK, name, value });
-    }
-  };
-
   const handleRestoreDefaults = () => {
     updateSetting({ type: ACTION_TYPE.RESTORE_DEFAULTS });
   };
@@ -221,6 +251,7 @@ export default function SettingsPanel() {
   const [excludedProducts, setExcludedProducts] = useState<ExcludedProductsMap>({});
   const [priceHistoryCleared, setPriceHistoryCleared] = useState(false);
   const [cacheCleared, setCacheCleared] = useState(false);
+  const [fullResetConfirmOpen, setFullResetConfirmOpen] = useState(false);
   const [cacheStats, setCacheStats] = useState<{ records: number; bytes: number }>();
   const [priceStats, setPriceStats] = useState<{
     products: number;
@@ -318,6 +349,21 @@ export default function SettingsPanel() {
     }
   };
 
+  // Full reset: wipe every persisted store — all IndexedDB stores except `app_meta`
+  // (the migration version marker, kept so migrations don't re-run) and the entire
+  // chrome.storage.local area — then reload so all in-memory state rebuilds from the
+  // cleared storage and settings fall back to their defaults.
+  const handleFullReset = async () => {
+    setFullResetConfirmOpen(false);
+    try {
+      await Promise.all([clearAllCaches(), clearPriceHistory(), clearExports()]);
+      await cstorage.local.clear();
+      window.location.reload();
+    } catch (error) {
+      console.warn('Failed to perform full reset:', error);
+    }
+  };
+
   const excludedEntries = Object.entries(excludedProducts).sort(
     ([, a], [, b]) => b.excludedAt - a.excludedAt,
   );
@@ -350,6 +396,9 @@ export default function SettingsPanel() {
   // every keystroke. The debounced value holds minutes; the label is formatted each
   // render so it also follows a locale switch.
   const cacheTtlMinutes = Number(currentSettings.caching?.ttlMinutes ?? 0);
+  // When caching is off, its dependent options (empty-result handling, TTL) have no
+  // effect, so they're disabled to avoid configuring settings that do nothing.
+  const cachingEnabled = currentSettings.caching?.enabled ?? true;
   const [debouncedTtlMinutes, setDebouncedTtlMinutes] = useState(cacheTtlMinutes);
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedTtlMinutes(cacheTtlMinutes), 500);
@@ -499,6 +548,7 @@ export default function SettingsPanel() {
                   onChange={handleInputChange}
                   name="language"
                   size="small"
+                  style={{ lineHeight: 'inherit' }}
                   className={styles['settings-panel__input']}
                   disabled={isPending}
                 >
@@ -586,7 +636,7 @@ export default function SettingsPanel() {
                       })
                     }
                     name="doNotCacheEmptyResults"
-                    disabled={isPending}
+                    disabled={isPending || !cachingEnabled}
                   />
                 }
                 labelPlacement="start"
@@ -621,7 +671,7 @@ export default function SettingsPanel() {
                     variant="outlined"
                     size="small"
                     className={`${styles['settings-panel__input']} ${styles['settings-panel__number-input']}`}
-                    disabled={isPending}
+                    disabled={isPending || !cachingEnabled}
                     slotProps={{ htmlInput: { min: 0, step: 1 } }}
                   />
                 </FormControl>
@@ -777,7 +827,7 @@ export default function SettingsPanel() {
                 <ButtonGroup
                   variant="contained"
                   aria-label={i18n('settings_font_size')}
-                  onClick={handleButtonClick}
+                  onClick={handleNestedButtonClick('display')}
                   disabled={isPending}
                   // Default grouped-button min-width (40px) overflows the row; 35px fits.
                   sx={{ '& .MuiButtonGroup-grouped': { minWidth: 35 } }}
@@ -788,7 +838,7 @@ export default function SettingsPanel() {
                     size="small"
                     aria-label={i18n('settings_font_small')}
                     title={i18n('settings_font_small')}
-                    variant={currentSettings.fontSize === 'small' ? 'contained' : 'text'}
+                    variant={currentSettings.display?.fontSize === 'small' ? 'contained' : 'text'}
                     disabled={isPending}
                   >
                     <TextDecreaseIcon fontSize="small" sx={{ pointerEvents: 'none' }} />
@@ -799,7 +849,7 @@ export default function SettingsPanel() {
                     size="small"
                     aria-label={i18n('settings_font_medium')}
                     title={i18n('settings_font_medium')}
-                    variant={currentSettings.fontSize === 'medium' ? 'contained' : 'text'}
+                    variant={currentSettings.display?.fontSize === 'medium' ? 'contained' : 'text'}
                     disabled={isPending}
                   >
                     <TextFormatIcon fontSize="small" sx={{ pointerEvents: 'none' }} />
@@ -810,7 +860,7 @@ export default function SettingsPanel() {
                     size="small"
                     aria-label={i18n('settings_font_large')}
                     title={i18n('settings_font_large')}
-                    variant={currentSettings.fontSize === 'large' ? 'contained' : 'text'}
+                    variant={currentSettings.display?.fontSize === 'large' ? 'contained' : 'text'}
                     disabled={isPending}
                   >
                     <TextIncreaseIcon fontSize="small" sx={{ pointerEvents: 'none' }} />
@@ -828,8 +878,8 @@ export default function SettingsPanel() {
               <FormControlLabel
                 control={
                   <Switch
-                    checked={currentSettings.openInTab ?? false}
-                    onChange={handleSwitchChange}
+                    checked={currentSettings.display?.openInTab ?? false}
+                    onChange={handleNestedSwitchChange('display')}
                     name="openInTab"
                     disabled={isPending}
                   />
@@ -848,9 +898,9 @@ export default function SettingsPanel() {
               <FormControlLabel
                 control={
                   <Switch
-                    checked={currentSettings.autoHideEmptyColumns ?? true}
-                    onChange={handleSwitchChange}
-                    name="autoHideEmptyColumns"
+                    checked={currentSettings.results?.autoHideEmpty ?? true}
+                    onChange={handleNestedSwitchChange('results')}
+                    name="autoHideEmpty"
                     disabled={isPending}
                   />
                 }
@@ -870,8 +920,8 @@ export default function SettingsPanel() {
               <FormControlLabel
                 control={
                   <Switch
-                    checked={currentSettings.groupProductVariants ?? true}
-                    onChange={handleSwitchChange}
+                    checked={currentSettings.search?.groupProductVariants ?? true}
+                    onChange={handleNestedSwitchChange('search')}
                     name="groupProductVariants"
                     disabled={isPending}
                   />
@@ -1153,6 +1203,17 @@ export default function SettingsPanel() {
             <Button
               fullWidth
               variant="outlined"
+              color="error"
+              size="small"
+              startIcon={<DeleteIcon />}
+              onClick={() => setFullResetConfirmOpen(true)}
+              disabled={isPending}
+            >
+              {i18n('settings_full_reset')}
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
               size="small"
               startIcon={<BugReportIcon />}
               onClick={() => void showReportDialog()}
@@ -1162,6 +1223,27 @@ export default function SettingsPanel() {
           </Stack>
         </AccordionDetails>
       </Accordion>
+
+      <Dialog
+        open={fullResetConfirmOpen}
+        onClose={() => setFullResetConfirmOpen(false)}
+        aria-labelledby="full-reset-dialog-title"
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle id="full-reset-dialog-title">
+          {i18n('settings_full_reset_confirm_title')}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>{i18n('settings_full_reset_confirm_body')}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setFullResetConfirmOpen(false)}>{i18n('migration_cancel')}</Button>
+          <Button color="error" variant="contained" onClick={() => void handleFullReset()}>
+            {i18n('settings_full_reset_confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

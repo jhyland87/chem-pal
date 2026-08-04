@@ -288,9 +288,8 @@ describe('Common TypeGuards', () => {
           currencyRate: 1.0,
           currency: 'USD',
           location: 'US',
-          theme: 'light',
-          fontSize: 'medium',
-          hideColumns: ['description'],
+          display: { theme: 'light', fontSize: 'medium' },
+          results: { hidden: ['description'] },
           fuzzScorerOverride: 'ratio',
         }),
       ).toBe(true);
@@ -299,12 +298,12 @@ describe('Common TypeGuards', () => {
     it('rejects fields with the wrong type', () => {
       expect(isValidUserSettings({ showHelp: 'yes' })).toBe(false);
       expect(isValidUserSettings({ currencyRate: '1.0' })).toBe(false);
-      expect(isValidUserSettings({ hideColumns: 'not an array' })).toBe(false);
+      expect(isValidUserSettings({ results: { hidden: 'not an array' } })).toBe(false);
     });
 
     it('rejects enum values outside the whitelist', () => {
-      expect(isValidUserSettings({ theme: 'sepia' })).toBe(false);
-      expect(isValidUserSettings({ fontSize: 'enormous' })).toBe(false);
+      expect(isValidUserSettings({ display: { theme: 'sepia' } })).toBe(false);
+      expect(isValidUserSettings({ display: { fontSize: 'enormous' } })).toBe(false);
     });
 
     it('accepts the price-tracking settings, coercing a string point count', () => {

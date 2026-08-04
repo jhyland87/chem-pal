@@ -337,8 +337,8 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       // stamped onto the row as `priceTrendValue` by useResultsTable — TanStack
       // can't sort a column without an accessor, and the price history it derives
       // from isn't on the row. `sortUndefined: 'last'` parks trend-less rows at the
-      // bottom; `meta.skipEmptyHide` keeps the empty-column auto-hide from dropping
-      // this opt-in column when no row currently has a trend.
+      // bottom. The empty-column auto-hide drops this column when no result has a
+      // trend, but only once price history has loaded (see ResultsTable).
       accessorFn: (product) => product.priceTrendValue,
       // The cell still draws from the preloaded history map in table meta (the
       // accessor value above is only the number the column sorts on).
@@ -380,7 +380,6 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       minSize: 96,
       maxSize: 140,
       meta: {
-        skipEmptyHide: true,
         style: {
           textAlign: 'center',
         },
@@ -390,10 +389,10 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       id: 'priceChange',
       header: i18n('column_price_change'),
       // The numeric form of the price trend: the same signed delta and percent
-      // shown in the sparkline column's hover tooltip, but always visible. Sorts
-      // by the stamped `priceTrendValue` (signed percent change), matching the
-      // sparkline column; `sortUndefined: 'last'` and `meta.skipEmptyHide` behave
-      // the same way too.
+      // shown in the sparkline column's hover tooltip. Sorts by the stamped
+      // `priceTrendValue` (signed percent change), matching the sparkline column;
+      // `sortUndefined: 'last'` behaves the same way, and it likewise auto-hides
+      // when no result has a trend (once price history has loaded).
       accessorFn: (product) => product.priceTrendValue,
       cell: ({ row, table }: CellContext<Product, unknown>) => {
         const history = table.options.meta?.priceHistory;
@@ -417,7 +416,6 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       minSize: 120,
       maxSize: 200,
       meta: {
-        skipEmptyHide: true,
         style: {
           textAlign: 'center',
         },
@@ -607,6 +605,9 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       meta: {
         filterPlaceholder: i18n('filter_placeholder_purity'),
         filterVariant: 'text',
+        // Judge emptiness from the raw fields, not the accessor: its 'Ungraded'
+        // fallback is never empty and would otherwise pin this column visible.
+        dataKeys: ['grade', 'purity'],
         style: {
           textAlign: 'left',
         },

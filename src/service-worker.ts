@@ -140,7 +140,11 @@ async function readOpenInTab(): Promise<boolean> {
     const stored: Record<string, unknown> = await chrome.storage.local.get(CACHE.USER_SETTINGS);
     const settings = stored[CACHE.USER_SETTINGS];
     if (typeof settings !== 'object' || settings === null) return false;
-    return 'openInTab' in settings && Boolean(settings.openInTab);
+    if (!('display' in settings)) return false;
+    const { display } = settings;
+    return typeof display === 'object' && display !== null && 'openInTab' in display
+      ? Boolean(display.openInTab)
+      : false;
   } catch (error) {
     console.warn('Failed to read openInTab setting:', error);
     return false;

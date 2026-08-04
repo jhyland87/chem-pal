@@ -719,6 +719,23 @@
     "description": "Button label."
   },
 
+  "settings_full_reset": {
+    "message": "Restablecimiento total",
+    "description": "Button label; clears all stored data and reloads."
+  },
+  "settings_full_reset_confirm_title": {
+    "message": "¿Restablecimiento total?",
+    "description": "Confirmation dialog title."
+  },
+  "settings_full_reset_confirm_body": {
+    "message": "Esto borra permanentemente todos los datos de ChemPal (ajustes, historial de búsqueda, cachés, historial de precios y exportaciones guardadas) y luego recarga la extensión. Esta acción no se puede deshacer.",
+    "description": "Confirmation dialog body."
+  },
+  "settings_full_reset_confirm": {
+    "message": "Restablecer todo",
+    "description": "Confirm button in the full-reset dialog."
+  },
+
   "speed_dial_clear_results": {
     "message": "Borrar resultados",
     "description": "Speed-dial action."

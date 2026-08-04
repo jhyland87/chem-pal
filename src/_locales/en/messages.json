@@ -719,6 +719,11 @@
   },
   "settings_restore_defaults": { "message": "Restore Defaults", "description": "Button label." },
 
+  "settings_full_reset": { "message": "Full Reset", "description": "Button label; clears all stored data and reloads." },
+  "settings_full_reset_confirm_title": { "message": "Full reset?", "description": "Confirmation dialog title." },
+  "settings_full_reset_confirm_body": { "message": "This permanently clears all ChemPal data — settings, search history, caches, price history, and saved exports — then reloads the extension. This can't be undone.", "description": "Confirmation dialog body." },
+  "settings_full_reset_confirm": { "message": "Reset everything", "description": "Confirm button in the full-reset dialog." },
+
   "speed_dial_clear_results": { "message": "Clear Results", "description": "Speed-dial action." },
   "speed_dial_clear_cache": { "message": "Clear Cache", "description": "Speed-dial action." },
   "speed_dial_toggle_theme": { "message": "Toggle Theme", "description": "Speed-dial action." },

@@ -32,6 +32,8 @@ interface SearchFormProps {
   placeholder?: string;
   /** Whether to show the advanced-options button. */
   showAdvancedButton?: boolean;
+  /** When true, focuses the query input on mount (e.g. on entering the search panel). */
+  autoFocus?: boolean;
 }
 
 /**
@@ -53,6 +55,7 @@ export const SearchForm: FC<SearchFormProps> = ({
   onSearch,
   onDrawerToggle,
   placeholder = i18n('search_placeholder'),
+  autoFocus,
 }) => {
   const appContext = useAppContext();
   const { searchFilters, setSearchFilters } = appContext;
@@ -132,6 +135,7 @@ export const SearchForm: FC<SearchFormProps> = ({
           onChange={handleChange}
           placeholder={placeholder}
           ariaLabel={i18n('search_form_aria')}
+          autoFocus={autoFocus}
           onValidityChange={(blocked, message) =>
             setSearchError(blocked ? (message ?? i18n('search_invalid_query')) : undefined)
           }

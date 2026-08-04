@@ -35,10 +35,45 @@ declare global {
     resultLimit?: number;
   };
 
+  /** Search behavior config: variant grouping and restricted-product filtering. */
+  type SearchSettings = {
+    /** When `true` (the default), group a product's variants under one results row. */
+    groupProductVariants?: boolean;
+    /** When `true` (the default), hide products the user cannot buy (shipping or restricted). */
+    hideRestrictedProducts?: boolean;
+  };
+
+  /** Results-table display config: empty-column auto-hiding and default-hidden columns. */
+  type ResultsSettings = {
+    /** When `true` (the default), auto-hide columns with no data in the current result set. */
+    autoHideEmpty?: boolean;
+    /** Column ids hidden from the results table by default. */
+    hidden?: Array<string>;
+  };
+
+  /** UI presentation config: theme, font scale, and toolbar-icon behavior. */
+  type DisplaySettings = {
+    /** Selected UI theme. */
+    theme?: 'light' | 'dark';
+    /** UI font-size scale; drives the root `html` font-size. */
+    fontSize?: 'small' | 'medium' | 'large';
+    /** When `true`, the toolbar icon opens the full-tab view instead of the popup. */
+    openInTab?: boolean;
+  };
+
+  /** The nested settings groups a `NESTED_*` reducer action can target. */
+  type SettingGroup = 'search' | 'results' | 'display';
+
   type SettingAction =
     | { type: typeof ACTION_TYPE.SWITCH_CHANGE; name: string; checked: boolean }
+    | {
+        type: typeof ACTION_TYPE.NESTED_SWITCH_CHANGE;
+        group: SettingGroup;
+        name: string;
+        checked: boolean;
+      }
+    | { type: typeof ACTION_TYPE.NESTED_BUTTON_CLICK; group: SettingGroup; name: string; value: string }
     | { type: typeof ACTION_TYPE.INPUT_CHANGE; name: string; value: string }
-    | { type: typeof ACTION_TYPE.BUTTON_CLICK; name: string; value: string }
     | { type: typeof ACTION_TYPE.SUPPLIER_TOGGLE; value: Array<SupplierClassName> }
     | { type: typeof ACTION_TYPE.PRICE_TRACKING_CHANGE; value: PriceTracking }
     | { type: typeof ACTION_TYPE.CACHE_CHANGE; value: CacheSettings }
@@ -153,39 +188,44 @@ declare global {
     language?: string;
 
     /**
-     * UI font size scale. Controls the root `html` font-size so every `rem`-based
-     * style (MUI defaults and styled components) scales proportionally.
-     * @example "medium"
+     * UI presentation, grouping the theme, font-size scale, and toolbar-icon
+     * behavior. `theme` selects light/dark; `fontSize` controls the root `html`
+     * font-size so every `rem`-based style scales proportionally; `openInTab` (default
+     * `false`) makes the toolbar icon open the full-tab view instead of the popup —
+     * the service worker enforces it by clearing the action popup
+     * (`chrome.action.setPopup`) and handling `chrome.action.onClicked`.
+     * @example
+     * ```ts
+     * const display = { theme: 'light', fontSize: 'medium', openInTab: false };
+     * ```
      */
-    fontSize?: 'small' | 'medium' | 'large';
+    display?: DisplaySettings;
 
     /**
-     * When true, clicking the toolbar icon opens ChemPal in a full browser tab
-     * (`index.html?view=tab`) instead of the popup. The service worker enforces
-     * this by clearing the action popup (`chrome.action.setPopup`) and handling
-     * `chrome.action.onClicked` to open/focus the tab. Defaults to false (popup).
-     * @example true
+     * Search behavior, grouping variant handling and restricted-product filtering.
+     * `groupProductVariants` (default `true`) groups a product's variants under its
+     * single results-table row (off gives each variant its own row so sorting and
+     * filtering apply across all variants); `hideRestrictedProducts` (default `true`)
+     * hides products the user cannot buy — not shipped to their `location`, or
+     * restricted to business/government/professional buyers.
+     * @example
+     * ```ts
+     * const search = { groupProductVariants: true, hideRestrictedProducts: true };
+     * ```
      */
-    openInTab?: boolean;
+    search?: SearchSettings;
 
     /**
-     * When true (the default), the results table auto-hides hideable columns that
-     * have no data in the current result set (across all rows and variants), and
-     * restores them once a later search populates them. Set to false to keep every
-     * column visible regardless of whether it has data.
-     * @example true
+     * Results-table display config. `autoHideEmpty` (default `true`) auto-hides
+     * hideable columns with no data in the current result set (across all rows and
+     * variants) and restores them once a later search populates them; `hidden` lists
+     * the column ids hidden by default.
+     * @example
+     * ```ts
+     * const results = { autoHideEmpty: true, hidden: ['cas', 'formula'] };
+     * ```
      */
-    autoHideEmptyColumns?: boolean;
-
-    /**
-     * When true (the default), a product's variants are grouped under its single
-     * results-table row and surfaced in the expanded detail panel. Set to false to
-     * give each variant its own top-level row, so the table's column sorting and
-     * filtering (price, quantity, unit price) apply across every variant rather
-     * than only the primary one.
-     * @example true
-     */
-    groupProductVariants?: boolean;
+    results?: ResultsSettings;
 
     /**
      * When true (the default), ChemPal sends anonymous usage and error statistics
@@ -207,28 +247,6 @@ declare global {
      * ```
      */
     suppliers?: SupplierSettings;
-
-    /**
-     * When true (the default), searches hide products the user cannot buy — either
-     * because the product is not shipped to the user's `location`, or because it is
-     * restricted to business/government/professional buyers. Toggled via the checkbox
-     * under Suppliers in the search drawer. Restrictions are parsed per-product from
-     * the supplier's product text.
-     * @example true
-     */
-    hideRestrictedProducts?: boolean;
-
-    /**
-     * Selected UI theme identifier
-     * @example "light"
-     */
-    theme?: 'light' | 'dark';
-
-    /**
-     * List of column identifiers that should be hidden from view
-     * @example ["price", "quantity"]
-     */
-    hideColumns?: Array<string>;
 
     /**
      * Minimum price (in the user's selected currency) to include in results.

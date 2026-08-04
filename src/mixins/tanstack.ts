@@ -190,11 +190,11 @@ function hasValue(value: unknown): boolean {
  * Returns the ids of hideable columns that contain no data in ANY row — across
  * variant sub-rows and rows filtered out of the current view, not just the
  * visible page — so callers can auto-hide columns irrelevant to a result set.
- * Accessor columns (with `accessorKey` or `accessorFn`) are read via each row's
- * value; display columns without an accessor are read from the product fields
- * named in their `meta.dataKeys`. Columns that can't be hidden, and display
- * columns without `meta.dataKeys` (whose emptiness can't be determined), are
- * never reported.
+ * A column with `meta.dataKeys` is judged from those raw product fields (this
+ * takes precedence, so an accessor's constant fallback can't mask an empty
+ * column); otherwise accessor columns are read via each row's value. Columns that
+ * can't be hidden, and non-accessor columns without `meta.dataKeys` (whose
+ * emptiness can't be determined), are never reported.
  * @param table - The table instance to inspect
  * @returns The ids of hideable columns that have no data in any row
  * @example
@@ -221,10 +221,15 @@ export function getEmptyHideableColumnIds<TData>(table: Table<TData>): string[] 
     // A display column with no accessor and no declared dataKeys can't be judged.
     if (!isAccessorColumn && dataKeys.length === 0) continue;
 
+    // `dataKeys`, when present, take precedence over the accessor: they read the
+    // raw product fields directly, so an accessor's constant fallback (e.g. the
+    // purity column's "Ungraded") can't mask an otherwise-empty column.
     const hasData = rows.some((row) => {
-      if (isAccessorColumn) return hasValue(row.getValue(column.id));
-      const original = row.original as Record<string, unknown>;
-      return dataKeys.some((key) => hasValue(original[key]));
+      if (dataKeys.length > 0) {
+        const original = row.original as Record<string, unknown>;
+        return dataKeys.some((key) => hasValue(original[key]));
+      }
+      return hasValue(row.getValue(column.id));
     });
 
     if (!hasData) emptyColumnIds.push(column.id);

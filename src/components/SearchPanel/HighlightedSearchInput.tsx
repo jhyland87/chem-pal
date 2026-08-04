@@ -22,6 +22,8 @@ interface HighlightedSearchInputProps {
   onKeyDown?: (event: KeyboardEvent<HTMLInputElement>) => void;
   /** Notified when validity changes: `blocked` is true (with a `message`) for invalid queries. */
   onValidityChange?: (blocked: boolean, message?: string) => void;
+  /** When true, focuses the input on mount (e.g. on entering the search panel). */
+  autoFocus?: boolean;
 }
 
 /**
@@ -52,9 +54,16 @@ export default function HighlightedSearchInput({
   style,
   onKeyDown,
   onValidityChange,
+  autoFocus,
 }: HighlightedSearchInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
+
+  // Focus the input on mount when requested, so entering the search panel puts the
+  // caret straight in the query box (the panel remounts on each entry).
+  useEffect(() => {
+    if (autoFocus) inputRef.current?.focus();
+  }, [autoFocus]);
 
   const highlight = useMemo(() => highlightSearchQuery(value), [value]);
 

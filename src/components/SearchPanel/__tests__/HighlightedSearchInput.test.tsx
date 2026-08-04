@@ -14,6 +14,16 @@ describe('HighlightedSearchInput', () => {
     expect(onChange).toHaveBeenCalledWith('acetonex');
   });
 
+  it('focuses the input on mount when autoFocus is set', () => {
+    render(<HighlightedSearchInput value="" onChange={() => {}} ariaLabel="Search" autoFocus />);
+    expect(screen.getByRole('textbox', { name: 'Search' })).toHaveFocus();
+  });
+
+  it('does not focus the input when autoFocus is not set', () => {
+    render(<HighlightedSearchInput value="" onChange={() => {}} ariaLabel="Search" />);
+    expect(screen.getByRole('textbox', { name: 'Search' })).not.toHaveFocus();
+  });
+
   it('reports a plain query as valid (not blocked)', () => {
     const onValidityChange = vi.fn();
     render(
