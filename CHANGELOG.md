@@ -16,6 +16,7 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 ### Added
 
 - New supplier: **LabPro Services**.
+- New supplier: **HyperFuels**.
 
 ## [1.7.0] - 2026-08-01
 
