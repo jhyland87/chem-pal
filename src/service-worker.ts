@@ -14,6 +14,7 @@
  * @source
  */
 
+import { defaultSettings } from '@/../config.json';
 import { CACHE, MESSAGE_TYPE } from '@/constants/common';
 import { installErrorCapture } from '@/helpers/errorBuffer';
 
@@ -127,11 +128,17 @@ chrome.contextMenus.onClicked.addListener(async (info) => {
 // Settings live in chrome.storage.local under CACHE.USER_SETTINGS. Compression is
 // disabled (config.json storage.useStorageCompression=false), so the value is the plain
 // object; an LZ envelope ({__lz}) would be unreadable here, so that case falls
-// back to the default popup behavior.
+// back to the shipped default. The fallback must match the config.json default the
+// UI hydrates with — otherwise a fresh profile (no persisted user_settings) shows the
+// toggle on while the action still opens a popup.
+
+/** Shipped default for the open-in-tab toolbar behavior (config.json defaultSettings). */
+const DEFAULT_OPEN_IN_TAB = Boolean(defaultSettings.display?.openInTab);
 
 /**
- * Reads the `openInTab` user setting from storage, defaulting to `false` (popup)
- * when it's unset, unreadable, or an unexpected shape.
+ * Reads the `openInTab` user setting from storage, falling back to the shipped
+ * config.json default ({@link DEFAULT_OPEN_IN_TAB}) when it's unset, unreadable, or
+ * an unexpected shape. An explicitly persisted value always wins.
  * @returns `true` when the toolbar icon should open the full-tab view.
  * @source
  */
@@ -139,15 +146,15 @@ async function readOpenInTab(): Promise<boolean> {
   try {
     const stored: Record<string, unknown> = await chrome.storage.local.get(CACHE.USER_SETTINGS);
     const settings = stored[CACHE.USER_SETTINGS];
-    if (typeof settings !== 'object' || settings === null) return false;
-    if (!('display' in settings)) return false;
+    if (typeof settings !== 'object' || settings === null) return DEFAULT_OPEN_IN_TAB;
+    if (!('display' in settings)) return DEFAULT_OPEN_IN_TAB;
     const { display } = settings;
     return typeof display === 'object' && display !== null && 'openInTab' in display
       ? Boolean(display.openInTab)
-      : false;
+      : DEFAULT_OPEN_IN_TAB;
   } catch (error) {
     console.warn('Failed to read openInTab setting:', error);
-    return false;
+    return DEFAULT_OPEN_IN_TAB;
   }
 }
 

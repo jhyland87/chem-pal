@@ -1,4 +1,12 @@
+import { defaultSettings } from '@/../config.json';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+/**
+ * Expected action popup when no explicit `openInTab` is persisted. The worker
+ * falls back to the shipped config.json default, so this must track it: `''`
+ * (cleared → opens a tab) when the default is on, `'index.html'` otherwise.
+ */
+const DEFAULT_POPUP = defaultSettings.display?.openInTab ? '' : 'index.html';
 
 /**
  * Unit tests for the "Search selection in ChemPal" context menu in the
@@ -225,20 +233,38 @@ describe('service worker toolbar-icon behavior', () => {
     expect(mock.setPopup).toHaveBeenCalledWith({ popup: '' });
   });
 
-  it('keeps the default popup when openInTab is off or absent', async () => {
-    mock.localGet.mockResolvedValueOnce({ user_settings: { display: { fontSize: 'medium' } } });
+  it('keeps the popup when openInTab is explicitly off', async () => {
+    mock.localGet.mockResolvedValueOnce({ user_settings: { display: { openInTab: false } } });
 
     for (const listener of mock.onStartup) await listener();
 
     expect(mock.setPopup).toHaveBeenCalledWith({ popup: 'index.html' });
   });
 
-  it('falls back to the popup when settings are an unreadable LZ envelope', async () => {
+  it('falls back to the config default when settings are absent', async () => {
+    mock.localGet.mockResolvedValueOnce({});
+
+    for (const listener of mock.onInstalled) await listener({ reason: 'install' });
+
+    // A never-configured profile must honor the shipped default the UI hydrates with,
+    // not silently keep the popup.
+    expect(mock.setPopup).toHaveBeenCalledWith({ popup: DEFAULT_POPUP });
+  });
+
+  it('falls back to the config default when display has no openInTab key', async () => {
+    mock.localGet.mockResolvedValueOnce({ user_settings: { display: { fontSize: 'medium' } } });
+
+    for (const listener of mock.onStartup) await listener();
+
+    expect(mock.setPopup).toHaveBeenCalledWith({ popup: DEFAULT_POPUP });
+  });
+
+  it('falls back to the config default when settings are an unreadable LZ envelope', async () => {
     mock.localGet.mockResolvedValueOnce({ user_settings: { __lz: 1, d: 'compressed' } });
 
     for (const listener of mock.onInstalled) await listener({ reason: 'install' });
 
-    expect(mock.setPopup).toHaveBeenCalledWith({ popup: 'index.html' });
+    expect(mock.setPopup).toHaveBeenCalledWith({ popup: DEFAULT_POPUP });
   });
 
   it('re-applies the popup state when user settings change', async () => {

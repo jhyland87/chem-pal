@@ -8,6 +8,8 @@
  * The script uses the fs library to read and write the files.
  * The script uses the path library to resolve the paths to the files.
  */
+import { createHash } from "node:crypto";
+import { fileURLToPath } from "node:url";
 import fs from "fs/promises";
 //import p from "../package.json" with { type: "json" };
 import { _basename, _c, _r, _readFile, _realpath, _y, getPluginVersion } from "./helpers.js";
@@ -118,6 +120,68 @@ async function createPngFile(svgFile, size) {
   }
 }
 
+/**
+ * The exact set of files the generation loop emits, derived from the same config
+ * so the expected-output list can never drift from what is actually written.
+ * @param {Record<string, {fullSize?: boolean, iconSizes?: number[]}>} config - The
+ *   `svgFilesToConvert` map.
+ * @returns {string[]} Repo-relative paths of every SVG and PNG the loop produces.
+ */
+function expectedOutputs(config) {
+  const outputs = [];
+  for (const [svgFile, data] of Object.entries(config)) {
+    outputs.push(svgFile);
+    if (data.fullSize !== false) {
+      outputs.push(svgFile.replace(".svg", ".png"));
+    }
+    for (const size of data.iconSizes ?? []) {
+      outputs.push(svgFile.replace(".svg", `-${size}.png`));
+    }
+  }
+  return outputs;
+}
+
+/**
+ * Reports whether every file in {@link outputFiles} already exists on disk, so a
+ * cache hit with a missing (e.g. manually deleted) output still regenerates.
+ * @returns {Promise<boolean>} `true` only if all expected outputs are present.
+ */
+async function allOutputsExist() {
+  const checks = await Promise.all(
+    outputFiles.map((file) =>
+      fs
+        .stat(_realpath(file))
+        .then(() => true)
+        .catch(() => false),
+    ),
+  );
+  return checks.every(Boolean);
+}
+
+// Idempotency guard. The logo set is a pure function of the template, the supplier
+// list, the plugin version, and this generator itself. The script is invoked on every
+// build and once per E2E test file (each rebuilds), so regenerating unconditionally
+// re-renders the same PNGs every time. Fingerprint the inputs and skip when nothing
+// that affects the output changed. `--force` / FORCE_LOGO_GEN=1 bypasses the cache.
+const outputFiles = expectedOutputs(svgFilesToConvert);
+const forceRegen = process.argv.includes("--force") || process.env.FORCE_LOGO_GEN === "1";
+const stampFile = _realpath("node_modules/.cache/chempal/logo-fingerprint");
+const fingerprint = createHash("sha256")
+  .update(templateRaw)
+  .update(JSON.stringify(supplierList))
+  .update(getPluginVersion())
+  .update(JSON.stringify(svgFilesToConvert))
+  .update(await _readFile(fileURLToPath(import.meta.url)))
+  .digest("hex");
+
+if (!forceRegen) {
+  const cachedFingerprint = await _readFile(stampFile).catch(() => undefined);
+  if (cachedFingerprint === fingerprint && (await allOutputsExist())) {
+    console.log(`  ${_c("Logo files are up to date — skipping generation")} (--force to override)`);
+    process.exit(0);
+  }
+}
+
 for (const [svgFile, svgFileData] of Object.entries(svgFilesToConvert)) {
   console.log("");
   console.log(`Generating ${_c(svgFile)}...`);
@@ -132,3 +196,7 @@ for (const [svgFile, svgFileData] of Object.entries(svgFilesToConvert)) {
     }
   }
 }
+
+// Record the fingerprint so the next invocation with identical inputs can no-op.
+await fs.mkdir(_realpath("node_modules/.cache/chempal"), { recursive: true });
+await fs.writeFile(stampFile, fingerprint);
