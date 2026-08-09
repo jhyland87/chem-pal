@@ -43,8 +43,11 @@ function makeChromeMock() {
   const onInstalled: OnInstalled[] = [];
   const onStartup: Array<() => void> = [];
   const onClicked: OnClicked[] = [];
+  const onInputEntered: Array<(text: string) => unknown> = [];
   const actionClicked: Array<() => unknown> = [];
   const storageChanged: Array<(changes: Record<string, unknown>, areaName: string) => void> = [];
+
+  const setDefaultSuggestion = vi.fn();
 
   const removeAll = vi.fn((cb?: () => void) => cb?.());
   const create = vi.fn();
@@ -74,6 +77,10 @@ function makeChromeMock() {
       create,
       onClicked: { addListener: (fn: OnClicked) => onClicked.push(fn) },
     },
+    omnibox: {
+      setDefaultSuggestion,
+      onInputEntered: { addListener: (fn: (text: string) => unknown) => onInputEntered.push(fn) },
+    },
     tabs: { query: tabsQuery, update: tabsUpdate, create: tabsCreate },
     windows: { update: windowsUpdate },
     storage: {
@@ -92,8 +99,10 @@ function makeChromeMock() {
     onInstalled,
     onStartup,
     onClicked,
+    onInputEntered,
     actionClicked,
     storageChanged,
+    setDefaultSuggestion,
     removeAll,
     create,
     sessionSet,
@@ -205,6 +214,44 @@ describe('service worker context-menu search', () => {
   it('ignores blank selections', async () => {
     const [onClicked] = mock.onClicked;
     await onClicked({ menuItemId: MENU_ID, selectionText: '   ' });
+
+    expect(mock.sessionSet).not.toHaveBeenCalled();
+    expect(mock.tabsCreate).not.toHaveBeenCalled();
+  });
+});
+
+describe('service worker omnibox search', () => {
+  let mock: ReturnType<typeof makeChromeMock>;
+
+  beforeEach(async () => {
+    vi.resetModules();
+    mock = makeChromeMock();
+    vi.stubGlobal('chrome', mock.chromeMock);
+    await loadServiceWorker();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('registers a default omnibox suggestion', () => {
+    expect(mock.setDefaultSuggestion).toHaveBeenCalledWith(
+      expect.objectContaining({ description: expect.any(String) }),
+    );
+  });
+
+  it('seeds the pending search and opens a tab on omnibox entry', async () => {
+    const [onInputEntered] = mock.onInputEntered;
+    await onInputEntered('  acetone  ');
+
+    // Same seed-and-open path as the context menu; input is trimmed.
+    expect(mock.sessionSet).toHaveBeenCalledWith({ query: 'acetone', is_new_search: true });
+    expect(mock.tabsCreate).toHaveBeenCalledWith({ url: TAB_VIEW_URL, active: true });
+  });
+
+  it('ignores a blank omnibox entry', async () => {
+    const [onInputEntered] = mock.onInputEntered;
+    await onInputEntered('   ');
 
     expect(mock.sessionSet).not.toHaveBeenCalled();
     expect(mock.tabsCreate).not.toHaveBeenCalled();

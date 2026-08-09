@@ -84,6 +84,28 @@ async function openOrFocusExtensionTab(url: string): Promise<void> {
 }
 
 /**
+ * Seeds the pending-search inbox the app already consumes, then opens or focuses
+ * the full-tab view. Shared entry point for the "Search selection" context menu
+ * and the omnibox keyword. Raw (uncompressed) values are fine: the app's storage
+ * layer (utils/storage.ts decodeValue) passes non-LZ-envelope values through
+ * unchanged. No-ops when the trimmed query is empty.
+ * @param rawQuery - The user-entered text to search for; trimmed internally.
+ * @returns A promise that resolves once the search is seeded and the view opened.
+ * @source
+ */
+async function seedSearchAndOpen(rawQuery: string): Promise<void> {
+  const query = rawQuery.trim();
+  if (!query) return;
+
+  await chrome.storage.session.set({
+    [CACHE.QUERY]: query,
+    [CACHE.SEARCH_IS_NEW_SEARCH]: true,
+  });
+
+  await openOrFocusExtensionTab(chrome.runtime.getURL(TAB_VIEW_PATH));
+}
+
+/**
  * (Re)creates the "Search selection" context-menu item. `removeAll` runs first
  * so install/update/startup never double-adds it. The MV3 worker is ephemeral,
  * so this is invoked on both `onInstalled` and `onStartup`.
@@ -104,20 +126,17 @@ chrome.runtime.onStartup.addListener(createContextMenu);
 
 chrome.contextMenus.onClicked.addListener(async (info) => {
   if (info.menuItemId !== CONTEXT_MENU_ID) return;
+  await seedSearchAndOpen(info.selectionText ?? '');
+});
 
-  const query = (info.selectionText ?? '').trim();
-  if (!query) return;
+// Address-bar keyword search: typing "chem <query>" (the manifest `omnibox`
+// keyword) runs a ChemPal search directly, without opening the popup first.
+chrome.omnibox.setDefaultSuggestion({
+  description: chrome.i18n.getMessage('omnibox_default_suggestion'),
+});
 
-  // Seed the pending-search inbox the app already consumes. Raw (uncompressed)
-  // values are fine: the app's storage layer (utils/storage.ts decodeValue) passes
-  // non-LZ-envelope values through unchanged.
-  await chrome.storage.session.set({
-    [CACHE.QUERY]: query,
-    [CACHE.SEARCH_IS_NEW_SEARCH]: true,
-  });
-
-  // Focus the existing full-tab view if one is open, otherwise open a new one.
-  await openOrFocusExtensionTab(chrome.runtime.getURL(TAB_VIEW_PATH));
+chrome.omnibox.onInputEntered.addListener(async (text) => {
+  await seedSearchAndOpen(text);
 });
 
 // Toolbar-icon behavior. The `openInTab` user setting decides whether clicking

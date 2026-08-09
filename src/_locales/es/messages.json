@@ -827,6 +827,10 @@
     "message": "Buscar \"%s\" en ChemPal",
     "description": "Right-click context menu label; %s is the selected text (substituted by Chrome)."
   },
+  "omnibox_default_suggestion": {
+    "message": "Buscar en proveedores de productos químicos con ChemPal",
+    "description": "Address-bar (omnibox) hint shown after the user types the ChemPal keyword."
+  },
 
   "copy_info_price": {
     "message": "Precio: $price$",

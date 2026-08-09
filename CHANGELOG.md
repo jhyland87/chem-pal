@@ -13,6 +13,15 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+### Added
+
+- **Address-bar search:** type `chem` then Space (or Tab) in the browser's address bar,
+  followed by your search, to look up suppliers without opening ChemPal first.
+- **Keyboard shortcut:** press `Ctrl+Shift+Y` (`⌘+Shift+Y` on Mac) to open ChemPal. You can
+  change the keys from your browser's extension-shortcuts settings.
+- Removing ChemPal now opens a short, optional feedback form so you can tell us what could
+  be better — it helps shape what gets built next.
+
 ## [1.7.1] - 2026-08-04
 
 ### Added

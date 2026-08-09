@@ -17,6 +17,17 @@
     "page": "options.html",
     "open_in_tab": false
   },
+  "omnibox": {
+    "keyword": "chem"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y"
+      }
+    }
+  },
   "default_locale": "en",
   "permissions": ["tabs", "storage", "bookmarks", "cookies", "contextMenus"],
   "background": {
