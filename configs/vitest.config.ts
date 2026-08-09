@@ -32,6 +32,8 @@ export default defineConfig({
       '**/dist/**',
       '**/.{idea,git,cache,output,temp}/**',
       'src/suppliers/__fixtures__/**',
+      // Parked/disabled suppliers aren't wired into the barrel; don't run or count them.
+      'src/suppliers/disabled/**',
       'src/suppliers/__tests__/supplierMacklin.test.ts',
       //"src/suppliers/__tests__/supplierLaboratoriumDiscounter.test.ts",
       // disabling all component testing for now
@@ -54,9 +56,15 @@ export default defineConfig({
         '**/node_modules/**',
         '**/*.test.{js,ts,jsx,tsx}',
         '**/*.spec.{js,ts,jsx,tsx}',
+        // Parked/disabled suppliers aren't shipped; keep them out of coverage.
+        'src/suppliers/disabled/**',
+        // Bootstrap entry points — pure ReactDOM mount, no logic to cover.
+        'src/main.tsx',
+        'src/options.tsx',
         'src/utils/typeGuards/index.ts',
         'src/components/index.ts',
         'src/components/SearchPanel/index.ts',
+        'src/components/SearchPanel/hooks/index.ts',
         'src/icons/index.ts',
         'src/components/SearchPanel/Inputs/index.ts',
       ],
