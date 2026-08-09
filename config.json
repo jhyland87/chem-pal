@@ -56,7 +56,8 @@
     "defaultLocale": "en"
   },
   "extension": {
-    "chromeWebstoreId": "facakdliomkjhegdhjimfjlcggfnpfnd"
+    "chromeWebstoreId": "facakdliomkjhegdhjimfjlcggfnpfnd",
+    "feedbackFormUrl": "https://docs.google.com/forms/d/e/1FAIpQLSdKZOu_dnBEwl1RxqceCG-hnVJwZ1g3ARkFnqQy7yC5PsgCPw/viewform"
   },
   "analytics": {
     "measurementId": "G-QC2T73LJ8T"

@@ -14,7 +14,7 @@
  * @source
  */
 
-import { defaultSettings } from '@/../config.json';
+import { defaultSettings, extension } from '@/../config.json';
 import { CACHE, MESSAGE_TYPE } from '@/constants/common';
 import { installErrorCapture } from '@/helpers/errorBuffer';
 
@@ -173,6 +173,26 @@ async function applyActionBehavior(): Promise<void> {
 // re-apply on startup as well as install/update.
 chrome.runtime.onInstalled.addListener(applyActionBehavior);
 chrome.runtime.onStartup.addListener(applyActionBehavior);
+
+/** Public "ChemPal Feedback" Google Form opened when the extension is uninstalled. */
+const FEEDBACK_FORM_URL = extension.feedbackFormUrl;
+
+/**
+ * Points the browser's uninstall URL at the feedback form, so removing ChemPal
+ * opens the form in a new tab. Re-applied on install and startup because the MV3
+ * worker is ephemeral and the setting doesn't survive a browser restart.
+ * Optional-chained because it's guarded for engines without the API (Firefox
+ * does support it). No user data is ever placed in the URL.
+ * @returns Nothing.
+ * @source
+ */
+function applyUninstallUrl(): void {
+  if (!FEEDBACK_FORM_URL) return;
+  void chrome.runtime.setUninstallURL?.(FEEDBACK_FORM_URL);
+}
+
+chrome.runtime.onInstalled.addListener(applyUninstallUrl);
+chrome.runtime.onStartup.addListener(applyUninstallUrl);
 
 // Re-apply whenever the user toggles the setting in the settings panel.
 chrome.storage.onChanged.addListener((changes, areaName) => {
