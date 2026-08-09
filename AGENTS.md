@@ -39,9 +39,13 @@ per clone:
 git config blame.ignoreRevsFile .git-blame-ignore-revs
 ```
 
-`pnpm run generate` rewrites `public/static/images/logo/*` on every build. Expect that
-churn in `git status` after a build — it is not a change you made, and it is not something
-to "fix".
+`pnpm run generate` regenerates `public/static/images/logo/*` from the logo template,
+supplier list, and plugin version. It fingerprints those inputs and **skips** when nothing
+changed (stamp in `node_modules/.cache/chempal/`), so repeated builds — and the per-file
+rebuilds in the E2E suite — no-op instead of re-rendering. Force a rebuild with
+`FORCE_LOGO_GEN=1 pnpm run generate` (or `pnpm run generate -- --force`). The output is
+deterministic, so a genuine regeneration normally produces no `git` churn; if it does, a
+logo input actually changed and the diff is real.
 
 ## Layout
 
