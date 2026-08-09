@@ -808,6 +808,10 @@
     "message": "ChemPal में \"%s\" खोजें",
     "description": "Right-click context menu label; %s is the selected text (substituted by Chrome)."
   },
+  "omnibox_default_suggestion": {
+    "message": "ChemPal से रासायनिक आपूर्तिकर्ताओं में खोजें",
+    "description": "Address-bar (omnibox) hint shown after the user types the ChemPal keyword."
+  },
   "copy_info_price": {
     "message": "मूल्य: $price$",
     "placeholders": { "price": { "content": "$1" } }

@@ -824,6 +824,10 @@
     "message": "Hae ”%s” Chem Palissa",
     "description": "Right-click context menu label; %s is the selected text (substituted by Chrome)."
   },
+  "omnibox_default_suggestion": {
+    "message": "Hae kemikaalitoimittajista ChemPalilla",
+    "description": "Address-bar (omnibox) hint shown after the user types the ChemPal keyword."
+  },
 
   "copy_info_price": {
     "message": "Hinta: $price$",
