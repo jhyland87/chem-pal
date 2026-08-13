@@ -13,6 +13,8 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-08-13
+
 ### Added
 
 - **Address-bar search:** type `chem` then Space (or Tab) in the browser's address bar,
