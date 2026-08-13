@@ -24,6 +24,8 @@ see results without typing anything.
 - It works exactly like typing the same text into the search bar, so all the
   usual [search types](Search-Types) apply — highlight a CAS number and it searches
   by CAS, highlight a name and it searches by name.
+- Another no-open shortcut: type `chem` in your browser's **address bar** to search
+  from there. See [Searching → Search from the address bar](Searching#search-from-the-address-bar).
 
 ---
 

@@ -29,6 +29,8 @@ searches suppliers that **sell to individuals and ship to residences**.
   the supplier provides them.
 - 🖱️ **Right-click search** — highlight any text on any web page and search it in
   ChemPal.
+- ⌨️ **Address-bar search** — type `chem` in your browser's address bar to search
+  without opening ChemPal first.
 - 🔒 **Private by design** — no account, no sign-up, and no data collection by the
   developer. See [Privacy](Privacy).
 
@@ -52,6 +54,7 @@ searches suppliers that **sell to individuals and ship to residences**.
 | [Speed Dial Menu](Speed-Dial-Menu) | The corner button for clearing results/cache and switching themes |
 | [Keyboard Shortcuts](Keyboard-Shortcuts) | Every keyboard shortcut, and how to search them in-app |
 | [Privacy](Privacy) | What stays on your device |
+| [Terms of Service](Terms-of-Service) | The terms you agree to by using ChemPal |
 | [FAQ & Troubleshooting](FAQ-and-Troubleshooting) | Common questions and fixes |
 | [Contributing & Development](Contributing-and-Development) | For developers |
 

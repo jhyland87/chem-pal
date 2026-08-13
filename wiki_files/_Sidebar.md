@@ -29,5 +29,6 @@
 
 **Help**
 - [Privacy](Privacy)
+- [Terms of Service](Terms-of-Service)
 - [FAQ & Troubleshooting](FAQ-and-Troubleshooting)
 - [Contributing & Development](Contributing-and-Development)

@@ -10,6 +10,20 @@ shortcut by name, category, or keys.
 - Shortcuts don't fire while you're typing in a text field.
 - Some shortcuts flash a brief confirmation in the status bar at the bottom.
 
+## Opening ChemPal (browser shortcut)
+
+One shortcut works **anywhere in your browser**, even when ChemPal isn't open:
+
+| Shortcut | What it does |
+|----------|--------------|
+| `Ctrl`+`Shift`+`Y` (`⌘`+`Shift`+`Y` on macOS) | Open ChemPal |
+
+Unlike the in-app shortcuts below — which only fire while ChemPal is focused — this
+is a **browser-level command**. Because only one extension can hold a given
+combination, it may be unassigned if it clashes with something else. You can view or
+change it at **`chrome://extensions/shortcuts`** in Chrome (or your browser's
+**Manage Extension Shortcuts** page).
+
 ## General
 
 | Shortcut | What it does |

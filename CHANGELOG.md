@@ -21,6 +21,9 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
   change the keys from your browser's extension-shortcuts settings.
 - Removing ChemPal now opens a short, optional feedback form so you can tell us what could
   be better — it helps shape what gets built next.
+- A **Terms of Service** is now published alongside the Privacy Policy, covering how ChemPal
+  works as a comparison tool and your responsibility for buying and handling chemicals safely
+  and legally.
 
 ## [1.7.1] - 2026-08-04
 
