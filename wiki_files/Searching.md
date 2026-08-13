@@ -3,20 +3,22 @@ looking for, press search, and results stream in from every enabled supplier.
 
 ![Search panel](images/search-panel-home.png)
 
-## The home search bar
+## The home search page
 
 When you open ChemPal you land on the search home. In the middle is a single
 search bar with the placeholder **"Search for products…"**.
+
+![The ChemPal home search page with the search bar and its surrounding controls labelled](images/search-panel-controls.png)
 
 Around it you'll find:
 
 | Control | What it does |
 |---------|--------------|
-| 🔍 **Magnifying glass** (in the bar) | Runs the search. It stays disabled until you've typed a valid query. |
-| 🧪 **Flask / beaker** (in the bar) | Opens **advanced options** — the side panel where you can filter by supplier, country, shipping, price, and more. See [Search Filters](Search-Filters). |
-| ⚙️ **Gear** (top-right) | Opens [Settings](Settings). |
+| **Magnifying glass** (in the bar) | Runs the search. It stays disabled until you've typed a valid query. |
+| **Flask / beaker** (in the bar) | Opens **advanced options** — the side panel where you can filter by supplier, country, shipping, price, and more. See [Search Filters](Search-Filters). |
+| **Gear Icon** (top-right) | Opens [Settings](Settings). |
 | **➜ badge** (top-right) | Appears when you have results from a previous search — click it to jump back to them. The number is the result count. |
-| **⧉ Open-in-tab** (top-right) | Pops ChemPal out into a full browser tab. |
+| **Open-in-tab** (top-right) | Pops ChemPal out into a full browser tab (only visible in the popup). |
 
 ## Running a search
 
@@ -47,6 +49,28 @@ ChemPal gives you two complementary tools:
   set a price range, and more. See [Search Filters](Search-Filters).
 
 You can use either on its own, or combine them.
+
+## Search from the address bar
+
+You don't have to open ChemPal to start a search. In your browser's **address
+bar**, type the keyword **`chem`**, press **Space** (or **Tab**), then type your
+query and press **Enter**:
+
+```
+chem acetone
+```
+
+ChemPal opens in a full tab and runs that search automatically — exactly as if you'd
+typed it into the search bar, so every [search type](Search-Types) applies (a CAS
+number searches by CAS, a name by name, and so on).
+
+> **Tip:** the keyword only works when `chem` is at the **very start** of the address
+> bar and you press Space/Tab **before** typing your query. Only one extension can
+> own a keyword, so if something else has already claimed `chem`, ChemPal's won't
+> register.
+
+Prefer the keyboard? You can also bind a shortcut to **open ChemPal** from anywhere —
+see [Keyboard Shortcuts](Keyboard-Shortcuts#opening-chempal-browser-shortcut).
 
 ## No results?
 

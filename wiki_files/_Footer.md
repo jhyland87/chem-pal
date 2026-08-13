@@ -6,6 +6,7 @@
   <a href="https://github.com/jhyland87/chem-pal/releases/latest">Latest Release</a> ·
   <a href="https://github.com/jhyland87/chem-pal/issues">Report an Issue</a> ·
   <a href="Privacy">Privacy</a> ·
+  <a href="Terms-of-Service">Terms</a> ·
   <a href="FAQ-and-Troubleshooting">FAQ</a>
 </p>
 

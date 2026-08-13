@@ -46,4 +46,4 @@ For the complete details of what stays local and what is sent where, read the
 
 ---
 
-**Related:** [Settings](Settings) · [FAQ & Troubleshooting](FAQ-and-Troubleshooting)
+**Related:** [Terms of Service](Terms-of-Service) · [Settings](Settings) · [FAQ & Troubleshooting](FAQ-and-Troubleshooting)

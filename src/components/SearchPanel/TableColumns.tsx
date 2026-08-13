@@ -43,8 +43,8 @@ import styles from './TableColumns.module.scss';
  * // columns.map(c => c.id) →
  * //   ["expander", "title", "supplier", "country", "shipping",
  * //    "availability", "description", "price", "quantity", "uom",
- * //    "unitPrice", "priceTrend", "sds", "specs", "coa", "cas", "pubchem", "formula",
- * //    "moleweight", "purity", "concentration"]
+ * //    "unitPrice", "priceTrend", "priceChange", "sds", "specs", "coa", "cas",
+ * //    "pubchem", "formula", "moleweight", "purity", "concentration"]
  * // columns.filter(c => c.meta?.drawer).map(c => c.id) →
  * //   ["supplier", "country", "shipping", "availability", "price"]
  * ```
@@ -642,18 +642,19 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
  * ```tsx
  * const filterConfig = getColumnFilterConfig();
  * // => {
- * //   title:        { filterVariant: "text",   filterData: [] },
- * //   supplier:     { filterVariant: "select", filterData: [] },
- * //   country:      { filterVariant: "select", filterData: [] },
- * //   shipping:     { filterVariant: "select", filterData: [] },
- * //   availability: { filterVariant: "select", filterData: [] },
- * //   description:  { filterVariant: "text",   filterData: [] },
+ * //   title:         { filterVariant: "text",   filterData: [] },
+ * //   supplier:      { filterVariant: "select", filterData: [] },
+ * //   country:       { filterVariant: "select", filterData: [] },
+ * //   shipping:      { filterVariant: "select", filterData: [] },
+ * //   availability:  { filterVariant: "select", filterData: [] },
  * //   price:         { filterVariant: "range",  filterData: [] },
  * //   quantity:      { filterVariant: "range",  filterData: [] },
  * //   uom:           { filterVariant: "select", filterData: [] },
+ * //   unitPrice:     { filterVariant: "range",  filterData: [] },
+ * //   cas:           { filterVariant: "text",   filterData: [] },
  * //   formula:       { filterVariant: "text",   filterData: [] },
  * //   moleweight:    { filterVariant: "range",  filterData: [] },
- * //   purity:        { filterVariant: "range",  filterData: [] },
+ * //   purity:        { filterVariant: "text",   filterData: [] },
  * //   concentration: { filterVariant: "text",   filterData: [] },
  * // }
  * ```

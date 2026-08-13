@@ -22,7 +22,10 @@ export default defineConfig({
     },
     environment: 'jsdom',
     globals: true,
-    fileParallelism: false,
+    // Run test files in parallel across the vmThreads pool. Each worker gets its
+    // own isolated globals (fetch guard, chrome, fake-IndexedDB) via setupFiles, so
+    // files don't share state — this roughly halves the suite's wall-clock.
+    fileParallelism: true,
     setupFiles: [path.resolve(__dirname, 'vitest.setup.ts')],
     include: ['src/**/__tests__/**/*.{test,spec}.{js,ts,jsx,tsx}'],
     exclude: [

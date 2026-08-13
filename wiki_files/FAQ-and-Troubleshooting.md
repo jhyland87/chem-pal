@@ -44,6 +44,13 @@ _**How do I submit a feature request or enhancement?**_
 You can do this using the same procedure as reporting a bug, except if done via Github, you
 should use the `enhancement` label instead.
 
+_**How do I share other feedback?**_
+
+When you **uninstall** ChemPal, a short, optional **feedback form** opens in your
+browser — a quick way to tell us what worked, what didn't, and what would bring you
+back. It's completely optional and anonymous, and it's often the most helpful thing
+you can leave us if ChemPal wasn't a fit.
+
 
 
 ## Searching
