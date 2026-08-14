@@ -30,7 +30,7 @@ function manifestPlugin(target: string): Plugin {
       this.emitFile({
         type: 'asset',
         fileName: 'manifest.json',
-        source: JSON.stringify(buildManifest(base, target), null, 2),
+        source: JSON.stringify(buildManifest(base, target, pkg.version), null, 2),
       });
     },
   };

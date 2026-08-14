@@ -1,4 +1,4 @@
-import { defaultSettings, search } from '@/../config.json';
+import { defaultSettings } from '@/../config.json';
 import { APP_ACTION, CACHE, DRAWER_INDEX, PANEL } from '@/constants/common';
 import { AppContext, useAppContext } from '@/context';
 import { emitSearchEvent, SearchEvent } from '@/events/searchEvents';
@@ -25,7 +25,6 @@ import { isValidUserSettings } from '@/utils/typeGuards/common';
 import CssBaseline from '@mui/material/CssBaseline';
 import {
   lazy,
-  startTransition,
   Suspense,
   useActionState,
   useCallback,
@@ -48,10 +47,10 @@ import { ThemeProvider } from './components/ThemeProvider';
 import { UpdatePrompt } from './components/UpdatePrompt';
 import { WhatsNewPrompt } from './components/WhatsNewPrompt';
 import { diff } from './helpers/collectionUtils';
-import { getCountryName } from './helpers/country';
-import { getCurrencyCodeFromLocation, getCurrencyRate } from './helpers/currency';
+import { getCurrencyRate } from './helpers/currency';
 import { i18n, setLocale, useLocale } from './helpers/i18n';
-import { getUserLanguage, getUserLocation } from './helpers/utils';
+import { appReducer, initialAppState, type AppState } from './state/appReducer';
+import { resolveInitialPanel } from './state/resolveInitialPanel';
 
 // Always lazy — the panel is now reachable in any build via advanced mode, so the
 // chunk (MUI X charts + data grid) must exist. It's only fetched when opened.
@@ -100,50 +99,8 @@ const StatsPanel = lazy(() => import('./components/StatsPanel'));
  * @source
  */
 
-interface AppState {
-  userSettings?: UserSettings;
-  panel: PANEL;
-  speedDialVisibility: boolean;
-  drawerTab: DRAWER_INDEX;
-  selectedSuppliers: SupplierClassName[];
-  bookmarksFolderId: string | null;
-}
-
-const initialAppState: Partial<AppState> = {};
-
-if (isValidUserSettings(defaultSettings)) {
-  Object.assign(initialAppState, { userSettings: defaultSettings });
-}
-
-Object.assign(initialAppState, {
-  userSettings: {
-    ...initialAppState.userSettings,
-    currency: getCurrencyCodeFromLocation(getUserLocation()),
-    location: getUserLocation(),
-    country: getCountryName(getUserLocation()),
-    language: getUserLanguage(),
-    suppliers: {
-      ...initialAppState.userSettings?.suppliers,
-      resultLimit: search.defaultResultsLimitPerSupplier,
-    },
-  } satisfies UserSettings,
-  panel: PANEL.SEARCH_HOME,
-  speedDialVisibility: false,
-  drawerTab: DRAWER_INDEX.CLOSED,
-  selectedSuppliers: [],
-  bookmarksFolderId: null,
-});
-
-type AppAction =
-  | { type: typeof APP_ACTION.UPDATE_SETTINGS; settings: UserSettings }
-  | { type: typeof APP_ACTION.SET_CURRENCY_RATE; rate: number }
-  | { type: typeof APP_ACTION.SET_PANEL; panel: PANEL }
-  | { type: typeof APP_ACTION.SET_SPEED_DIAL_VISIBILITY; visible: boolean }
-  | { type: typeof APP_ACTION.LOAD_FROM_STORAGE; data: Partial<AppState> }
-  | { type: typeof APP_ACTION.HYDRATE_SETTINGS; settings: UserSettings }
-  | { type: typeof APP_ACTION.SET_DRAWER_TAB; tab: DRAWER_INDEX }
-  | { type: typeof APP_ACTION.SET_SELECTED_SUPPLIERS; suppliers: SupplierClassName[] }
-  | { type: typeof APP_ACTION.SET_BOOKMARKS_FOLDER_ID; id: string | null };
+// AppState, AppAction, initialAppState, and the reducer now live in
+// ./state/appReducer so the state transitions can be unit-tested in isolation.
 
 /**
  * Installs the global hotkey listener and relays confirmation text through
@@ -257,172 +214,9 @@ function App() {
   });
   // Note: setSearchResults will be used by child components via context in the future
 
-  // React v19's useActionState consolidates app state management
-  const [appState, dispatch, isPending] = useActionState(
-    (currentState: Partial<AppState>, action: AppAction): Partial<AppState> => {
-      switch (action.type) {
-        // Applies new user settings (theme, currency, caching, suppliers, etc.) and
-        // persists them to cstorage.local. Also fetches the updated currency rate.
-        // Dispatched by child components via appContext.setUserSettings().
-        case APP_ACTION.UPDATE_SETTINGS: {
-          // Keep `country` (full name) in sync with `location` (country code) on
-          // every settings change, so consumers like Ambeed can read it directly.
-          const newSettings: UserSettings = {
-            ...action.settings,
-            country: getCountryName(action.settings.location),
-          };
-
-          startTransition(() => {
-            (async () => {
-              try {
-                await cstorage.local.set({ [CACHE.USER_SETTINGS]: newSettings });
-              } catch (error) {
-                console.error('Failed to update settings:', { error });
-              }
-            })();
-          });
-
-          return {
-            ...currentState,
-            userSettings: newSettings,
-          };
-        }
-
-        // Merges the freshly-fetched USD→currency rate into state and persists it.
-        // Dispatched from the currency-watching effect (the rate is async, so it
-        // can't be resolved inside UPDATE_SETTINGS); this is what makes the price
-        // column reconvert immediately when the user changes currency.
-        case APP_ACTION.SET_CURRENCY_RATE: {
-          const current = currentState.userSettings;
-          if (!current || current.currencyRate === action.rate) return currentState;
-          const updatedSettings: UserSettings = { ...current, currencyRate: action.rate };
-
-          startTransition(() => {
-            (async () => {
-              try {
-                await cstorage.local.set({ [CACHE.USER_SETTINGS]: updatedSettings });
-              } catch (error) {
-                console.error('Failed to persist currency rate:', { error });
-              }
-            })();
-          });
-
-          return {
-            ...currentState,
-            userSettings: updatedSettings,
-          };
-        }
-
-        // Switches the active panel (0 = SearchHome, 1 = Results, 2 = Stats) and
-        // persists the selection to cstorage.session so it survives popup re-opens.
-        // Dispatched by child components via appContext.setPanel().
-        case APP_ACTION.SET_PANEL: {
-          startTransition(() => {
-            (async () => {
-              try {
-                await cstorage.session.set({ [CACHE.PANEL]: action.panel });
-              } catch (error) {
-                console.error('Failed to save panel:', { error });
-              }
-            })();
-          });
-
-          return {
-            ...currentState,
-            panel: action.panel,
-          };
-        }
-
-        // Toggles the SpeedDial FAB visibility based on mouse proximity to the
-        // bottom-right corner of the popup. Dispatched by the mousemove listener.
-        case APP_ACTION.SET_SPEED_DIAL_VISIBILITY:
-          return {
-            ...currentState,
-            speedDialVisibility: action.visible,
-          };
-
-        // Hydrates app state from chrome.storage on initial mount. Merges saved
-        // panel, userSettings, and selectedSuppliers into the current state.
-        // Dispatched once by the mount useEffect.
-        case APP_ACTION.LOAD_FROM_STORAGE:
-          return {
-            ...currentState,
-            ...action.data,
-          };
-
-        // Re-hydrates user settings when they change in another extension surface
-        // (e.g. the options page writes user_settings while this popup is open).
-        // Unlike UPDATE_SETTINGS this does NOT write back to storage — doing so
-        // would echo the change and loop. Early-return when nothing actually
-        // changed so the surface that made the edit doesn't re-render on its own
-        // storage echo. The currency-rate and locale effects key off
-        // userSettings.currency/.language, so they only re-run on real changes.
-        case APP_ACTION.HYDRATE_SETTINGS: {
-          const current = currentState.userSettings;
-          if (current && diff(current, action.settings).length === 0) return currentState;
-          return {
-            ...currentState,
-            userSettings: action.settings,
-          };
-        }
-
-        // Opens a specific drawer tab or closes the drawer (tab = -1).
-        // Used by setDrawerTab() for direct tab selection and toggleDrawer()
-        // for open/close toggling.
-        case APP_ACTION.SET_DRAWER_TAB:
-          return {
-            ...currentState,
-            drawerTab: action.tab,
-          };
-
-        // Updates the list of selected suppliers for search filtering and persists
-        // the selection to cstorage.local. Dispatched via appContext.setSelectedSuppliers().
-        case APP_ACTION.SET_SELECTED_SUPPLIERS: {
-          startTransition(() => {
-            (async () => {
-              try {
-                await cstorage.local.set({
-                  [CACHE.SELECTED_SUPPLIERS]: action.suppliers,
-                });
-              } catch (error) {
-                console.error('Failed to save selectedSuppliers:', { error });
-              }
-            })();
-          });
-
-          return {
-            ...currentState,
-            selectedSuppliers: action.suppliers,
-          };
-        }
-
-        // Persists the ChemPal Favorites bookmarks folder ID to cstorage.local
-        // so we don't need to scan the bookmark tree on every popup open.
-        case APP_ACTION.SET_BOOKMARKS_FOLDER_ID: {
-          startTransition(() => {
-            (async () => {
-              try {
-                await cstorage.local.set({
-                  [CACHE.BOOKMARKS_FOLDER_ID]: action.id,
-                });
-              } catch (error) {
-                console.error('Failed to save bookmarksFolderId:', { error });
-              }
-            })();
-          });
-
-          return {
-            ...currentState,
-            bookmarksFolderId: action.id,
-          };
-        }
-
-        default:
-          return currentState;
-      }
-    },
-    initialAppState,
-  );
+  // React v19's useActionState consolidates app state management. The reducer
+  // and initial state live in ./state/appReducer (unit-tested there).
+  const [appState, dispatch, isPending] = useActionState(appReducer, initialAppState);
 
   // Drive the active UI locale from the user's language setting. The stored
   // value may be a full locale ("en-US"); the message tables are keyed by base
@@ -474,36 +268,14 @@ function App() {
       ]);
       const loadedData: Partial<AppState> = {};
 
-      const hasResults = idbResults.length > 0;
-
       // Sync the badge with the restored count on open (controller clears it if 0).
       emitSearchEvent(SearchEvent.RESULTS_COUNT, { count: idbResults.length });
 
-      // The persisted panel is intentionally not read back: every restore target
-      // is now derived from pending-search/results state below.
-
-      // A search queued before this view mounted — e.g. seeded by the
-      // right-click context menu, which opens a fresh tab. The effect that
-      // executes it lives in ResultsTable, so we must land on the results
-      // panel for that component to mount and pick the search up.
-      const hasPendingSearch = Boolean(
-        sessionData[CACHE.SEARCH_IS_NEW_SEARCH] &&
-          typeof sessionData[CACHE.QUERY] === 'string' &&
-          sessionData[CACHE.QUERY].trim(),
-      );
-
-      // Panel selection on popup open:
-      //  - A pending search always wins (land on results so it can execute).
-      //  - Else if there are cached search results, land on the results table.
-      //  - Otherwise, land on the search home.
-      //  - A saved STATS selection is never restored: that panel now renders only
-      //    in advanced mode, which is session-only and always off at mount, so
-      //    restoring it would strand the user on a blank panel.
-      if (hasPendingSearch) {
-        loadedData.panel = PANEL.RESULTS;
-      } else {
-        loadedData.panel = hasResults ? PANEL.RESULTS : PANEL.SEARCH_HOME;
-      }
+      // The persisted panel is intentionally not read back: the restore target is
+      // derived from pending-search/results state by resolveInitialPanel (a
+      // queued context-menu search wins; else cached results open the table;
+      // else search home — a saved STATS selection is never restored).
+      loadedData.panel = resolveInitialPanel(sessionData, idbResults.length);
 
       if (localData[CACHE.USER_SETTINGS]) {
         loadedData.userSettings = { ...localData[CACHE.USER_SETTINGS] };
