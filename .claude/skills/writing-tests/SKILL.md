@@ -16,6 +16,31 @@ assertions freely. Match each file's existing import style — some import
 `{ describe, it, expect }` from `vitest` even though `globals` is on; follow the file
 you're in.
 
+## 0. No external calls — ever
+
+**Unit and E2E tests must make zero external/network calls.** Everything that would leave
+the process must be mocked at its boundary: `fetch`, `chrome.*` (storage, messaging,
+action, tabs), the service worker, IndexedDB, currency-rate lookups, analytics, audio,
+update/GitHub checks, supplier scrapes. Tests must be hermetic and deterministic — a test
+run must never hit a supplier, a currency API, GitHub, or GA4.
+
+`configs/vitest.setup.ts` already enforces this for the network: it replaces `global.fetch`
+with a `vi.fn()` that **throws** unless a test mocks it — and that guard is only installed
+via `pnpm test:run`, never bare `vitest`. Everything else you mock yourself.
+
+Mock the module that owns the boundary rather than the raw primitive:
+
+- `vi.mock('@/utils/storage')` — `cstorage.local/session/onChanged`
+- `vi.mock('@/utils/idbCache')` / `vi.mock('@/utils/SupplierCache')` — IndexedDB
+- `vi.mock('@/helpers/currency')` — `getCurrencyRate` (would otherwise fetch)
+- `vi.mock('@/helpers/analytics')` — GA4
+- the typed chrome fixtures in `src/__fixtures__/helpers/chrome/` (storageMock, actionMock,
+  tabsMock) for `chrome.*`
+
+Any fetch a code path genuinely needs must be given an explicit `mockImplementation`. If a
+test renders a tree that fires an unmocked fetch, the guard throws and the test fails —
+that's the guard working, not a flake; mock the boundary.
+
 ## 1. Prefer tables over native loops
 
 Whenever a test repeats the same assertion over a list of cases, use a **parametrized

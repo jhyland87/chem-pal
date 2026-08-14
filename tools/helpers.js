@@ -12,7 +12,7 @@
 import fs from "fs/promises";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
-import manifest from "../public/manifest.json" with { type: "json" };
+import pkg from "../package.json" with { type: "json" };
 
 /**
  * Absolute path to the repository root. Resolved from this module's own
@@ -46,14 +46,15 @@ export const _basename = (filename) => path.basename(filename);
 export const _readFile = async (filename) => await fs.readFile(filename, "utf8");
 
 /**
- * The plugin version to stamp on generated artwork, taken from the manifest.
- * Prefers `version_name` (which may carry a `-beta.N` suffix) over the bare
- * `version`, which Chrome restricts to dotted integers.
+ * The plugin version to stamp on generated artwork. Read from `package.json` —
+ * the single source of truth for the extension version — so it may carry a
+ * `-beta.N` suffix; the shipped manifest's numeric `version` is derived from the
+ * same value at build time (see `tools/buildManifest.js`).
  *
  * @returns {string} The plugin version, e.g. `"1.3.0"`
  */
 export function getPluginVersion() {
-  return manifest.version_name || manifest.version;
+  return pkg.version;
 }
 
 // Using ASCII color codes instead of chalk because these show up in github actions output.
