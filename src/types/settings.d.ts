@@ -229,8 +229,9 @@ declare global {
 
     /**
      * When true (the default), ChemPal sends anonymous usage and error statistics
-     * (searches, result counts, render errors) to Google Analytics to help guide
-     * improvements. Set to false to opt out; nothing is then sent to analytics.
+     * (searches, result counts, render errors) to PostHog, an independent
+     * analytics provider, to help guide improvements. Set to false to opt out;
+     * nothing is then sent to analytics.
      * @example true
      */
     shareUsageData?: boolean;

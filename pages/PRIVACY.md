@@ -1,13 +1,14 @@
 # ChemPal — Privacy Policy
 
-**Effective date:** August 1, 2026
+**Effective date:** August 16, 2026
 
 ChemPal ("the extension") is a browser extension that lets you search and compare
 laboratory chemical product listings across supported supplier websites. This
 policy explains what data the extension handles, where it goes, and why.
 
 **Short version:** ChemPal has no backend server of its own, shows no ads, and
-never sells your data. It does use Google Analytics to collect basic usage and
+never sells your data. It does use PostHog, an independent product‑analytics
+service, to collect basic usage and
 error statistics — which searches are run, how many results they return, and when
 the extension hits an error — associated only with a random, per‑install
 identifier, never your name or an account. Beyond that, the data that leaves your
@@ -77,11 +78,11 @@ the page URL) to provide context for opening product pages, search selections, a
 related links. This information is used only at the moment you take an action and
 is not logged or transmitted to the developer.
 
-### 2.6 Usage and error analytics (sent to Google Analytics)
+### 2.6 Usage and error analytics (sent to PostHog)
 
-ChemPal uses Google Analytics 4 to understand how the extension is used, so the
-developer can prioritize fixes and improvements. It sends an event to Google
-Analytics when you:
+ChemPal uses PostHog, an independent product‑analytics service, to understand how
+the extension is used, so the developer can prioritize fixes and improvements. It
+sends an event to PostHog when you:
 
 - **run a search** — including the search term you entered and the number of
   results it returned; and
@@ -90,10 +91,13 @@ Analytics when you:
 
 These events are associated with a random identifier generated and stored on your
 device, not with your name, email, or any account, and the extension loads no
-advertising or third‑party tracking code. As with any web request, Google also
-receives standard technical information such as your IP address, which it
-processes under its own privacy policy (Google Analytics does not log full IP
-addresses). ChemPal does not use this data for advertising or to profile you.
+advertising or third‑party tracking code. Every event is sent as an anonymous
+event, meaning PostHog does not build or update a person profile for you — there
+is no stored record that accumulates properties over time. As with any web
+request, PostHog also receives standard technical information such as your IP
+address, from which it derives an approximate country or region, and which it
+processes under its own privacy policy. ChemPal does not use this data for
+advertising or to profile you.
 
 ### 2.7 Bug reports (only when you choose to send one)
 
@@ -124,7 +128,7 @@ may send requests to:
   included.
 - **GitHub** (`api.github.com`) — to check whether a newer version of the
   extension is available. No personal data is sent.
-- **Google Analytics** (`www.google-analytics.com`) — to collect the usage and
+- **PostHog** (`us.i.posthog.com`) — to collect the usage and
   error statistics described in section 2.6, tied only to a random identifier.
 - **GitHub or Google Forms** — only if you choose to submit a bug report
   (section 2.7), and only with the details you review and send yourself.
@@ -139,7 +143,7 @@ practices of these independent services.
 
 - It does **not** run its own server or transmit your data to a developer‑operated
   backend (there is none); the usage and error statistics in section 2.6 go to
-  Google Analytics.
+  PostHog.
 - It does **not** show advertising, use advertising or cross‑site tracking SDKs,
   or sell or share your data for advertising or any unrelated purpose.
 - It does **not** collect personal information such as your name, email address,

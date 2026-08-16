@@ -126,7 +126,7 @@ It's all stored locally in your browser and never sent to the developer. See
 
 _**Does ChemPal track my data?**_
 
-ChemPal sends basic, anonymous usage statistics to Google Analytics — which
+ChemPal sends basic, anonymous usage statistics to PostHog — which
 searches are run, how many results they return, and when the extension hits an
 error — tied only to a random identifier, never your name or an account. There are
 no ads and no cross-site tracking, and your searches, history, and settings stay on

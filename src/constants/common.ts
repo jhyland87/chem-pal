@@ -137,8 +137,10 @@ export const CACHE = {
   REVIEW_PROMPT: 'review_prompt',
   /** Bounded ring buffer of recent exceptions, attached to bug reports */
   ERROR_RING_BUFFER: 'error_ring_buffer',
-  /** Stable per-install GA4 client id for Measurement Protocol events */
+  /** Retired GA4 client id — kept only so the PostHog sender can delete it on upgrade */
   ANALYTICS_CLIENT_ID: 'analytics_client_id',
+  /** Stable per-install random id used as the PostHog `distinct_id` */
+  ANALYTICS_DISTINCT_ID: 'analytics_distinct_id',
 } as const;
 
 export type Cache = (typeof CACHE)[keyof typeof CACHE];

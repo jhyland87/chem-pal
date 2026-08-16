@@ -60,7 +60,8 @@
     "feedbackFormUrl": "https://docs.google.com/forms/d/e/1FAIpQLSdKZOu_dnBEwl1RxqceCG-hnVJwZ1g3ARkFnqQy7yC5PsgCPw/viewform"
   },
   "analytics": {
-    "measurementId": "G-QC2T73LJ8T"
+    "apiKey": "phc_xSkGPDyKjxsRa9B5uz9PcpGFBgLTq2yJTV3sqAYPi9St",
+    "host": "https://us.i.posthog.com"
   },
   "report": {
     "github": {

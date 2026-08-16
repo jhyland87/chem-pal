@@ -66,7 +66,7 @@ if (IS_DEV_BUILD) {
         message: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? formatErrorChain(error) : undefined,
       });
-      // Report to GA4 (fatal: it escaped every boundary).
+      // Report to PostHog (fatal: it escaped every boundary).
       void trackRenderError(error, { fatal: 1 });
       // The error escaped every React boundary, so the app tree is gone. Surface
       // a non-React report path that doesn't depend on the crashed React runtime.

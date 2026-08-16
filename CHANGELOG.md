@@ -13,6 +13,14 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+### Changed
+
+- Anonymous usage and error statistics now go to PostHog instead of Google Analytics. What
+  gets collected is unchanged — which searches are run, how many results they return, and
+  when the extension hits an error — and **Settings → Behavior → Share anonymous usage
+  data** still turns it off. The old analytics identifier is discarded and replaced with a
+  new random one.
+
 ## [1.8.0] - 2026-08-13
 
 ### Added

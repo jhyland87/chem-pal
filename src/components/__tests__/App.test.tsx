@@ -14,7 +14,7 @@ const spies = vi.hoisted(() => ({
   getMigrationStatus: vi.fn().mockResolvedValue({ pending: [] }),
 }));
 
-// --- Boundaries: nothing may leave the process (no fetch, chrome, IDB, GA4). ---
+// --- Boundaries: nothing may leave the process (no fetch, chrome, IDB, analytics). ---
 
 vi.mock('@/utils/storage', () => ({
   cstorage: {
