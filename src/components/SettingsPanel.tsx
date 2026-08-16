@@ -560,7 +560,7 @@ export default function SettingsPanel() {
                 </Select>
               </FormControl>
             </ListItem>
-            {/* Share anonymous usage data — gates the Google Analytics usage/error
+            {/* Share anonymous usage data — gates the PostHog usage/error
                 events (default on; toggling off opts out entirely). */}
             <ListItem className={styles['settings-panel__helper-on-hover']}>
               <ListItemText

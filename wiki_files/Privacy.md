@@ -1,6 +1,6 @@
 ChemPal is built to stay out of your business. There's **no account and no
 sign-up**, and the developer runs no server. The only usage data collected is
-basic, aggregate analytics through Google Analytics — tied to a random identifier,
+basic, aggregate analytics through PostHog — tied to a random identifier,
 never your name or an account (see [What leaves your device](#what-leaves-your-device)).
 
 ## What stays on your device
@@ -29,7 +29,7 @@ does when you visit a website:
   terms when a search finds nothing.
 - **Exchange-rate service** — used to convert supplier prices into your chosen
   currency.
-- **Google Analytics** — basic usage and error stats (which searches are run, how
+- **PostHog** — basic usage and error stats (which searches are run, how
   many results they return, and when the extension hits an error), tied only to a
   random identifier — no account, no name.
 - **Bug reports** — only if you use **Report a bug** / **Report Error**, which open

@@ -74,7 +74,7 @@ class ErrorBoundary extends Component<
       captureOwnerStack(),
     );
     this.setState({ componentStack: info.componentStack });
-    // Report the crash to GA4 (non-PII, best-effort).
+    // Report the crash to PostHog (non-PII, best-effort).
     void trackRenderError(error);
   }
 

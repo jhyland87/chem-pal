@@ -22,7 +22,7 @@ you're in.
 the process must be mocked at its boundary: `fetch`, `chrome.*` (storage, messaging,
 action, tabs), the service worker, IndexedDB, currency-rate lookups, analytics, audio,
 update/GitHub checks, supplier scrapes. Tests must be hermetic and deterministic — a test
-run must never hit a supplier, a currency API, GitHub, or GA4.
+run must never hit a supplier, a currency API, GitHub, or PostHog.
 
 `configs/vitest.setup.ts` already enforces this for the network: it replaces `global.fetch`
 with a `vi.fn()` that **throws** unless a test mocks it — and that guard is only installed
@@ -33,7 +33,7 @@ Mock the module that owns the boundary rather than the raw primitive:
 - `vi.mock('@/utils/storage')` — `cstorage.local/session/onChanged`
 - `vi.mock('@/utils/idbCache')` / `vi.mock('@/utils/SupplierCache')` — IndexedDB
 - `vi.mock('@/helpers/currency')` — `getCurrencyRate` (would otherwise fetch)
-- `vi.mock('@/helpers/analytics')` — GA4
+- `vi.mock('@/helpers/analytics')` — PostHog
 - the typed chrome fixtures in `src/__fixtures__/helpers/chrome/` (storageMock, actionMock,
   tabsMock) for `chrome.*`
 

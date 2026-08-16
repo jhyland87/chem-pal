@@ -28,7 +28,10 @@ Not published anywhere (kept out of `pages/`, so TypeDoc doesn't render it).
 > Stores the user's own settings (currency, language, font size, selected suppliers), search
 > history, saved favorites, and a short-lived local cache of recent search results using
 > chrome.storage. This lets ChemPal remember preferences between sessions and avoid re-running
-> identical searches. All data stays on the user's device; nothing is sent to a server we control.
+> identical searches. Settings, history, favorites, and cached results stay on the user's device
+> and are never transmitted. Separately from this permission, ChemPal sends anonymous usage and
+> error events to PostHog, an independent analytics provider, tied only to a random per-install
+> identifier; users can turn this off in Settings.
 
 **tabs**
 > Used to open ChemPal's full-page view in a browser tab and to focus an already-open ChemPal tab
@@ -75,6 +78,18 @@ pushes back (it can flag an inert `new Function` string in a bundled dependency)
 
 ### Data usage certification
 
-Check the certification boxes yourself. Declare that ChemPal does **not** collect or sell
-personal data; the only data leaving the device is the search term, sent to the supplier sites
-the user explicitly searches, to fetch prices.
+Check the certification boxes yourself. Declare that ChemPal collects **User activity** — the
+search term entered and the number of results returned, plus the extension version and error
+type when it crashes — transmitted to PostHog, an independent analytics provider, tied only to
+a random per-install identifier and never to a name or account. Users can disable this under
+**Settings → Behavior → Share anonymous usage data**. Search terms also go to the supplier
+sites the user explicitly searches, to fetch prices.
+
+Do **not** declare personally identifiable information, health information, financial or
+payment information, authentication information, personal communications, location, or web
+history — none are collected. All three certification checkboxes remain truthfully checkable:
+the data is not sold to third parties, is not used or transferred for purposes unrelated to
+the item's single purpose, and is not used to determine creditworthiness or for lending.
+
+Confirm the exact category label against the current Web Store form before submitting — Google
+renames these. Revisit this section if the analytics opt-out default ever changes.

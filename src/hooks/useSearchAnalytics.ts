@@ -3,7 +3,7 @@ import { trackEvent } from '@/helpers/analytics';
 import { useEffect } from 'react';
 
 /**
- * Subscribes to the search-lifecycle event bus and forwards it to GA4, keeping
+ * Subscribes to the search-lifecycle event bus and forwards it to PostHog, keeping
  * analytics out of the search hook itself (the producers stay decoupled from
  * consumers). Mirrors the `useBadgeController` hook.
  *

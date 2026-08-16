@@ -160,7 +160,7 @@ function App() {
   // Single owner of all extension-badge updates (reacts to search events).
   useBadgeController();
 
-  // Forward search-lifecycle events to GA4 (search_query / search_results).
+  // Forward search-lifecycle events to PostHog (search_query / search_results).
   useSearchAnalytics();
 
   // Subscribe to the active UI locale. This is the single high-in-the-tree

@@ -227,6 +227,21 @@ export default function ResultsTable({
     executedQuery,
   } = useSearch();
 
+  const setColumnFilters = columnFilterFns[1];
+
+  // Runs a real search (home bar, results-panel input, omnibox, history re-run,
+  // or drawer retry). Every fresh query clears the table's per-column filters so
+  // rows from the previous search don't stay hidden — unlike restoring the panel,
+  // which preserves them. Column visibility and the global filter are left as-is.
+  const runSearch = useCallback(
+    (query: string) => {
+      if (!query.trim()) return;
+      setColumnFilters([]);
+      executeSearch(query);
+    },
+    [executeSearch, setColumnFilters],
+  );
+
   // Watch for pending search queries triggered from HistoryPanel or the drawer.
   // The ref guard dedupes against:
   //   1. StrictMode double-invoke of effects on mount (dev only)
@@ -247,9 +262,9 @@ export default function ResultsTable({
     }
     if (lastHandledPendingQueryRef.current === pending) return;
     lastHandledPendingQueryRef.current = pending;
-    executeSearch(pending);
+    runSearch(pending);
     appContext?.setPendingSearchQuery(null);
-  }, [appContext?.pendingSearchQuery, executeSearch, appContext]);
+  }, [appContext?.pendingSearchQuery, runSearch, appContext]);
 
   // Context menu functionality
   const { contextMenu, handleContextMenu, handleCloseContextMenu } = useContextMenu();
@@ -459,7 +474,6 @@ export default function ResultsTable({
 
   // Bridge the results-table hotkeys (fired from App.tsx) into the table API.
   // `table` is a stable instance, so row counts are read fresh at event time.
-  const setColumnFilters = columnFilterFns[1];
   useEffect(() => {
     const onExpandAll = () => {
       // Expand only rows that can actually expand — setting the global
@@ -559,7 +573,7 @@ export default function ResultsTable({
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
-      executeSearch(query.trim());
+      runSearch(query.trim());
     }
   };
 
