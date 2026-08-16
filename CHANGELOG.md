@@ -13,6 +13,8 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-08-16
+
 ### Changed
 
 - Anonymous usage and error statistics now go to PostHog instead of Google Analytics. What
