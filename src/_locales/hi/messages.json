@@ -739,7 +739,7 @@
   "offline_title": { "message": "इंटरनेट कनेक्शन नहीं है", "description": "Title of the full-screen offline overlay." },
   "offline_message": { "message": "नेटवर्क कनेक्शन में समस्या आई है। कनेक्शन बहाल होते ही यह संदेश गायब हो जाएगा।", "description": "Body of the offline overlay." },
   "settings_share_usage_data": { "message": "अनाम उपयोग डेटा साझा करें", "description": "Settings toggle label: opt in/out of usage analytics." },
-  "settings_share_usage_data_desc": { "message": "ChemPal को बेहतर बनाने में मदद के लिए अनाम उपयोग और त्रुटि आँकड़े (खोज, परिणाम संख्या, क्रैश) भेजें। कोई व्यक्तिगत डेटा नहीं।", "description": "Description under the usage-data toggle." },
+  "settings_share_usage_data_desc": { "message": "ChemPal को बेहतर बनाने में मदद के लिए अनाम उपयोग और त्रुटि आँकड़े (खोज, परिणाम संख्या, इंस्टॉल, अपडेट, क्रैश) भेजें। कोई व्यक्तिगत डेटा नहीं।", "description": "Description under the usage-data toggle." },
   "speed_dial_aria": {
     "message": "SpeedDial मेनू",
     "description": "Accessible label for the speed dial."

@@ -754,7 +754,7 @@
   "offline_title": { "message": "Ei internetyhteyttä", "description": "Title of the full-screen offline overlay." },
   "offline_message": { "message": "Verkkoyhteydessä ilmeni ongelma. Tämä viesti katoaa, kun yhteys palautuu.", "description": "Body of the offline overlay." },
   "settings_share_usage_data": { "message": "Jaa anonyymit käyttötiedot", "description": "Settings toggle label: opt in/out of usage analytics." },
-  "settings_share_usage_data_desc": { "message": "Lähetä anonyymejä käyttö- ja virhetilastoja (haut, tulosmäärät, kaatumiset) ChemPalin parantamiseksi. Ei henkilötietoja.", "description": "Description under the usage-data toggle." },
+  "settings_share_usage_data_desc": { "message": "Lähetä anonyymejä käyttö- ja virhetilastoja (haut, tulosmäärät, asennukset, päivitykset, kaatumiset) ChemPalin parantamiseksi. Ei henkilötietoja.", "description": "Description under the usage-data toggle." },
   "speed_dial_aria": {
     "message": "SpeedDial-valikko",
     "description": "Accessible label for the speed dial."

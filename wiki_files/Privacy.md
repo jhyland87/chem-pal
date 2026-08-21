@@ -30,8 +30,8 @@ does when you visit a website:
 - **Exchange-rate service** — used to convert supplier prices into your chosen
   currency.
 - **PostHog** — basic usage and error stats (which searches are run, how
-  many results they return, and when the extension hits an error), tied only to a
-  random identifier — no account, no name.
+  many results they return, when the extension is installed or updated, and when
+  it hits an error), tied only to a random identifier — no account, no name.
 - **Bug reports** — only if you use **Report a bug** / **Report Error**, which open
   a prefilled GitHub issue or Google form for you to review and submit yourself.
   Nothing is sent automatically.

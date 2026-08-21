@@ -976,7 +976,7 @@
   "offline_title": { "message": "Нет подключения к интернету", "description": "Title of the full-screen offline overlay." },
   "offline_message": { "message": "Возникла проблема с сетевым подключением. Это сообщение исчезнет, как только соединение восстановится.", "description": "Body of the offline overlay." },
   "settings_share_usage_data": { "message": "Делиться анонимными данными об использовании", "description": "Settings toggle label: opt in/out of usage analytics." },
-  "settings_share_usage_data_desc": { "message": "Отправлять анонимную статистику использования и ошибок (поиски, число результатов, сбои), чтобы улучшать ChemPal. Без персональных данных.", "description": "Description under the usage-data toggle." },
+  "settings_share_usage_data_desc": { "message": "Отправлять анонимную статистику использования и ошибок (поиски, число результатов, установки, обновления, сбои), чтобы улучшать ChemPal. Без персональных данных.", "description": "Description under the usage-data toggle." },
   "speed_dial_aria": {
     "message": "Меню SpeedDial",
     "description": "Accessible label for the speed dial."

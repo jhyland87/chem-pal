@@ -9,8 +9,9 @@ policy explains what data the extension handles, where it goes, and why.
 **Short version:** ChemPal has no backend server of its own, shows no ads, and
 never sells your data. It does use PostHog, an independent product‑analytics
 service, to collect basic usage and
-error statistics — which searches are run, how many results they return, and when
-the extension hits an error — associated only with a random, per‑install
+error statistics — which searches are run, how many results they return, when the
+extension is installed or updated, and when it hits an error — associated only
+with a random, per‑install
 identifier, never your name or an account. Beyond that, the data that leaves your
 browser is the search terms and chemical identifiers you enter, sent directly to
 the third‑party supplier and public chemistry services you choose to search — the
@@ -85,9 +86,11 @@ the extension is used, so the developer can prioritize fixes and improvements. I
 sends an event to PostHog when you:
 
 - **run a search** — including the search term you entered and the number of
-  results it returned; and
+  results it returned;
 - **encounter an error** — including the extension version, the error type, and a
-  short, truncated error message (no stack traces).
+  short, truncated error message (no stack traces); and
+- **install or update the extension** — including the version installed, and the
+  version you upgraded from when it is an update.
 
 These events are associated with a random identifier generated and stored on your
 device, not with your name, email, or any account, and the extension loads no

@@ -16,12 +16,22 @@
 
 import { defaultSettings, extension } from '@/../config.json';
 import { CACHE, MESSAGE_TYPE } from '@/constants/common';
+import { trackInstallOrUpgrade } from '@/helpers/analytics';
 import { installErrorCapture } from '@/helpers/errorBuffer';
 
-/** Context-menu item id for the "Search selection in ChemPal" entry. */
-const CONTEXT_MENU_ID = 'chempal-search-selection';
-/** Full-tab view URL; `?view=tab` is recognized by the app (see utils/displayContext.ts). */
-const TAB_VIEW_PATH = 'index.html?view=tab';
+/**
+ * Context-menu item id for the "Search selection in ChemPal" entry.
+ * @category Background
+ * @source
+ */
+export const CONTEXT_MENU_ID = 'chempal-search-selection';
+
+/**
+ * Full-tab view URL; `?view=tab` is recognized by the app (see utils/displayContext.ts).
+ * @category Background
+ * @source
+ */
+export const TAB_VIEW_PATH = 'index.html?view=tab';
 
 // Capture background-context errors into the shared ring buffer so they can be
 // attached to a bug report opened from the UI.
@@ -47,6 +57,15 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
     // prompting for a version that is now running.
     void chrome.storage.local.remove(CACHE.UPDATE_PENDING);
   }
+});
+
+// Report installs and version upgrades. Its own listener rather than a branch in
+// the one above, matching how the rest of this file registers one onInstalled
+// listener per concern. Awaited (not bare-voided) because two storage reads
+// precede the send; Chrome doesn't await the returned promise, but the worker is
+// reliably awake during install/update and trackEvent swallows all failures.
+chrome.runtime.onInstalled.addListener(async (details) => {
+  await trackInstallOrUpgrade(details.reason, details.previousVersion);
 });
 
 // Registering this listener is what *defers* the update: with no listener Chrome

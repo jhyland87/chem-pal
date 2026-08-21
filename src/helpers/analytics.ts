@@ -21,15 +21,21 @@ import { cstorage } from '@/utils/storage';
  * @source
  */
 
-/** PostHog single-event capture path, appended to the configured host. */
-const CAPTURE_PATH = '/i/v0/e/';
+/**
+ * PostHog single-event capture path, appended to the configured host.
+ * @category Helpers
+ * @source
+ */
+export const CAPTURE_PATH = '/i/v0/e/';
 
 /**
  * Self-imposed cap on the length of a text property value. Not a PostHog limit
  * (its ceiling is ~1MB) — a privacy guard bounding how much of a search term or
  * error message can leave the device.
+ * @category Helpers
+ * @source
  */
-const PARAM_VALUE_LIMIT = 100;
+export const PARAM_VALUE_LIMIT = 100;
 
 /**
  * Whether the user has left usage analytics enabled. Defaults to `true` (on) —
@@ -89,8 +95,8 @@ async function getDistinctId(): Promise<string> {
 /**
  * Sends one anonymous event to PostHog's capture endpoint. No-op (and no network
  * call) until an API key is configured in `config.json` (`analytics`). Text
- * params are truncated to 100 characters; numeric params pass through as numbers.
- * Never throws.
+ * params are truncated to {@link PARAM_VALUE_LIMIT}; numeric params pass through
+ * as numbers. Never throws.
  * @param name - Event name (e.g. `"render_error"`).
  * @param params - Non-PII event properties.
  * @returns A promise that resolves once the send settles.
@@ -140,6 +146,34 @@ export async function trackEvent(
   } catch {
     // Best-effort telemetry: swallow all failures.
   }
+}
+
+/**
+ * Reports a fresh install as `extension_installed` or a version change as
+ * `extension_upgraded`, the latter carrying both the old and new version. Driven
+ * by the service worker's `chrome.runtime.onInstalled` listener.
+ *
+ * Only `INSTALL` and `UPDATE` are reported — `CHROME_UPDATE` and
+ * `SHARED_MODULE_UPDATE` mean the browser changed, not ChemPal.
+ * @param reason - The reason from `chrome.runtime.onInstalled`.
+ * @param previousVersion - Version being upgraded from; Chrome supplies this only on an update.
+ * @returns A promise that resolves once the send settles.
+ * @example
+ * ```ts
+ * // sends `extension_upgraded` with { app_version: "1.9.0", previous_version: "1.8.0" }
+ * await trackInstallOrUpgrade(chrome.runtime.OnInstalledReason.UPDATE, "1.8.0");
+ * ```
+ * @source
+ */
+export async function trackInstallOrUpgrade(
+  reason: `${chrome.runtime.OnInstalledReason}`,
+  previousVersion?: string,
+): Promise<void> {
+  const { INSTALL, UPDATE } = chrome.runtime.OnInstalledReason;
+  if (reason !== INSTALL && reason !== UPDATE) return;
+  const params: Record<string, string | number> = { app_version: __APP_VERSION__ };
+  if (previousVersion) params.previous_version = previousVersion;
+  return trackEvent(reason === INSTALL ? 'extension_installed' : 'extension_upgraded', params);
 }
 
 /**

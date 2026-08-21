@@ -13,6 +13,13 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+### Added
+
+- Anonymous install and update events, so the number of people on each version is visible
+  and problem releases can be spotted sooner. An update event records which version you
+  upgraded from. Covered by the same **Settings → Behavior → Share anonymous usage data**
+  toggle as everything else — turn it off and nothing is sent.
+
 ## [1.9.0] - 2026-08-16
 
 ### Changed
