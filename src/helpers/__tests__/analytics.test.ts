@@ -24,7 +24,28 @@ vi.mock('@/utils/storage', () => ({
   },
 }));
 
-const { trackEvent, trackRenderError } = await import('@/helpers/analytics');
+// analytics.ts reads chrome.runtime.OnInstalledReason. The global setup only
+// provides chrome.i18n, so extend it here with a plain assignment — the shared
+// afterEach calls vi.unstubAllGlobals(), which would strip a vi.stubGlobal.
+Object.assign(globalThis, {
+  chrome: {
+    ...((globalThis as { chrome?: unknown }).chrome ?? {}),
+    runtime: {
+      OnInstalledReason: {
+        INSTALL: 'install',
+        UPDATE: 'update',
+        CHROME_UPDATE: 'chrome_update',
+        SHARED_MODULE_UPDATE: 'shared_module_update',
+      },
+    },
+  },
+});
+
+const { CAPTURE_PATH, PARAM_VALUE_LIMIT, trackEvent, trackInstallOrUpgrade, trackRenderError } =
+  await import('@/helpers/analytics');
+
+/** The endpoint the sender is expected to POST to, built from the mocked host. */
+const EXPECTED_ENDPOINT = `https://us.i.posthog.com${CAPTURE_PATH}`;
 
 const fetchMock = vi.fn();
 
@@ -55,7 +76,7 @@ describe('analytics (PostHog capture)', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [rawUrl, init] = fetchMock.mock.calls[0];
-    expect(rawUrl).toBe('https://us.i.posthog.com/i/v0/e/');
+    expect(rawUrl).toBe(EXPECTED_ENDPOINT);
     // The key belongs in the body — a query-string key is silently ignored.
     expect(new URL(rawUrl).search).toBe('');
     expect(init.method).toBe('POST');
@@ -84,9 +105,9 @@ describe('analytics (PostHog capture)', () => {
   });
 
   it('truncates text params to the length limit and keeps numbers numeric', async () => {
-    await trackEvent('render_error', { error_message: 'x'.repeat(500), count: 3 });
+    await trackEvent('render_error', { error_message: 'x'.repeat(PARAM_VALUE_LIMIT * 5), count: 3 });
     const { properties } = payloadFromCall();
-    expect(properties.error_message.length).toBe(100);
+    expect(properties.error_message.length).toBe(PARAM_VALUE_LIMIT);
     expect(properties.count).toBe(3);
     expect(typeof properties.count).toBe('number');
   });
@@ -122,5 +143,58 @@ describe('analytics (PostHog capture)', () => {
   it('still sends when the setting is absent (opt-out default off)', async () => {
     await trackEvent('search_query', { search_term: 'acetone' });
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('merges caller params into render_error, as main.tsx does for fatal crashes', async () => {
+    await trackRenderError(new Error('boom'), { fatal: 1 });
+
+    const { properties } = payloadFromCall();
+    expect(properties.error_name).toBe('Error');
+    expect(properties.error_message).toContain('boom');
+    expect(properties.fatal).toBe(1);
+  });
+
+  describe('trackInstallOrUpgrade', () => {
+    it('sends extension_installed with no previous_version on a fresh install', async () => {
+      await trackInstallOrUpgrade('install');
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      const payload = payloadFromCall();
+      expect(payload.event).toBe('extension_installed');
+      expect(payload.properties.app_version).toBeTruthy();
+      expect(payload.properties).not.toHaveProperty('previous_version');
+    });
+
+    it('sends extension_upgraded carrying both versions on an update', async () => {
+      await trackInstallOrUpgrade('update', '1.8.0');
+
+      const payload = payloadFromCall();
+      expect(payload.event).toBe('extension_upgraded');
+      expect(payload.properties.previous_version).toBe('1.8.0');
+      // The new version comes from the build-time define, not the caller.
+      expect(payload.properties.app_version).not.toBe('1.8.0');
+    });
+
+    it('omits previous_version when Chrome does not supply one', async () => {
+      await trackInstallOrUpgrade('update');
+
+      const payload = payloadFromCall();
+      expect(payload.event).toBe('extension_upgraded');
+      expect(payload.properties).not.toHaveProperty('previous_version');
+    });
+
+    it.each(['chrome_update', 'shared_module_update'] as const)(
+      'sends nothing for reason %s (the browser changed, not ChemPal)',
+      async (reason) => {
+        await trackInstallOrUpgrade(reason);
+        expect(fetchMock).not.toHaveBeenCalled();
+      },
+    );
+
+    it('respects the opt-out', async () => {
+      localStore[CACHE.USER_SETTINGS] = { shareUsageData: false };
+      await trackInstallOrUpgrade('install');
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
   });
 });

@@ -8,6 +8,7 @@ const control = vi.hoisted(() => ({
 }));
 
 const spies = vi.hoisted(() => ({
+  useSearchAnalytics: vi.fn(),
   useDebugApi: vi.fn(),
   playAdvancedModeSound: vi.fn().mockResolvedValue(undefined),
   getSearchResults: vi.fn().mockResolvedValue([]),
@@ -51,7 +52,7 @@ vi.mock('@/helpers/analytics', () => ({ trackRenderError: vi.fn() }));
 // --- Side-effectful hooks: stub out network/badge/analytics behavior. ---
 
 vi.mock('@/utils/badgeController', () => ({ useBadgeController: () => {} }));
-vi.mock('@/hooks/useSearchAnalytics', () => ({ useSearchAnalytics: () => {} }));
+vi.mock('@/hooks/useSearchAnalytics', () => ({ useSearchAnalytics: spies.useSearchAnalytics }));
 vi.mock('@/hooks/useDebugApi', () => ({ useDebugApi: spies.useDebugApi }));
 vi.mock('@/helpers/advancedMode', () => ({ playAdvancedModeSound: spies.playAdvancedModeSound }));
 vi.mock('@/hooks/useUpdateAvailable', () => ({
@@ -133,6 +134,15 @@ describe('App', () => {
 
     expect(await screen.findByTestId('search-home')).toBeInTheDocument();
     expect(screen.queryByTestId('search-results')).not.toBeInTheDocument();
+  });
+
+  it('mounts the search-analytics hook, so search events reach PostHog', async () => {
+    render(<App />);
+    await screen.findByTestId('search-home');
+
+    // Guards the wiring, not the hook's behavior (covered in its own test):
+    // dropping useSearchAnalytics() from App would silently kill search analytics.
+    expect(spies.useSearchAnalytics).toHaveBeenCalled();
   });
 
   it('lands on the results panel when the cache has results', async () => {

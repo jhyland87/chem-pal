@@ -1,6 +1,11 @@
 import { defaultSettings } from '@/../config.json';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// The worker reports installs/upgrades on startup. Mocked so these tests assert
+// the wiring without touching storage or the network.
+const { trackInstallOrUpgrade } = vi.hoisted(() => ({ trackInstallOrUpgrade: vi.fn() }));
+vi.mock('@/helpers/analytics', () => ({ trackInstallOrUpgrade }));
+
 /**
  * Expected action popup when no explicit `openInTab` is persisted. The worker
  * falls back to the shipped config.json default, so this must track it: `''`
@@ -20,9 +25,14 @@ const DEFAULT_POPUP = defaultSettings.display?.openInTab ? '' : 'index.html';
  * opens a new one) is exactly what we want to pin down here.
  */
 
-const MENU_ID = 'chempal-search-selection';
 const EXT_ORIGIN = 'chrome-extension://abcextensionid/';
-const TAB_VIEW_URL = `${EXT_ORIGIN}index.html?view=tab`;
+
+// Read off the worker module rather than restated here, so the test can't drift
+// from the values it ships. Assigned in loadServiceWorker() and not by a
+// top-level import: importing the worker registers its listeners, so it must not
+// be loaded until a fake chrome is in place.
+let MENU_ID: string;
+let TAB_VIEW_URL: string;
 
 /** Minimal shape of the `info` object the worker reads from an onClicked event. */
 interface OnClickInfo {
@@ -30,7 +40,7 @@ interface OnClickInfo {
   selectionText?: string;
 }
 
-type OnInstalled = (details: { reason: string }) => void;
+type OnInstalled = (details: { reason: string; previousVersion?: string }) => unknown;
 type OnClicked = (info: OnClickInfo) => unknown;
 
 /**
@@ -54,6 +64,7 @@ function makeChromeMock() {
   const sessionSet = vi.fn(async () => {});
   const localGet = vi.fn(async (): Promise<Record<string, unknown>> => ({}));
   const localSet = vi.fn(async () => {});
+  const localRemove = vi.fn(async () => {});
   const setPopup = vi.fn(async () => {});
   const tabsQuery = vi.fn(async (): Promise<Array<Partial<chrome.tabs.Tab>>> => []);
   const tabsUpdate = vi.fn(async () => ({}));
@@ -85,7 +96,7 @@ function makeChromeMock() {
     windows: { update: windowsUpdate },
     storage: {
       session: { set: sessionSet },
-      local: { get: localGet, set: localSet },
+      local: { get: localGet, set: localSet, remove: localRemove },
       onChanged: {
         addListener: (fn: (changes: Record<string, unknown>, areaName: string) => void) =>
           storageChanged.push(fn),
@@ -108,6 +119,7 @@ function makeChromeMock() {
     sessionSet,
     localGet,
     localSet,
+    localRemove,
     setPopup,
     tabsQuery,
     tabsUpdate,
@@ -123,7 +135,9 @@ function makeChromeMock() {
  * @source
  */
 async function loadServiceWorker(): Promise<void> {
-  await import('../../service-worker');
+  const worker = await import('../../service-worker');
+  MENU_ID = worker.CONTEXT_MENU_ID;
+  TAB_VIEW_URL = `${EXT_ORIGIN}${worker.TAB_VIEW_PATH}`;
 }
 
 describe('service worker context-menu search', () => {
@@ -339,5 +353,55 @@ describe('service worker toolbar-icon behavior', () => {
     await actionClicked();
 
     expect(mock.tabsCreate).toHaveBeenCalledWith({ url: TAB_VIEW_URL, active: true });
+  });
+});
+
+describe('service worker install/upgrade analytics', () => {
+  let mock: ReturnType<typeof makeChromeMock>;
+
+  beforeEach(async () => {
+    vi.resetModules();
+    trackInstallOrUpgrade.mockReset();
+    mock = makeChromeMock();
+    vi.stubGlobal('chrome', mock.chromeMock);
+    await loadServiceWorker();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  /**
+   * Fires every registered onInstalled listener with the given details, the way
+   * Chrome would. Several listeners are registered (review-prompt seeding,
+   * uninstall URL, action behavior, analytics); they all receive the event.
+   * @param details - The onInstalled details to dispatch.
+   * @source
+   */
+  async function fireOnInstalled(details: {
+    reason: string;
+    previousVersion?: string;
+  }): Promise<void> {
+    for (const listener of mock.onInstalled) await listener(details);
+  }
+
+  it('reports a fresh install', async () => {
+    await fireOnInstalled({ reason: 'install' });
+
+    expect(trackInstallOrUpgrade).toHaveBeenCalledWith('install', undefined);
+  });
+
+  it('reports an upgrade with the previous version', async () => {
+    await fireOnInstalled({ reason: 'update', previousVersion: '1.8.0' });
+
+    expect(trackInstallOrUpgrade).toHaveBeenCalledWith('update', '1.8.0');
+  });
+
+  it('forwards other reasons and lets the helper decide', async () => {
+    await fireOnInstalled({ reason: 'chrome_update' });
+
+    // The worker does not filter; trackInstallOrUpgrade owns that rule so the
+    // decision lives in one place (covered in analytics.test.ts).
+    expect(trackInstallOrUpgrade).toHaveBeenCalledWith('chrome_update', undefined);
   });
 });

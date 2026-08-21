@@ -80,8 +80,10 @@ pushes back (it can flag an inert `new Function` string in a bundled dependency)
 
 Check the certification boxes yourself. Declare that ChemPal collects **User activity** — the
 search term entered and the number of results returned, plus the extension version and error
-type when it crashes — transmitted to PostHog, an independent analytics provider, tied only to
-a random per-install identifier and never to a name or account. Users can disable this under
+type when it crashes, and an event when the extension is installed or updated (carrying the
+version, and the previous version on an update) — transmitted to PostHog, an independent
+analytics provider, tied only to a random per-install identifier and never to a name or
+account. Users can disable this under
 **Settings → Behavior → Share anonymous usage data**. Search terms also go to the supplier
 sites the user explicitly searches, to fetch prices.
 

@@ -259,6 +259,19 @@ describe('Chem-Pal search query', () => {
     async () => {
       const page = await openExtension();
 
+      // Capture attempted analytics sends. This is the only test that exercises
+      // the whole chain — useSearch emits on the search-event bus,
+      // useSearchAnalytics forwards it, and helpers/analytics POSTs it — so it's
+      // where a break in any link shows up. The "abort" fallback in
+      // `openExtension()` kills the request, so nothing actually leaves the
+      // machine; the `request` event still fires, and postData is readable.
+      const analyticsEvents: string[] = [];
+      page.on('request', (request) => {
+        if (!request.url().includes('posthog')) return;
+        const body = request.postData();
+        if (body) analyticsEvents.push(JSON.parse(body).event);
+      });
+
       // Type the search query and submit (mock routes + "abort" fallback are
       // already wired up by `openExtension()` — see that helper for the why).
       const searchInput = page.getByRole('textbox', {
@@ -277,6 +290,12 @@ describe('Chem-Pal search query', () => {
       await playwrightExpect(backdrop).toBeVisible({ timeout: 10_000 });
       // Then wait for it to go away as suppliers complete.
       await playwrightExpect(backdrop).toBeHidden({ timeout: 120_000 });
+
+      // search_query fires at the start of the search, search_results at the end.
+      await playwrightExpect
+        .poll(() => analyticsEvents.includes('search_results'), { timeout: 10_000 })
+        .toBe(true);
+      vitestExpect(analyticsEvents).toContain('search_query');
 
       // Change the page size to "All" so all rows are visible
       // MUI Select renders a custom dropdown — target the trigger div by aria-label

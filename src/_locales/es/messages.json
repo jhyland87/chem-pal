@@ -757,7 +757,7 @@
   "offline_title": { "message": "Sin conexión a internet", "description": "Title of the full-screen offline overlay." },
   "offline_message": { "message": "Se ha producido un problema de conexión de red. Este mensaje desaparecerá cuando se restablezca la conexión.", "description": "Body of the offline overlay." },
   "settings_share_usage_data": { "message": "Compartir datos de uso anónimos", "description": "Settings toggle label: opt in/out of usage analytics." },
-  "settings_share_usage_data_desc": { "message": "Envía estadísticas anónimas de uso y errores (búsquedas, número de resultados, fallos) para mejorar ChemPal. Sin datos personales.", "description": "Description under the usage-data toggle." },
+  "settings_share_usage_data_desc": { "message": "Envía estadísticas anónimas de uso y errores (búsquedas, número de resultados, instalaciones, actualizaciones, fallos) para mejorar ChemPal. Sin datos personales.", "description": "Description under the usage-data toggle." },
   "speed_dial_aria": {
     "message": "Menú SpeedDial",
     "description": "Accessible label for the speed dial."
