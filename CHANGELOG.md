@@ -13,6 +13,8 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-08-25
+
 ### Added
 
 - Anonymous search timing, so slow searches can be spotted and the suppliers behind them
