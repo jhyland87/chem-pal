@@ -13,6 +13,14 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+### Added
+
+- Anonymous search timing, so slow searches can be spotted and the suppliers behind them
+  improved. Searches that end early — because you pressed Stop, or because they ran out of
+  time — are now recorded separately, along with how many results had come back first.
+  Covered by the same **Settings → Behavior → Share anonymous usage data** toggle as
+  everything else — turn it off and nothing is sent.
+
 ## [1.10.0] - 2026-08-16
 
 ### Added

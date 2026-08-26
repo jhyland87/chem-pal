@@ -17,15 +17,21 @@ describe('searchEvents', () => {
     off();
   });
 
-  it('delivers payloadless events (detail defaults to null)', () => {
+  it('delivers the full outcome detail on a terminal event', () => {
     const handler = vi.fn();
     const off = onSearchEvent(SearchEvent.ABORTED, handler);
 
-    emitSearchEvent(SearchEvent.ABORTED);
+    const detail = {
+      count: 3,
+      durationMs: 1240,
+      suppliersQueried: 8,
+      suppliersCompleted: 2,
+      reason: 'user_aborted',
+    };
+    emitSearchEvent(SearchEvent.ABORTED, detail);
 
-    // CustomEvent with no detail yields `null` (the DOM default), not undefined.
     expect(handler).toHaveBeenCalledTimes(1);
-    expect(handler).toHaveBeenCalledWith(null);
+    expect(handler).toHaveBeenCalledWith(detail);
     off();
   });
 

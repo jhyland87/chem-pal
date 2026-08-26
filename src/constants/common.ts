@@ -182,6 +182,22 @@ export const IDB_STORE = {
 export type IdbStore = (typeof IDB_STORE)[keyof typeof IDB_STORE];
 
 /**
+ * Reasons the shared search `AbortController` gets aborted. Passed verbatim to
+ * `controller.abort()` so a terminal search event can name the cause from
+ * `signal.reason` instead of string-matching a free-form message.
+ * @category Constants
+ * @source
+ */
+export const SEARCH_ABORT_REASON = {
+  /** The user pressed Stop, or hit the abort-search hotkey. */
+  USER: 'user_aborted',
+  /** A supplier's `supplierSearchTimeBudgetSec` elapsed while it was still working. */
+  TIME_BUDGET: 'time_budget_exceeded',
+} as const;
+
+export type SearchAbortReason = (typeof SEARCH_ABORT_REASON)[keyof typeof SEARCH_ABORT_REASON];
+
+/**
  * Represents the availability of a product
  * Keep values as lower case strings.
  * @source

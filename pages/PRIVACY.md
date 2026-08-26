@@ -85,8 +85,10 @@ ChemPal uses PostHog, an independent product‑analytics service, to understand 
 the extension is used, so the developer can prioritize fixes and improvements. It
 sends an event to PostHog when you:
 
-- **run a search** — including the search term you entered and the number of
-  results it returned;
+- **run a search** — including the search term you entered, the number of results
+  it returned, how long the search took, and how many suppliers it queried;
+- **stop a search early** — when you cancel a search, or it runs out of time,
+  including why it ended along with the same details as above;
 - **encounter an error** — including the extension version, the error type, and a
   short, truncated error message (no stack traces); and
 - **install or update the extension** — including the version installed, and the

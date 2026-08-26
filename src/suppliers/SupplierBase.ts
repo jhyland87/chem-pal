@@ -1,5 +1,5 @@
 import { search } from '@/../config.json';
-import { UOM } from '@/constants/common';
+import { SEARCH_ABORT_REASON, UOM } from '@/constants/common';
 import { FUZZ_SCORERS, isFuzzScorerName, type FuzzScorerFn } from '@/constants/fuzzScorers';
 import { backgroundFetch, type BackgroundFetchInit } from '@/helpers/backgroundFetch';
 import { setCookie } from '@/helpers/cookies';
@@ -2213,9 +2213,9 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
             `aborting outstanding requests and returning collected results`,
           { supplier: this.supplierName },
         );
-        this.controller.abort(
-          `Search exceeded supplierSearchTimeBudgetSec (${this.supplierSearchTimeBudgetSec}s)`,
-        );
+        // The seconds are already in the warning above; the reason string stays a
+        // known constant so the terminal search event can classify it.
+        this.controller.abort(SEARCH_ABORT_REASON.TIME_BUDGET);
         resolve(sentinel);
       }, this.supplierSearchTimeBudgetSec * 1000);
     });

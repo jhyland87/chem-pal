@@ -32,6 +32,16 @@ function run(events: BadgeEvent[]) {
   return { state, output };
 }
 
+/**
+ * Builds a terminal-event outcome payload. The badge only reads `count`, so the
+ * timing/supplier fields are fixed filler.
+ * @param count - Result count to report.
+ * @returns A SearchOutcomeDetail for a COMPLETED/ABORTED/FAILED emit.
+ */
+function outcome(count: number) {
+  return { count, durationMs: 1000, suppliersQueried: 3, suppliersCompleted: 3 };
+}
+
 describe('reduceBadge', () => {
   it('animates on search start', () => {
     const { state, output } = run([{ type: SearchEvent.STARTED }]);
@@ -226,7 +236,7 @@ describe('useBadgeController (integration with the chrome.action mock)', () => {
     expect(setTextSpy).toHaveBeenLastCalledWith('3');
     expect(mockChromeAction._state.badgeText).toBe('3');
 
-    emitSearchEvent(SearchEvent.COMPLETED, { count: 3 });
+    emitSearchEvent(SearchEvent.COMPLETED, outcome(3));
     await flush();
     expect(mockChromeAction._state.badgeText).toBe('3');
 
@@ -238,7 +248,7 @@ describe('useBadgeController (integration with the chrome.action mock)', () => {
 
     emitSearchEvent(SearchEvent.STARTED, { query: 'xyzzy' });
     await flush();
-    emitSearchEvent(SearchEvent.COMPLETED, { count: 0 });
+    emitSearchEvent(SearchEvent.COMPLETED, outcome(0));
     await flush();
 
     expect(mockChromeAction._state.badgeText).toBe('');
@@ -250,9 +260,7 @@ describe('useBadgeController (integration with the chrome.action mock)', () => {
 
     emitSearchEvent(SearchEvent.STARTED, { query: 'acetone' });
     await flush();
-    emitSearchEvent(SearchEvent.ABORTED);
-    await flush();
-    emitSearchEvent(SearchEvent.ABORTED, { reason: 'Request was aborted' });
+    emitSearchEvent(SearchEvent.ABORTED, { ...outcome(3), reason: 'user_aborted' });
     await flush();
 
     expect(mockChromeAction._state.badgeText).toBe('');
@@ -262,7 +270,7 @@ describe('useBadgeController (integration with the chrome.action mock)', () => {
   it('clears the badge when results are cleared externally', async () => {
     const { unmount } = renderHook(() => useBadgeController());
 
-    emitSearchEvent(SearchEvent.COMPLETED, { count: 5 });
+    emitSearchEvent(SearchEvent.COMPLETED, outcome(5));
     await flush();
     expect(mockChromeAction._state.badgeText).toBe('5');
 
@@ -312,7 +320,7 @@ describe('useBadgeController (integration with the chrome.action mock)', () => {
     unmount();
     mockChromeAction.setBadgeText.mockClear();
 
-    emitSearchEvent(SearchEvent.COMPLETED, { count: 7 });
+    emitSearchEvent(SearchEvent.COMPLETED, outcome(7));
     await flush();
 
     expect(mockChromeAction.setBadgeText).not.toHaveBeenCalled();
