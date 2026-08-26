@@ -1,7 +1,12 @@
 import { getColumnFilterConfig } from '@/components/SearchPanel/TableColumns';
-import { AVAILABILITY_LABEL_MAP, CACHE, isShippingRange } from '@/constants/common';
+import {
+  AVAILABILITY_LABEL_MAP,
+  CACHE,
+  SEARCH_ABORT_REASON,
+  isShippingRange,
+} from '@/constants/common';
 import { useAppContext } from '@/context';
-import { SearchEvent, emitSearchEvent } from '@/events/searchEvents';
+import { SearchEvent, emitSearchEvent, type SearchOutcomeDetail } from '@/events/searchEvents';
 import { addExcludedProduct } from '@/helpers/excludedProducts';
 import { i18n } from '@/helpers/i18n';
 import { recordProductPrices } from '@/helpers/priceHistory';
@@ -255,6 +260,25 @@ function applyPerSupplierLimit(products: Product[], limit: number): Product[] {
 }
 
 /**
+ * Names why a search's `AbortController` was aborted, from its `signal.reason`.
+ * Both deliberate abort sites pass a {@link SEARCH_ABORT_REASON} value, so
+ * anything else (a stray abort, a browser-supplied `DOMException`) reports as
+ * `"unknown"` rather than leaking a free-form message into analytics.
+ * @param reason - The aborted signal's `reason`.
+ * @returns One of the {@link SEARCH_ABORT_REASON} values, or `"unknown"`.
+ * @example
+ * ```ts
+ * classifyAbortReason("user_aborted"); // => "user_aborted"
+ * classifyAbortReason(new DOMException("stop", "AbortError")); // => "unknown"
+ * ```
+ * @source
+ */
+export function classifyAbortReason(reason: unknown): string {
+  const known: readonly string[] = Object.values(SEARCH_ABORT_REASON);
+  return typeof reason === 'string' && known.includes(reason) ? reason : 'unknown';
+}
+
+/**
  * Determines whether any pre-search filters are active.
  */
 function hasActiveFilters(filters: SearchFilters, userSettings: UserSettings): boolean {
@@ -471,6 +495,11 @@ export function useSearch() {
       // Signal search start — the badge controller owns the loading animation.
       emitSearchEvent(SearchEvent.STARTED, { query });
 
+      // Taken alongside STARTED (rather than at the stream), so the reported
+      // duration matches the window the loading overlay is actually up. Declared
+      // out here so the catch branches below can report it too.
+      const startSearchTime = performance.now();
+
       const columnFilterConfig = getColumnFilterConfig();
       const userLimit = appContext.userSettings.suppliers?.resultLimit ?? 15;
 
@@ -484,8 +513,11 @@ export function useSearch() {
         supplierResultLimit: appContext.userSettings.suppliers?.resultLimit,
       });
 
-      // Create new abort controller for this search
+      // Create new abort controller for this search. Held in a local as well, so
+      // the terminal branches below read this search's signal rather than
+      // whatever the ref points at by the time they run.
       fetchControllerRef.current = new AbortController();
+      const controller = fetchControllerRef.current;
 
       // Don't even query suppliers the active shipping/country filters rule out —
       // the post-filter would drop all their products anyway. Fall back to the
@@ -505,12 +537,34 @@ export function useSearch() {
         }
       }
 
+      // Authoritative result count, tracked from the data we actually produce.
+      // `resultsTable.getRowCount()` only reflects the last committed render,
+      // which lags the `setSearchResults` calls below (the streaming branch
+      // defers them with startTransition), so reading it right after the
+      // stream drains can spuriously report 0 — see the no-results check below.
+      // Hoisted out of the try so the catch branches can report a partial count.
+      let totalResults = 0;
+
+      // Hoisted for the same reason — the catch branches read its supplier counters.
+      let productQueryFactory: SupplierFactory<Product> | undefined;
+
+      /**
+       * Snapshots what this search produced, for whichever terminal event fires.
+       * @returns The outcome detail shared by COMPLETED, ABORTED, and FAILED.
+       */
+      const searchOutcome = (): SearchOutcomeDetail => ({
+        count: totalResults,
+        durationMs: Math.round(performance.now() - startSearchTime),
+        suppliersQueried: productQueryFactory?.suppliersQueried ?? 0,
+        suppliersCompleted: productQueryFactory?.suppliersCompleted ?? 0,
+      });
+
       try {
         // Create the search factory object, which sets the query, supplier search limits,
         // and the abort controller for the search.
-        const productQueryFactory = new SupplierFactory(query, {
+        productQueryFactory = new SupplierFactory(query, {
           limit: fetchLimit,
-          controller: fetchControllerRef.current,
+          controller,
           suppliers: suppliersToQuery,
           caching: appContext.userSettings.caching?.enabled,
           // The scorer selector lives behind advanced mode, so only honor the
@@ -531,17 +585,8 @@ export function useSearch() {
           disabledSuppliers: appContext.userSettings.suppliers?.disabled,
         });
 
-        const startSearchTime = performance.now();
-
         // Execute the search for all suppliers.
         const productQueryResults = await productQueryFactory.executeAllStream(3);
-
-        // Authoritative result count, tracked from the data we actually produce.
-        // `resultsTable.getRowCount()` only reflects the last committed render,
-        // which lags the `setSearchResults` calls below (the streaming branch
-        // defers them with startTransition), so reading it right after the
-        // stream drains can spuriously report 0 — see the no-results check below.
-        let totalResults = 0;
 
         // Tracks supplier-scoped identities already emitted this search so the
         // streaming branch can skip a product that arrives more than once,
@@ -667,16 +712,14 @@ export function useSearch() {
           }
         }
 
-        const endSearchTime = performance.now();
-        const searchTime = endSearchTime - startSearchTime;
+        const outcome = searchOutcome();
 
-        logger.debug(`Found ${totalResults} products in ${searchTime} milliseconds`, {
+        logger.debug(`Found ${totalResults} products in ${outcome.durationMs} milliseconds`, {
           query,
           fetchLimit,
           productQueryResults,
           startSearchTime,
-          endSearchTime,
-          searchTime,
+          outcome,
         });
 
         // If no results were found, then try to suggest alternative search terms using cactus.nci.nih.gov API.
@@ -694,7 +737,16 @@ export function useSearch() {
         }
 
         // Signal completion; the badge controller reconciles the final count.
-        emitSearchEvent(SearchEvent.COMPLETED, { count: totalResults });
+        // A stopped search still lands here — SupplierFactory swallows each
+        // supplier's AbortError, so the stream drains rather than throwing — so
+        // tag the reason when the signal fired, letting consumers tell a full
+        // search from one that was cut short.
+        emitSearchEvent(SearchEvent.COMPLETED, {
+          ...outcome,
+          ...(controller.signal.aborted
+            ? { abortReason: classifyAbortReason(controller.signal.reason) }
+            : {}),
+        });
 
         // Tally this search toward the review prompt. Past the in-flight guard, so
         // retriggers of the same query don't double-count. Fire-and-forget.
@@ -717,7 +769,10 @@ export function useSearch() {
         // after an abort, when in-flight requests have finished settling — so
         // this is where isLoading/isAborting reset and the overlay closes.
         if (error instanceof Error && error.name === 'AbortError') {
-          emitSearchEvent(SearchEvent.ABORTED, { reason: error.message });
+          emitSearchEvent(SearchEvent.ABORTED, {
+            ...searchOutcome(),
+            reason: classifyAbortReason(controller.signal.reason),
+          });
           setState((prev) => ({
             ...prev,
             isLoading: false,
@@ -728,6 +783,7 @@ export function useSearch() {
           setTableText(i18n('search_status_aborted'));
         } else {
           emitSearchEvent(SearchEvent.FAILED, {
+            ...searchOutcome(),
             error: error instanceof Error ? error.message : i18n('search_error_failed'),
           });
           setState((prev) => ({
@@ -819,7 +875,7 @@ export function useSearch() {
     // keep streaming back until the supplier streams settle. Flip into the
     // "Aborting..." state now; performSearch resets isLoading/isAborting once the
     // stream finishes draining, which is what actually closes the overlay.
-    fetchControllerRef.current.abort('Request was aborted by user');
+    fetchControllerRef.current.abort(SEARCH_ABORT_REASON.USER);
     startTransition(() => {
       setState((prev) => ({
         ...prev,

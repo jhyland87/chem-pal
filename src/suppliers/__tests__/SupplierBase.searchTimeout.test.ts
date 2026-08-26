@@ -1,3 +1,4 @@
+import { SEARCH_ABORT_REASON } from '@/constants/common';
 import { ProductBuilder } from '@/utils/ProductBuilder';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SupplierBase } from '../SupplierBase';
@@ -61,6 +62,16 @@ describe('SupplierBase search-time budget', () => {
     await vi.advanceTimersByTimeAsync(200);
     expect(supplier.abortSignal.aborted).toBe(true);
     await expect(promise).resolves.toBe(sentinel);
+  });
+
+  it('aborts with the time-budget reason, so the terminal event can name the cause', async () => {
+    const supplier = new TimeoutTestSupplier('potassium', 5, new AbortController());
+    supplier.setSupplierSearchTimeBudgetSec(2);
+
+    supplier.callArmSearchTimeout(Symbol('searchTimeout'));
+    await vi.advanceTimersByTimeAsync(2_100);
+
+    expect(supplier.abortSignal.reason).toBe(SEARCH_ABORT_REASON.TIME_BUDGET);
   });
 
   it('stays disarmed when the budget is zero', () => {

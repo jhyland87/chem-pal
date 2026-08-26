@@ -10,9 +10,11 @@ import {
   getSearchResults,
   getSearchResultsRecord,
 } from '@/utils/idbCache';
+import { SEARCH_ABORT_REASON } from '@/constants/common';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   buildNoResultsMessage,
+  classifyAbortReason,
   createInitialHistoryEntry,
   saveResultsToSession,
   updateColumnFilterFromResult,
@@ -43,6 +45,18 @@ describe('useSearch helpers', () => {
 
   afterAll(() => {
     restoreChromeStorageMock();
+  });
+
+  describe('classifyAbortReason', () => {
+    it.each([
+      { reason: SEARCH_ABORT_REASON.USER, expected: 'user_aborted' },
+      { reason: SEARCH_ABORT_REASON.TIME_BUDGET, expected: 'time_budget_exceeded' },
+      { reason: 'Request was aborted by user', expected: 'unknown' },
+      { reason: new DOMException('stop', 'AbortError'), expected: 'unknown' },
+      { reason: undefined, expected: 'unknown' },
+    ])('maps $reason to $expected', ({ reason, expected }) => {
+      expect(classifyAbortReason(reason)).toBe(expected);
+    });
   });
 
   describe('updateColumnFilterFromResult', () => {

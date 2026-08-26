@@ -36,15 +36,34 @@ export enum SearchEvent {
 }
 
 /**
+ * What every terminal search event reports about the run that just ended, so a
+ * consumer can tell a full search from one that stopped early without knowing
+ * how the search itself is orchestrated.
+ * @source
+ */
+export interface SearchOutcomeDetail {
+  /** Products the search produced before it ended. */
+  count: number;
+  /** Wall-clock milliseconds from the search starting to it ending. */
+  durationMs: number;
+  /** Suppliers the search actually queried (post shipping/permission filtering). */
+  suppliersQueried: number;
+  /** How many of those had finished when the search ended. */
+  suppliersCompleted: number;
+}
+
+/**
  * Maps each {@link SearchEvent} to the shape of its `CustomEvent.detail`.
  * `undefined` means the event carries no payload.
  */
 export interface SearchEventDetailMap {
   [SearchEvent.STARTED]: { query: string };
   [SearchEvent.RESULTS_COUNT]: { count: number };
-  [SearchEvent.COMPLETED]: { count: number };
-  [SearchEvent.ABORTED]: Maybe<{ reason?: string }>;
-  [SearchEvent.FAILED]: { error?: string };
+  // `abortReason` is set when the stream drained only because the search was
+  // aborted mid-flight — the run completed, but not all of the work did.
+  [SearchEvent.COMPLETED]: SearchOutcomeDetail & { abortReason?: string };
+  [SearchEvent.ABORTED]: SearchOutcomeDetail & { reason?: string };
+  [SearchEvent.FAILED]: SearchOutcomeDetail & { error?: string };
 }
 
 /** Union of all search-event names (equivalent to {@link SearchEvent}). */
@@ -58,8 +77,13 @@ export type SearchEventType = keyof SearchEventDetailMap;
  * ```ts
  * emitSearchEvent(SearchEvent.STARTED, { query: "acetone" });
  * emitSearchEvent(SearchEvent.RESULTS_COUNT, { count: 12 });
- * emitSearchEvent(SearchEvent.ABORTED, { reason: "Request was aborted" });
- * emitSearchEvent(SearchEvent.ABORTED); // No reason provided
+ * emitSearchEvent(SearchEvent.ABORTED, {
+ *   count: 3,
+ *   durationMs: 1240,
+ *   suppliersQueried: 8,
+ *   suppliersCompleted: 2,
+ *   reason: "user_aborted",
+ * });
  * ```
  * @source
  */
@@ -78,8 +102,8 @@ export function emitSearchEvent<K extends SearchEventType>(
  * @returns A function that removes the listener.
  * @example
  * ```ts
- * useEffect(() => onSearchEvent(SearchEvent.COMPLETED, ({ count }) => {
- *   console.log("done", count);
+ * useEffect(() => onSearchEvent(SearchEvent.COMPLETED, ({ count, durationMs }) => {
+ *   console.log("done", count, durationMs);
  * }), []);
  * ```
  * @source

@@ -192,6 +192,16 @@ export class SupplierFactory<P extends Product> {
   // aggregated into an AggregateError recorded to the shared error buffer.
   public executionErrors: SupplierExecutionError<P>[] = [];
 
+  // Number of suppliers the most recent run actually queried, i.e. what survived
+  // the disabled/include lists, shipping filtering, and host-permission checks.
+  // Set by executeAll/executeAllStream once that set is known.
+  public suppliersQueried: number = 0;
+
+  // How many of those suppliers have finished (successfully, with an error, or
+  // aborted). Mirrors the stream's internal done counter so a caller can read a
+  // partial value the moment an aborted search stops draining.
+  public suppliersCompleted: number = 0;
+
   /**
    * Factory class for querying all suppliers.
    *
@@ -567,6 +577,8 @@ export class SupplierFactory<P extends Product> {
     const shippableInstances = this.filterByShipping(supplierInstances);
     this.shippingExcludedAll = supplierInstances.length > 0 && shippableInstances.length === 0;
     const permittedInstances = await this.filterByPermissions(shippableInstances);
+    this.suppliersQueried = permittedInstances.length;
+    this.suppliersCompleted = 0;
 
     // 3. Use async-await-queue for parallel execution
     const queue = new Queue(concurrency, 100);
@@ -586,6 +598,8 @@ export class SupplierFactory<P extends Product> {
           this.logger.error('Error executing supplier', { error: e, supplier });
           incrementParseError(supplier.supplierName);
           if (!isAbortError(e)) errors.push({ error: e, supplier });
+        } finally {
+          this.suppliersCompleted++;
         }
       }),
     );
@@ -646,6 +660,8 @@ export class SupplierFactory<P extends Product> {
     const shippableInstances = this.filterByShipping(supplierInstances);
     this.shippingExcludedAll = supplierInstances.length > 0 && shippableInstances.length === 0;
     const permittedInstances = await this.filterByPermissions(shippableInstances);
+    this.suppliersQueried = permittedInstances.length;
+    this.suppliersCompleted = 0;
     const queue = new Queue(concurrency, 100);
 
     const channel: P[] = [];
@@ -668,6 +684,7 @@ export class SupplierFactory<P extends Product> {
           if (!isAbortError(e)) errors.push({ error: e, supplier });
         } finally {
           doneCount++;
+          this.suppliersCompleted = doneCount;
         }
       });
     });

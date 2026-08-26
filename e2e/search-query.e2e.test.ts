@@ -255,6 +255,55 @@ describe('Chem-Pal search query', () => {
   );
 
   it(
+    'should report a cancelled search as terminated early, not as a completed one',
+    async () => {
+      const page = await openExtension();
+
+      // Same analytics sniffer as the happy-path test below, but keeping the
+      // full property bag so the termination reason can be asserted.
+      const analyticsPayloads: Record<string, Record<string, unknown>> = {};
+      page.on('request', (request) => {
+        if (!request.url().includes('posthog')) return;
+        const body = request.postData();
+        if (!body) return;
+        const captured = JSON.parse(body);
+        analyticsPayloads[captured.event] = captured.properties;
+      });
+
+      const searchInput = page.getByRole('textbox', { name: 'search for products' });
+      await searchInput.fill('sodium borohydride');
+      await page.getByRole('button', { name: 'search' }).click();
+
+      // Cancel while the suppliers are still streaming. The overlay stays up
+      // afterwards ("Aborting...") until the in-flight requests drain, which is
+      // what produces the terminal event.
+      // MUI marks the backdrop aria-hidden, so its button is unreachable by role —
+      // target it through the backdrop instead.
+      const backdrop = page.locator('#loading-backdrop');
+      await playwrightExpect(backdrop).toBeVisible({ timeout: 10_000 });
+      await backdrop.locator('button').click();
+      await playwrightExpect(backdrop).toBeHidden({ timeout: 120_000 });
+
+      await playwrightExpect
+        .poll(() => analyticsPayloads.search_terminated !== undefined, { timeout: 10_000 })
+        .toBe(true);
+
+      const terminated = analyticsPayloads.search_terminated;
+      vitestExpect(terminated.reason).toBe('user_aborted');
+      vitestExpect(terminated.search_term).toBe('sodium borohydride');
+      vitestExpect(terminated.duration_ms).toBeGreaterThan(0);
+      vitestExpect(terminated.suppliers_queried).toBeGreaterThan(0);
+
+      // A cancelled search reports itself once, as terminated — never also as a
+      // clean result set, which would skew the completed-search metrics.
+      vitestExpect(analyticsPayloads.search_results).toBeUndefined();
+
+      await page.close();
+    },
+    testTimeout,
+  );
+
+  it(
     "should query for 'sodium borohydride' and return at least 10 results from mock data",
     async () => {
       const page = await openExtension();
@@ -266,10 +315,14 @@ describe('Chem-Pal search query', () => {
       // `openExtension()` kills the request, so nothing actually leaves the
       // machine; the `request` event still fires, and postData is readable.
       const analyticsEvents: string[] = [];
+      const analyticsPayloads: Record<string, Record<string, unknown>> = {};
       page.on('request', (request) => {
         if (!request.url().includes('posthog')) return;
         const body = request.postData();
-        if (body) analyticsEvents.push(JSON.parse(body).event);
+        if (!body) return;
+        const captured = JSON.parse(body);
+        analyticsEvents.push(captured.event);
+        analyticsPayloads[captured.event] = captured.properties;
       });
 
       // Type the search query and submit (mock routes + "abort" fallback are
@@ -296,6 +349,15 @@ describe('Chem-Pal search query', () => {
         .poll(() => analyticsEvents.includes('search_results'), { timeout: 10_000 })
         .toBe(true);
       vitestExpect(analyticsEvents).toContain('search_query');
+
+      // A search that ran to completion reports timing and supplier counts, and
+      // must not also report itself as terminated early.
+      vitestExpect(analyticsEvents).not.toContain('search_terminated');
+      const searchResults = analyticsPayloads.search_results;
+      vitestExpect(searchResults.duration_ms).toBeGreaterThan(0);
+      vitestExpect(searchResults.result_count).toBeGreaterThan(0);
+      vitestExpect(searchResults.suppliers_queried).toBeGreaterThan(0);
+      vitestExpect(searchResults.suppliers_completed).toBe(searchResults.suppliers_queried);
 
       // Change the page size to "All" so all rows are visible
       // MUI Select renders a custom dropdown — target the trigger div by aria-label
