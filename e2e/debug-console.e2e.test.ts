@@ -1,9 +1,9 @@
 import { expect as playwrightExpect } from '@playwright/test';
 import { execSync } from 'node:child_process';
 import path from 'node:path';
-import { type BrowserContext, type Page, chromium } from 'playwright';
+import type { BrowserContext, Page } from 'playwright';
 import { afterAll, beforeAll, describe, it, expect as vitestExpect } from 'vitest';
-import { extensionLaunchOptions } from './helpers/launchOptions';
+import { launchExtensionContext } from './helpers/launchOptions';
 
 /**
  * The `window.chempal` console helpers are unlocked by advanced mode.
@@ -34,7 +34,7 @@ describe('Chem-Pal debug console', () => {
   beforeAll(async () => {
     execSync('pnpm build:e2e', { cwd: repoRoot, stdio: 'inherit' });
     ({ context, extensionId } = await (async () => {
-      const ctx = await chromium.launchPersistentContext('', extensionLaunchOptions(buildDir));
+      const ctx = await launchExtensionContext(buildDir);
       const sw = ctx.serviceWorkers().length
         ? ctx.serviceWorkers()[0]
         : await ctx.waitForEvent('serviceworker');

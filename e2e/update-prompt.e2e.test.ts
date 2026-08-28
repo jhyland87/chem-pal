@@ -2,9 +2,9 @@ import { expect as playwrightExpect } from '@playwright/test';
 import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { type BrowserContext, type Page, chromium } from 'playwright';
+import type { BrowserContext, Page } from 'playwright';
 import { afterAll, beforeAll, beforeEach, describe, it, expect as vitestExpect } from 'vitest';
-import { extensionLaunchOptions } from './helpers/launchOptions';
+import { launchExtensionContext } from './helpers/launchOptions';
 
 const repoRoot = path.resolve(__dirname, '..');
 const buildDir = path.resolve(repoRoot, 'build');
@@ -17,7 +17,7 @@ const manifestPath = path.resolve(buildDir, 'manifest.json');
 
 /** Boots a Chromium profile with the built extension loaded unpacked. */
 async function launchWithExtension(): Promise<{ context: BrowserContext; extensionId: string }> {
-  const context = await chromium.launchPersistentContext('', extensionLaunchOptions(buildDir));
+  const context = await launchExtensionContext(buildDir);
 
   const swTarget = context.serviceWorkers().length
     ? context.serviceWorkers()[0]

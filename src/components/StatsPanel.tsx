@@ -12,7 +12,7 @@ import {
 } from '@/helpers/supplierStats';
 import { clearStats, getStats } from '@/utils/SupplierStatsStore';
 import { IDB_SUPPLIER_STATS_UPDATED } from '@/utils/idbCache';
-import { Delete as DeleteIcon } from '@mui/icons-material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
   Box,

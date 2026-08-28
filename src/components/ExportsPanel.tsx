@@ -8,7 +8,8 @@ import {
   getAllExports,
   IDB_EXPORTS_UPDATED,
 } from '@/utils/idbCache';
-import { Delete as DeleteIcon, FileDownload as FileDownloadIcon } from '@mui/icons-material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { Box, IconButton, List, ListItem, ListItemText, Tooltip, Typography } from '@mui/material';
 import { FC, useCallback, useEffect, useState } from 'react';
 import styles from './ExportsPanel.module.scss';

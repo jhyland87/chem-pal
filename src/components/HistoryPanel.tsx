@@ -3,11 +3,9 @@ import { useAppContext } from '@/context';
 import { i18n } from '@/helpers/i18n';
 import { formatTimestamp } from '@/helpers/utils';
 import { clearSearchHistory, getSearchHistory } from '@/utils/idbCache';
-import {
-  Delete as DeleteIcon,
-  ExpandMore as ExpandMoreIcon,
-  FilterList as FilterListIcon,
-} from '@mui/icons-material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import {
   Accordion,
   Box,
