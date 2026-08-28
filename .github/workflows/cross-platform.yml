@@ -89,11 +89,22 @@ jobs:
         if: runner.os == 'Windows'
         run: pnpm run test:run
 
+      # E2E is skipped on Windows. The runner executes the suite roughly twice
+      # as slow as Linux or macOS, and a different test crosses one of the
+      # suite's ~43 explicit timeouts on each run — search-query on one, then
+      # update-prompt on the next. Making it reliable means retuning those
+      # timeouts per-platform, which is worth doing separately; retrying past it
+      # here would mask a genuine Windows regression just as readily. The unit
+      # suite, both builds, lint and typecheck all run on Windows and carry the
+      # portability coverage this matrix exists for.
+      #
       # --with-deps is an apt path and is only valid on Linux.
       - name: Install Playwright Chromium
+        if: runner.os != 'Windows'
         run: pnpm exec playwright install ${{ runner.os == 'Linux' && '--with-deps' || '' }} chromium
 
       # No xvfb wrapper: e2e/helpers/launchOptions.ts uses channel: 'chromium'
       # (new headless), which loads extensions without a display.
       - name: Run Chrome E2E tests
+        if: runner.os != 'Windows'
         run: pnpm run test:e2e:chrome
