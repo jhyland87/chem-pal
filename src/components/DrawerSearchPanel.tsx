@@ -4,11 +4,9 @@ import { useAppContext } from '@/context';
 import { i18n, useLocale } from '@/helpers/i18n';
 import { countActiveSearchFilters } from '@/helpers/searchFilters';
 import { cstorage } from '@/utils/storage';
-import {
-  FilterAltOff as ClearFiltersIcon,
-  ExpandMore as ExpandMoreIcon,
-  Search as SearchIcon,
-} from '@mui/icons-material';
+import ClearFiltersIcon from '@mui/icons-material/FilterAltOff';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import SearchIcon from '@mui/icons-material/Search';
 import { Accordion, Box, Button, TextField, Typography } from '@mui/material';
 import { FC, KeyboardEvent, SyntheticEvent, useEffect, useMemo } from 'react';
 import ColumnDrawerSection from './ColumnDrawerSection';

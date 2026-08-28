@@ -1,0 +1,110 @@
+name: Cross-platform
+
+# Verifies the repo builds and tests on all three developer platforms, not just
+# the Linux runners the other workflows use. Its ubuntu leg supersedes
+# chrome-e2e.yml; that workflow is retired once this one is proven green.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: cross-platform-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_VERSION: '22.15.0'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # One red platform must not cancel the others — seeing all three is the
+      # entire point of the matrix.
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # typedoc-theme-hierarchy is a `link:` devDependency into themes/.
+          submodules: true
+
+      # action-setup must precede setup-node: the `cache: pnpm` option needs
+      # pnpm on PATH to resolve the per-OS store location.
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm type-check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build the app
+        run: pnpm run build
+
+      # Canary for the cross-env conversion: this script sets BROWSER=, which
+      # cmd.exe cannot parse as a bare prefix.
+      - name: Build the app (Firefox)
+        run: pnpm run build:firefox
+
+      # vmThreads holds a lot of files open at once. macOS runners ship a 256
+      # soft limit and a hard cap the kernel enforces via kern.maxfilesperproc,
+      # so asking for a flat 65536 can fail and silently leave the limit at 256
+      # (EMFILE mid-suite). Raise the system cap first, then take the best of
+      # what's actually grantable. Must share a shell with the test command —
+      # each `run` block is a fresh process.
+      - name: Run unit tests
+        if: runner.os != 'Windows'
+        run: |
+          echo "fd limit before: soft=$(ulimit -Sn) hard=$(ulimit -Hn)"
+          if [ "$(uname)" = "Darwin" ]; then
+            sudo launchctl limit maxfiles 65536 524288 || true
+          fi
+          ulimit -n 65536 2>/dev/null \
+            || ulimit -n "$(ulimit -Hn)" 2>/dev/null \
+            || true
+          echo "fd limit after: soft=$(ulimit -Sn)"
+          pnpm run test:run
+
+      - name: Run unit tests
+        if: runner.os == 'Windows'
+        run: pnpm run test:run
+
+      # E2E is skipped on Windows. The runner executes the suite roughly twice
+      # as slow as Linux or macOS, and a different test crosses one of the
+      # suite's ~43 explicit timeouts on each run — search-query on one, then
+      # update-prompt on the next. Making it reliable means retuning those
+      # timeouts per-platform, which is worth doing separately; retrying past it
+      # here would mask a genuine Windows regression just as readily. The unit
+      # suite, both builds, lint and typecheck all run on Windows and carry the
+      # portability coverage this matrix exists for.
+      #
+      # --with-deps is an apt path and is only valid on Linux.
+      - name: Install Playwright Chromium
+        if: runner.os != 'Windows'
+        run: pnpm exec playwright install ${{ runner.os == 'Linux' && '--with-deps' || '' }} chromium
+
+      # No xvfb wrapper: e2e/helpers/launchOptions.ts uses channel: 'chromium'
+      # (new headless), which loads extensions without a display.
+      - name: Run Chrome E2E tests
+        if: runner.os != 'Windows'
+        run: pnpm run test:e2e:chrome
