@@ -1,0 +1,86 @@
+name: Cross-platform
+
+# Verifies the repo builds and tests on all three developer platforms, not just
+# the Linux runners the other workflows use. Its ubuntu leg supersedes
+# chrome-e2e.yml; that workflow is retired once this one is proven green.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: cross-platform-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_VERSION: '22.15.0'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # One red platform must not cancel the others — seeing all three is the
+      # entire point of the matrix.
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # typedoc-theme-hierarchy is a `link:` devDependency into themes/.
+          submodules: true
+
+      # action-setup must precede setup-node: the `cache: pnpm` option needs
+      # pnpm on PATH to resolve the per-OS store location.
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm type-check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build the app
+        run: pnpm run build
+
+      # Canary for the cross-env conversion: this script sets BROWSER=, which
+      # cmd.exe cannot parse as a bare prefix.
+      - name: Build the app (Firefox)
+        run: pnpm run build:firefox
+
+      # ulimit has to share a shell with the test command — each `run` block is
+      # a fresh process. macOS runners default low enough to need it too.
+      - name: Run unit tests
+        if: runner.os != 'Windows'
+        run: ulimit -n 65536 || true; pnpm run test:run
+
+      - name: Run unit tests
+        if: runner.os == 'Windows'
+        run: pnpm run test:run
+
+      # --with-deps is an apt path and is only valid on Linux.
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install ${{ runner.os == 'Linux' && '--with-deps' || '' }} chromium
+
+      # No xvfb wrapper: e2e/helpers/launchOptions.ts uses channel: 'chromium'
+      # (new headless), which loads extensions without a display.
+      - name: Run Chrome E2E tests
+        run: pnpm run test:e2e:chrome
