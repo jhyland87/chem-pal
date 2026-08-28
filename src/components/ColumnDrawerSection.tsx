@@ -8,7 +8,7 @@ import {
 } from '@/helpers/supplierFilters';
 import { toFiniteNumber } from '@/helpers/utils';
 import { SupplierFactory } from '@/suppliers/SupplierFactory';
-import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Accordion,
   Autocomplete,

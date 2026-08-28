@@ -1,11 +1,9 @@
 import { DRAWER_INDEX } from '@/constants/common';
 import { useAppContext } from '@/context';
 import { i18n } from '@/helpers/i18n';
-import {
-  History as HistoryIcon,
-  Search as SearchIcon,
-  Settings as SettingsIcon,
-} from '@mui/icons-material';
+import HistoryIcon from '@mui/icons-material/History';
+import SearchIcon from '@mui/icons-material/Search';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { Drawer, Tab, Tabs } from '@mui/material';
 import { useState, FC, SyntheticEvent } from 'react';
 import DrawerSearchPanel from './DrawerSearchPanel';
