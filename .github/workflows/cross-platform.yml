@@ -66,11 +66,24 @@ jobs:
       - name: Build the app (Firefox)
         run: pnpm run build:firefox
 
-      # ulimit has to share a shell with the test command — each `run` block is
-      # a fresh process. macOS runners default low enough to need it too.
+      # vmThreads holds a lot of files open at once. macOS runners ship a 256
+      # soft limit and a hard cap the kernel enforces via kern.maxfilesperproc,
+      # so asking for a flat 65536 can fail and silently leave the limit at 256
+      # (EMFILE mid-suite). Raise the system cap first, then take the best of
+      # what's actually grantable. Must share a shell with the test command —
+      # each `run` block is a fresh process.
       - name: Run unit tests
         if: runner.os != 'Windows'
-        run: ulimit -n 65536 || true; pnpm run test:run
+        run: |
+          echo "fd limit before: soft=$(ulimit -Sn) hard=$(ulimit -Hn)"
+          if [ "$(uname)" = "Darwin" ]; then
+            sudo launchctl limit maxfiles 65536 524288 || true
+          fi
+          ulimit -n 65536 2>/dev/null \
+            || ulimit -n "$(ulimit -Hn)" 2>/dev/null \
+            || true
+          echo "fd limit after: soft=$(ulimit -Sn)"
+          pnpm run test:run
 
       - name: Run unit tests
         if: runner.os == 'Windows'
