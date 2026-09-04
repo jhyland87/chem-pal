@@ -664,6 +664,7 @@ export default function ResultsTable({
         resultCount={totalRowCount}
         supplierResultsCount={supplierResultsCount}
         isAborting={isAborting}
+        query={executedQuery}
         onClick={handleStopSearch}
       />
       <div className={resultStyles['results-container']}>

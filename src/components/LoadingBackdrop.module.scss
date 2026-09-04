@@ -22,6 +22,17 @@
   }
 }
 
+// The overlap above works for the flat cubane graphic, but a molecule is detailed
+// enough that text laid across it makes both unreadable. When one is showing, give
+// the structure and the status line a row each.
+.spinner-stack.has-molecule {
+  row-gap: 6px;
+
+  > * {
+    grid-row: auto;
+  }
+}
+
 .spinner-box {
   display: flex;
   align-items: center;
