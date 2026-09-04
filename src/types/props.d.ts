@@ -319,6 +319,11 @@ declare global {
     supplierResultsCount: number;
     /** Whether the search is in the process of aborting (pending requests still settling) */
     isAborting?: boolean;
+    /**
+     * The query being searched for. When it resolves to a PubChem structure, the
+     * spinning cubane graphic is replaced by that molecule; otherwise the cube stays.
+     */
+    query?: string;
   }
 
   /**

@@ -1,9 +1,35 @@
 import { i18n } from '@/helpers/i18n';
+import { useCallback, useState } from 'react';
 import Backdrop from '@mui/material/Backdrop';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import { MoleculeSpinner, type MoleculeSpinnerStatus } from './MoleculeSpinner';
 import IconSpinner from './IconSpinner';
 import styles from './LoadingBackdrop.module.scss';
+
+/**
+ * The generic spinning-cubane graphic, shown until (or unless) the query resolves to a
+ * real structure. Built once at module scope so its identity is stable: `MoleculeSpinner`
+ * is memoized, and a fresh element on every result-count tick would defeat that.
+ * @source
+ */
+const CUBE_FALLBACK = (
+  <IconSpinner>
+    <img
+      src="/static/images/cubane-loader-noh-thick-blue-320px.png"
+      width={128}
+      height={128}
+      alt=""
+    />
+  </IconSpinner>
+);
+
+/**
+ * Edge length of the rendered molecule. Larger than the 128px cube it replaces — the
+ * overlay has the room, and a structure needs it to stay legible.
+ * @source
+ */
+const MOLECULE_SIZE = 168;
 
 /**
  * Format the results/loading text based on the abort state and number of
@@ -34,11 +60,15 @@ function formatResultsText(props: LoadingBackdropProps): string {
 }
 
 /**
- * A full-screen loading overlay component with a spinning cubane loader graphic and stop button.
- * The spinner has a delayed fade-in animation when the backdrop is opened.
+ * A full-screen loading overlay component with a stop button, shown while a search runs.
+ *
+ * The graphic is the molecule being searched for, fetched from PubChem and slowly rotated
+ * (see {@link MoleculeSpinner}). Until it resolves — and for any query PubChem has no
+ * structure for — the generic spinning cubane loader is shown instead.
  *
  * @param props - Component properties containing:
  * - open: Controls the visibility of the backdrop
+ * - query: The query being searched for, depicted as a rotating molecule when resolvable
  * - onClick: Callback function triggered when the stop button is clicked
  * @returns A loading backdrop component
  *
@@ -56,6 +86,18 @@ function formatResultsText(props: LoadingBackdropProps): string {
  * @source
  */
 export default function LoadingBackdrop(props: LoadingBackdropProps) {
+  const [hasMolecule, setHasMolecule] = useState(false);
+
+  // Stable identity: MoleculeSpinner is memoized, and this component re-renders on
+  // every result-count tick.
+  const handleStatusChange = useCallback((status: MoleculeSpinnerStatus) => {
+    setHasMolecule(status.state === 'ready');
+  }, []);
+
+  const stackClass = hasMolecule
+    ? `${styles['spinner-stack']} ${styles['has-molecule']}`
+    : styles['spinner-stack'];
+
   return (
     <>
       <Backdrop
@@ -65,16 +107,14 @@ export default function LoadingBackdrop(props: LoadingBackdropProps) {
         aria-label={i18n('loading_aria')}
       >
         <Box className={styles['loading-backdrop-box']}>
-          <Box className={styles['spinner-stack']}>
+          <Box className={stackClass}>
             <Box className={styles['spinner-box']}>
-              <IconSpinner>
-                <img
-                  src="/static/images/cubane-loader-noh-thick-blue-320px.png"
-                  width={128}
-                  height={128}
-                  alt=""
-                />
-              </IconSpinner>
+              <MoleculeSpinner
+                query={props.query ?? ''}
+                size={MOLECULE_SIZE}
+                fallback={CUBE_FALLBACK}
+                onStatusChange={handleStatusChange}
+              />
             </Box>
             <span className={styles['status-text']}>{formatResultsText(props)}</span>
           </Box>
