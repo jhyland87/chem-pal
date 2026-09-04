@@ -56,6 +56,22 @@ describe('LoadingBackdrop', () => {
     expect(screen.getByText('Found 9 results from 3 suppliers')).toBeInTheDocument();
   });
 
+  it('shows the cubane loader when no query is supplied', () => {
+    render(<LoadingBackdrop {...makeProps()} />);
+
+    const cube = document.querySelector('img[src*="cubane-loader"]');
+    expect(cube).toBeInTheDocument();
+    expect(screen.queryByTestId('molecule-spinner')).not.toBeInTheDocument();
+  });
+
+  it('keeps showing the cubane loader while a query is still resolving', () => {
+    vi.mocked(global.fetch).mockImplementation(() => new Promise(() => {}));
+
+    render(<LoadingBackdrop {...makeProps({ query: 'acetone' })} />);
+
+    expect(document.querySelector('img[src*="cubane-loader"]')).toBeInTheDocument();
+  });
+
   it('invokes onClick when the cancel button is pressed', () => {
     const onClick = vi.fn();
     render(<LoadingBackdrop {...makeProps({ resultCount: 2, supplierResultsCount: 2, onClick })} />);

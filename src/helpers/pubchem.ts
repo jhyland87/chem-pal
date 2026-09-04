@@ -285,6 +285,109 @@ export const getCidByFormula: (formula: string) => Promise<PubChemCID | undefine
 );
 
 /**
+ * Network implementation for {@link getCidBySmiles}; see it for details.
+ * @param smiles - The SMILES string to look up
+ * @returns The first matching CID, or undefined
+ * @source
+ */
+async function getCidBySmilesUncached(smiles: string): Promise<PubChemCID | undefined> {
+  // The SMILES goes in the query string, not the path. PubChem splits the request path
+  // before percent-decoding it, so a SMILES containing `/`, `#` or `+` (stereo bonds,
+  // triple bonds, charges) 404s against the path form even when correctly encoded.
+  const url = new URL(`${PUG_REST_BASE}/compound/smiles/cids/JSON`);
+  url.searchParams.set('smiles', smiles);
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    const first = extractCids(data)?.[0];
+    return isPubChemCID(first) ? first : undefined;
+  } catch (error) {
+    console.error('Error fetching PubChem CID by SMILES:', error);
+    return undefined;
+  }
+}
+
+/**
+ * Resolves a SMILES string to its PubChem CID. Results are cached for three days.
+ * @category Science Helpers
+ * @param smiles - The SMILES string to look up
+ * @returns The matching CID, or undefined if PubChem has no match
+ * @example
+ * ```typescript
+ * await getCidBySmiles('CC(=O)Oc1ccccc1C(=O)O');
+ * // Returns: 2244
+ * ```
+ * @source
+ */
+export const getCidBySmiles: (smiles: string) => Promise<PubChemCID | undefined> = withTtlCache(
+  getCidBySmilesUncached,
+  { namespace: 'cidBySmiles' },
+);
+
+/**
+ * Which depiction of a structure PubChem should return: a computed 3D conformer, or the
+ * flat 2D layout.
+ * @category Science Helpers
+ * @source
+ */
+export type StructureRecordType = '2d' | '3d';
+
+/**
+ * A structure record fetched from PubChem, tagged with which depiction was actually served.
+ * @category Science Helpers
+ * @source
+ */
+export interface StructureRecord {
+  /** Raw SDF (molfile V2000) text. */
+  sdf: string;
+  /** Which depiction this is — `'3d'` only when a real conformer was available. */
+  recordType: StructureRecordType;
+}
+
+/**
+ * Network implementation for {@link getStructureSdf}; see it for details.
+ * @param cid - The compound's PubChem CID
+ * @returns The structure record, or undefined if neither depiction is available
+ * @source
+ */
+async function getStructureSdfUncached(cid: PubChemCID): Promise<StructureRecord | undefined> {
+  // PubChem only computes 3D conformers for covalent species: ionic salts and most
+  // inorganics (NaCl, NaOH, KMnO4 …) 404 on `record_type=3d` but always have a 2D record.
+  const preference: StructureRecordType[] = ['3d', '2d'];
+  for (const recordType of preference) {
+    try {
+      const response = await fetch(
+        `${PUG_REST_BASE}/compound/cid/${cid}/SDF?record_type=${recordType}`,
+      );
+      if (!response.ok) continue;
+      const sdf = await response.text();
+      if (sdf.trim() === '') continue;
+      return { sdf, recordType };
+    } catch (error) {
+      console.error(`Error fetching PubChem ${recordType} SDF:`, error);
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Fetches a compound's structure as SDF, preferring the computed 3D conformer and falling
+ * back to the 2D layout when PubChem has no 3D record for it. Cached for three days.
+ * @category Science Helpers
+ * @param cid - The compound's PubChem CID
+ * @returns The SDF text and which depiction it is, or undefined if neither is available
+ * @example
+ * ```typescript
+ * await getStructureSdf(2519);  // caffeine: { sdf: '2519\n  -OEChem-…', recordType: '3d' }
+ * await getStructureSdf(5234);  // sodium chloride, no conformer: { sdf: …, recordType: '2d' }
+ * ```
+ * @source
+ */
+export const getStructureSdf: (cid: PubChemCID) => Promise<StructureRecord | undefined> =
+  withTtlCache(getStructureSdfUncached, { namespace: 'structureSdf' });
+
+/**
  * How many candidate names {@link resolveIdentifierNames} keeps. Enough to reach a common
  * name even when brand/registry synonyms rank above it, without ballooning the per-item
  * fuzzy-scoring cost.

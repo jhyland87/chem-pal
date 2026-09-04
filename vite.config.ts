@@ -206,6 +206,9 @@ export default ({ mode }: { mode: string }) => {
           manualChunks: (id: string) => {
             if (id.includes('node_modules/@mui/x-data-grid')) return 'vendor-mui-x-data-grid';
             if (id.includes('node_modules/@mui/x-charts')) return 'vendor-mui-x-charts';
+            // three.js backs the molecule loading animation, which is reached through a
+            // dynamic import so the WebGL renderer never lands in the initial popup bundle.
+            if (id.includes('node_modules/three/')) return 'vendor-three';
             // @mui/x-charts' transitive D3 stack (scale/shape/array/interpolate…).
             if (/node_modules\/(d3-[a-z]+|internmap|delaunator|robust-predicates)\//.test(id)) {
               return 'vendor-mui-x-charts';
