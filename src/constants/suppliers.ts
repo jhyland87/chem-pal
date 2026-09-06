@@ -58,15 +58,21 @@ const liveSupplierNameSet = new Set(liveSupplierNames);
  * checked against the glob-derived live-supplier set — no supplier implementation is
  * imported. Also the mechanism by which {@link SUPPLIER_CLASS_NAMES} is typed without
  * an assertion.
+ *
+ * Prefer this over `SupplierFactory.isSupplierClassName` anywhere that isn't already
+ * running a search: the factory's copy is equivalent but reaching it pulls the whole
+ * supplier layer into the caller's bundle.
  * @param value - Candidate string to test.
  * @returns True (and narrows `value`) when it names a live supplier.
  * @example
  * ```ts
  * isSupplierClassName('SupplierCarolina'); // => true
  * ```
+ * @category Constants
+ * @group Suppliers
  * @source
  */
-function isSupplierClassName(value: string): value is SupplierClassName {
+export function isSupplierClassName(value: string): value is SupplierClassName {
   return liveSupplierNameSet.has(value);
 }
 

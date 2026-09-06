@@ -1,5 +1,4 @@
 export { default as AboutModal } from './AboutModal';
-export { default as FavoritesPanel } from './FavoritesPanel';
 export { default as HelpTooltip } from './HelpTooltip';
 export { default as HistoryPanel } from './HistoryPanel';
 export { default as IconSpinner } from './IconSpinner';

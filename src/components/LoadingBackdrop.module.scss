@@ -3,55 +3,75 @@
   background-color: rgba(0, 0, 0, 0.5);
 }
 
+// One panel around the whole overlay — structure, status line and cancel button —
+// rather than styling each piece separately. Near-opaque (see PANEL_OPACITY) so the
+// results table behind the translucent backdrop doesn't show through and compete with
+// the text. Its background and text colors come from the theme palette in
+// LoadingBackdrop.tsx, which SCSS can't read.
 .loading-backdrop-box {
+  position: relative;
   display: flex;
+  // Fixed size: the panel is otherwise sized by its content, so it visibly grows when
+  // "Loading..." becomes "Found 121 results from 10 suppliers" mid-search, and it has to
+  // give the background graphic room regardless of how short the status line is.
+  width: 300px;
+  min-height: 252px;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px 16px;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
-// Stacks the spinner and status text in the same grid cell so the animation
-// sits behind the text. Both children are pinned to row/column 1.
-.spinner-stack {
-  display: grid;
-  place-items: center;
-  margin-bottom: 8px;
-
-  > * {
-    grid-row: 1;
-    grid-column: 1;
-  }
-}
-
-// The overlap above works for the flat cubane graphic, but a molecule is detailed
-// enough that text laid across it makes both unreadable. When one is showing, give
-// the structure and the status line a row each.
-.spinner-stack.has-molecule {
-  row-gap: 6px;
-
-  > * {
-    grid-row: auto;
-  }
-}
-
+// The graphic is a background layer: it fills the panel behind the text rather than
+// taking a row in the content flow, and is clipped by the panel's rounded corners.
 .spinner-box {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 0;
+  pointer-events: none;
 }
 
+// A molecule carries far more detail than the flat cubane graphic, so it is dimmed when
+// it sits behind the text — enough to read as a background without losing the structure.
+.spinner-box.as-backdrop {
+  opacity: 0.45;
+}
+
+// The query being searched for, at the top of the panel. Constrained so a long
+// advanced query truncates instead of stretching the panel across the popup.
+.query-text {
+  position: relative;
+  z-index: 1;
+  max-width: 250px;
+  overflow: hidden;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.75;
+}
+
+// No color of its own — it inherits the panel's contrast-picked text color.
 .status-text {
-  color: white;
   font-weight: bold;
   font-size: 0.95rem;
   margin: 0 16px;
   text-align: center;
   white-space: pre-line;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  // Above the background graphic.
+  position: relative;
   z-index: 1;
 }
 
 .abort-button {
+  position: relative;
+  z-index: 1;
   background-color: #386181 !important;
   color: white !important;
   font-weight: bold !important;

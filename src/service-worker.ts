@@ -37,7 +37,7 @@ export const TAB_VIEW_PATH = 'index.html?view=tab';
 // attached to a bug report opened from the UI.
 installErrorCapture();
 
-chrome.runtime.onInstalled.addListener(({ reason }) => {
+chrome.runtime.onInstalled.addListener(({ reason, previousVersion }) => {
   if (reason === chrome.runtime.OnInstalledReason.INSTALL) {
     console.info('ChemPal installed');
     // Seed the review-prompt record with an exact install date. Raw chrome.storage
@@ -52,6 +52,11 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
       },
     });
   } else if (reason === chrome.runtime.OnInstalledReason.UPDATE) {
+    // Reloading an unpacked extension fires onInstalled with reason "update" and
+    // previousVersion equal to the version already running. That's a dev reload, not
+    // an upgrade — and clearing UPDATE_PENDING here would silently drop a genuinely
+    // staged update the UI is still meant to prompt for.
+    if (previousVersion === __APP_VERSION__) return;
     console.info('ChemPal updated');
     // The staged update just landed; drop the record so the UI doesn't keep
     // prompting for a version that is now running.

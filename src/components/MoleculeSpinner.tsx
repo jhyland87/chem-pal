@@ -38,10 +38,14 @@ export interface MoleculeSpinnerStatus {
  * - `query` - The search query to depict. Changing it resolves a new structure.
  * - `size` - Canvas edge length in CSS pixels. Defaults to 128, matching the cube it replaces.
  * - `spinSeconds` - Seconds per revolution. Changing it retimes without rebuilding.
- * - `atomScale` - Multiplier on covalent radii; lower is more stick, less ball.
+ * - `atomScale` - Multiplier on the uniform atom radius; lower is more stick, less ball.
  * - `showHydrogens` - Draw explicit hydrogens. On by default; the full structure reads
  *   better than a bare skeleton.
- * - `fallback` - Rendered while resolving, and whenever the query has no drawable structure.
+ * - `pending` - Rendered while the structure is still being resolved, before anything is
+ *   known. Kept separate from `fallback` so callers never flash one graphic and then
+ *   replace it with another.
+ * - `fallback` - Rendered only once it is settled that there is nothing to draw: no query,
+ *   no PubChem match, or no usable WebGL context.
  * - `onStatusChange` - Notified on every lifecycle transition.
  * @category Components
  * @source
@@ -52,6 +56,7 @@ export interface MoleculeSpinnerProps {
   spinSeconds?: number;
   atomScale?: number;
   showHydrogens?: boolean;
+  pending?: ReactNode;
   fallback?: ReactNode;
   onStatusChange?: (status: MoleculeSpinnerStatus) => void;
 }
@@ -105,11 +110,13 @@ export const MoleculeSpinner = memo(function MoleculeSpinner(props: MoleculeSpin
     spinSeconds = DEFAULT_SPIN_SECONDS,
     atomScale,
     showHydrogens = true,
+    pending,
     fallback,
     onStatusChange,
   } = props;
 
   const [molecule, setMolecule] = useState<Molecule | undefined>();
+  const [unavailable, setUnavailable] = useState(false);
   const [sceneFailed, setSceneFailed] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const handleRef = useRef<MoleculeSceneHandle | undefined>(undefined);
@@ -125,6 +132,7 @@ export const MoleculeSpinner = memo(function MoleculeSpinner(props: MoleculeSpin
   useEffect(() => {
     let cancelled = false;
     setMolecule(undefined);
+    setUnavailable(false);
     setSceneFailed(false);
 
     if (query.trim() === '') {
@@ -140,6 +148,7 @@ export const MoleculeSpinner = memo(function MoleculeSpinner(props: MoleculeSpin
       if (cancelled) return;
 
       if (!resolved) {
+        setUnavailable(true);
         statusRef.current?.({ state: 'unavailable', elapsedMs: performance.now() - startedAt });
         return;
       }
@@ -182,7 +191,9 @@ export const MoleculeSpinner = memo(function MoleculeSpinner(props: MoleculeSpin
         // a non-rendering test environment). Drop back to the caller's fallback rather
         // than leaving an empty canvas or an unhandled rejection.
         console.error('Could not render molecule; falling back:', error);
-        if (!cancelled) setSceneFailed(true);
+        if (cancelled) return;
+        setSceneFailed(true);
+        statusRef.current?.({ state: 'unavailable' });
       }
     };
 
@@ -202,13 +213,17 @@ export const MoleculeSpinner = memo(function MoleculeSpinner(props: MoleculeSpin
     handleRef.current?.setSpinSeconds(spinSeconds);
   }, [spinSeconds]);
 
-  if (!molecule || sceneFailed) return <>{fallback}</>;
-
-  return (
-    <canvas
-      ref={canvasRef}
-      data-testid="molecule-spinner"
-      style={{ width: size, height: size, display: 'block' }}
-    />
-  );
+  // Derived synchronously rather than from the status callback, so the very first render
+  // with a query already shows `pending` — there is no frame where `fallback` flashes.
+  if (molecule && !sceneFailed) {
+    return (
+      <canvas
+        ref={canvasRef}
+        data-testid="molecule-spinner"
+        style={{ width: size, height: size, display: 'block' }}
+      />
+    );
+  }
+  if (query.trim() === '' || unavailable || sceneFailed) return <>{fallback}</>;
+  return <>{pending}</>;
 });

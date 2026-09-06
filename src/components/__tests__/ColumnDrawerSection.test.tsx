@@ -16,12 +16,13 @@ const mocks = vi.hoisted(() => ({
   fulfillableShippingRanges: vi.fn(),
 }));
 
-vi.mock('@/suppliers/SupplierFactory', () => ({
-  SupplierFactory: {
-    supplierShippingMeta: mocks.supplierShippingMeta,
-    supplierShipsTo: mocks.supplierShipsTo,
-    isSupplierClassName: mocks.isSupplierClassName,
-  },
+vi.mock('@/constants/supplierMeta', () => ({
+  supplierShippingMeta: mocks.supplierShippingMeta,
+  supplierShipsTo: mocks.supplierShipsTo,
+}));
+
+vi.mock('@/constants/suppliers', () => ({
+  isSupplierClassName: mocks.isSupplierClassName,
 }));
 
 vi.mock('@/helpers/supplierFilters', () => ({
@@ -41,6 +42,7 @@ let mockContext: {
 
 vi.mock('@/context', () => ({ useAppContext: () => mockContext }));
 
+import { DRAWER_ADORNMENT, DRAWER_BINDING, DRAWER_WIDGET } from '@/constants/drawer';
 import ColumnDrawerSection from '../ColumnDrawerSection';
 
 /** Installs a fresh context; each field is overridable per test. */
@@ -90,12 +92,12 @@ describe('ColumnDrawerSection', () => {
   describe('autocompleteStrings (supplier selector)', () => {
     const config: ColumnDrawerConfig = {
       label: 'Supplier',
-      widget: 'autocompleteStrings',
+      widget: DRAWER_WIDGET.AUTOCOMPLETE_STRINGS,
       options: ['SupplierAlpha', 'SupplierBeta'],
       optionLabels: { SupplierAlpha: 'Alpha', SupplierBeta: 'Beta' },
       emptyHelperText: 'pick suppliers',
       placeholder: 'type a supplier',
-      bind: { kind: 'selectedSuppliers' },
+      bind: { kind: DRAWER_BINDING.SELECTED_SUPPLIERS },
     };
 
     it('renders the label and the two shipping switches', () => {
@@ -162,10 +164,10 @@ describe('ColumnDrawerSection', () => {
   describe('autocompleteStrings (searchFilters bind)', () => {
     const config: ColumnDrawerConfig = {
       label: 'Availability',
-      widget: 'autocompleteStrings',
+      widget: DRAWER_WIDGET.AUTOCOMPLETE_STRINGS,
       options: ['in_stock', 'backorder'],
       emptyHelperText: 'any availability',
-      bind: { kind: 'searchFilters', key: 'availability' },
+      bind: { kind: DRAWER_BINDING.SEARCH_FILTERS, key: 'availability' },
     };
 
     it('does not render the supplier-only switches', () => {
@@ -191,7 +193,7 @@ describe('ColumnDrawerSection', () => {
     it('returns null for an unsupported bind kind', () => {
       const bad: ColumnDrawerConfig = {
         ...config,
-        bind: { kind: 'userSettingsRange', minKey: 'priceMin', maxKey: 'priceMax' },
+        bind: { kind: DRAWER_BINDING.USER_SETTINGS_RANGE, minKey: 'priceMin', maxKey: 'priceMax' },
       };
       const { container } = renderSection('availability', bad);
 
@@ -202,13 +204,13 @@ describe('ColumnDrawerSection', () => {
   describe('autocompleteObjects', () => {
     const config: ColumnDrawerConfig = {
       label: 'Country',
-      widget: 'autocompleteObjects',
+      widget: DRAWER_WIDGET.AUTOCOMPLETE_OBJECTS,
       options: [
         { code: 'US', label: 'United States' },
         { code: 'DE', label: 'Germany' },
       ],
       emptyHelperText: 'any country',
-      bind: { kind: 'searchFilters', key: 'country' },
+      bind: { kind: DRAWER_BINDING.SEARCH_FILTERS, key: 'country' },
     };
 
     it('renders selected countries and a count hint', () => {
@@ -242,7 +244,10 @@ describe('ColumnDrawerSection', () => {
     });
 
     it('returns null when not bound to searchFilters', () => {
-      const bad: ColumnDrawerConfig = { ...config, bind: { kind: 'selectedSuppliers' } };
+      const bad: ColumnDrawerConfig = {
+        ...config,
+        bind: { kind: DRAWER_BINDING.SELECTED_SUPPLIERS },
+      };
       const { container } = renderSection('country', bad);
 
       expect(container).toBeEmptyDOMElement();
@@ -252,10 +257,10 @@ describe('ColumnDrawerSection', () => {
   describe('chips', () => {
     const config: ColumnDrawerConfig = {
       label: 'Shipping Type',
-      widget: 'chips',
+      widget: DRAWER_WIDGET.CHIPS,
       options: ['local', 'domestic', 'international'],
       formatChipLabel: (o) => o.toUpperCase(),
-      bind: { kind: 'searchFilters', key: 'shippingType' },
+      bind: { kind: DRAWER_BINDING.SEARCH_FILTERS, key: 'shippingType' },
     };
 
     it('renders a chip per option using the label formatter', () => {
@@ -302,7 +307,10 @@ describe('ColumnDrawerSection', () => {
     });
 
     it('returns null when not bound to searchFilters', () => {
-      const bad: ColumnDrawerConfig = { ...config, bind: { kind: 'selectedSuppliers' } };
+      const bad: ColumnDrawerConfig = {
+        ...config,
+        bind: { kind: DRAWER_BINDING.SELECTED_SUPPLIERS },
+      };
       const { container } = renderSection('shippingType', bad);
 
       expect(container).toBeEmptyDOMElement();
@@ -312,9 +320,9 @@ describe('ColumnDrawerSection', () => {
   describe('numberRange', () => {
     const config: ColumnDrawerConfig = {
       label: 'Price Range',
-      widget: 'numberRange',
-      adornment: 'currency',
-      bind: { kind: 'userSettingsRange', minKey: 'priceMin', maxKey: 'priceMax' },
+      widget: DRAWER_WIDGET.NUMBER_RANGE,
+      adornment: DRAWER_ADORNMENT.CURRENCY,
+      bind: { kind: DRAWER_BINDING.USER_SETTINGS_RANGE, minKey: 'priceMin', maxKey: 'priceMax' },
     };
 
     it('renders min and max inputs with the currency adornment', () => {
@@ -359,7 +367,7 @@ describe('ColumnDrawerSection', () => {
     it('returns null when not bound to a userSettings range', () => {
       const bad: ColumnDrawerConfig = {
         ...config,
-        bind: { kind: 'searchFilters', key: 'availability' },
+        bind: { kind: DRAWER_BINDING.SEARCH_FILTERS, key: 'availability' },
       };
       const { container } = renderSection('price', bad);
 
