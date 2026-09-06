@@ -180,6 +180,15 @@ export default ({ mode }: { mode: string }) => {
       sourcemap: !isProd,
       // Minify prod; leave dev/aggregate readable for debugging.
       minify: isProd ? 'esbuild' : false,
+      // Extension assets are local disk reads, and every chunk the entry pulls in sits
+      // one level below it — the browser discovers them all the moment it parses
+      // main.js. The `<link rel="modulepreload">` tags Vite puts in the HTML therefore
+      // save nothing and Chrome logs one "preloaded but not used" warning per link.
+      // Drop the HTML tags only: the `js` deps stay, because __vitePreload is also what
+      // loads the CSS belonging to a dynamically imported chunk.
+      modulePreload: {
+        resolveDependencies: (_filename, deps, { hostType }) => (hostType === 'html' ? [] : deps),
+      },
       chunkSizeWarningLimit: 1000,
       outDir: browser === 'firefox' ? 'build-firefox' : 'build',
       rollupOptions: {
@@ -194,25 +203,17 @@ export default ({ mode }: { mode: string }) => {
             // Make source map paths relative to project root
             return path.relative('.', relativeSourcePath);
           },
-          // Give the heavy MUI X dependencies their own chunks instead of letting
-          // them inline into whichever lazy chunk imports them. This shrinks the
-          // StatsPanel chunk to just its own code (~36KB), and — because the data
-          // grid had been duplicated into a second chunk via the components barrel
-          // — deduplicates ~940KB that was being emitted twice.
+          // three.js backs the molecule loading animation, which is reached through a
+          // dynamic import so the WebGL renderer never lands in the initial popup bundle.
           //
-          // Names are deliberately dependency-based, not "stats-*": the grid is
-          // also referenced by FavoritesPanel, so a stats-specific name would lie
-          // if that component is ever wired up.
+          // Nothing else is hand-assigned. Naming chunks for @mui/x-data-grid and
+          // @mui/x-charts backfired: a manual chunk acts as an attractor for the shared
+          // modules beneath it, so React and @mui/material were absorbed into the charts
+          // chunk and the popup could no longer load React without also loading ~980KB of
+          // MUI X. Rollup's default splitting already honours the lazy() boundary around
+          // StatsPanel, which is the only live consumer of either package.
           manualChunks: (id: string) => {
-            if (id.includes('node_modules/@mui/x-data-grid')) return 'vendor-mui-x-data-grid';
-            if (id.includes('node_modules/@mui/x-charts')) return 'vendor-mui-x-charts';
-            // three.js backs the molecule loading animation, which is reached through a
-            // dynamic import so the WebGL renderer never lands in the initial popup bundle.
             if (id.includes('node_modules/three/')) return 'vendor-three';
-            // @mui/x-charts' transitive D3 stack (scale/shape/array/interpolate…).
-            if (/node_modules\/(d3-[a-z]+|internmap|delaunator|robust-predicates)\//.test(id)) {
-              return 'vendor-mui-x-charts';
-            }
             return undefined;
           },
         },

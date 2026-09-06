@@ -154,7 +154,9 @@ export async function trackEvent(
  * by the service worker's `chrome.runtime.onInstalled` listener.
  *
  * Only `INSTALL` and `UPDATE` are reported — `CHROME_UPDATE` and
- * `SHARED_MODULE_UPDATE` mean the browser changed, not ChemPal.
+ * `SHARED_MODULE_UPDATE` mean the browser changed, not ChemPal. An `UPDATE` whose
+ * `previousVersion` matches the running version is a reload of an unpacked extension
+ * rather than a real upgrade, and is reported as nothing.
  * @param reason - The reason from `chrome.runtime.onInstalled`.
  * @param previousVersion - Version being upgraded from; Chrome supplies this only on an update.
  * @returns A promise that resolves once the send settles.
@@ -171,6 +173,10 @@ export async function trackInstallOrUpgrade(
 ): Promise<void> {
   const { INSTALL, UPDATE } = chrome.runtime.OnInstalledReason;
   if (reason !== INSTALL && reason !== UPDATE) return;
+  // Reloading an unpacked extension fires onInstalled with reason "update" and
+  // previousVersion equal to the version already running. Reporting that would count
+  // every dev reload as an upgrade.
+  if (reason === UPDATE && previousVersion === __APP_VERSION__) return;
   const params: Record<string, string | number> = { app_version: __APP_VERSION__ };
   if (previousVersion) params.previous_version = previousVersion;
   return trackEvent(reason === INSTALL ? 'extension_installed' : 'extension_upgraded', params);

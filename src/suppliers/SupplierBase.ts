@@ -11,6 +11,7 @@ import {
 import { fetchDecorator, type FetchDecoratorResponse } from '@/helpers/fetch';
 import { stripQuantityFromString } from '@/helpers/quantity';
 import { pickBroadestName } from '@/helpers/science';
+import { shipsToCountry } from '@/helpers/shipping';
 import type { ResolvedStructure } from '@/helpers/smiles';
 import { sleep } from '@/helpers/utils';
 import { getSupplierColor } from '@/theme/colors';
@@ -367,28 +368,16 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
 
   /**
    * Whether a supplier with the given static shipping metadata ships to
-   * `location`. Shared by the instance {@link shipsToCountry} and `SupplierFactory`
-   * so the UI can test shipping compatibility from a supplier's `static` fields
-   * without instantiating it.
+   * `location`. Thin wrapper over `helpers/shipping.shipsToCountry`, which is where
+   * the logic lives so the UI can test shipping compatibility without importing the
+   * supplier layer at all.
    * @param meta - The supplier's static shipping/country/`shipsTo` metadata.
    * @param location - Destination country (ISO 3166-1 alpha-2).
    * @returns True when the supplier ships to `location`.
    * @source
    */
   public static shipsToCountryStatic(meta: SupplierStaticMeta, location: CountryCode): boolean {
-    if (meta.shipsTo) {
-      return meta.shipsTo.includes(location);
-    }
-    switch (meta.shipping) {
-      case 'worldwide':
-      case 'international':
-        return true;
-      case 'domestic':
-      case 'local':
-        return meta.country === location;
-      default:
-        return true;
-    }
+    return shipsToCountry(meta, location);
   }
 
   /**

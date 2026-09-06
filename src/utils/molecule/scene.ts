@@ -39,7 +39,7 @@ export interface MoleculeSceneOptions {
   size: number;
   /** Seconds per full revolution (or per wobble cycle for a planar structure). */
   spinSeconds: number;
-  /** Multiplier applied to each atom's covalent radius. Lower is more stick, less ball. */
+  /** Multiplier applied to {@link ATOM_RADIUS}. Lower is more stick, less ball. */
   atomScale?: number;
   /** When true, render a single static frame instead of animating. */
   reducedMotion?: boolean;
@@ -73,8 +73,18 @@ const BOND_RADIUS = 0.09;
 /** Lateral separation between the parallel sticks of a double or triple bond, in angstroms. */
 const BOND_OFFSET = 0.17;
 
-/** Default multiplier applied to covalent radii when sizing atom spheres. */
-const DEFAULT_ATOM_SCALE = 0.42;
+/**
+ * Radius, in angstroms, drawn for every atom regardless of element.
+ *
+ * Sizing spheres by covalent radius is chemically faithful but reads badly at this scale:
+ * in a small species like KOH the potassium (2.03 A) dwarfs its oxygen and hydrogen and
+ * the model becomes one big ball with specks attached. A uniform radius keeps the shape of
+ * the structure legible; element identity is carried by colour alone.
+ */
+const ATOM_RADIUS = 1;
+
+/** Default multiplier applied to {@link ATOM_RADIUS} when sizing atom spheres. */
+const DEFAULT_ATOM_SCALE = 0.28;
 
 /** Fixed downward tilt, in radians, so the spin axis is never edge-on to the camera. */
 const TILT_X = 0.26;
@@ -85,11 +95,20 @@ const PLANAR_SWING = 0.7;
 /** Vertical camera field of view, in degrees. */
 const CAMERA_FOV = 40;
 
-/** Extra room left around the molecule's bounding sphere when fitting the camera. */
-const FIT_MARGIN = 1.18;
+/**
+ * Extra room left around the fitted half-extent. Must exceed `1 + tan(fov/2)` (~1.36 at a
+ * 40° field of view): the extent is measured in the centre plane, and perspective magnifies
+ * an atom that swings toward the camera, which would otherwise clip at the frame edge.
+ */
+const FIT_MARGIN = 1.4;
 
-/** Smallest bounding radius used for camera fitting, so a lone atom does not fill the frame. */
-const MIN_FIT_RADIUS = 1.2;
+/**
+ * Half-extent, in angstroms, that a structure must reach before it fills the frame.
+ * Anything smaller is fitted as though it were this big, so it renders proportionally
+ * smaller rather than being zoomed until it fills the canvas. A handful of atoms magnified
+ * to fill a 300px panel reads as abstract blobs rather than a structure.
+ */
+const MIN_FIT_RADIUS = 2;
 
 /** Canonical axis a three.js cylinder points along before rotation. */
 const CYLINDER_AXIS = new Vector3(0, 1, 0);
@@ -143,11 +162,11 @@ function perpendicularTo(direction: Vector3): Vector3 {
 }
 
 /**
- * Atom positions recentred on the molecule's centroid, plus the bounding radius that
- * encloses every atom sphere.
+ * Atom positions recentred on the molecule's centroid, plus the half-extent the structure
+ * sweeps out as it spins — the value the camera is fitted to.
  * @param molecule - The molecule to measure
- * @param atomScale - Multiplier applied to covalent radii
- * @returns The recentred positions and the enclosing radius
+ * @param atomScale - Multiplier applied to {@link ATOM_RADIUS}
+ * @returns The recentred positions and the half-extent to fit
  * @source
  */
 function centreAtoms(
@@ -162,19 +181,27 @@ function centreAtoms(
 
   const positions = molecule.atoms.map((atom) => new Vector3(atom.x, atom.y, atom.z).sub(centroid));
 
-  let radius = MIN_FIT_RADIUS;
-  for (const [index, position] of positions.entries()) {
-    const atomRadius = elementStyle(molecule.atoms[index].symbol).radius * atomScale;
-    radius = Math.max(radius, position.length() + atomRadius);
+  // Fit the extent the molecule actually sweeps out, not its bounding sphere. A sphere
+  // through the furthest atom is mostly empty air for anything that is not roughly round
+  // — an ion pair like KMnO4 wastes half the frame — so the structure renders far smaller
+  // than it could. Spinning about Y, the widest horizontal reach of an atom is its radius
+  // in the XZ plane, and its vertical reach is |y|; taking the larger of those two maxima
+  // fills a square frame at every point in the rotation without ever clipping.
+  const atomRadius = ATOM_RADIUS * atomScale;
+  let horizontal = MIN_FIT_RADIUS;
+  let vertical = MIN_FIT_RADIUS;
+  for (const position of positions) {
+    horizontal = Math.max(horizontal, Math.hypot(position.x, position.z) + atomRadius);
+    vertical = Math.max(vertical, Math.abs(position.y) + atomRadius);
   }
-  return { positions, radius };
+  return { positions, radius: Math.max(horizontal, vertical) };
 }
 
 /**
  * Builds the instanced mesh holding every atom sphere.
  * @param molecule - The molecule being drawn
  * @param positions - Recentred atom positions
- * @param atomScale - Multiplier applied to covalent radii
+ * @param atomScale - Multiplier applied to {@link ATOM_RADIUS}
  * @returns An instanced sphere mesh, one instance per atom
  * @source
  */
@@ -188,10 +215,11 @@ function buildAtomMesh(molecule: Molecule, positions: Vector3[], atomScale: numb
   const scale = new Vector3();
   const colour = new Color();
 
+  const size = ATOM_RADIUS * atomScale;
+  scale.set(size, size, size);
+
   for (const [index, atom] of molecule.atoms.entries()) {
     const style = elementStyle(atom.symbol);
-    const size = style.radius * atomScale;
-    scale.set(size, size, size);
     matrix.compose(positions[index], rotation, scale);
     mesh.setMatrixAt(index, matrix);
     mesh.setColorAt(index, colour.setHex(style.color));
@@ -313,8 +341,8 @@ function addLighting(scene: Scene): void {
  *
  * A structure with real 3D coordinates rotates continuously about its vertical axis. A
  * planar structure — every 2D record, and flat 3D ones like benzene — instead *wobbles*
- * through {@link PLANAR_SWING}: spinning a flat molecule a full turn would take it
- * edge-on twice per revolution, where it briefly vanishes.
+ * through a ±`PLANAR_SWING` yaw arc (~40°): spinning a flat molecule a full turn would
+ * take it edge-on twice per revolution, where it briefly vanishes.
  * @category Utils
  * @param canvas - The canvas element to render into
  * @param molecule - The parsed structure to draw
@@ -350,7 +378,7 @@ export function createMoleculeScene(
   if (bondMesh) group.add(bondMesh);
 
   const camera = new PerspectiveCamera(CAMERA_FOV, 1, 0.1, 1000);
-  camera.position.z = (radius * FIT_MARGIN) / Math.sin((CAMERA_FOV * Math.PI) / 360);
+  camera.position.z = (radius * FIT_MARGIN) / Math.tan((CAMERA_FOV * Math.PI) / 360);
 
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(globalThis.devicePixelRatio, 2));

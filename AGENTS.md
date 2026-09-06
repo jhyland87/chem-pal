@@ -39,13 +39,22 @@ per clone:
 git config blame.ignoreRevsFile .git-blame-ignore-revs
 ```
 
-`pnpm run generate` regenerates `public/static/images/logo/*` from the logo template,
-supplier list, and plugin version. It fingerprints those inputs and **skips** when nothing
-changed (stamp in `node_modules/.cache/chempal/`), so repeated builds — and the per-file
-rebuilds in the E2E suite — no-op instead of re-rendering. Force a rebuild with
-`FORCE_LOGO_GEN=1 pnpm run generate` (or `pnpm run generate -- --force`). The output is
-deterministic, so a genuine regeneration normally produces no `git` churn; if it does, a
-logo input actually changed and the diff is real.
+`pnpm run generate` produces two checked-in artifacts:
+
+- `public/static/images/logo/*`, from the logo template, supplier list, and plugin version.
+- `src/constants/supplierMeta.generated.ts`, the supplier display/shipping metadata the UI
+  reads at mount. `tools/generate-supplier-meta.js` extracts it from the supplier classes'
+  `static` fields via the TypeScript AST — the modules are never evaluated — so the classes
+  stay the single source of truth while the popup avoids loading the supplier layer. Never
+  hand-edit it; `src/suppliers/__tests__/supplierMeta.test.ts` fails if it goes stale.
+
+Both fingerprint their inputs and **skip** when nothing changed (stamps in
+`node_modules/.cache/chempal/`), so repeated builds — and the per-file rebuilds in the E2E
+suite — no-op instead of regenerating. Force with `FORCE_LOGO_GEN=1` /
+`FORCE_SUPPLIER_META=1`, or `pnpm run generate-logo-files --force` /
+`pnpm run generate-supplier-meta --force`. Both outputs are deterministic, so a genuine
+regeneration normally produces no `git` churn; if it does, an input actually changed and the
+diff is real.
 
 ## Layout
 
