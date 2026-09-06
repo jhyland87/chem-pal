@@ -13,6 +13,21 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+### Added
+
+- The loading overlay now shows the molecule you searched for as a slowly rotating 3D
+  structure, fetched from PubChem. Queries PubChem has no structure for keep the original
+  spinning cubane loader.
+
+### Changed
+
+- The popup opens faster — supplier code, the results grid and the stats charts now load
+  only when they're actually needed instead of on every open.
+
+### Fixed
+
+- Reloading the extension no longer records it as a version upgrade.
+
 ## [1.11.0] - 2026-08-25
 
 ### Added

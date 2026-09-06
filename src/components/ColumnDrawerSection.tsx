@@ -1,4 +1,7 @@
 import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
+import { DRAWER_ADORNMENT, DRAWER_BINDING, DRAWER_WIDGET } from '@/constants/drawer';
+import { supplierShippingMeta, supplierShipsTo } from '@/constants/supplierMeta';
+import { isSupplierClassName } from '@/constants/suppliers';
 import { useAppContext } from '@/context';
 import { i18n } from '@/helpers/i18n';
 import {
@@ -7,7 +10,6 @@ import {
   suppliersExcludedBySearchFilters,
 } from '@/helpers/supplierFilters';
 import { toFiniteNumber } from '@/helpers/utils';
-import { SupplierFactory } from '@/suppliers/SupplierFactory';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Accordion,
@@ -50,9 +52,9 @@ interface ColumnDrawerSectionProps {
 
 /**
  * Renders one drawer accordion section for a column that declared
- * `meta.drawer`. The widget (`autocompleteStrings`, `autocompleteObjects`,
- * `chips`, `numberRange`) determines the input, and `config.bind` tells the
- * component which slice of app state to read/write.
+ * `meta.drawer`. The widget ({@link DRAWER_WIDGET}) determines the input, and
+ * `config.bind` ({@link DRAWER_BINDING}) tells the component which slice of app
+ * state to read/write.
  *
  * Keeps columns free of context knowledge — columns describe what the user
  * sees, this component wires it up to `selectedSuppliers`, `searchFilters`,
@@ -101,8 +103,9 @@ export default function ColumnDrawerSection({
 
   // Each supplier's country + shipping scope, used both to grey out suppliers that
   // can't satisfy the active shipping/country filters and to grey out shipping/
-  // country options no selected supplier offers. Read once (instantiates suppliers).
-  const shippingMeta = useMemo(() => SupplierFactory.supplierShippingMeta(), []);
+  // country options no selected supplier offers. Read from the metadata registry,
+  // so the drawer never pulls the supplier layer into the popup's bundle.
+  const shippingMeta = useMemo(() => supplierShippingMeta(), []);
 
   // Supplier keys to grey out + disable in the supplier autocomplete: those that
   // won't ship to the user's location (gated by the toggle), plus those ruled out
@@ -111,14 +114,13 @@ export default function ColumnDrawerSection({
   const excludeSuppliers = userSettings.suppliers?.excludeNonShipping ?? true;
   const { location } = userSettings;
   const isSupplierSelector =
-    config.widget === 'autocompleteStrings' && config.bind.kind === 'selectedSuppliers';
+    config.widget === DRAWER_WIDGET.AUTOCOMPLETE_STRINGS &&
+    config.bind.kind === DRAWER_BINDING.SELECTED_SUPPLIERS;
   const excludedSuppliers = useMemo(() => {
     if (!isSupplierSelector) return new Set<string>();
     const excluded = new Set<string>();
     if (excludeSuppliers && location) {
-      for (const [key, ships] of Object.entries(
-        SupplierFactory.supplierShipsTo(location as CountryCode),
-      )) {
+      for (const [key, ships] of Object.entries(supplierShipsTo(location as CountryCode))) {
         if (!ships) excluded.add(key);
       }
     }
@@ -140,8 +142,11 @@ export default function ColumnDrawerSection({
   );
 
   // autocompleteStrings — e.g. Search Suppliers (keys: string[]).
-  if (config.widget === 'autocompleteStrings') {
-    if (config.bind.kind !== 'selectedSuppliers' && config.bind.kind !== 'searchFilters') {
+  if (config.widget === DRAWER_WIDGET.AUTOCOMPLETE_STRINGS) {
+    if (
+      config.bind.kind !== DRAWER_BINDING.SELECTED_SUPPLIERS &&
+      config.bind.kind !== DRAWER_BINDING.SEARCH_FILTERS
+    ) {
       return null;
     }
 
@@ -150,17 +155,17 @@ export default function ColumnDrawerSection({
     // mount hydration lands — coalesce to [] so the Autocomplete + summary
     // code below can treat `currentValue` as a concrete array uniformly.
     const currentValue: string[] =
-      config.bind.kind === 'selectedSuppliers'
+      config.bind.kind === DRAWER_BINDING.SELECTED_SUPPLIERS
         ? (selectedSuppliers ?? [])
         : // `bind.key` is `keyof SearchFilters`, whose values are `string |
           // string[]`; this widget only binds to the `string[]` filters.
           ((searchFilters[config.bind.key] as string[] | undefined) ?? []);
 
     const handleChange = (_event: SyntheticEvent, newValue: string[]) => {
-      if (config.bind.kind === 'selectedSuppliers') {
+      if (config.bind.kind === DRAWER_BINDING.SELECTED_SUPPLIERS) {
         // Autocomplete yields plain strings; keep only valid supplier names.
-        setSelectedSuppliers(newValue.filter(SupplierFactory.isSupplierClassName));
-      } else if (config.bind.kind === 'searchFilters') {
+        setSelectedSuppliers(newValue.filter(isSupplierClassName));
+      } else if (config.bind.kind === DRAWER_BINDING.SEARCH_FILTERS) {
         setSearchFilters({ ...searchFilters, [config.bind.key]: newValue });
       }
     };
@@ -256,8 +261,8 @@ export default function ColumnDrawerSection({
   }
 
   // autocompleteObjects — e.g. Country (options are { code, label }).
-  if (config.widget === 'autocompleteObjects') {
-    if (config.bind.kind !== 'searchFilters') return null;
+  if (config.widget === DRAWER_WIDGET.AUTOCOMPLETE_OBJECTS) {
+    if (config.bind.kind !== DRAWER_BINDING.SEARCH_FILTERS) return null;
     const bindKey = config.bind.key;
     const { options, emptyHelperText, placeholder } = config;
     // `bindKey` is `keyof SearchFilters` (values `string | string[]`); this
@@ -320,8 +325,8 @@ export default function ColumnDrawerSection({
   }
 
   // chips — e.g. Shipping Type (chip toggle for a fixed string list).
-  if (config.widget === 'chips') {
-    if (config.bind.kind !== 'searchFilters') return null;
+  if (config.widget === DRAWER_WIDGET.CHIPS) {
+    if (config.bind.kind !== DRAWER_BINDING.SEARCH_FILTERS) return null;
     const bindKey = config.bind.key;
     const { options, formatChipLabel } = config;
     // `bindKey` is `keyof SearchFilters` (values `string | string[]`); this
@@ -371,8 +376,8 @@ export default function ColumnDrawerSection({
   }
 
   // numberRange — e.g. Price Range (two numeric inputs with optional adornment).
-  if (config.widget === 'numberRange') {
-    if (config.bind.kind !== 'userSettingsRange') return null;
+  if (config.widget === DRAWER_WIDGET.NUMBER_RANGE) {
+    if (config.bind.kind !== DRAWER_BINDING.USER_SETTINGS_RANGE) return null;
     const { minKey, maxKey } = config.bind;
     // `minKey`/`maxKey` are `keyof UserSettings` (a heterogeneous interface);
     // this widget only binds them to the numeric range settings.
@@ -381,7 +386,7 @@ export default function ColumnDrawerSection({
     // Resolve the `"currency"` sentinel at render time so the symbol follows
     // the user's current currency setting (USD → "$", EUR → "€", etc.).
     const adornment =
-      config.adornment === 'currency'
+      config.adornment === DRAWER_ADORNMENT.CURRENCY
         ? userSettings.currency
           ? CURRENCY_SYMBOL_MAP[userSettings.currency]
           : undefined

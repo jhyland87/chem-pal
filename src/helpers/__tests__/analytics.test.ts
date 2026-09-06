@@ -183,6 +183,11 @@ describe('analytics (PostHog capture)', () => {
       expect(payload.properties).not.toHaveProperty('previous_version');
     });
 
+    it('sends nothing when previousVersion is the running version (unpacked reload)', async () => {
+      await trackInstallOrUpgrade('update', __APP_VERSION__);
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
     it.each(['chrome_update', 'shared_module_update'] as const)(
       'sends nothing for reason %s (the browser changed, not ChemPal)',
       async (reason) => {

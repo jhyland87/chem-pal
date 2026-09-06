@@ -1,4 +1,9 @@
 import { search } from '@/../config.json';
+import {
+  supplierDisplayNames,
+  supplierShippingMeta,
+  supplierShipsTo,
+} from '@/constants/supplierMeta';
 import { recordException } from '@/helpers/errorBuffer';
 import { resolveIdentifierNames } from '@/helpers/pubchem';
 import { filterRestrictedProduct } from '@/helpers/purchaseRestriction';
@@ -17,7 +22,7 @@ import type { ParsedSearchQuery } from '@/utils/search-query/types';
 import { incrementParseError } from '@/utils/SupplierStatsStore';
 import { Queue } from 'async-await-queue';
 import * as suppliers from '.';
-import { SupplierBase, type SupplierStaticMeta } from './SupplierBase';
+import { SupplierBase } from './SupplierBase';
 
 /** Constructor signature for supplier classes used by the factory */
 type SupplierConstructor<P extends Product> = new (
@@ -302,28 +307,24 @@ export class SupplierFactory<P extends Product> {
   }
 
   /**
-   * Get a map of supplier module names to their display names.
+   * Get a map of supplier module names to their display names. Thin wrapper over
+   * {@link supplierDisplayNames}, which reads the dependency-free `SUPPLIER_META`
+   * registry — callers that only need names should use that directly rather than
+   * reaching through the factory.
    *
    * @returns Record mapping supplier class names to their supplierName property
    * @source
    */
   public static supplierDisplayNames(): Record<string, string> {
-    return Object.fromEntries(
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      Object.entries(suppliers).map(([key, SupplierClass]) => [
-        // Read the class's static supplierName directly — no instance needed.
-        key,
-        (SupplierClass as unknown as { supplierName: string }).supplierName,
-      ]),
-    );
+    return supplierDisplayNames();
   }
 
   /**
    * Get a map of supplier class names to whether they ship to the given location.
-   * Creates throwaway instances and delegates to
-   * {@link SupplierBase.shipsToCountry}, so it applies the same `shipsTo`/scope
-   * heuristic used at search time. Lets the UI grey out suppliers that won't ship
-   * to the user.
+   * Thin wrapper over {@link supplierShipsTo}, which applies the same `shipsTo`/scope
+   * heuristic used at search time (both go through `helpers/shipping.shipsToCountry`)
+   * against the dependency-free `SUPPLIER_META` registry. Lets the UI grey out
+   * suppliers that won't ship to the user.
    *
    * @param location - The user's location as an ISO 3166-1 alpha-2 country code.
    * @returns Record mapping supplier class names to a ships-to boolean.
@@ -335,22 +336,15 @@ export class SupplierFactory<P extends Product> {
    * @source
    */
   public static supplierShipsTo(location: CountryCode): Record<string, boolean> {
-    return Object.fromEntries(
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      Object.entries(suppliers).map(([key, SupplierClass]) => {
-        // Read the class's static shipping metadata directly — no instance needed.
-        const meta = SupplierClass as unknown as SupplierStaticMeta;
-        return [key, SupplierBase.shipsToCountryStatic(meta, location)];
-      }),
-    );
+    return supplierShipsTo(location);
   }
 
   /**
    * Get a map of supplier class names to their home country and shipping scope,
    * the same fields stamped onto products. Lets the UI (and the search) reason
    * about which suppliers are compatible with the drawer's shipping/country
-   * filters without querying them. Reads each supplier's `static` metadata, so no
-   * instances are created.
+   * filters without querying them. Thin wrapper over {@link supplierShippingMeta},
+   * which reads the dependency-free `SUPPLIER_META` registry.
    * @returns Record mapping supplier class names to `{ country, shipping }`.
    * @example
    * ```typescript
@@ -363,13 +357,7 @@ export class SupplierFactory<P extends Product> {
     string,
     { country: CountryCode; shipping: ShippingRange }
   > {
-    return Object.fromEntries(
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      Object.entries(suppliers).map(([key, SupplierClass]) => {
-        const meta = SupplierClass as unknown as SupplierStaticMeta;
-        return [key, { country: meta.country, shipping: meta.shipping }];
-      }),
-    );
+    return supplierShippingMeta();
   }
 
   /**

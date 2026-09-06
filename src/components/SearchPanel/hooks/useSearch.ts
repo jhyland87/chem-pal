@@ -5,6 +5,8 @@ import {
   SEARCH_ABORT_REASON,
   isShippingRange,
 } from '@/constants/common';
+import { supplierShippingMeta } from '@/constants/supplierMeta';
+import { SUPPLIER_CLASS_NAMES, isSupplierClassName } from '@/constants/suppliers';
 import { useAppContext } from '@/context';
 import { SearchEvent, emitSearchEvent, type SearchOutcomeDetail } from '@/events/searchEvents';
 import { addExcludedProduct } from '@/helpers/excludedProducts';
@@ -15,7 +17,7 @@ import { dedupeProducts, getProductDedupeKey } from '@/helpers/productIdentity';
 import { shippingCovers, suppliersExcludedBySearchFilters } from '@/helpers/supplierFilters';
 import { suggestAlternativeSearch } from '@/helpers/pubchem';
 import { HotkeyEvent } from '@/hotkeys';
-import { SupplierFactory } from '@/suppliers/SupplierFactory';
+import type { SupplierFactory } from '@/suppliers/SupplierFactory';
 import {
   IDB_SEARCH_RESULTS_CLEARED,
   addSearchHistoryEntry,
@@ -252,7 +254,7 @@ function passesSearchFilters(
 function applyPerSupplierLimit(products: Product[], limit: number): Product[] {
   const supplierCounts: Partial<Record<SupplierClassName, number>> = {};
   return products.filter((product) => {
-    if (!SupplierFactory.isSupplierClassName(product.supplier)) return false;
+    if (!isSupplierClassName(product.supplier)) return false;
     const supplier = product.supplier as SupplierClassName;
     supplierCounts[supplier] = (supplierCounts[supplier] ?? 0) + 1;
     return supplierCounts[supplier] <= limit;
@@ -525,13 +527,10 @@ export function useSearch() {
       // post-filter then yields zero results rather than querying everyone).
       let suppliersToQuery = appContext.selectedSuppliers;
       if (searchFilters.shippingType.length > 0 || searchFilters.country.length > 0) {
-        const excluded = suppliersExcludedBySearchFilters(
-          SupplierFactory.supplierShippingMeta(),
-          searchFilters,
-        );
+        const excluded = suppliersExcludedBySearchFilters(supplierShippingMeta(), searchFilters);
         if (excluded.size > 0) {
           const selected = appContext.selectedSuppliers ?? [];
-          const base = selected.length > 0 ? selected : SupplierFactory.supplierList();
+          const base = selected.length > 0 ? selected : SUPPLIER_CLASS_NAMES;
           const compatible = base.filter((name) => !excluded.has(name));
           if (compatible.length > 0) suppliersToQuery = compatible;
         }
@@ -562,7 +561,14 @@ export function useSearch() {
       try {
         // Create the search factory object, which sets the query, supplier search limits,
         // and the abort controller for the search.
-        productQueryFactory = new SupplierFactory(query, {
+        // Loaded here rather than imported at the top: this is the only place the
+        // popup needs a supplier *implementation*, and a static import would put all
+        // ~36 supplier classes (plus SupplierBase and its graphql/zod/fuzzball deps)
+        // in the startup bundle for a hook that mostly renders cached results.
+        const { SupplierFactory: SupplierFactoryClass } = await import(
+          '@/suppliers/SupplierFactory'
+        );
+        productQueryFactory = new SupplierFactoryClass(query, {
           limit: fetchLimit,
           controller,
           suppliers: suppliersToQuery,
