@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import LoadingBackdrop from '../LoadingBackdrop';
 
@@ -64,12 +64,25 @@ describe('LoadingBackdrop', () => {
     expect(screen.queryByTestId('molecule-spinner')).not.toBeInTheDocument();
   });
 
-  it('keeps showing the cubane loader while a query is still resolving', () => {
+  it('shows neither graphic while a query is still resolving, only the status text', () => {
     vi.mocked(global.fetch).mockImplementation(() => new Promise(() => {}));
 
     render(<LoadingBackdrop {...makeProps({ query: 'acetone' })} />);
 
-    expect(document.querySelector('img[src*="cubane-loader"]')).toBeInTheDocument();
+    // The cube must not flash before the molecule arrives; the status text stands alone.
+    expect(document.querySelector('img[src*="cubane-loader"]')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('molecule-spinner')).not.toBeInTheDocument();
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+  });
+
+  it('falls back to the cubane loader once the query resolves to no structure', async () => {
+    vi.mocked(global.fetch).mockResolvedValue(new Response('Not Found', { status: 404 }));
+
+    render(<LoadingBackdrop {...makeProps({ query: 'qqqqzzz' })} />);
+
+    await waitFor(() => {
+      expect(document.querySelector('img[src*="cubane-loader"]')).toBeInTheDocument();
+    });
   });
 
   it('invokes onClick when the cancel button is pressed', () => {

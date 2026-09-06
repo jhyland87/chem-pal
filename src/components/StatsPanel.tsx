@@ -1,5 +1,5 @@
+import { supplierDisplayNames } from '@/constants/supplierMeta';
 import { useAppContext } from '@/context';
-import { SupplierFactory } from '@/suppliers/SupplierFactory';
 import { i18n } from '@/helpers/i18n';
 import { hexToRgba, SUPPLIER_COLORS } from '@/theme/colors';
 import {
@@ -123,7 +123,7 @@ const StatsPanel: FC = () => {
   // holds class names ("SupplierCarolina"), so translate before comparing.
   const disabledSupplierNames = useMemo(() => {
     const disabledClassNames = appContext?.userSettings?.suppliers?.disabled ?? [];
-    const displayNames = SupplierFactory.supplierDisplayNames();
+    const displayNames = supplierDisplayNames();
     return new Set(disabledClassNames.map((className) => displayNames[className] ?? className));
   }, [appContext?.userSettings?.suppliers?.disabled]);
 

@@ -3,6 +3,9 @@ import { CountryFlagTooltip, PriceHistoryTooltip } from '@/components/StyledComp
 import { default as Link } from '@/components/TabLink';
 import { AVAILABILITY_OPTIONS, SHIPPING_OPTIONS } from '@/constants/common';
 import { SUPPLIER_COUNTRY_OPTIONS } from '@/constants/countries';
+import { DRAWER_ADORNMENT, DRAWER_BINDING, DRAWER_WIDGET } from '@/constants/drawer';
+import { supplierDisplayNames } from '@/constants/supplierMeta';
+import { SUPPLIER_CLASS_NAMES } from '@/constants/suppliers';
 import { omit } from '@/helpers/collectionUtils';
 import { getCountryName } from '@/helpers/country';
 import { i18n } from '@/helpers/i18n';
@@ -22,7 +25,6 @@ import ArrowRightIcon from '@/icons/ArrowRightIcon';
 import COAIcon from '@/icons/COAIcon';
 import SDSIcon from '@/icons/SDSIcon';
 import TDSIcon from '@/icons/TDSIcon';
-import { SupplierFactory } from '@/suppliers/SupplierFactory';
 import { ColumnDef, type CellContext, type HeaderContext } from '@tanstack/react-table';
 import { hasFlag } from 'country-flag-icons';
 import getUnicodeFlagIcon from 'country-flag-icons/unicode';
@@ -133,12 +135,12 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         },
         drawer: {
           label: i18n('drawer_supplier_label'),
-          widget: 'autocompleteStrings',
-          options: SupplierFactory.supplierList(),
-          optionLabels: SupplierFactory.supplierDisplayNames(),
+          widget: DRAWER_WIDGET.AUTOCOMPLETE_STRINGS,
+          options: SUPPLIER_CLASS_NAMES,
+          optionLabels: supplierDisplayNames(),
           emptyHelperText: i18n('drawer_supplier_empty_helper'),
           placeholder: i18n('drawer_supplier_placeholder'),
-          bind: { kind: 'selectedSuppliers' },
+          bind: { kind: DRAWER_BINDING.SELECTED_SUPPLIERS },
         },
       },
     },
@@ -167,11 +169,11 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         renderSelectOption: (code) => (hasFlag(code) ? getUnicodeFlagIcon(code) : code),
         drawer: {
           label: i18n('drawer_country_label'),
-          widget: 'autocompleteObjects',
+          widget: DRAWER_WIDGET.AUTOCOMPLETE_OBJECTS,
           options: SUPPLIER_COUNTRY_OPTIONS,
           emptyHelperText: i18n('drawer_country_empty_helper'),
           placeholder: i18n('drawer_country_placeholder'),
-          bind: { kind: 'searchFilters', key: 'country' },
+          bind: { kind: DRAWER_BINDING.SEARCH_FILTERS, key: 'country' },
         },
       },
     },
@@ -190,10 +192,10 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         renderSelectOption: (value) => shippingLabel(value),
         drawer: {
           label: i18n('drawer_shipping_label'),
-          widget: 'chips',
+          widget: DRAWER_WIDGET.CHIPS,
           options: SHIPPING_OPTIONS,
           formatChipLabel: (option) => shippingLabel(option),
-          bind: { kind: 'searchFilters', key: 'shippingType' },
+          bind: { kind: DRAWER_BINDING.SEARCH_FILTERS, key: 'shippingType' },
         },
       },
     },
@@ -215,10 +217,10 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         },
         drawer: {
           label: i18n('drawer_availability_label'),
-          widget: 'chips',
+          widget: DRAWER_WIDGET.CHIPS,
           options: AVAILABILITY_OPTIONS,
           formatChipLabel: (option) => availabilityLabel(option),
-          bind: { kind: 'searchFilters', key: 'availability' },
+          bind: { kind: DRAWER_BINDING.SEARCH_FILTERS, key: 'availability' },
         },
       },
     },
@@ -262,10 +264,10 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         },
         drawer: {
           label: i18n('drawer_price_label'),
-          widget: 'numberRange',
-          adornment: 'currency',
+          widget: DRAWER_WIDGET.NUMBER_RANGE,
+          adornment: DRAWER_ADORNMENT.CURRENCY,
           bind: {
-            kind: 'userSettingsRange',
+            kind: DRAWER_BINDING.USER_SETTINGS_RANGE,
             minKey: 'priceMin',
             maxKey: 'priceMax',
           },

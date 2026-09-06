@@ -1,6 +1,6 @@
 ---
 name: add-supplier
-description: Add, implement, re-enable, or disable a chemical supplier in src/suppliers. Use whenever a new supplier store is being wired into ChemPal, an existing supplier class is being created from a storefront URL, or a supplier is being commented out of the barrel. Covers the full set of files a supplier touches beyond its own class — the barrel, the disabled/ folder, manifest host permissions, fixtures, tests, and CHANGELOG.
+description: Add, implement, re-enable, or disable a chemical supplier in src/suppliers. Use whenever a new supplier store is being wired into ChemPal, an existing supplier class is being created from a storefront URL, or a supplier is being commented out of the barrel. Covers the full set of files a supplier touches beyond its own class — the barrel, the disabled/ folder, the supplier metadata registry, manifest host permissions, fixtures, tests, and CHANGELOG.
 ---
 
 # Adding a supplier
@@ -84,7 +84,7 @@ live-supplier glob, so this is what marks a supplier dead — there are no comme
 barrel exports anymore. To re-enable, reverse it: move the file back up and restore the
 export.
 
-## 4. Supplier name list (no build step)
+## 4. Supplier name list and metadata registry (no build step)
 
 `src/constants/suppliers.ts` derives `SUPPLIER_CLASS_NAMES` at load from a lazy
 `import.meta.glob` of the supplier files — **nothing to regenerate.** It relies on each
@@ -92,6 +92,20 @@ supplier's filename matching its exported class name exactly (case included); th
 are the filenames. A unit test (`src/constants/__tests__/suppliers.test.ts`) asserts the
 glob-derived list equals the barrel's exports, so a name-only file (no barrel export), a
 filename/class-name mismatch, or a disabled supplier left in `src/suppliers/` fails the suite.
+
+`src/constants/supplierMeta.generated.ts` **is** generated — by
+`tools/generate-supplier-meta.js`, which reads your class's `static supplierName`, `country`,
+`shipping` and (rarely) `shipsTo` straight out of the TypeScript AST. Run `pnpm run generate`
+(or just build) and commit the result; never hand-edit it. It exists so the results table,
+column drawer and search hook can read supplier metadata without evaluating a supplier module
+— that indirection is what keeps the supplier layer out of the popup's startup bundle, so
+don't "simplify" it back to reading the classes.
+
+Declare those statics as **literals on the supplier's own class**; the generator does not
+follow inheritance and fails the build if a required one is missing or computed. Metadata
+derived at runtime (`requiredHosts`, and `baseURL` for the Amazon-backed suppliers) stays on
+the classes and is not extracted. `src/suppliers/__tests__/supplierMeta.test.ts` fails if the
+generated file drifts from the classes.
 
 ## 5. Add host permissions to `public/manifest.json`
 
