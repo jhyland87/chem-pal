@@ -13,6 +13,8 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+## [1.12.0] - 2026-09-06
+
 ### Added
 
 - The loading overlay now shows the molecule you searched for as a slowly rotating 3D
