@@ -1,15 +1,15 @@
 // ProductBuilder must be imported before SupplierBase/SupplierVWR to avoid a module-init cycle.
-import { ProductBuilder } from '@/utils/ProductBuilder';
 import {
   resetChromeStorageMock,
   setupChromeStorageMock,
 } from '@/__fixtures__/helpers/chrome/storageMock';
+import { ProductBuilder } from '@/utils/ProductBuilder';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import stockFixture from '../__fixtures__/vwr/getAnonymousStockAvailability.json';
 import assetsFixture from '../__fixtures__/vwr/product-assetreferences.json';
 import ordertableFixture from '../__fixtures__/vwr/product-ordertable.json';
 import searchFixture from '../__fixtures__/vwr/product-search-sulfuric-acid.json';
 import specificationFixture from '../__fixtures__/vwr/product-specification.json';
-import stockFixture from '../__fixtures__/vwr/getAnonymousStockAvailability.json';
 import substanceFixture from '../__fixtures__/vwr/product-substance.json';
 import { SupplierVWR } from '../SupplierVWR';
 
@@ -58,7 +58,7 @@ const stubEnrichment = (supplier: SupplierVWR) => {
     if (path.includes('/products/search')) return searchFixture;
     return undefined;
   }) as never);
-  // canonicalurl returns a plain-text href via httpGet().text().
+  // canonicalurlandhref returns a plain-text href via httpGet().text().
   vi.spyOn(supplier as never, 'httpGet').mockImplementation((async () => ({
     text: async () => CANONICAL_URL,
   })) as never);
@@ -216,7 +216,7 @@ describe('SupplierVWR', () => {
       // Purity from the specification endpoint ("> 98 %").
       expect(dump.purity).toBe('>98%');
 
-      // Canonical product URL from the canonicalurl endpoint.
+      // Canonical product URL from the canonicalurlandhref endpoint.
       expect(dump.url).toBe(CANONICAL_URL);
       expect(dump.permalink).toBe(CANONICAL_URL);
 

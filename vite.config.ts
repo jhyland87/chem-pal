@@ -53,8 +53,9 @@ function serviceWorkerBuildPlugin(options: {
   isProd: boolean;
   isAggregate: boolean;
   isAnalyze: boolean;
+  isE2e: boolean;
 }): Plugin {
-  const { browser, mode, isProd, isAggregate, isAnalyze } = options;
+  const { browser, mode, isProd, isAggregate, isAnalyze, isE2e } = options;
   return {
     name: 'chem-pal-service-worker',
     apply: 'build',
@@ -67,7 +68,7 @@ function serviceWorkerBuildPlugin(options: {
         // per-browser manifest (via manifestPlugin), and copying public/ again
         // would clobber it with the untransformed base manifest.json.
         publicDir: false,
-        define: buildDefines(pkg, { isAggregate, isProd, isAnalyze }),
+        define: buildDefines(pkg, { isAggregate, isProd, isAnalyze, isE2e }),
         resolve: { alias: { '@': _resolve('./src') } },
         esbuild: {
           //pure: isProd ? ['console.log', 'console.info', 'console.debug', 'console.trace'] : [],
@@ -96,6 +97,10 @@ export default ({ mode }: { mode: string }) => {
 
   //console.log("process.env:", process.env);
   const browser = process.env.BROWSER ?? 'chrome';
+  // Set by build:e2e/build:e2e:firefox so the resulting build's own MODE stays
+  // "production" (realistic JSX/React/minify behavior) while still letting
+  // analytics.ts's trackEvent tell an e2e build apart from a real one.
+  const isE2e = process.env.CHEMPAL_E2E === '1';
 
   // The manifest is emitted by manifestPlugin (derived per-browser); only the
   // dev-only mock service worker is statically copied.
@@ -130,7 +135,7 @@ export default ({ mode }: { mode: string }) => {
   const isAnalyze = mode === 'analyze' || mode === 'analyze-prod';
 
   return defineConfig({
-    define: buildDefines(pkg, { isAggregate, isProd, isAnalyze }),
+    define: buildDefines(pkg, { isAggregate, isProd, isAnalyze, isE2e }),
     // In prod, drop noisy debug logging (console.log/info/debug/trace) so it
     // doesn't ship to the store — including calls that bypass Logger. warn/error
     // are kept so genuine problems still surface; `debugger` is stripped too.
@@ -165,7 +170,7 @@ export default ({ mode }: { mode: string }) => {
       react(),
       graphqlLoader(),
       manifestPlugin(browser),
-      serviceWorkerBuildPlugin({ browser, mode, isProd, isAggregate, isAnalyze }),
+      serviceWorkerBuildPlugin({ browser, mode, isProd, isAggregate, isAnalyze, isE2e }),
       viteStaticCopy({
         targets: staticCopyTargets,
       }),
