@@ -29,6 +29,8 @@ declare global {
 
 /** True in the `aggregate` build mode; gates capturing supplier responses for fixtures. */
 declare const __RESPONSE_AGGREGATE__: boolean;
+/** True for the e2e suite's build (`build:e2e`/`build:e2e:firefox`); gates PostHog sends. */
+declare const __IS_E2E_BUILD__: boolean;
 /** App package name, from `package.json` `name`. */
 declare const __APP_NAME__: string;
 /** Current app version, from `package.json` `version`. */

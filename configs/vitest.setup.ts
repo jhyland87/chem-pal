@@ -34,6 +34,16 @@ function getMessageMock(key: string, substitutions?: string | string[]): string 
   return message;
 }
 
+// Stub PostHog reporting by default so tests never fire real analytics events.
+// A test that needs to assert a call happened can override this with its own
+// vi.mock('@/helpers/analytics', ...); analytics.test.ts, which tests the real
+// implementation, opts out entirely with vi.unmock.
+vi.mock('@/helpers/analytics', () => ({
+  trackEvent: vi.fn().mockResolvedValue(undefined),
+  trackInstallOrUpgrade: vi.fn().mockResolvedValue(undefined),
+  trackRenderError: vi.fn().mockResolvedValue(undefined),
+}));
+
 // Mock specific MUI CSS file
 vi.mock('@mui/x-data-grid/esm/index.css', () => ({}));
 

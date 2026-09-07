@@ -17,17 +17,24 @@ import { readSection } from "./extractChangelog.js";
  * @param options.isProd - Whether this is a production build; drives `NODE_ENV`
  *   so React/MUI ship in production mode (smaller, no dev warnings). Tests and
  *   dev builds leave it unset and get `development`.
+ * @param options.isE2e - Whether this is the e2e suite's build (`build:e2e`),
+ *   which otherwise builds with `--mode=production` and so isn't caught by the
+ *   `MODE === "test"` analytics guard.
  * @returns A `define` map ready to spread into a Vite/Vitest config.
  * @example
  * buildDefines(pkg, { isAggregate: false, isProd: true })
  * // => { 'process.env.NODE_ENV': '"production"', __APP_VERSION__: '"1.2.3"', ... }
  * @source
  */
-export function buildDefines(pkg, { isAggregate = false, isProd = false, isAnalyze = false } = {}) {
+export function buildDefines(
+  pkg,
+  { isAggregate = false, isProd = false, isAnalyze = false, isE2e = false } = {},
+) {
   return {
     "process.env.NODE_ENV": JSON.stringify(isProd ? "production" : "development"),
     "process.env.ANALYZE": JSON.stringify(isAnalyze),
     __RESPONSE_AGGREGATE__: JSON.stringify(isAggregate),
+    __IS_E2E_BUILD__: JSON.stringify(isE2e),
     __APP_VERSION__: JSON.stringify(pkg.version),
     __APP_REPOSITORY__: JSON.stringify(pkg.repository.url),
     __APP_NAME__: JSON.stringify(pkg.name),

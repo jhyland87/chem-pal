@@ -1,7 +1,7 @@
 import { AVAILABILITY } from '@/constants/common';
 import { parseQuantity } from '@/helpers/quantity';
-import { detectTermType } from '@/utils/search-query/detectTermType';
 import { ProductBuilder } from '@/utils/ProductBuilder';
+import { detectTermType } from '@/utils/search-query/detectTermType';
 import {
   isVWRAssetReferencesResponse,
   isVWROrdertableResponse,
@@ -75,7 +75,7 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
     substance: '/occ/v2/us.vwr.com/api/product/chemical/substance',
     specification: '/occ/v2/us.vwr.com/api/product/chemical/specification',
     stock: '/occ/v2/us.vwr.com/api/product/getAnonymousStockAvailability',
-    canonicalUrl: '/occ/v2/us.vwr.com/canonicalurl',
+    canonicalUrl: '/occ/v2/us.vwr.com/canonicalurlandhref',
     assetReferences: (baseProduct: string): string =>
       `/occ/v2/us.vwr.com/products/${baseProduct}/assetreferences`,
   } as const;
@@ -450,7 +450,7 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
 
   /**
    * Fetches the canonical (SEO-friendly) product URL, a plain-text absolute href returned by the
-   * `canonicalurl` endpoint. Returns undefined when the request fails or the body isn't a URL.
+   * `canonicalurlandhref` endpoint. Returns undefined when the request fails or the body isn't a URL.
    * @param baseProduct - The base product id
    * @returns Promise resolving to the absolute product URL, or undefined
    * @source

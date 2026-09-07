@@ -94,9 +94,14 @@ async function getDistinctId(): Promise<string> {
 
 /**
  * Sends one anonymous event to PostHog's capture endpoint. No-op (and no network
- * call) until an API key is configured in `config.json` (`analytics`). Text
- * params are truncated to {@link PARAM_VALUE_LIMIT}; numeric params pass through
- * as numbers. Never throws.
+ * call) until an API key is configured in `config.json` (`analytics`). Also a
+ * no-op under Vitest (`MODE === "test"`), independent of whether the test
+ * mocked this module — a safety net against real events leaking from a run
+ * that skips the usual test setup. The e2e suite is deliberately *not* guarded
+ * here: it intercepts and aborts these requests at the page level (see
+ * `e2e/search-query.e2e.test.ts`), and asserts on them actually firing. Text
+ * params are truncated to {@link PARAM_VALUE_LIMIT}; numeric params pass
+ * through as numbers. Never throws.
  * @param name - Event name (e.g. `"render_error"`).
  * @param params - Non-PII event properties.
  * @returns A promise that resolves once the send settles.
@@ -110,6 +115,7 @@ export async function trackEvent(
   name: string,
   params: Record<string, string | number> = {},
 ): Promise<void> {
+  if (import.meta.env.MODE === 'test') return;
   const { apiKey, host } = analyticsConfig;
   if (!apiKey) return;
   if (!(await analyticsEnabled())) return;
@@ -157,6 +163,13 @@ export async function trackEvent(
  * `SHARED_MODULE_UPDATE` mean the browser changed, not ChemPal. An `UPDATE` whose
  * `previousVersion` matches the running version is a reload of an unpacked extension
  * rather than a real upgrade, and is reported as nothing.
+ *
+ * Also a no-op under the e2e suite's build (`__IS_E2E_BUILD__`). Every e2e run
+ * loads the extension into a fresh Chrome profile, so `onInstalled` fires for
+ * real with reason `install` — unlike {@link trackEvent}'s other callers, this
+ * one runs in the background service worker, whose requests the e2e suite's
+ * page-level route interception can't see or abort, so it would otherwise
+ * reach production PostHog.
  * @param reason - The reason from `chrome.runtime.onInstalled`.
  * @param previousVersion - Version being upgraded from; Chrome supplies this only on an update.
  * @returns A promise that resolves once the send settles.
@@ -171,6 +184,7 @@ export async function trackInstallOrUpgrade(
   reason: `${chrome.runtime.OnInstalledReason}`,
   previousVersion?: string,
 ): Promise<void> {
+  if (__IS_E2E_BUILD__) return;
   const { INSTALL, UPDATE } = chrome.runtime.OnInstalledReason;
   if (reason !== INSTALL && reason !== UPDATE) return;
   // Reloading an unpacked extension fires onInstalled with reason "update" and

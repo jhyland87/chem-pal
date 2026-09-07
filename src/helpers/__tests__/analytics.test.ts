@@ -1,6 +1,10 @@
 import { CACHE } from '@/constants/common';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// This file tests the real implementation, so opt out of the global stub in
+// configs/vitest.setup.ts and the module's own MODE === "test" guard.
+vi.unmock('@/helpers/analytics');
+
 // Configure a project API key so the sender is active.
 vi.mock('@/../config.json', async (importOriginal) => {
   const actual = await importOriginal<{ default: Record<string, unknown> }>();
@@ -65,10 +69,13 @@ describe('analytics (PostHog capture)', () => {
     fetchMock.mockReset();
     fetchMock.mockResolvedValue(undefined);
     vi.stubGlobal('fetch', fetchMock);
+    // Bypass trackEvent's own MODE === "test" no-op so it takes the real path.
+    vi.stubEnv('MODE', 'development');
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
   });
 
   it('posts a render_error event to the capture endpoint with the api key in the body', async () => {

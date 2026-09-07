@@ -39,7 +39,7 @@ export interface MoleculeSceneOptions {
   size: number;
   /** Seconds per full revolution (or per wobble cycle for a planar structure). */
   spinSeconds: number;
-  /** Multiplier applied to {@link ATOM_RADIUS}. Lower is more stick, less ball. */
+  /** Multiplier applied to `ATOM_RADIUS`. Lower is more stick, less ball. */
   atomScale?: number;
   /** When true, render a single static frame instead of animating. */
   reducedMotion?: boolean;
@@ -83,7 +83,7 @@ const BOND_OFFSET = 0.17;
  */
 const ATOM_RADIUS = 1;
 
-/** Default multiplier applied to {@link ATOM_RADIUS} when sizing atom spheres. */
+/** Default multiplier applied to `ATOM_RADIUS` when sizing atom spheres. */
 const DEFAULT_ATOM_SCALE = 0.28;
 
 /** Fixed downward tilt, in radians, so the spin axis is never edge-on to the camera. */
@@ -165,7 +165,7 @@ function perpendicularTo(direction: Vector3): Vector3 {
  * Atom positions recentred on the molecule's centroid, plus the half-extent the structure
  * sweeps out as it spins — the value the camera is fitted to.
  * @param molecule - The molecule to measure
- * @param atomScale - Multiplier applied to {@link ATOM_RADIUS}
+ * @param atomScale - Multiplier applied to `ATOM_RADIUS`
  * @returns The recentred positions and the half-extent to fit
  * @source
  */
@@ -201,7 +201,7 @@ function centreAtoms(
  * Builds the instanced mesh holding every atom sphere.
  * @param molecule - The molecule being drawn
  * @param positions - Recentred atom positions
- * @param atomScale - Multiplier applied to {@link ATOM_RADIUS}
+ * @param atomScale - Multiplier applied to `ATOM_RADIUS`
  * @returns An instanced sphere mesh, one instance per atom
  * @source
  */
