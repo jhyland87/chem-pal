@@ -29,6 +29,7 @@ import {
 } from '@/utils/idbCache';
 import { Logger } from '@/utils/Logger';
 import { cstorage } from '@/utils/storage';
+import { flushPendingStats } from '@/utils/SupplierStatsStore';
 import { startTransition, useCallback, useEffect, useRef, useState } from 'react';
 
 const logger = new Logger('useSearch');
@@ -803,6 +804,9 @@ export function useSearch() {
       } finally {
         // Release the guard so a later deliberate re-search of the same term runs.
         inFlightQueryRef.current = null;
+        // Recording runs in every mode, but the popup can be closed the instant
+        // results are shown — flush now instead of waiting on the debounce timer.
+        void flushPendingStats();
       }
     },
     [appContext.userSettings, appContext.selectedSuppliers, appContext.searchFilters],
