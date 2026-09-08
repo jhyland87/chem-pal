@@ -193,6 +193,34 @@ export async function getStats(): Promise<SupplierStatsData> {
 }
 
 /**
+ * Force any buffered increments to IndexedDB immediately, bypassing the debounce
+ * timer. Call this at points where the buffer would otherwise be at risk of never
+ * flushing — e.g. once a search finishes, since the popup can be closed (and its
+ * JS context destroyed) at any moment afterward.
+ * @category Utils
+ * @source
+ */
+export async function flushPendingStats(): Promise<void> {
+  if (flushTimer !== null) {
+    clearTimeout(flushTimer);
+    flushTimer = null;
+  }
+  await flushToStorage();
+}
+
+// The popup's JS context is destroyed the instant it loses focus/closes, taking any
+// pending debounce timer and unflushed increments with it. Flushing on `hidden` is a
+// best-effort backstop for increments made mid-search, before performSearch's own
+// flush (see useSearch.ts) gets a chance to run.
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      void flushPendingStats();
+    }
+  });
+}
+
+/**
  * Clear all stats — removes all records from the supplierStats store.
  * @category Utils
  */
