@@ -8,6 +8,7 @@ import { clearSupplierStats } from '@/utils/idbCache';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   clearStats,
+  flushPendingStats,
   getStats,
   incrementFailure,
   incrementParseError,
@@ -203,5 +204,38 @@ describe('SupplierStatsStore', () => {
     expect(stats[today]).toBeDefined();
     expect(today).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(stats[today]['TestSupplier'].successCount).toBe(1);
+  });
+
+  it('flushPendingStats writes buffered increments without waiting for the debounce timer', async () => {
+    incrementSuccess('EagerFlush');
+    // Real timers so fake-indexeddb's internal scheduling can actually run;
+    // the point under test is that flushPendingStats doesn't need the 500ms
+    // FLUSH_DELAY_MS timer advanced to take effect.
+    vi.useRealTimers();
+    await flushPendingStats();
+
+    const stats = await getStats();
+    const today = toDateKey(new Date());
+
+    expect(stats[today]['EagerFlush'].successCount).toBe(1);
+  });
+
+  it('flushes buffered increments when the document becomes hidden', async () => {
+    incrementSuccess('HiddenFlush');
+    vi.useRealTimers();
+    // No debounce wait — this simulates the popup closing before the timer fires.
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+    try {
+      document.dispatchEvent(new Event('visibilitychange'));
+      // The listener's flush is fire-and-forget; give its promise chain a tick to settle.
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    } finally {
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
+    }
+
+    const stats = await getStats();
+    const today = toDateKey(new Date());
+
+    expect(stats[today]['HiddenFlush'].successCount).toBe(1);
   });
 });
