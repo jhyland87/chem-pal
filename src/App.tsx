@@ -6,6 +6,7 @@ import { playAdvancedModeSound } from '@/helpers/advancedMode';
 import { useDebugApi } from '@/hooks/useDebugApi';
 import { useJustUpdated } from '@/hooks/useJustUpdated';
 import { useReviewPrompt } from '@/hooks/useReviewPrompt';
+import { useSearchAnalytics } from '@/hooks/useSearchAnalytics';
 import { useUpdateAvailable } from '@/hooks/useUpdateAvailable';
 import { HotkeyEvent, HotkeyHelpModal, useHotkeys, type HotkeyHandlers } from '@/hotkeys';
 import {
@@ -15,23 +16,14 @@ import {
   seedVersionIfUnset,
 } from '@/migrations/registry';
 import type { Migration } from '@/migrations/types';
-import { SupplierCache } from '@/utils/SupplierCache';
-import { useSearchAnalytics } from '@/hooks/useSearchAnalytics';
 import { useBadgeController } from '@/utils/badgeController';
 import { isTabView } from '@/utils/displayContext';
 import { clearSearchResults, getSearchResults, IDB_SEARCH_RESULTS_CLEARED } from '@/utils/idbCache';
 import { cstorage } from '@/utils/storage';
+import { SupplierCache } from '@/utils/SupplierCache';
 import { isValidUserSettings } from '@/utils/typeGuards/common';
 import CssBaseline from '@mui/material/CssBaseline';
-import {
-  lazy,
-  Suspense,
-  useActionState,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { lazy, Suspense, useActionState, useCallback, useEffect, useMemo, useState } from 'react';
 import './App.scss';
 import DrawerSystem from './components/DrawerSystem';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -574,7 +566,7 @@ function App() {
     if (searchParams.has('cause')) {
       errorOpts.cause = searchParams.get('cause');
     }
-    throw new Error(`Test crash: ${searchParams.get('test-crash')}`, errorOpts);
+    throw new Error(`Test Error: ${searchParams.get('test-crash')}`, errorOpts);
   }
   return (
     <ErrorBoundary fallback={<p>{i18n('app_error_generic')}</p>}>

@@ -1,3 +1,4 @@
+import { errorBuffer as errorBufferConfig } from '@/../config.json';
 import { CACHE } from '@/constants/common';
 import { cstorage } from '@/utils/storage';
 
@@ -17,11 +18,12 @@ import { cstorage } from '@/utils/storage';
 
 /**
  * Where a captured error originated: a global window/worker hook, an unhandled
- * promise rejection, React's error hooks, or an aggregated supplier-search failure.
+ * promise rejection, React's error hooks, an aggregated supplier-search failure,
+ * or a callback-style `chrome.*` API call that set `chrome.runtime.lastError`.
  * @category Helpers
  * @group Bug reporting
  */
-export type ErrorSource = 'window' | 'unhandledrejection' | 'react' | 'search';
+export type ErrorSource = 'window' | 'unhandledrejection' | 'react' | 'search' | 'chrome-api';
 
 /**
  * A single captured exception, trimmed to what a bug report needs.
@@ -39,14 +41,20 @@ export interface CapturedError {
   stack?: string;
 }
 
-/** Maximum number of exceptions retained; older entries are discarded. */
-const MAX_ERRORS = 20;
+/**
+ * Maximum number of exceptions retained; older entries are discarded. From
+ * `config.json` (`errorBuffer.maxErrors`).
+ */
+const MAX_ERRORS = errorBufferConfig.maxErrors;
 
 /** `chrome.storage.session` key holding the serialized ring buffer. */
 const STORAGE_KEY = CACHE.ERROR_RING_BUFFER;
 
-/** Cap on a single stored stack trace, so one huge trace can't dominate. */
-const STACK_LIMIT = 1500;
+/**
+ * Cap on a single stored stack trace, so one huge trace can't dominate. From
+ * `config.json` (`errorBuffer.stackLimit`).
+ */
+const STACK_LIMIT = errorBufferConfig.stackLimit;
 
 /** Serializes concurrent writes so a read-modify-write can't lose entries. */
 let writeChain: Promise<void> = Promise.resolve();

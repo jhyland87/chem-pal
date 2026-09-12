@@ -191,10 +191,10 @@ async function applyBadgeOutput(output: BadgeOutput): Promise<void> {
       BadgeAnimator.animate('ellipsis', 300);
       break;
     case 'text':
-      BadgeAnimator.setText(output.value);
+      void BadgeAnimator.setText(output.value);
       break;
     case 'clear':
-      BadgeAnimator.clear();
+      void BadgeAnimator.clear();
       break;
   }
 }

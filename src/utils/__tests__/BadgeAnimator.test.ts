@@ -6,12 +6,19 @@ import {
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BadgeAnimator } from '../BadgeAnimator';
 
+vi.mock('@/helpers/errorBuffer', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/helpers/errorBuffer')>();
+  return { ...actual, recordError: vi.fn() };
+});
+const { recordError } = await import('@/helpers/errorBuffer');
+
 describe('BadgeAnimator', () => {
   let mockChromeAction: ReturnType<typeof setupChromeActionMock>;
 
   beforeEach(() => {
     mockChromeAction = setupChromeActionMock();
     vi.useFakeTimers();
+    vi.mocked(recordError).mockClear();
   });
 
   afterEach(() => {
@@ -23,20 +30,16 @@ describe('BadgeAnimator', () => {
     restoreChromeActionMock();
   });
 
-  // Helper function to check badge text calls
-  const expectBadgeTextCall = (
-    expectedText: string,
-    callIndex: number = 0,
-    expectCallback: boolean = false,
-  ) => {
+  // Helper function to check badge text calls. BadgeAnimator always calls the
+  // promise-based chrome.action.setBadgeText (no callback argument), so there's
+  // only ever one call argument to check.
+  const expectBadgeTextCall = (expectedText: string, callIndex: number = 0) => {
     const calls = mockChromeAction.setBadgeText.mock.calls;
     if (!calls[callIndex]) {
       throw new Error(`No call found at index ${callIndex}. Total calls: ${calls.length}`);
     }
     expect(calls[callIndex][0]).toEqual({ text: expectedText });
-    if (expectCallback) {
-      expect(calls[callIndex][1]).toBeTypeOf('function');
-    }
+    expect(calls[callIndex][1]).toBeUndefined();
   };
 
   describe('animate', () => {
@@ -45,38 +48,38 @@ describe('BadgeAnimator', () => {
       BadgeAnimator.animate(chars, 100);
 
       // First clear call (no callback)
-      expectBadgeTextCall('', 0, false);
-      // First animation character (with callback)
-      expectBadgeTextCall('A', 1, true);
+      expectBadgeTextCall('', 0);
+      // First animation character
+      expectBadgeTextCall('A', 1);
 
       // Advance timer to see next character
       await vi.advanceTimersByTimeAsync(100);
-      expectBadgeTextCall('B', 2, true);
+      expectBadgeTextCall('B', 2);
 
       // Advance timer to see next character
       await vi.advanceTimersByTimeAsync(100);
-      expectBadgeTextCall('C', 3, true);
+      expectBadgeTextCall('C', 3);
 
       // Advance timer to see wrap back to first character
       await vi.advanceTimersByTimeAsync(100);
-      expectBadgeTextCall('A', 4, true);
+      expectBadgeTextCall('A', 4);
     });
 
     it('should animate with predefined charsets', async () => {
       BadgeAnimator.animate('hourglass', 100);
 
       // First clear call (no callback)
-      expectBadgeTextCall('', 0, false);
-      // First animation character (with callback)
-      expectBadgeTextCall('⏳', 1, true);
+      expectBadgeTextCall('', 0);
+      // First animation character
+      expectBadgeTextCall('⏳', 1);
 
       // Advance timer to see next character
       await vi.advanceTimersByTimeAsync(100);
-      expectBadgeTextCall('⌛', 2, true);
+      expectBadgeTextCall('⌛', 2);
 
       // Advance timer to see wrap back to first character
       await vi.advanceTimersByTimeAsync(100);
-      expectBadgeTextCall('⏳', 3, true);
+      expectBadgeTextCall('⏳', 3);
     });
 
     it('should throw error for empty character array', () => {
@@ -92,48 +95,48 @@ describe('BadgeAnimator', () => {
     it('should clear existing animation when starting new one', async () => {
       // Start first animation
       BadgeAnimator.animate(['A', 'B'], 100);
-      expectBadgeTextCall('', 0, false); // Clear call
-      expectBadgeTextCall('A', 1, true); // First animation character
+      expectBadgeTextCall('', 0); // Clear call
+      expectBadgeTextCall('A', 1); // First animation character
 
       // Start second animation
       BadgeAnimator.animate(['X', 'Y'], 100);
-      expectBadgeTextCall('', 2, false); // Clear call
-      expectBadgeTextCall('X', 3, true); // First animation character
+      expectBadgeTextCall('', 2); // Clear call
+      expectBadgeTextCall('X', 3); // First animation character
 
       // Advance timer - should be on second animation
       await vi.advanceTimersByTimeAsync(100);
-      expectBadgeTextCall('Y', 4, true);
+      expectBadgeTextCall('Y', 4);
     });
   });
 
   describe('clear', () => {
     it('should clear badge immediately when no final text provided', () => {
       BadgeAnimator.clear();
-      expectBadgeTextCall('', 0, false);
+      expectBadgeTextCall('', 0);
     });
 
     it('should show final text and then clear after duration', async () => {
       BadgeAnimator.clear('✓', 1000);
 
-      // Should set final text immediately (with callback)
-      expectBadgeTextCall('✓', 0, true);
+      // Should set final text immediately
+      expectBadgeTextCall('✓', 0);
 
       // Advance timer past duration
       await vi.advanceTimersByTimeAsync(1000);
 
-      // Should clear after duration (no callback)
-      expectBadgeTextCall('', 1, false);
+      // Should clear after duration
+      expectBadgeTextCall('', 1);
     });
 
     it('should stop any existing animation when clearing', async () => {
       // Start an animation
       BadgeAnimator.animate(['A', 'B'], 100);
-      expectBadgeTextCall('', 0, false); // Clear call
-      expectBadgeTextCall('A', 1, true); // First animation character
+      expectBadgeTextCall('', 0); // Clear call
+      expectBadgeTextCall('A', 1); // First animation character
 
       // Clear it
       BadgeAnimator.clear();
-      expectBadgeTextCall('', 2, false); // Final clear call
+      expectBadgeTextCall('', 2); // Final clear call
 
       // Advance timer - should not see next animation character
       await vi.advanceTimersByTimeAsync(100);
@@ -159,17 +162,30 @@ describe('BadgeAnimator', () => {
     });
   });
 
+  describe('setBadgeText failures', () => {
+    it('records a chrome-api error instead of letting a rejection float unhandled', async () => {
+      mockChromeAction.setBadgeText.mockRejectedValueOnce(new Error('extension context invalidated'));
+
+      await BadgeAnimator.clear();
+
+      expect(recordError).toHaveBeenCalledWith({
+        source: 'chrome-api',
+        message: 'extension context invalidated',
+      });
+    });
+  });
+
   describe('setText', () => {
     it('should set badge text and clear any animation', async () => {
       // Start an animation
       BadgeAnimator.animate(['A', 'B'], 100);
-      expectBadgeTextCall('', 0, false); // Clear call
-      expectBadgeTextCall('A', 1, true); // First animation character
+      expectBadgeTextCall('', 0); // Clear call
+      expectBadgeTextCall('A', 1); // First animation character
 
       // Set text
       BadgeAnimator.setText('Test');
-      expectBadgeTextCall('', 2, false); // Clear call
-      expectBadgeTextCall('Test', 3, false); // Set text call (no callback)
+      expectBadgeTextCall('', 2); // Clear call
+      expectBadgeTextCall('Test', 3); // Set text call
 
       // Advance timer - should not see animation continue
       await vi.advanceTimersByTimeAsync(100);
