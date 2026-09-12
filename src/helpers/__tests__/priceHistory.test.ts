@@ -1,6 +1,7 @@
 import {
   buildAggregateSeries,
   describeTrend,
+  flushPendingPriceHistory,
   getProductPriceHistory,
   productSeriesKey,
   recordProductPrices,
@@ -236,6 +237,36 @@ describe('recordProductPrices', () => {
     const p = product({ supplier: '', title: '', usdPrice: 10 });
     await recordProductPrices([p]);
     expect(productSeriesKey(p)).toBeUndefined();
+  });
+});
+
+describe('flushPendingPriceHistory', () => {
+  beforeEach(async () => {
+    await clearPriceHistory();
+  });
+
+  it('resolves once an in-flight recordProductPrices call completes', async () => {
+    const p = baseProduct(19.99);
+    // Fire-and-forget, mirroring the `void recordProductPrices(...)` call sites in
+    // the search flow — the point under test is that flush still catches it.
+    void recordProductPrices([p]);
+    await flushPendingPriceHistory();
+    expect(await usdValues(productSeriesKey(p))).toEqual([19.99]);
+  });
+
+  it('flushes in-flight writes when the document becomes hidden', async () => {
+    const p = baseProduct(19.99);
+    void recordProductPrices([p]);
+    // No await before hiding — this simulates the popup closing mid-write.
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+    try {
+      document.dispatchEvent(new Event('visibilitychange'));
+      // The listener's flush is fire-and-forget; give its promise chain a tick to settle.
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    } finally {
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
+    }
+    expect(await usdValues(productSeriesKey(p))).toEqual([19.99]);
   });
 });
 
