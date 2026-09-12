@@ -11,7 +11,7 @@ import { useAppContext } from '@/context';
 import { SearchEvent, emitSearchEvent, type SearchOutcomeDetail } from '@/events/searchEvents';
 import { addExcludedProduct } from '@/helpers/excludedProducts';
 import { i18n } from '@/helpers/i18n';
-import { recordProductPrices } from '@/helpers/priceHistory';
+import { flushPendingPriceHistory, recordProductPrices } from '@/helpers/priceHistory';
 import { recordSearch } from '@/utils/reviewStats';
 import { dedupeProducts, getProductDedupeKey } from '@/helpers/productIdentity';
 import { shippingCovers, suppliersExcludedBySearchFilters } from '@/helpers/supplierFilters';
@@ -807,6 +807,9 @@ export function useSearch() {
         // Recording runs in every mode, but the popup can be closed the instant
         // results are shown — flush now instead of waiting on the debounce timer.
         void flushPendingStats();
+        // Same exposure for price history: recordProductPrices calls above are
+        // fire-and-forget and may still be mid-write when the popup closes.
+        void flushPendingPriceHistory();
       }
     },
     [appContext.userSettings, appContext.selectedSuppliers, appContext.searchFilters],
