@@ -207,6 +207,9 @@ jobs:
           chmod 600 chem-pal.pem
 
       - name: Build production extension
+        env:
+          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
+          POSTHOG_PROJECT_ID: ${{ secrets.POSTHOG_PROJECT_ID }}
         run: pnpm run build:prod
 
       - name: Verify .crx output
@@ -218,6 +221,9 @@ jobs:
           ls -lh chem-pal.crx
 
       - name: Build Firefox extension
+        env:
+          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
+          POSTHOG_PROJECT_ID: ${{ secrets.POSTHOG_PROJECT_ID }}
         run: pnpm run build:prod:firefox
 
       - name: Verify Firefox zip output

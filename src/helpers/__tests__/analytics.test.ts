@@ -8,7 +8,7 @@ vi.unmock('@/helpers/analytics');
 // Configure a project API key so the sender is active.
 vi.mock('@/../config.json', async (importOriginal) => {
   const actual = await importOriginal<{ default: Record<string, unknown> }>();
-  const analytics = { apiKey: 'phc_test123', host: 'https://us.i.posthog.com' };
+  const analytics = { apiKey: 'phc_test123', host: 'https://us.i.posthog.com', paramValueLimit: 100 };
   return { ...actual, default: { ...actual.default, analytics }, analytics };
 });
 
@@ -78,7 +78,7 @@ describe('analytics (PostHog capture)', () => {
     vi.unstubAllEnvs();
   });
 
-  it('posts a render_error event to the capture endpoint with the api key in the body', async () => {
+  it('posts a $exception event to the capture endpoint with the api key in the body', async () => {
     await trackRenderError(new Error('kaboom'));
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -95,12 +95,131 @@ describe('analytics (PostHog capture)', () => {
 
     const payload = payloadFromCall();
     expect(payload.api_key).toBe('phc_test123');
-    expect(payload.event).toBe('render_error');
+    expect(payload.event).toBe('$exception');
     expect(payload.distinct_id).toBeTruthy();
     expect(typeof payload.distinct_id).toBe('string');
     expect(Number.isNaN(Date.parse(payload.timestamp))).toBe(false);
     expect(payload.properties.error_name).toBe('Error');
     expect(payload.properties.error_message).toContain('kaboom');
+  });
+
+  it('shapes $exception_list like posthog-js captureException, with parsed stack frames', async () => {
+    await trackRenderError(new Error('kaboom'));
+
+    const { properties } = payloadFromCall();
+    expect(properties.$exception_level).toBe('error');
+    expect(properties.$exception_list).toHaveLength(1);
+
+    const [exception] = properties.$exception_list;
+    expect(exception.type).toBe('Error');
+    expect(exception.value).toBe('kaboom');
+    expect(exception.mechanism).toEqual({ type: 'generic', handled: true, synthetic: false });
+    expect(exception.stacktrace.type).toBe('raw');
+
+    // A real Error's .stack always has at least one frame for this test file.
+    const frames = exception.stacktrace.frames;
+    expect(frames.length).toBeGreaterThan(0);
+    const frame = frames[frames.length - 1];
+    expect(frame.platform).toBe('web:javascript');
+    expect(typeof frame.filename).toBe('string');
+    expect(typeof frame.lineno).toBe('number');
+    expect(typeof frame.colno).toBe('number');
+    expect(frame.in_app).toBe(true);
+  });
+
+  it('parses both V8 and Firefox stack frame formats, oldest frame last', async () => {
+    const error = new Error('boom');
+    error.stack = [
+      'Error: boom',
+      '    at innerFn (chrome-extension://abc/analytics.js:10:5)',
+      '    at outerFn (chrome-extension://abc/main.js:20:15)',
+    ].join('\n');
+    await trackRenderError(error);
+    const chromeFrames = payloadFromCall().properties.$exception_list[0].stacktrace.frames;
+    expect(chromeFrames).toEqual([
+      {
+        platform: 'web:javascript',
+        filename: 'chrome-extension://abc/main.js',
+        function: 'outerFn',
+        lineno: 20,
+        colno: 15,
+        in_app: true,
+      },
+      {
+        platform: 'web:javascript',
+        filename: 'chrome-extension://abc/analytics.js',
+        function: 'innerFn',
+        lineno: 10,
+        colno: 5,
+        in_app: true,
+      },
+    ]);
+
+    const geckoError = new Error('boom');
+    geckoError.stack = [
+      'innerFn@moz-extension://abc/analytics.js:10:5',
+      'outerFn@moz-extension://abc/main.js:20:15',
+    ].join('\n');
+    await trackRenderError(geckoError);
+    const geckoFrames = payloadFromCall(1).properties.$exception_list[0].stacktrace.frames;
+    expect(geckoFrames).toEqual([
+      {
+        platform: 'web:javascript',
+        filename: 'moz-extension://abc/main.js',
+        function: 'outerFn',
+        lineno: 20,
+        colno: 15,
+        in_app: true,
+      },
+      {
+        platform: 'web:javascript',
+        filename: 'moz-extension://abc/analytics.js',
+        function: 'innerFn',
+        lineno: 10,
+        colno: 5,
+        in_app: true,
+      },
+    ]);
+  });
+
+  it('walks the Error.cause chain into additional $exception_list entries, always handled', async () => {
+    const inner = new Error('inner boom');
+    const outer = new Error('outer boom', { cause: inner });
+    await trackRenderError(outer, { fatal: 1 });
+
+    const list = payloadFromCall().properties.$exception_list;
+    expect(list).toHaveLength(2);
+    expect(list[0]).toMatchObject({
+      type: 'Error',
+      value: 'outer boom',
+      mechanism: { type: 'onuncaughtexception', handled: false, synthetic: false },
+    });
+    expect(list[1]).toMatchObject({
+      type: 'Error',
+      value: 'inner boom',
+      mechanism: { type: 'generic', handled: true, synthetic: false },
+    });
+  });
+
+  it('adds a flat error_cause property when the error has a cause', async () => {
+    await trackRenderError(new Error('outer boom', { cause: new TypeError('inner boom') }));
+
+    const { properties } = payloadFromCall();
+    expect(properties.error_cause).toBe('TypeError: inner boom');
+  });
+
+  it('describes a non-Error cause as a plain string', async () => {
+    await trackRenderError(new Error('outer boom', { cause: 'disk full' }));
+
+    const { properties } = payloadFromCall();
+    expect(properties.error_cause).toBe('disk full');
+  });
+
+  it('omits error_cause when the error has no cause', async () => {
+    await trackRenderError(new Error('boom'));
+
+    const { properties } = payloadFromCall();
+    expect(properties).not.toHaveProperty('error_cause');
   });
 
   it('marks every event anonymous and attributes the library', async () => {
@@ -112,7 +231,7 @@ describe('analytics (PostHog capture)', () => {
   });
 
   it('truncates text params to the length limit and keeps numbers numeric', async () => {
-    await trackEvent('render_error', { error_message: 'x'.repeat(PARAM_VALUE_LIMIT * 5), count: 3 });
+    await trackEvent('search_query', { error_message: 'x'.repeat(PARAM_VALUE_LIMIT * 5), count: 3 });
     const { properties } = payloadFromCall();
     expect(properties.error_message.length).toBe(PARAM_VALUE_LIMIT);
     expect(properties.count).toBe(3);
@@ -152,13 +271,32 @@ describe('analytics (PostHog capture)', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('merges caller params into render_error, as main.tsx does for fatal crashes', async () => {
+  it('merges caller params into the $exception event, as main.tsx does for fatal crashes', async () => {
     await trackRenderError(new Error('boom'), { fatal: 1 });
 
     const { properties } = payloadFromCall();
     expect(properties.error_name).toBe('Error');
     expect(properties.error_message).toContain('boom');
     expect(properties.fatal).toBe(1);
+  });
+
+  it('reports a fatal (uncaught-root) error as onuncaughtexception/handled: false', async () => {
+    await trackRenderError(new Error('boom'), { fatal: 1 });
+    const [exception] = payloadFromCall().properties.$exception_list;
+    expect(exception.mechanism).toEqual({ type: 'onuncaughtexception', handled: false, synthetic: false });
+  });
+
+  it('reports an ErrorBoundary catch (no fatal param) as generic/handled: true', async () => {
+    await trackRenderError(new Error('boom'));
+    const [exception] = payloadFromCall().properties.$exception_list;
+    expect(exception.mechanism).toEqual({ type: 'generic', handled: true, synthetic: false });
+  });
+
+  it('marks a non-Error throw as a synthetic exception', async () => {
+    await trackRenderError('just a string');
+    const [exception] = payloadFromCall().properties.$exception_list;
+    expect(exception.mechanism.synthetic).toBe(true);
+    expect(exception.value).toBe('just a string');
   });
 
   describe('trackInstallOrUpgrade', () => {

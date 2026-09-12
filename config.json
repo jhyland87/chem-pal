@@ -61,7 +61,12 @@
   },
   "analytics": {
     "apiKey": "phc_xSkGPDyKjxsRa9B5uz9PcpGFBgLTq2yJTV3sqAYPi9St",
-    "host": "https://us.i.posthog.com"
+    "host": "https://us.i.posthog.com",
+    "paramValueLimit": 100
+  },
+  "errorBuffer": {
+    "maxErrors": 20,
+    "stackLimit": 1500
   },
   "report": {
     "github": {

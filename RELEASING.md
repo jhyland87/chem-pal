@@ -6,6 +6,10 @@ Releases are produced by [`.github/workflows/release.yml`](.github/workflows/rel
 
 - **`CRX_PRIVATE_KEY` repo secret.** The PEM private key used to sign the `.crx`. Settings → Secrets and variables → Actions → New repository secret. Paste the full PEM, including the `-----BEGIN PRIVATE KEY-----` / `-----END PRIVATE KEY-----` lines and the trailing newline.
   - The same key must be used for every release — Chrome derives the extension's identity from it. Losing or replacing it produces a different extension ID.
+- **`POSTHOG_PERSONAL_API_KEY` / `POSTHOG_PROJECT_ID` repo secrets (optional).** Let the release upload source maps to PostHog, so `$exception` events in production show real file/line/function names and get attributed to this release instead of a minified stack. Skip these and releases still work exactly the same — `tools/uploadSourceMaps.js` just no-ops without them.
+  - `POSTHOG_PERSONAL_API_KEY`: a **personal** API key (PostHog → Settings → Personal API keys) with **error tracking write** scope — distinct from, and more privileged than, the public `phc_` project key already in `config.json`. Never reuse that project key here.
+  - `POSTHOG_PROJECT_ID`: from the PostHog project's Settings page.
+  - A failed or misconfigured upload only prints a warning in the release log (`tools/uploadSourceMaps.js`'s whole job is to never fail the build) — it does not block or fail the release. Check the **Build production extension**/**Build Firefox extension** step output if source maps seem to be missing for a release.
 
 ## Cutting a release
 

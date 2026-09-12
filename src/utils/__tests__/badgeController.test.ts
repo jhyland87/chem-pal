@@ -5,7 +5,7 @@ import {
 } from '@/__fixtures__/helpers/chrome/actionMock';
 import { SearchEvent, emitSearchEvent } from '@/events/searchEvents';
 import { renderHook } from '@testing-library/react';
-import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { BadgeAnimator } from '../BadgeAnimator';
 import {
   BadgeEvent,
@@ -177,9 +177,9 @@ describe('shouldApplyToBadge', () => {
 
 describe('useBadgeController (integration with the chrome.action mock)', () => {
   let mockChromeAction: ReturnType<typeof setupChromeActionMock>;
-  let animateSpy: ReturnType<typeof vi.spyOn>;
-  let setTextSpy: ReturnType<typeof vi.spyOn>;
-  let clearSpy: ReturnType<typeof vi.spyOn>;
+  let animateSpy: MockInstance;
+  let setTextSpy: MockInstance;
+  let clearSpy: MockInstance;
 
   beforeEach(() => {
     mockChromeAction = setupChromeActionMock();

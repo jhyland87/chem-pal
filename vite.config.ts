@@ -134,6 +134,15 @@ export default ({ mode }: { mode: string }) => {
   process.env.NODE_ENV = isProd ? 'production' : 'development';
   const isAnalyze = mode === 'analyze' || mode === 'analyze-prod';
 
+  // Only the release workflow sets POSTHOG_PERSONAL_API_KEY (a private, write-scoped
+  // key — distinct from the public phc_ key in config.json), so this stays off for
+  // every other build (local dev, PR checks, e2e). Turning this on only widens the
+  // sourcemap flag below; the actual chunk-id injection and upload run afterwards, as
+  // a standalone step in build:prod/build:prod:firefox (tools/uploadSourceMaps.js) —
+  // not a Vite/Rollup plugin — so a broken PostHog integration can never fail this
+  // build. See that script for why it's structured as a separate step.
+  const shouldUploadSourceMaps = isProd && !isE2e && Boolean(process.env.POSTHOG_PERSONAL_API_KEY);
+
   return defineConfig({
     define: buildDefines(pkg, { isAggregate, isProd, isAnalyze, isE2e }),
     // In prod, drop noisy debug logging (console.log/info/debug/trace) so it
@@ -180,9 +189,11 @@ export default ({ mode }: { mode: string }) => {
         }),
     ],
     build: {
-      // Source maps in dev/aggregate only; prod ships without them to keep the
-      // packaged extension small and avoid shipping source.
-      sourcemap: !isProd,
+      // Source maps in dev/aggregate always; in prod only when uploading to PostHog
+      // (tools/uploadSourceMaps.js deletes them before the extension is packaged) —
+      // otherwise prod ships without them, to keep the package small and avoid
+      // shipping source.
+      sourcemap: shouldUploadSourceMaps || !isProd,
       // Minify prod; leave dev/aggregate readable for debugging.
       minify: isProd ? 'esbuild' : false,
       // Extension assets are local disk reads, and every chunk the entry pulls in sits

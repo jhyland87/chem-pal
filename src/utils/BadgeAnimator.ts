@@ -1,3 +1,5 @@
+import { recordError } from '@/helpers/errorBuffer';
+
 /**
  * A utility class for managing Chrome extension badge animations and styling.
  * Provides methods to animate the badge with different character sets, set colors,
@@ -20,7 +22,7 @@
  * BadgeAnimator.setColor('#FFFFFF', '#FF0000');
  *
  * // Clear the badge with a final message
- * BadgeAnimator.clear('✓', 2000);
+ * void BadgeAnimator.clear('✓', 2000);
  *
  * // Example usage scenario.
  * try {
@@ -29,10 +31,10 @@
  *    // Run the async task
  *    await someAsyncTask()
  *    // Clear the badge with a final success icon
- *    BadgeAnimator.clear("✔", 5000)
+ *    void BadgeAnimator.clear("✔", 5000)
  * } catch (error) {
  *    // Clear the badge with a final error icon
- *    BadgeAnimator.clear("❌", 1000)
+ *    void BadgeAnimator.clear("❌", 1000)
  * }
  * ```
  *
@@ -59,6 +61,11 @@ export class BadgeAnimator {
   static #charIndex: number = 0;
   static #chars: string[] = [];
   static #delay: number = 500;
+  // Bumped by clear()/animate() so an in-flight #updateAnimation() from a
+  // superseded animation (still awaiting its setBadgeText call) can tell it's
+  // stale and bail instead of mutating #chars/#charIndex out from under the
+  // animation that replaced it.
+  static #generation: number = 0;
 
   /**
    * Start animating the badge with the given characters or predefined character set
@@ -74,21 +81,23 @@ export class BadgeAnimator {
       throw new Error('At least one character is required for badge animation');
     }
 
-    this.clear(); // Clear any existing animation
+    void this.clear(); // Clear any existing animation, bumping #generation synchronously
     this.#chars = characterSet;
     this.#delay = delay;
     this.#charIndex = 0;
 
-    this.#updateAnimation();
+    void this.#updateAnimation(this.#generation);
   }
 
   /**
    * Stop the badge animation and optionally show a final message
    * @param finalText - Optional text to display before clearing the badge
    * @param duration - How long to show the final text before clearing (in milliseconds)
+   * @returns A promise that resolves once the badge text is set.
    * @source
    */
-  static clear(finalText: string = '', duration: number = 5000): void {
+  static async clear(finalText: string = '', duration: number = 5000): Promise<void> {
+    this.#generation++;
     if (this.#timeoutId) {
       clearTimeout(this.#timeoutId);
       this.#timeoutId = null;
@@ -96,13 +105,12 @@ export class BadgeAnimator {
 
     // If there's a final status to set, create a timeout to clear it afterwards
     if (finalText) {
-      chrome.action.setBadgeText({ text: finalText }, () => {
-        setTimeout(() => {
-          chrome.action.setBadgeText({ text: '' });
-        }, duration);
-      });
+      await this.#setBadgeText(finalText);
+      setTimeout(() => {
+        void this.#setBadgeText('');
+      }, duration);
     } else {
-      chrome.action.setBadgeText({ text: '' });
+      await this.#setBadgeText('');
     }
   }
 
@@ -129,29 +137,48 @@ export class BadgeAnimator {
   /**
    * Set the text of the badge. This also clears the animation
    * @param text - The text to display on the badge
+   * @returns A promise that resolves once the badge text is set.
    * @source
    */
-  static setText(text: string): void {
-    this.clear();
-    chrome.action.setBadgeText({ text });
+  static async setText(text: string): Promise<void> {
+    void this.clear(); // Stop any running animation without waiting on its own badge update
+    await this.#setBadgeText(text);
   }
 
   /**
-   * Update the badge to the next character in the sequence
+   * Sets the badge text via the promise-based `chrome.action` API (no
+   * callback), recording any rejection instead of letting it float unhandled.
+   * @param text - The badge text to set.
+   * @returns A promise that resolves once the attempt settles — never rejects.
    * @source
    */
-  static #updateAnimation(): void {
-    if (!this.#chars.length) return;
+  static async #setBadgeText(text: string): Promise<void> {
+    try {
+      await chrome.action.setBadgeText({ text });
+    } catch (error) {
+      void recordError({
+        source: 'chrome-api',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
 
-    chrome.action.setBadgeText(
-      {
-        text: this.#chars[this.#charIndex],
-      },
-      () => {
-        this.#charIndex = (this.#charIndex + 1) % this.#chars.length;
-        this.#timeoutId = setTimeout(() => this.#updateAnimation(), this.#delay);
-      },
-    );
+  /**
+   * Update the badge to the next character in the sequence. Bails if `generation`
+   * no longer matches the current generation — a newer `animate()` or `clear()`
+   * call superseded this one while it was awaiting its badge update.
+   * @param generation - The animation generation this call belongs to.
+   * @returns A promise that resolves once the badge text is set.
+   * @source
+   */
+  static async #updateAnimation(generation: number): Promise<void> {
+    if (generation !== this.#generation || !this.#chars.length) return;
+
+    await this.#setBadgeText(this.#chars[this.#charIndex]);
+    if (generation !== this.#generation) return;
+
+    this.#charIndex = (this.#charIndex + 1) % this.#chars.length;
+    this.#timeoutId = setTimeout(() => void this.#updateAnimation(generation), this.#delay);
   }
 }
 // #endregion class
