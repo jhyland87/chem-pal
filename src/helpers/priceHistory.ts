@@ -317,10 +317,13 @@ async function recordSeries(input: SeriesInput, maxPoints: number, now: number):
   });
 }
 
+/** In-flight `recordProductPrices` calls, tracked so they can be flushed before the
+ * MV3 popup's JS context is torn down. See {@link flushPendingPriceHistory}. */
+const pendingWrites: Set<Promise<void>> = new Set();
+
 /**
  * Record the current USD price of each product (and its variants) into the
- * price-history store. A no-op when tracking is disabled. Fire-and-forget: the
- * caller wraps this in `void` from the search flow. Only writes when a price
+ * price-history store. A no-op when tracking is disabled. Only writes when a price
  * changes, so repeated searches over cached results add nothing.
  * @category Helpers
  * @param products - The products to record; each may carry variants.
@@ -333,7 +336,7 @@ async function recordSeries(input: SeriesInput, maxPoints: number, now: number):
  * ```
  * @source
  */
-export async function recordProductPrices(
+async function doRecordProductPrices(
   products: Product[],
   settings?: PriceHistorySettings,
 ): Promise<void> {
@@ -349,6 +352,63 @@ export async function recordProductPrices(
       await recordSeries(input, maxPoints, now);
     }
   }
+}
+
+/**
+ * Record the current USD price of each product (and its variants) into the
+ * price-history store. Fire-and-forget: the caller wraps this in `void` from the
+ * search flow, but the returned promise is also tracked internally so
+ * {@link flushPendingPriceHistory} can wait for it — the MV3 popup can be closed
+ * (destroying its JS context) the instant results are shown, before a sequential
+ * multi-series write finishes.
+ * @category Helpers
+ * @param products - The products to record; each may carry variants.
+ * @param settings - The user's `priceTracking` settings (`enabled`,
+ *   `maxDataPoints`). Tracking is on unless explicitly disabled.
+ * @returns Resolves once all series have been processed.
+ * @example
+ * ```ts
+ * void recordProductPrices(finalResults, appContext.userSettings);
+ * ```
+ * @source
+ */
+export function recordProductPrices(
+  products: Product[],
+  settings?: PriceHistorySettings,
+): Promise<void> {
+  const task = doRecordProductPrices(products, settings);
+  pendingWrites.add(task);
+  void task.finally(() => pendingWrites.delete(task));
+  return task;
+}
+
+/**
+ * Force all in-flight {@link recordProductPrices} writes to finish, bypassing nothing
+ * (there's no debounce to skip) but giving the caller a promise to await before a
+ * point where the popup could otherwise close mid-write — e.g. once a search
+ * finishes. Also invoked as a `visibilitychange` backstop below.
+ * @category Helpers
+ * @returns Resolves once every currently-tracked write has settled.
+ * @example
+ * ```ts
+ * await flushPendingPriceHistory();
+ * ```
+ * @source
+ */
+export async function flushPendingPriceHistory(): Promise<void> {
+  await Promise.allSettled([...pendingWrites]);
+}
+
+// The popup's JS context is destroyed the instant it loses focus/closes, taking any
+// in-flight price-history write with it. Flushing on `hidden` is a best-effort
+// backstop for writes started mid-search, before performSearch's own flush (see
+// useSearch.ts) gets a chance to run.
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      void flushPendingPriceHistory();
+    }
+  });
 }
 
 /**
