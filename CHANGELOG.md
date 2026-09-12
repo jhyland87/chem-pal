@@ -13,6 +13,8 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+## [1.13.0] - 2026-09-12
+
 ### Changed
 
 - Crash reports sent to our anonymous analytics now include the stack trace and the file/line
