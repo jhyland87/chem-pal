@@ -195,6 +195,9 @@ importers:
       '@posthog/cli':
         specifier: ^0.18.1
         version: 0.18.1
+      '@posthog/rollup-plugin':
+        specifier: ^1.6.0
+        version: 1.6.0(rollup@4.41.1)
       '@testing-library/dom':
         specifier: ^10.4.0
         version: 10.4.0
@@ -1946,10 +1949,23 @@ packages:
   '@popperjs/core@2.11.8':
     resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
 
+  '@posthog/cli@0.16.2':
+    resolution: {integrity: sha512-h8bpf9ffBUH/Z9IoyGV+wiI+vS8rIPorKT3eKQXuzuwawO0G7Qvy+hDd7HQ9YJjHByYZ77yPPQvrSs4WsqTUCg==}
+    engines: {node: '>=14.14', npm: '>=6'}
+    hasBin: true
+
   '@posthog/cli@0.18.1':
     resolution: {integrity: sha512-JRxa9fxpDaYsHmZRsfoQH1aJOkBaeNFjcZS3z2pkmCatVrY3tsTbNcN0g0nc7Z3VqDc21dYviSr9Rtz/+yBJ1A==}
     engines: {node: '>=14.14', npm: '>=6'}
     hasBin: true
+
+  '@posthog/plugin-utils@2.0.0':
+    resolution: {integrity: sha512-PC94+3zeEQ2IkhiU+pskOIOEkAFKZvwVixvrwpRfy+cl4b6gkTuHN44vp5OeG5ndfQOLJQF5onx8/K7yZC3i1g==}
+
+  '@posthog/rollup-plugin@1.6.0':
+    resolution: {integrity: sha512-QdSjBt+wt+j2VwLADpsr1Ii2j8F5rWe+V/m9O9PuZXWT8nUne8ML5ciMxAmsGTIIfVwmLhdXPtDlJEc2LuJ9rg==}
+    peerDependencies:
+      rollup: '>= 4.0.0'
 
   '@resvg/resvg-js-android-arm-eabi@2.6.2':
     resolution: {integrity: sha512-FrJibrAk6v29eabIPgcTUMPXiEz8ssrAk7TXxsiZzww9UTQ1Z5KAbFJs+Z0Ez+VZTYgnE5IQJqBcoSiMebtPHA==}
@@ -7359,7 +7375,7 @@ snapshots:
   '@jridgewell/gen-mapping@0.3.8':
     dependencies:
       '@jridgewell/set-array': 1.2.1
-      '@jridgewell/sourcemap-codec': 1.5.0
+      '@jridgewell/sourcemap-codec': 1.5.5
       '@jridgewell/trace-mapping': 0.3.25
 
   '@jridgewell/resolve-uri@3.1.2': {}
@@ -7373,12 +7389,12 @@ snapshots:
   '@jridgewell/trace-mapping@0.3.25':
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
-      '@jridgewell/sourcemap-codec': 1.5.0
+      '@jridgewell/sourcemap-codec': 1.5.5
 
   '@jridgewell/trace-mapping@0.3.9':
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
-      '@jridgewell/sourcemap-codec': 1.5.0
+      '@jridgewell/sourcemap-codec': 1.5.5
 
   '@jsdoc/salty@0.2.9':
     dependencies:
@@ -7697,9 +7713,24 @@ snapshots:
 
   '@popperjs/core@2.11.8': {}
 
+  '@posthog/cli@0.16.2':
+    dependencies:
+      detect-libc: 2.1.2
+
   '@posthog/cli@0.18.1':
     dependencies:
       detect-libc: 2.1.2
+
+  '@posthog/plugin-utils@2.0.0':
+    dependencies:
+      cross-spawn: 7.0.6
+
+  '@posthog/rollup-plugin@1.6.0(rollup@4.41.1)':
+    dependencies:
+      '@posthog/cli': 0.16.2
+      '@posthog/plugin-utils': 2.0.0
+      magic-string: 0.30.21
+      rollup: 4.41.1
 
   '@resvg/resvg-js-android-arm-eabi@2.6.2':
     optional: true
@@ -8262,7 +8293,7 @@ snapshots:
     dependencies:
       '@vitest/spy': 3.1.4
       estree-walker: 3.0.3
-      magic-string: 0.30.17
+      magic-string: 0.30.21
     optionalDependencies:
       msw: 2.8.7(@types/node@22.15.29)(typescript@5.8.3)
       vite: 6.3.5(@types/node@22.15.29)(sass-embedded@1.89.1)(yaml@2.8.0)
@@ -8279,7 +8310,7 @@ snapshots:
   '@vitest/snapshot@3.1.4':
     dependencies:
       '@vitest/pretty-format': 3.1.4
-      magic-string: 0.30.17
+      magic-string: 0.30.21
       pathe: 2.0.3
 
   '@vitest/spy@3.1.4':

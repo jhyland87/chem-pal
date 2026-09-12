@@ -1,7 +1,8 @@
+import posthog from '@posthog/rollup-plugin';
 import react from '@vitejs/plugin-react';
 import { readFileSync } from 'node:fs';
 import path from 'path';
-import { defineConfig, normalizePath, build as viteBuild, type Plugin } from 'vite';
+import { defineConfig, loadEnv, normalizePath, build as viteBuild, type Plugin } from 'vite';
 import analyzer from 'vite-bundle-analyzer';
 import graphqlLoader from 'vite-plugin-graphql-loader';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
@@ -92,10 +93,8 @@ function serviceWorkerBuildPlugin(options: {
 }
 
 export default ({ mode }: { mode: string }) => {
-  //const env = "development"; //loadEnv(mode, process.cwd());
-  //const isDev = true; //  mode === "development" || mode === "mock";
+  process.env = { ...process.env, ...loadEnv(mode, process.cwd(), '') };
 
-  //console.log("process.env:", process.env);
   const browser = process.env.BROWSER ?? 'chrome';
   // Set by build:e2e/build:e2e:firefox so the resulting build's own MODE stays
   // "production" (realistic JSX/React/minify behavior) while still letting
@@ -134,14 +133,10 @@ export default ({ mode }: { mode: string }) => {
   process.env.NODE_ENV = isProd ? 'production' : 'development';
   const isAnalyze = mode === 'analyze' || mode === 'analyze-prod';
 
-  // Only the release workflow sets POSTHOG_PERSONAL_API_KEY (a private, write-scoped
-  // key — distinct from the public phc_ key in config.json), so this stays off for
-  // every other build (local dev, PR checks, e2e). Turning this on only widens the
-  // sourcemap flag below; the actual chunk-id injection and upload run afterwards, as
-  // a standalone step in build:prod/build:prod:firefox (tools/uploadSourceMaps.js) —
-  // not a Vite/Rollup plugin — so a broken PostHog integration can never fail this
-  // build. See that script for why it's structured as a separate step.
-  const shouldUploadSourceMaps = isProd && !isE2e && Boolean(process.env.POSTHOG_PERSONAL_API_KEY);
+  // Source map upload is release-only. Local development, PR checks, and e2e builds
+  // do not construct the uploader when its personal API key is unavailable.
+  const posthogApiKey = process.env.POSTHOG_API_KEY;
+  const shouldUploadSourceMaps = isProd && !isE2e && Boolean(posthogApiKey);
 
   return defineConfig({
     define: buildDefines(pkg, { isAggregate, isProd, isAnalyze, isE2e }),
@@ -183,16 +178,29 @@ export default ({ mode }: { mode: string }) => {
       viteStaticCopy({
         targets: staticCopyTargets,
       }),
+      ...(shouldUploadSourceMaps
+        ? [
+            posthog({
+              personalApiKey: posthogApiKey!,
+              projectId: process.env.POSTHOG_PROJECT_ID,
+              host: process.env.POSTHOG_HOST,
+              sourcemaps: {
+                enabled: true,
+                releaseName: 'chem-pal',
+                releaseVersion: pkg.version,
+                deleteAfterUpload: true,
+              },
+            }),
+          ]
+        : []),
       isAnalyze &&
         analyzer({
           openAnalyzer: isAnalyze,
         }),
     ],
     build: {
-      // Source maps in dev/aggregate always; in prod only when uploading to PostHog
-      // (tools/uploadSourceMaps.js deletes them before the extension is packaged) —
-      // otherwise prod ships without them, to keep the package small and avoid
-      // shipping source.
+      // Source maps in dev/aggregate always; production maps are generated only for
+      // PostHog upload and deleted by the plugin before the extension is packaged.
       sourcemap: shouldUploadSourceMaps || !isProd,
       // Minify prod; leave dev/aggregate readable for debugging.
       minify: isProd ? 'esbuild' : false,
