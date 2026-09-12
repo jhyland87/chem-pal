@@ -17,7 +17,7 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  NODE_VERSION: '22.15.0'
+  NODE_VERSION: '22.22.2'
 
 permissions:
   contents: read

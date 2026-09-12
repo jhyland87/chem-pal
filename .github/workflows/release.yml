@@ -12,7 +12,7 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  NODE_VERSION: 'v22.15.0'
+  NODE_VERSION: 'v22.22.2'
   NODE_OPTIONS: '--trace-deprecation'
 
 permissions:
@@ -208,8 +208,9 @@ jobs:
 
       - name: Build production extension
         env:
-          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
           POSTHOG_PROJECT_ID: ${{ secrets.POSTHOG_PROJECT_ID }}
+          POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
         run: pnpm run build:prod
 
       - name: Verify .crx output
@@ -222,8 +223,9 @@ jobs:
 
       - name: Build Firefox extension
         env:
-          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
           POSTHOG_PROJECT_ID: ${{ secrets.POSTHOG_PROJECT_ID }}
+          POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
         run: pnpm run build:prod:firefox
 
       - name: Verify Firefox zip output
