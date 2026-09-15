@@ -206,12 +206,29 @@ jobs:
           printf '%s\n' "$CRX_PRIVATE_KEY" > chem-pal.pem
           chmod 600 chem-pal.pem
 
+      - name: Verify PostHog sourcemap config
+        env:
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+          POSTHOG_PROJECT_ID: ${{ vars.POSTHOG_PROJECT_ID }}
+          POSTHOG_HOST: ${{ vars.POSTHOG_HOST }}
+        run: |
+          missing=()
+          [ -z "$POSTHOG_API_KEY" ] && missing+=("POSTHOG_API_KEY secret")
+          [ -z "$POSTHOG_PROJECT_ID" ] && missing+=("POSTHOG_PROJECT_ID repo variable")
+          [ -z "$POSTHOG_HOST" ] && missing+=("POSTHOG_HOST repo variable")
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "::error::Missing PostHog config, so vite.config.ts would silently skip the sourcemap-upload plugin (no build error either way): $(IFS=,; echo "${missing[*]}")"
+            exit 1
+          fi
+
       - name: Build production extension
         env:
           POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
           POSTHOG_PROJECT_ID: ${{ vars.POSTHOG_PROJECT_ID }}
           POSTHOG_HOST: ${{ vars.POSTHOG_HOST }}
-        run: pnpm run build:prod
+        run: |
+          set -o pipefail
+          pnpm run build:prod 2>&1 | tee posthog-build-chrome.log
 
       - name: Verify .crx output
         run: |
@@ -226,7 +243,9 @@ jobs:
           POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
           POSTHOG_PROJECT_ID: ${{ vars.POSTHOG_PROJECT_ID }}
           POSTHOG_HOST: ${{ vars.POSTHOG_HOST }}
-        run: pnpm run build:prod:firefox
+        run: |
+          set -o pipefail
+          pnpm run build:prod:firefox 2>&1 | tee posthog-build-firefox.log
 
       - name: Verify Firefox zip output
         run: |
@@ -235,6 +254,33 @@ jobs:
             exit 1
           fi
           ls -lh chem-pal-firefox.zip
+
+      - name: Verify source maps were uploaded
+        run: |
+          # spawnLocal (@posthog/plugin-utils) already rejects the vite build on
+          # a nonzero posthog-cli exit, so a genuine upload error (bad key,
+          # network, quota) already fails the steps above. What that doesn't
+          # catch: the rollup plugin finding zero JS chunks and bailing out as
+          # a soft, zero-exit no-op ("No chunks found, skipping sourcemap
+          # processing") — silently shipping a release with nothing uploaded.
+          # Check both build logs for that bail-out message and for proof the
+          # uploader actually found chunks to process.
+          fail=0
+          for log in posthog-build-chrome.log posthog-build-firefox.log; do
+            if grep -q 'No chunks found, skipping sourcemap processing' "$log"; then
+              echo "::error::$log: posthog-cli reported no chunks found — no source maps were uploaded for this build"
+              fail=1
+            fi
+            pairs=$(grep -oE 'found [0-9]+ pairs' "$log" | grep -oE '[0-9]+' | head -1 || true)
+            if [ -z "$pairs" ] || [ "$pairs" -eq 0 ]; then
+              echo "::error::$log: no evidence of posthog-cli finding sourcemap/chunk pairs to upload"
+              fail=1
+            fi
+          done
+          if [ "$fail" -ne 0 ]; then
+            exit 1
+          fi
+          echo "Source maps confirmed uploaded for both builds."
 
       - name: Zip unpacked build
         run: |
