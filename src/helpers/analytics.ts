@@ -82,6 +82,11 @@ interface StackFrame {
   in_app: boolean;
   // Structural marker so this shape satisfies AnalyticsValue's object arm —
   // every property above is itself an AnalyticsValue, so this adds no laxity.
+  // Also carries `chunk_id` (set via this index signature by
+  // {@link parseStackFrames}, like `StackTrace.component_stack` below) when
+  // the frame's filename matches an entry in {@link getFilenameToChunkIdMap}
+  // — the `@posthog/rollup-plugin`-injected id of the built chunk it came
+  // from, letting PostHog's server match the frame to its uploaded source map.
   [key: string]: AnalyticsValue;
 }
 
@@ -198,21 +203,25 @@ function parseStackLine(line: string): StackFrame | undefined {
 }
 
 /**
- * Parses a raw `Error.stack` string into PostHog-shaped frames, oldest first.
- * `Error.stack` lists the crash site first (newest frame first); PostHog's (and
- * Sentry's) `stacktrace.frames` convention is the reverse, crash site last, so
- * the parsed frames are reversed before returning. Caps at
- * {@link STACKTRACE_FRAME_LIMIT}, keeping the frames closest to the crash site
- * when a stack is longer than that.
+ * Parses a raw `Error.stack` string into PostHog-shaped frames, oldest first,
+ * without attaching {@link StackFrame.chunk_id}. `Error.stack` lists the crash
+ * site first (newest frame first); PostHog's (and Sentry's) `stacktrace.frames`
+ * convention is the reverse, crash site last, so the parsed frames are reversed
+ * before returning. Caps at {@link STACKTRACE_FRAME_LIMIT}, keeping the frames
+ * closest to the crash site when a stack is longer than that.
+ *
+ * Split out from {@link parseStackFrames} so {@link getFilenameToChunkIdMap} can
+ * parse the tiny stacks `@posthog/rollup-plugin` records without recursing back
+ * into chunk-id lookup while building the very map that lookup needs.
  * @param stack - The raw `Error.stack` string.
  * @returns Parsed frames, oldest call first, crash site last.
  * @example
  * ```ts
- * parseStackFrames(new Error("boom").stack ?? "");
+ * parseRawStackFrames(new Error("boom").stack ?? "");
  * ```
  * @source
  */
-function parseStackFrames(stack: string): StackFrame[] {
+function parseRawStackFrames(stack: string): StackFrame[] {
   const frames: StackFrame[] = [];
   for (const line of stack.split('\n')) {
     if (frames.length >= STACKTRACE_FRAME_LIMIT) break;
@@ -221,6 +230,75 @@ function parseStackFrames(stack: string): StackFrame[] {
     if (frame) frames.push(frame);
   }
   return frames.reverse();
+}
+
+/**
+ * Builds a `filename -> chunk id` map from `globalThis._posthogChunkIds`, the
+ * `stack string -> chunk id` map `@posthog/rollup-plugin` injects into every
+ * built chunk (a snippet that runs `new Error().stack` immediately at chunk
+ * load, so the recorded stack's own frame names that chunk's file). A port of
+ * `posthog-js`'s own `getFilenameToChunkIdMap` — this extension can't load
+ * that package (see the module doc), so the lookup is reproduced directly.
+ * Recomputed on every call rather than cached: ChemPal reports crashes, not
+ * high-frequency events, so re-parsing a few dozen short stacks per report is
+ * negligible, and skipping a cache avoids it ever going stale.
+ * @returns `filename -> chunk id`, or `undefined` when the running build
+ * injected no chunk-id map (dev/e2e builds, or a build with no
+ * `POSTHOG_API_KEY`).
+ * @example
+ * ```ts
+ * // Given globalThis._posthogChunkIds = { "Error\n  at chunk-abc.js:1:1": "id-1" }
+ * getFilenameToChunkIdMap(); // => { "chunk-abc.js": "id-1" }
+ * ```
+ * @source
+ */
+function getFilenameToChunkIdMap(): Record<string, string> | undefined {
+  const chunkIdsByStack = (globalThis as { _posthogChunkIds?: Record<string, string> })
+    ._posthogChunkIds;
+  if (!chunkIdsByStack) return undefined;
+
+  const filenameToChunkId: Record<string, string> = {};
+  for (const [stack, chunkId] of Object.entries(chunkIdsByStack)) {
+    const frames = parseRawStackFrames(stack);
+    // The injected snippet's own stack has only the chunk's wrapper frame (or
+    // very few), all pointing at the same file — walk from the crash-site end
+    // for the first frame with a filename, matching posthog-js's own search
+    // order, and stop there.
+    for (let i = frames.length - 1; i >= 0; i--) {
+      const filename = frames[i]?.filename;
+      if (filename) {
+        filenameToChunkId[filename] = chunkId;
+        break;
+      }
+    }
+  }
+  return filenameToChunkId;
+}
+
+/**
+ * Parses a raw `Error.stack` string into PostHog-shaped frames (via
+ * {@link parseRawStackFrames}), then attaches {@link StackFrame.chunk_id} to
+ * every frame whose `filename` appears in {@link getFilenameToChunkIdMap} —
+ * the step that lets PostHog's server match a captured frame to the source
+ * map uploaded for the chunk it came from.
+ * @param stack - The raw `Error.stack` string.
+ * @returns Parsed frames, oldest call first, crash site last, chunk ids attached.
+ * @example
+ * ```ts
+ * parseStackFrames(new Error("boom").stack ?? "");
+ * ```
+ * @source
+ */
+function parseStackFrames(stack: string): StackFrame[] {
+  const frames = parseRawStackFrames(stack);
+  const chunkIdMap = getFilenameToChunkIdMap();
+  if (!chunkIdMap) return frames;
+
+  for (const frame of frames) {
+    const chunkId = chunkIdMap[frame.filename];
+    if (chunkId) frame.chunk_id = chunkId;
+  }
+  return frames;
 }
 
 /**
