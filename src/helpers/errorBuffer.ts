@@ -39,6 +39,8 @@ export interface CapturedError {
   message: string;
   /** The stack trace, already truncated. */
   stack?: string;
+  /** The React component stack that was rendering when the error was thrown, if known. */
+  componentStack?: string;
 }
 
 /**

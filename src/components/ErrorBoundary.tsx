@@ -74,8 +74,8 @@ class ErrorBoundary extends Component<
       captureOwnerStack(),
     );
     this.setState({ componentStack: info.componentStack });
-    // Report the crash to PostHog (non-PII, best-effort).
-    void trackRenderError(error);
+    // Report the crash to PostHog, component stack included (non-PII, best-effort).
+    void trackRenderError(error, {}, info.componentStack);
   }
 
   /**
@@ -85,7 +85,7 @@ class ErrorBoundary extends Component<
   handleReport = () => {
     void showReportDialog(this.state.error, {
       action: 'render-crash',
-      extra: this.state.componentStack ? { componentStack: this.state.componentStack } : undefined,
+      componentStack: this.state.componentStack,
     });
   };
 

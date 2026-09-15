@@ -8,7 +8,15 @@ vi.unmock('@/helpers/analytics');
 // Configure a project API key so the sender is active.
 vi.mock('@/../config.json', async (importOriginal) => {
   const actual = await importOriginal<{ default: Record<string, unknown> }>();
-  const analytics = { apiKey: 'phc_test123', host: 'https://us.i.posthog.com', paramValueLimit: 100 };
+  const analytics = {
+    apiKey: 'phc_test123',
+    host: 'https://us.i.posthog.com',
+    paramValueLimit: 100,
+    componentStackLimit: 50,
+    stacktraceFrameLimit: 50,
+    stacktraceLineLengthLimit: 1024,
+    maxCauseDepth: 4,
+  };
   return { ...actual, default: { ...actual.default, analytics }, analytics };
 });
 
@@ -180,6 +188,31 @@ describe('analytics (PostHog capture)', () => {
         in_app: true,
       },
     ]);
+  });
+
+  it('attaches the component stack to the outermost stacktrace only', async () => {
+    const inner = new Error('inner boom');
+    const outer = new Error('outer boom', { cause: inner });
+    await trackRenderError(outer, {}, 'in Boom\n  in ErrorBoundary\n  in App');
+
+    const list = payloadFromCall().properties.$exception_list;
+    expect(list[0].stacktrace.component_stack).toBe('in Boom\n  in ErrorBoundary\n  in App');
+    expect(list[1].stacktrace).not.toHaveProperty('component_stack');
+  });
+
+  it('truncates a component stack longer than the configured limit', async () => {
+    const longStack = 'in Component\n'.repeat(20);
+    await trackRenderError(new Error('boom'), {}, longStack);
+
+    const { component_stack } = payloadFromCall().properties.$exception_list[0].stacktrace;
+    expect(component_stack).toBe(longStack.slice(0, 50));
+  });
+
+  it('omits component_stack when none was supplied', async () => {
+    await trackRenderError(new Error('boom'));
+
+    const { stacktrace } = payloadFromCall().properties.$exception_list[0];
+    expect(stacktrace).not.toHaveProperty('component_stack');
   });
 
   it('walks the Error.cause chain into additional $exception_list entries, always handled', async () => {
