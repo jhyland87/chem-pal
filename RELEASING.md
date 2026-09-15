@@ -6,11 +6,11 @@ Releases are produced by [`.github/workflows/release.yml`](.github/workflows/rel
 
 - **`CRX_PRIVATE_KEY` repo secret.** The PEM private key used to sign the `.crx`. Settings → Secrets and variables → Actions → New repository secret. Paste the full PEM, including the `-----BEGIN PRIVATE KEY-----` / `-----END PRIVATE KEY-----` lines and the trailing newline.
   - The same key must be used for every release — Chrome derives the extension's identity from it. Losing or replacing it produces a different extension ID.
-- **`POSTHOG_API_KEY` / `POSTHOG_PROJECT_ID` / `POSTHOG_HOST` repo secrets.** The production builds use these to upload source maps to PostHog, so `$exception` events show real file/line/function names instead of a minified stack. Add them under Settings → Secrets and variables → Actions → New repository secret.
-  - `POSTHOG_API_KEY`: a **personal** API key (PostHog → Settings → Personal API keys) with the **Source map upload** preset — distinct from, and more privileged than, the public `phc_` project key in `config.json`. Never reuse that project key here.
-  - `POSTHOG_PROJECT_ID`: from the PostHog project's Settings page.
-  - `POSTHOG_HOST`: the PostHog API host for the project.
-  - Check the **Build production extension**/**Build Firefox extension** step output if source maps are missing from a release.
+- **`POSTHOG_API_KEY` repo secret, `POSTHOG_PROJECT_ID` / `POSTHOG_HOST` repo variables.** The production builds use these to upload source maps to PostHog, so `$exception` events show real file/line/function names instead of a minified stack.
+  - `POSTHOG_API_KEY`: a **personal** API key (PostHog → Settings → Personal API keys) with the **Source map upload** preset — distinct from, and more privileged than, the public `phc_` project key in `config.json`. Never reuse that project key here. Add under Settings → Secrets and variables → Actions → **Secrets** tab → New repository secret.
+  - `POSTHOG_PROJECT_ID`: from the PostHog project's Settings page. Not sensitive — add under Settings → Secrets and variables → Actions → **Variables** tab → New repository variable.
+  - `POSTHOG_HOST`: the PostHog API host for the project. Same **Variables** tab as `POSTHOG_PROJECT_ID`.
+  - The vite config only wires up the upload plugin when `POSTHOG_API_KEY` is non-empty, and does so silently — a missing/misplaced value (e.g. a variable read via `secrets.*`, or vice versa) produces no error, just a build with no source maps. Check the **Build production extension**/**Build Firefox extension** step output for the plaintext `POSTHOG_PROJECT_ID`/`POSTHOG_HOST` values (and a masked `***` for `POSTHOG_API_KEY`) if source maps are missing from a release.
 
 ## Cutting a release
 
