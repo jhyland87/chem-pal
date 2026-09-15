@@ -148,6 +148,11 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     country: 'US',
     shipping: 'domestic',
   },
+  SupplierDiyChemicals: {
+    displayName: 'DIY Chemicals',
+    country: 'US',
+    shipping: 'domestic',
+  },
   SupplierFtfScientific: {
     displayName: 'FTF Scientific',
     country: 'US',

@@ -38,6 +38,7 @@ export { SupplierCarolinaChemical } from './SupplierCarolinaChemical';
 export { SupplierChemsavers } from './SupplierChemsavers';
 export { SupplierConsolidatedChemical } from './SupplierConsolidatedChemical';
 export { SupplierDailyBioUSA } from './SupplierDailyBioUSA';
+export { SupplierDiyChemicals } from './SupplierDiyChemicals';
 export { SupplierFtfScientific } from './SupplierFtfScientific';
 export { SupplierGoldAndSilverTesting } from './SupplierGoldAndSilverTesting';
 export { SupplierHimedia } from './SupplierHimedia';
