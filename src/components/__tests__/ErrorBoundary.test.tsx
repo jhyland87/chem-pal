@@ -59,5 +59,6 @@ describe('ErrorBoundary', () => {
     expect(trackRenderError).toHaveBeenCalledTimes(1);
     expect(trackRenderError.mock.calls[0][0]).toBeInstanceOf(Error);
     expect((trackRenderError.mock.calls[0][0] as Error).message).toBe('boom');
+    expect(trackRenderError.mock.calls[0][2]).toEqual(expect.stringContaining('Boom'));
   });
 });

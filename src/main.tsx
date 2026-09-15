@@ -65,12 +65,16 @@ if (IS_DEV_BUILD) {
         source: 'react',
         message: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? formatErrorChain(error) : undefined,
+        componentStack: errorInfo.componentStack,
       });
       // Report to PostHog (fatal: it escaped every boundary).
-      void trackRenderError(error, { fatal: 1 });
+      void trackRenderError(error, { fatal: 1 }, errorInfo.componentStack);
       // The error escaped every React boundary, so the app tree is gone. Surface
       // a non-React report path that doesn't depend on the crashed React runtime.
-      void showCrashReport(error, { action: 'uncaught render error' });
+      void showCrashReport(error, {
+        action: 'uncaught render error',
+        componentStack: errorInfo.componentStack,
+      });
     },
     onCaughtError: (error, errorInfo) => {
       console.error('Caught error:', error, errorInfo);
@@ -78,6 +82,7 @@ if (IS_DEV_BUILD) {
         source: 'react',
         message: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? formatErrorChain(error) : undefined,
+        componentStack: errorInfo.componentStack,
       });
     },
   }).render(

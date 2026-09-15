@@ -62,7 +62,11 @@
   "analytics": {
     "apiKey": "phc_xSkGPDyKjxsRa9B5uz9PcpGFBgLTq2yJTV3sqAYPi9St",
     "host": "https://us.i.posthog.com",
-    "paramValueLimit": 100
+    "paramValueLimit": 100,
+    "componentStackLimit": 2000,
+    "stacktraceFrameLimit": 50,
+    "stacktraceLineLengthLimit": 1024,
+    "maxCauseDepth": 4
   },
   "errorBuffer": {
     "maxErrors": 20,

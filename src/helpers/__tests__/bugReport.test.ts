@@ -35,6 +35,7 @@ function makeDiag(over: Partial<Diagnostics> = {}): Diagnostics {
   return {
     message: 'boom',
     stack: 'Error: boom\n  at doThing (app.js:1:1)',
+    componentStack: '',
     version: '1.6.1',
     userAgent: 'jsdom',
     language: 'en-US',
@@ -131,5 +132,32 @@ describe('collectDiagnostics', () => {
     expect(diag.search).toBe('"acetone" — 3 results');
     expect(formatMetadata(diag)).toContain('Search:');
     expect(formatMetadata(diag)).toContain('acetone');
+  });
+
+  it('carries the caller-supplied component stack into the report', async () => {
+    const diag = await collectDiagnostics(new Error('kaboom'), {
+      action: 'render-crash',
+      componentStack: 'in Boom\n  in ErrorBoundary\n  in App',
+    });
+    expect(diag.componentStack).toBe('in Boom\n  in ErrorBoundary\n  in App');
+    const logs = formatLogs(diag);
+    expect(logs).toContain('Component Stack:');
+    expect(logs).toContain('in Boom');
+  });
+
+  it('omits the component stack section when none was supplied', async () => {
+    const diag = await collectDiagnostics(new Error('kaboom'));
+    expect(formatLogs(diag)).not.toContain('Component Stack:');
+  });
+
+  it("includes a recent exception's component stack from the ring buffer", async () => {
+    getRecentErrors.mockResolvedValue([
+      { ts: 1, source: 'react', message: 'prior crash', componentStack: 'in OldBoom\n  in App' },
+    ]);
+    const diag = await collectDiagnostics();
+    const logs = formatLogs(diag);
+    expect(logs).toContain('prior crash');
+    expect(logs).toContain('Component Stack:');
+    expect(logs).toContain('in OldBoom');
   });
 });

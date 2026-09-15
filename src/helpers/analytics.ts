@@ -47,6 +47,16 @@ export const CAPTURE_PATH = '/i/v0/e/';
 export const PARAM_VALUE_LIMIT = analyticsConfig.paramValueLimit;
 
 /**
+ * Self-imposed cap on how much of a React component stack rides along in a
+ * `$exception` event, from `config.json` (`analytics.componentStackLimit`).
+ * Unlike JS stack frames (capped by count via {@link STACKTRACE_FRAME_LIMIT}),
+ * a component stack is one unstructured string, so it's bounded by length.
+ * @category Helpers
+ * @source
+ */
+export const COMPONENT_STACK_LIMIT = analyticsConfig.componentStackLimit;
+
+/**
  * A JSON-safe value a PostHog event property may hold — the primitives
  * {@link trackEvent} always accepted, plus arrays/objects for structured
  * properties like `$exception_list`.
@@ -93,7 +103,9 @@ interface ExceptionMechanism {
 /**
  * The `stacktrace` field of one {@link ExceptionEntry}: `type: "raw"` tells
  * PostHog these frames are unsymbolicated (parsed straight from `Error.stack`,
- * not resolved via an uploaded source map).
+ * not resolved via an uploaded source map). The outermost entry (the reported
+ * error itself, not a `cause` link) may also carry `component_stack` — the
+ * React tree that was rendering when it threw — via the index signature below.
  * @category Helpers
  * @group Bug reporting
  */
@@ -122,19 +134,24 @@ const UNKNOWN_FUNCTION = '?';
 
 /**
  * Cap on parsed stack frames per exception, matching `posthog-js`'s own
- * `STACKTRACE_FRAME_LIMIT`. Applied to the newest (most relevant) frames.
+ * `STACKTRACE_FRAME_LIMIT`. Applied to the newest (most relevant) frames. From
+ * `config.json` (`analytics.stacktraceFrameLimit`).
  */
-const STACKTRACE_FRAME_LIMIT = 50;
+const STACKTRACE_FRAME_LIMIT = analyticsConfig.stacktraceFrameLimit;
 
 /**
  * Skip any stack line longer than this. The frame regexes below backtrack, so
  * an unbounded line is a hang/DoS risk, not just noise — same rationale
- * `posthog-js`'s parser uses for its own line-length cap.
+ * `posthog-js`'s parser uses for its own line-length cap. From `config.json`
+ * (`analytics.stacktraceLineLengthLimit`).
  */
-const STACKTRACE_LINE_LENGTH_LIMIT = 1024;
+const STACKTRACE_LINE_LENGTH_LIMIT = analyticsConfig.stacktraceLineLengthLimit;
 
-/** Depth limit on `Error.cause` chain walking, matching `posthog-js`'s own cap. */
-const MAX_CAUSE_DEPTH = 4;
+/**
+ * Depth limit on `Error.cause` chain walking, matching `posthog-js`'s own cap.
+ * From `config.json` (`analytics.maxCauseDepth`).
+ */
+const MAX_CAUSE_DEPTH = analyticsConfig.maxCauseDepth;
 
 /** V8/Chromium stack frame: `at fn (file:line:col)`, `at file:line:col`, or `at async fn (...)`. */
 const CHROME_FRAME_PATTERN = /^\s*at\s+(?:async\s+)?(?:(.*?)\s+\()?(.*?):(\d+):(\d+)\)?\s*$/;
@@ -215,24 +232,38 @@ function parseStackFrames(stack: string): StackFrame[] {
  * @param error - The error to convert.
  * @param mechanism - How the outermost error was captured.
  * @param depth - Current recursion depth into the `cause` chain.
+ * @param componentStack - The React component stack that was rendering when
+ * `error` was thrown, if known. Attached only to the outermost entry, never to
+ * a `cause` link, since the stack describes where `error` itself surfaced.
  * @returns The exception list, outermost error first.
  * @example
  * ```ts
- * buildExceptionList(new Error("outer", { cause: new Error("inner") }), {
- *   type: "generic",
- *   handled: true,
- *   synthetic: false,
- * });
- * // => [{ type: "Error", value: "outer", ... }, { type: "Error", value: "inner", ... }]
+ * buildExceptionList(
+ *   new Error("outer", { cause: new Error("inner") }),
+ *   { type: "generic", handled: true, synthetic: false },
+ *   0,
+ *   "in Boom\n  in ErrorBoundary\n  in App",
+ * );
+ * // => [{ type: "Error", value: "outer", stacktrace: { component_stack: "in Boom...", ... } },
+ * //      { type: "Error", value: "inner", ... }]
  * ```
  * @source
  */
-function buildExceptionList(error: Error, mechanism: ExceptionMechanism, depth = 0): ExceptionEntry[] {
+function buildExceptionList(
+  error: Error,
+  mechanism: ExceptionMechanism,
+  depth = 0,
+  componentStack?: string,
+): ExceptionEntry[] {
+  const stacktrace: StackTrace = { type: 'raw', frames: error.stack ? parseStackFrames(error.stack) : [] };
+  if (depth === 0 && componentStack) {
+    stacktrace.component_stack = componentStack.slice(0, COMPONENT_STACK_LIMIT);
+  }
   const entry: ExceptionEntry = {
     type: error.name,
     value: error.message,
     mechanism,
-    stacktrace: { type: 'raw', frames: error.stack ? parseStackFrames(error.stack) : [] },
+    stacktrace,
   };
 
   const cause: unknown = error.cause;
@@ -436,17 +467,25 @@ function describeCause(cause: unknown): string {
  * `handled: true`.
  * @param error - The caught error.
  * @param params - Optional extra non-PII params.
+ * @param componentStack - The React component stack that was rendering when
+ * `error` was thrown (from `ErrorBoundary.componentDidCatch` or the root's
+ * `onCaughtError`/`onUncaughtError`), if available. Folded into the outermost
+ * `$exception_list` entry's `stacktrace.component_stack` — see
+ * {@link buildExceptionList} — rather than passed as a flat param, since it
+ * belongs with the stack trace it describes.
  * @returns A promise that resolves once the send settles.
  * @example
  * ```ts
  * void trackRenderError(new Error("Cannot read x of undefined"));
  * void trackRenderError(error, { fatal: 1 }); // escaped every boundary
+ * void trackRenderError(error, {}, "in Boom\n  in ErrorBoundary\n  in App");
  * ```
  * @source
  */
 export async function trackRenderError(
   error: unknown,
   params: Record<string, AnalyticsValue> = {},
+  componentStack?: string,
 ): Promise<void> {
   const isError = error instanceof Error;
   const err = isError ? error : new Error(String(error));
@@ -461,7 +500,7 @@ export async function trackRenderError(
     error_name: err.name,
     error_message: err.message,
     ...(err.cause != null ? { error_cause: describeCause(err.cause) } : {}),
-    $exception_list: buildExceptionList(err, mechanism),
+    $exception_list: buildExceptionList(err, mechanism, 0, componentStack),
     $exception_level: 'error',
     ...params,
   });

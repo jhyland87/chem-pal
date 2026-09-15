@@ -25,6 +25,8 @@ export interface ReportContext {
   url?: string;
   /** A short label for what the user was doing (e.g. `"render-crash"`). */
   action?: string;
+  /** The React component stack that was rendering when the error was thrown, if known. */
+  componentStack?: string;
   /** Any extra structured payload to include verbatim in the logs. */
   extra?: Record<string, unknown>;
 }
@@ -39,6 +41,8 @@ export interface Diagnostics {
   message: string;
   /** Primary error stack, when a specific error triggered the report. */
   stack: string;
+  /** Primary error's React component stack, when known. */
+  componentStack: string;
   /** Extension version. */
   version: string;
   /** Browser user-agent string. */
@@ -209,6 +213,7 @@ export async function collectDiagnostics(
   return {
     message,
     stack,
+    componentStack: context.componentStack ?? '',
     version: readVersion(),
     userAgent: readUserAgent(),
     language: navigator.language,
@@ -259,11 +264,13 @@ export function formatMetadata(d: Diagnostics): string {
 export function formatLogs(d: Diagnostics): string {
   const lines: string[] = [];
   if (d.stack) lines.push('Stack:', d.stack);
+  if (d.componentStack) lines.push('Component Stack:', d.componentStack);
   if (d.recentErrors.length) {
     lines.push('', `Recent exceptions (${d.recentErrors.length}):`);
     for (const e of d.recentErrors) {
       lines.push(`- [${e.source}] ${e.message}`);
       if (e.stack) lines.push(e.stack);
+      if (e.componentStack) lines.push('Component Stack:', e.componentStack);
     }
   }
   if (d.extra) lines.push('', 'Extra:', JSON.stringify(d.extra, null, 2));
