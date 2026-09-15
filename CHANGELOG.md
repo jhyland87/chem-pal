@@ -13,7 +13,7 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
-## [1.14.0] - 2026-09-15
+## [1.14.1] - 2026-09-15
 
 ### Added
 
