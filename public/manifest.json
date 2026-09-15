@@ -109,7 +109,8 @@
     "https://orbitnaturalproductderivatives.com/*",
     "https://www.labproservices.com/*",
     "https://hyperfuels.com/*",
-    "https://hyper-fuels.myshopify.com/*"
+    "https://hyper-fuels.myshopify.com/*",
+    "https://diychemicals.com/*"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"

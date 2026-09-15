@@ -13,6 +13,10 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+### Added
+
+- New supplier: DIY Chemicals.
+
 ## [1.13.0] - 2026-09-12
 
 ### Changed
