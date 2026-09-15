@@ -190,6 +190,41 @@ describe('analytics (PostHog capture)', () => {
     ]);
   });
 
+  it('attaches chunk_id to a frame whose filename matches globalThis._posthogChunkIds', async () => {
+    // @posthog/rollup-plugin injects `stack string -> chunk id` at chunk load;
+    // the recorded stack's own frame points at that chunk's file.
+    vi.stubGlobal('_posthogChunkIds', {
+      'Error\n    at chrome-extension://abc/main.js:1:1': 'chunk-main-id',
+    });
+
+    const error = new Error('boom');
+    error.stack = ['Error: boom', '    at outerFn (chrome-extension://abc/main.js:20:15)'].join('\n');
+    await trackRenderError(error);
+
+    const [frame] = payloadFromCall().properties.$exception_list[0].stacktrace.frames;
+    expect(frame.chunk_id).toBe('chunk-main-id');
+  });
+
+  it('leaves chunk_id unset for a frame whose filename matches no chunk', async () => {
+    vi.stubGlobal('_posthogChunkIds', {
+      'Error\n    at chrome-extension://abc/main.js:1:1': 'chunk-main-id',
+    });
+
+    const error = new Error('boom');
+    error.stack = ['Error: boom', '    at outerFn (chrome-extension://abc/other.js:20:15)'].join('\n');
+    await trackRenderError(error);
+
+    const [frame] = payloadFromCall().properties.$exception_list[0].stacktrace.frames;
+    expect(frame).not.toHaveProperty('chunk_id');
+  });
+
+  it('leaves every frame unchanged when globalThis._posthogChunkIds is absent (dev/e2e builds)', async () => {
+    await trackRenderError(new Error('boom'));
+
+    const [frame] = payloadFromCall().properties.$exception_list[0].stacktrace.frames;
+    expect(frame).not.toHaveProperty('chunk_id');
+  });
+
   it('attaches the component stack to the outermost stacktrace only', async () => {
     const inner = new Error('inner boom');
     const outer = new Error('outer boom', { cause: inner });
