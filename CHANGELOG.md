@@ -13,9 +13,18 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+## [1.14.0] - 2026-09-15
+
 ### Added
 
 - New supplier: DIY Chemicals.
+
+### Changed
+
+- Crash reports sent to our anonymous analytics now also include the React component tree
+  that was rendering when the error happened, making crashes easier to track down. Still
+  covered by the same **Settings → Behavior → Share anonymous usage data** toggle, and still
+  no user data or search terms are included.
 
 ## [1.13.0] - 2026-09-12
 
