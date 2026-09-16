@@ -66,7 +66,9 @@
     "componentStackLimit": 2000,
     "stacktraceFrameLimit": 50,
     "stacktraceLineLengthLimit": 1024,
-    "maxCauseDepth": 4
+    "maxCauseDepth": 4,
+    "fingerprintVersion": 1,
+    "sessionMaxAgeMs": 82800000
   },
   "errorBuffer": {
     "maxErrors": 20,

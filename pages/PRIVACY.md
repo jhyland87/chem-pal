@@ -10,9 +10,10 @@ policy explains what data the extension handles, where it goes, and why.
 never sells your data. It does use PostHog, an independent product‑analytics
 service, to collect basic usage and
 error statistics — which searches are run, how many results they return, when the
-extension is installed or updated, and when it hits an error — associated only
-with a random, per‑install
-identifier, never your name or an account. Beyond that, the data that leaves your
+extension is installed or updated, and when it hits an error — associated with an
+identifier derived from a few basic characteristics of your device (never your
+name or an account), plus a short‑lived identifier grouping activity within one
+browser session. Beyond that, the data that leaves your
 browser is the search terms and chemical identifiers you enter, sent directly to
 the third‑party supplier and public chemistry services you choose to search — the
 same way your browser would send them if you visited those sites yourself.
@@ -94,15 +95,29 @@ sends an event to PostHog when you:
 - **install or update the extension** — including the version installed, and the
   version you upgraded from when it is an update.
 
-These events are associated with a random identifier generated and stored on your
-device, not with your name, email, or any account, and the extension loads no
-advertising or third‑party tracking code. Every event is sent as an anonymous
-event, meaning PostHog does not build or update a person profile for you — there
-is no stored record that accumulates properties over time. As with any web
-request, PostHog also receives standard technical information such as your IP
-address, from which it derives an approximate country or region, and which it
-processes under its own privacy policy. ChemPal does not use this data for
-advertising or to profile you.
+These events are associated with two identifiers, neither of which is your name,
+email, or account:
+
+- A **device identifier**, computed from a handful of basic, common technical
+  characteristics of your browser and device (such as the number of processor
+  cores and general platform). It is not stored — it is recalculated the same
+  way each time — so it stays the same across normal use and even if you
+  reinstall the extension. Because it stays the same over time, PostHog links
+  events under it into a single ongoing record (what PostHog calls a "person"),
+  which is how the developer can see, for example, that a given install hit the
+  same error repeatedly. The characteristics used are common enough that
+  different installs with similar hardware may share the same identifier — it
+  is not precise enough to reliably single out one specific device.
+- A **session identifier**, which changes every time you close and reopen your
+  browser (or after about a day of continuous use), used only to group events
+  from the same browsing session together.
+
+The extension loads no advertising or third‑party tracking code, and does not
+use these identifiers for advertising or to build any profile beyond the usage
+and error statistics described above. As with any web request, PostHog also
+receives standard technical information such as your IP address, from which it
+derives an approximate country or region, and which it processes under its own
+privacy policy.
 
 ### 2.7 Bug reports (only when you choose to send one)
 
@@ -134,7 +149,8 @@ may send requests to:
 - **GitHub** (`api.github.com`) — to check whether a newer version of the
   extension is available. No personal data is sent.
 - **PostHog** (`us.i.posthog.com`) — to collect the usage and
-  error statistics described in section 2.6, tied only to a random identifier.
+  error statistics described in section 2.6, tied to the device and session
+  identifiers described there.
 - **GitHub or Google Forms** — only if you choose to submit a bug report
   (section 2.7), and only with the details you review and send yourself.
 
@@ -152,7 +168,9 @@ practices of these independent services.
 - It does **not** show advertising, use advertising or cross‑site tracking SDKs,
   or sell or share your data for advertising or any unrelated purpose.
 - It does **not** collect personal information such as your name, email address,
-  or payment details, and the analytics identifier is random and not linked to you.
+  or payment details. The analytics device identifier (section 2.6) is derived
+  from basic technical characteristics of your device, not from anything you
+  enter or any account, and is shared by any install with similar hardware.
 - It does **not** submit bug reports automatically — that happens only when you
   choose to, and only with the details you review and send.
 
@@ -177,12 +195,16 @@ All data the extension keeps is stored locally in your browser. You remain in
 control of it at all times:
 
 - Clear favorites, history, and settings from within the extension's settings.
-- Remove all locally stored data by uninstalling the extension.
+- Remove all locally stored data by uninstalling the extension. The one
+  exception is the analytics device identifier (section 2.6): since it is
+  recalculated from device characteristics rather than stored, uninstalling
+  does not change it — reinstalling produces the same identifier again.
 - Cookies set on supplier domains can be cleared through your browser's normal
   cookie/site‑data controls.
 
 Because the developer never receives your data, there is nothing for the developer
-to retain or delete on your behalf.
+to retain or delete on your behalf. If you'd like the analytics history tied to
+your device identifier deleted, contact the developer (section 9).
 
 ---
 

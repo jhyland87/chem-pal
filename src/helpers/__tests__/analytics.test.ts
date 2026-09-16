@@ -16,23 +16,33 @@ vi.mock('@/../config.json', async (importOriginal) => {
     stacktraceFrameLimit: 50,
     stacktraceLineLengthLimit: 1024,
     maxCauseDepth: 4,
+    fingerprintVersion: 1,
+    sessionMaxAgeMs: 82800000,
   };
   return { ...actual, default: { ...actual.default, analytics }, analytics };
 });
 
-// In-memory local storage (distinct id persistence + the opt-out setting read).
-const { localStore } = vi.hoisted(() => ({ localStore: {} as Record<string, unknown> }));
+// In-memory local + session storage (distinct-id migration, session id, and
+// the opt-out setting all read/write through these).
+const { localStore, sessionStore } = vi.hoisted(() => ({
+  localStore: {} as Record<string, unknown>,
+  sessionStore: {} as Record<string, unknown>,
+}));
+function makeStoreArea(store: Record<string, unknown>) {
+  return {
+    get: async (key: string) => ({ [key]: store[key] }),
+    set: async (items: Record<string, unknown>) => {
+      Object.assign(store, items);
+    },
+    remove: async (key: string) => {
+      delete store[key];
+    },
+  };
+}
 vi.mock('@/utils/storage', () => ({
   cstorage: {
-    local: {
-      get: async (key: string) => ({ [key]: localStore[key] }),
-      set: async (items: Record<string, unknown>) => {
-        Object.assign(localStore, items);
-      },
-      remove: async (key: string) => {
-        delete localStore[key];
-      },
-    },
+    local: makeStoreArea(localStore),
+    session: makeStoreArea(sessionStore),
   },
 }));
 
@@ -74,6 +84,7 @@ function payloadFromCall(index = 0) {
 describe('analytics (PostHog capture)', () => {
   beforeEach(() => {
     for (const key of Object.keys(localStore)) delete localStore[key];
+    for (const key of Object.keys(sessionStore)) delete sessionStore[key];
     fetchMock.mockReset();
     fetchMock.mockResolvedValue(undefined);
     vi.stubGlobal('fetch', fetchMock);
@@ -290,10 +301,10 @@ describe('analytics (PostHog capture)', () => {
     expect(properties).not.toHaveProperty('error_cause');
   });
 
-  it('marks every event anonymous and attributes the library', async () => {
+  it('no longer marks events anonymous, but still attributes the library', async () => {
     await trackEvent('search_query', { search_term: 'acetone' });
     const { properties } = payloadFromCall();
-    expect(properties.$process_person_profile).toBe(false);
+    expect(properties).not.toHaveProperty('$process_person_profile');
     expect(properties.$lib).toBe('chempal-extension');
     expect(properties.$lib_version).toBeTruthy();
   });
@@ -306,21 +317,59 @@ describe('analytics (PostHog capture)', () => {
     expect(typeof properties.count).toBe('number');
   });
 
-  it('reuses and persists a single distinct id across events', async () => {
+  it('derives a stable fp_-prefixed distinct id from device signals, with no storage round-trip', async () => {
     await trackEvent('search_query', { search_term: 'acetone' });
     await trackEvent('search_results', { search_term: 'acetone', result_count: 7 });
 
     const first = payloadFromCall(0).distinct_id;
+    expect(first).toMatch(/^fp_[0-9a-f]+$/);
     expect(payloadFromCall(1).distinct_id).toBe(first);
-    expect(localStore[CACHE.ANALYTICS_DISTINCT_ID]).toBe(first);
+    // Unlike the retired scheme, nothing is persisted to derive it.
+    expect(localStore[CACHE.ANALYTICS_DISTINCT_ID]).toBeUndefined();
   });
 
-  it('does not reuse the retired GA client id, and clears it', async () => {
-    localStore[CACHE.ANALYTICS_CLIENT_ID] = 'ga-legacy-id';
-    await trackEvent('search_query', { search_term: 'acetone' });
+  it('changes the distinct id when a fingerprint signal changes', async () => {
+    // getFingerprintDistinctId() memoizes per module instance, so each
+    // variant needs its own fresh import (mocks survive resetModules(); only
+    // the module registry — and this cache with it — is cleared).
+    vi.stubGlobal('navigator', { ...navigator, hardwareConcurrency: 4 });
+    vi.resetModules();
+    const withFourCores = await import('@/helpers/analytics');
+    await withFourCores.trackEvent('search_query', { search_term: 'acetone' });
+    const idWithFourCores = payloadFromCall(0).distinct_id;
 
-    expect(payloadFromCall().distinct_id).not.toBe('ga-legacy-id');
-    expect(localStore[CACHE.ANALYTICS_CLIENT_ID]).toBeUndefined();
+    vi.stubGlobal('navigator', { ...navigator, hardwareConcurrency: 8 });
+    vi.resetModules();
+    const withEightCores = await import('@/helpers/analytics');
+    await withEightCores.trackEvent('search_query', { search_term: 'acetone' });
+    const idWithEightCores = payloadFromCall(1).distinct_id;
+
+    expect(idWithEightCores).not.toBe(idWithFourCores);
+  });
+
+  it('tags every event with a $session_id, stable across calls', async () => {
+    await trackEvent('search_query', { search_term: 'acetone' });
+    await trackEvent('search_results', { search_term: 'acetone', result_count: 7 });
+
+    const first = payloadFromCall(0).properties.$session_id;
+    expect(first).toMatch(/^[0-9a-f-]{36}$/);
+    expect(payloadFromCall(1).properties.$session_id).toBe(first);
+  });
+
+  it('regenerates the session id once it exceeds sessionMaxAgeMs', async () => {
+    vi.useFakeTimers();
+    try {
+      await trackEvent('search_query', { search_term: 'acetone' });
+      const first = payloadFromCall(0).properties.$session_id;
+
+      vi.advanceTimersByTime(82800000 + 1);
+      await trackEvent('search_query', { search_term: 'acetone' });
+      const second = payloadFromCall(1).properties.$session_id;
+
+      expect(second).not.toBe(first);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('never throws when the network fails', async () => {
@@ -413,6 +462,44 @@ describe('analytics (PostHog capture)', () => {
       localStore[CACHE.USER_SETTINGS] = { shareUsageData: false };
       await trackInstallOrUpgrade('install');
       expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('aliases a legacy distinct id into the fingerprint id on a real update, then removes it', async () => {
+      localStore[CACHE.ANALYTICS_DISTINCT_ID] = 'legacy-random-uuid';
+      await trackInstallOrUpgrade('update', '1.8.0');
+
+      const alias = payloadFromCall(0);
+      expect(alias.event).toBe('$create_alias');
+      expect(alias.distinct_id).toBe('legacy-random-uuid');
+      expect(alias.properties.alias).toMatch(/^fp_[0-9a-f]+$/);
+
+      // extension_upgraded is the next call, after the alias.
+      expect(payloadFromCall(1).event).toBe('extension_upgraded');
+      expect(localStore[CACHE.ANALYTICS_DISTINCT_ID]).toBeUndefined();
+    });
+
+    it('sends no alias on a fresh install (no legacy id to migrate)', async () => {
+      await trackInstallOrUpgrade('install');
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(payloadFromCall(0).event).toBe('extension_installed');
+    });
+
+    it('sends no alias on a second update once already migrated', async () => {
+      localStore[CACHE.ANALYTICS_DISTINCT_ID] = 'legacy-random-uuid';
+      await trackInstallOrUpgrade('update', '1.8.0');
+      fetchMock.mockClear();
+
+      await trackInstallOrUpgrade('update', '1.9.0');
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(payloadFromCall(0).event).toBe('extension_upgraded');
+    });
+
+    it('also clears the retired GA client id during migration', async () => {
+      localStore[CACHE.ANALYTICS_DISTINCT_ID] = 'legacy-random-uuid';
+      localStore[CACHE.ANALYTICS_CLIENT_ID] = 'ga-legacy-id';
+      await trackInstallOrUpgrade('update', '1.8.0');
+
+      expect(localStore[CACHE.ANALYTICS_CLIENT_ID]).toBeUndefined();
     });
   });
 });
