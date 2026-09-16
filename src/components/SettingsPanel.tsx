@@ -560,8 +560,9 @@ export default function SettingsPanel() {
                 </Select>
               </FormControl>
             </ListItem>
-            {/* Share anonymous usage data — gates the PostHog usage/error
-                events (default on; toggling off opts out entirely). */}
+            {/* Share usage data — gates the PostHog usage/error events
+                (default on; toggling off opts out entirely). Identified by a
+                device fingerprint, not fully anonymous — see analytics.ts. */}
             <ListItem className={styles['settings-panel__helper-on-hover']}>
               <ListItemText
                 primary={i18n('settings_share_usage_data')}

@@ -1,6 +1,8 @@
 import { analytics as analyticsConfig } from '@/../config.json';
 import { CACHE } from '@/constants/common';
 import { cstorage } from '@/utils/storage';
+import { generateUuidV7 } from '@/utils/uuidv7';
+import { md5 } from 'js-md5';
 
 /**
  * Minimal PostHog reporter. Posts directly to PostHog's capture endpoint,
@@ -12,9 +14,13 @@ import { cstorage } from '@/utils/storage';
  * throw, and nothing is sent until an API key is configured in `config.json`
  * (`analytics`).
  *
- * Every event carries `$process_person_profile: false`, so PostHog stores it as
- * anonymous — no person profile is created or updated, and no person properties
- * accumulate. Callers must only pass non-identifying params.
+ * `distinct_id` is derived from a small set of stable device signals (see
+ * `getFingerprintDistinctId`) rather than a stored random id, so PostHog
+ * builds/updates a Person for it and it survives an extension reinstall. This
+ * is a coarse cohort identifier, not a strong unique-device id — see that
+ * function's doc for the entropy/privacy trade-off. Every event also carries
+ * a `$session_id` (see `getSessionId`) so activity within one browser
+ * session groups together in PostHog.
  *
  * Render crashes are reported as a `$exception` event shaped like PostHog's own
  * `posthog-js` `captureException` output (`$exception_list`, `$exception_level`),
@@ -49,12 +55,33 @@ export const PARAM_VALUE_LIMIT = analyticsConfig.paramValueLimit;
 /**
  * Self-imposed cap on how much of a React component stack rides along in a
  * `$exception` event, from `config.json` (`analytics.componentStackLimit`).
- * Unlike JS stack frames (capped by count via {@link STACKTRACE_FRAME_LIMIT}),
+ * Unlike JS stack frames (capped by count via `STACKTRACE_FRAME_LIMIT`),
  * a component stack is one unstructured string, so it's bounded by length.
  * @category Helpers
  * @source
  */
 export const COMPONENT_STACK_LIMIT = analyticsConfig.componentStackLimit;
+
+/**
+ * Salt mixed into `getFingerprintDistinctId`'s hash, from `config.json`
+ * (`analytics.fingerprintVersion`). Bump to deliberately mint a new
+ * `distinct_id` for every install — e.g. if the signal set itself changes —
+ * paired with its own `$create_alias` pass, the same way
+ * `migrateLegacyDistinctId` handles the original random-UUID scheme.
+ * @category Helpers
+ * @source
+ */
+const FINGERPRINT_VERSION = analyticsConfig.fingerprintVersion;
+
+/**
+ * How long a `$session_id` stays valid before `getSessionId` mints a new
+ * one, from `config.json` (`analytics.sessionMaxAgeMs`). Set below PostHog's
+ * hard 24h UUIDv7 validity window for `$session_id` (its embedded timestamp
+ * plus 24h must be after the last event's timestamp) as a safety margin.
+ * @category Helpers
+ * @source
+ */
+const SESSION_MAX_AGE_MS = analyticsConfig.sessionMaxAgeMs;
 
 /**
  * A JSON-safe value a PostHog event property may hold — the primitives
@@ -68,7 +95,7 @@ export type AnalyticsValue = string | number | boolean | AnalyticsValue[] | { [k
 /**
  * Stack-frame shape PostHog's Error Tracking product expects inside
  * `stacktrace.frames`, matching `posthog-js`'s own `StackFrame` type. Every
- * field is always populated because {@link parseStackLine} only returns a
+ * field is always populated because `parseStackLine` only returns a
  * frame once it has matched all four.
  * @category Helpers
  * @group Bug reporting
@@ -83,8 +110,8 @@ interface StackFrame {
   // Structural marker so this shape satisfies AnalyticsValue's object arm —
   // every property above is itself an AnalyticsValue, so this adds no laxity.
   // Also carries `chunk_id` (set via this index signature by
-  // {@link parseStackFrames}, like `StackTrace.component_stack` below) when
-  // the frame's filename matches an entry in {@link getFilenameToChunkIdMap}
+  // `parseStackFrames`, like `StackTrace.component_stack` below) when
+  // the frame's filename matches an entry in `getFilenameToChunkIdMap`
   // — the `@posthog/rollup-plugin`-injected id of the built chunk it came
   // from, letting PostHog's server match the frame to its uploaded source map.
   [key: string]: AnalyticsValue;
@@ -106,7 +133,7 @@ interface ExceptionMechanism {
 }
 
 /**
- * The `stacktrace` field of one {@link ExceptionEntry}: `type: "raw"` tells
+ * The `stacktrace` field of one `ExceptionEntry`: `type: "raw"` tells
  * PostHog these frames are unsymbolicated (parsed straight from `Error.stack`,
  * not resolved via an uploaded source map). The outermost entry (the reported
  * error itself, not a `cause` link) may also carry `component_stack` — the
@@ -165,7 +192,7 @@ const CHROME_FRAME_PATTERN = /^\s*at\s+(?:async\s+)?(?:(.*?)\s+\()?(.*?):(\d+):(
 const GECKO_FRAME_PATTERN = /^\s*(.*?)@(.*):(\d+):(\d+)\s*$/;
 
 /**
- * Parses one line of a raw `Error.stack` into a {@link StackFrame}, trying the
+ * Parses one line of a raw `Error.stack` into a `StackFrame`, trying the
  * V8/Chromium frame shape first and falling back to SpiderMonkey/Firefox's —
  * ChemPal ships on both. This is a simplified port of `posthog-js`'s own
  * `chromeStackLineParser`/`geckoStackLineParser`: it skips their `eval(...)`
@@ -204,13 +231,13 @@ function parseStackLine(line: string): StackFrame | undefined {
 
 /**
  * Parses a raw `Error.stack` string into PostHog-shaped frames, oldest first,
- * without attaching {@link StackFrame.chunk_id}. `Error.stack` lists the crash
+ * without attaching `StackFrame.chunk_id`. `Error.stack` lists the crash
  * site first (newest frame first); PostHog's (and Sentry's) `stacktrace.frames`
  * convention is the reverse, crash site last, so the parsed frames are reversed
- * before returning. Caps at {@link STACKTRACE_FRAME_LIMIT}, keeping the frames
+ * before returning. Caps at `STACKTRACE_FRAME_LIMIT`, keeping the frames
  * closest to the crash site when a stack is longer than that.
  *
- * Split out from {@link parseStackFrames} so {@link getFilenameToChunkIdMap} can
+ * Split out from `parseStackFrames` so `getFilenameToChunkIdMap` can
  * parse the tiny stacks `@posthog/rollup-plugin` records without recursing back
  * into chunk-id lookup while building the very map that lookup needs.
  * @param stack - The raw `Error.stack` string.
@@ -277,8 +304,8 @@ function getFilenameToChunkIdMap(): Record<string, string> | undefined {
 
 /**
  * Parses a raw `Error.stack` string into PostHog-shaped frames (via
- * {@link parseRawStackFrames}), then attaches {@link StackFrame.chunk_id} to
- * every frame whose `filename` appears in {@link getFilenameToChunkIdMap} —
+ * `parseRawStackFrames`), then attaches `StackFrame.chunk_id` to
+ * every frame whose `filename` appears in `getFilenameToChunkIdMap` —
  * the step that lets PostHog's server match a captured frame to the source
  * map uploaded for the chunk it came from.
  * @param stack - The raw `Error.stack` string.
@@ -303,7 +330,7 @@ function parseStackFrames(stack: string): StackFrame[] {
 
 /**
  * Builds one `$exception_list` entry per link of `error`'s `cause` chain
- * (depth-capped at {@link MAX_CAUSE_DEPTH}), matching the shape `posthog-js`'s
+ * (depth-capped at `MAX_CAUSE_DEPTH`), matching the shape `posthog-js`'s
  * own exception builder produces. Only the outermost entry carries the
  * caller's `mechanism` — every `cause` link is reported `handled: true`,
  * since wrapping and re-throwing an error is itself a form of handling it.
@@ -387,35 +414,248 @@ async function dropLegacyClientId(): Promise<void> {
 }
 
 /**
- * Reads (or lazily creates and persists) the stable per-install PostHog
- * `distinct_id`. Falls back to an ephemeral id if storage is unavailable.
- * @returns The distinct id string.
+ * `navigator` fields `getFingerprintDistinctId` reads that are absent
+ * from `lib.dom.d.ts` — Client Hints (`userAgentData`) and the Chromium-only
+ * Device Memory API — widened onto the trusted global the same way
+ * `bugReport.ts`'s `readUserAgent` and `hotkeys/matcher.ts`'s `isMac` already
+ * do for `userAgentData`.
+ * @category Helpers
+ */
+type NavigatorWithFingerprintSignals = Navigator & {
+  userAgentData?: { platform?: string; mobile?: boolean };
+  deviceMemory?: number;
+};
+
+/** Memoizes `getFingerprintDistinctId` for this JS context's lifetime. */
+let cachedFingerprint: string | undefined;
+
+/**
+ * Computes the device-fingerprint `distinct_id`: a hash of a handful of
+ * highly stable `navigator` signals, readable identically in the popup,
+ * options page, and the service worker (no `screen`/DOM dependency). Because
+ * it's a pure function of the environment rather than something stored, the
+ * same physical install produces the same id before and after a reinstall —
+ * `chrome.storage.local` (where the old random id lived) can be wiped with no
+ * effect on it.
+ *
+ * This is a **coarse cohort identifier, not a strong unique-device id** —
+ * deliberately low entropy. Signals were chosen to exclude anything volatile
+ * (the UA version string, which churns roughly every 4 weeks on auto-update;
+ * `Intl` timezone or `navigator.languages`, which drift without any user
+ * action) since either would fragment the id and defeat "stable across
+ * reinstall." That leaves common, stable traits — many unrelated installs
+ * sharing typical hardware (e.g. "8 cores, Win32, en-US") will hash to the
+ * *same* id, so PostHog will under-count unique installs, not over-count.
+ * Higher-entropy techniques (canvas/WebGL/audio fingerprinting) would fix
+ * that but are the specific pattern Chrome Web Store review and privacy
+ * tooling scrutinize, and were deliberately ruled out, not just downweighted.
+ * @returns The `fp_`-prefixed fingerprint id. Falls back to a fresh,
+ * non-cached `crypto.randomUUID()` for this call only if reading `navigator`
+ * somehow throws.
+ * @example
+ * ```ts
+ * getFingerprintDistinctId(); // => "fp_3f9c2a1b..." — stable for this device
+ * ```
  * @source
  */
-async function getDistinctId(): Promise<string> {
+function getFingerprintDistinctId(): string {
+  if (cachedFingerprint) return cachedFingerprint;
+
   try {
-    const stored = await cstorage.local.get(CACHE.ANALYTICS_DISTINCT_ID);
-    const existing = stored[CACHE.ANALYTICS_DISTINCT_ID];
-    if (typeof existing === 'string' && existing) return existing;
-    const id = crypto.randomUUID();
-    await cstorage.local.set({ [CACHE.ANALYTICS_DISTINCT_ID]: id });
-    await dropLegacyClientId();
-    return id;
+    const nav = navigator as NavigatorWithFingerprintSignals;
+    const signals = {
+      fpVersion: FINGERPRINT_VERSION,
+      platform: nav.userAgentData?.platform ?? nav.platform ?? '',
+      mobile: nav.userAgentData?.mobile ?? false,
+      cores: nav.hardwareConcurrency ?? 0,
+      memory: nav.deviceMemory ?? 0,
+      lang: nav.language ?? '',
+    };
+    cachedFingerprint = `fp_${md5(JSON.stringify(signals))}`;
+    return cachedFingerprint;
   } catch {
     return crypto.randomUUID();
   }
 }
 
 /**
- * Sends one anonymous event to PostHog's capture endpoint. No-op (and no network
- * call) until an API key is configured in `config.json` (`analytics`). Also a
- * no-op under Vitest (`MODE === "test"`), independent of whether the test
- * mocked this module — a safety net against real events leaking from a run
- * that skips the usual test setup. The e2e suite is deliberately *not* guarded
- * here: it intercepts and aborts these requests at the page level (see
- * `e2e/search-query.e2e.test.ts`), and asserts on them actually firing. Text
- * params are truncated to {@link PARAM_VALUE_LIMIT}; numeric params pass
- * through as numbers. Never throws.
+ * One-time migration for installs upgrading from the retired random-UUID
+ * `distinct_id` scheme to the fingerprint-derived one: merges the old id into
+ * the new one via PostHog's `$create_alias` event, so an existing install's
+ * pre-upgrade history stays linked to its new identified Person instead of
+ * being orphaned under an abandoned id. Also folds in `dropLegacyClientId`,
+ * since both are one-time legacy-identity cleanups tied to the same
+ * "just upgraded past an identity-scheme change" moment.
+ *
+ * Fires from {@link trackInstallOrUpgrade}'s `UPDATE` branch, which runs
+ * exactly once per real upgrade, only in the service worker — precisely the
+ * population that still has the legacy id in `chrome.storage.local`. A fresh
+ * install (or a reinstall of a version that already ships this scheme) finds
+ * no legacy id and no-ops, correctly landing on the same fingerprint-derived
+ * Person it had before reinstalling.
+ *
+ * The legacy key's removal at the end **is** the idempotency guard — on the
+ * next `UPDATE`, the key is already gone, so this no-ops without a separate
+ * migration-flag key. Best-effort: never throws.
+ * @returns A promise that resolves once the migration attempt settles.
+ * @source
+ */
+async function migrateLegacyDistinctId(): Promise<void> {
+  try {
+    const stored = await cstorage.local.get(CACHE.ANALYTICS_DISTINCT_ID);
+    const legacyId = stored[CACHE.ANALYTICS_DISTINCT_ID];
+    if (typeof legacyId === 'string' && legacyId) {
+      const fingerprintId = getFingerprintDistinctId();
+      if (legacyId !== fingerprintId) {
+        await postCaptureEvent({
+          event: '$create_alias',
+          distinct_id: legacyId,
+          properties: { alias: fingerprintId },
+        });
+      }
+      await cstorage.local.remove(CACHE.ANALYTICS_DISTINCT_ID);
+    }
+  } catch {
+    // Best-effort: a missed migration just leaves the old id unlinked.
+  }
+  await dropLegacyClientId();
+}
+
+/** Shape stored under {@link CACHE.ANALYTICS_SESSION_ID} in `chrome.storage.session`. */
+interface StoredSessionId {
+  id: string;
+  createdAt: number;
+}
+
+/** Reads the current stored session id, or `undefined` if absent/unreadable. */
+async function readStoredSessionId(): Promise<StoredSessionId | undefined> {
+  try {
+    const stored = await cstorage.session.get(CACHE.ANALYTICS_SESSION_ID);
+    const value = stored[CACHE.ANALYTICS_SESSION_ID] as StoredSessionId | undefined;
+    return value && typeof value.id === 'string' && typeof value.createdAt === 'number' ? value : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Serializes session-id creation within this JS context — see `getSessionId`. */
+let sessionWriteChain: Promise<string> = Promise.resolve('');
+
+/**
+ * Reads (or creates) the current `$session_id`, mirroring `errorBuffer.ts`'s
+ * read/write pattern: stored in `chrome.storage.session` (dropped when the
+ * browser closes), with a fresh UUIDv7 minted when absent or older than
+ * `SESSION_MAX_AGE_MS`. PostHog requires `$session_id` to be a UUIDv7,
+ * not a plain random UUID — see {@link generateUuidV7}.
+ *
+ * Deliberately does **not** implement PostHog's normal 30-minute-idle session
+ * rotation — only the browser-close and `SESSION_MAX_AGE_MS` boundaries above
+ * — a simplification appropriate for ChemPal's short, bursty usage pattern.
+ *
+ * **Known, accepted limitation:** `sessionWriteChain` only serializes
+ * writes within *this* JS context, not across the popup, options page, and
+ * service worker, each of which holds its own chain. If two contexts
+ * cold-start at the same instant with nothing stored yet, both may briefly
+ * generate and use different ids for a single event before converging on the
+ * next read. Narrow, low-stakes, and intentionally not fixed with a
+ * `chrome.runtime.sendMessage`-based single-source-of-truth alternative.
+ * @returns The current session's `$session_id` (a UUIDv7).
+ * @example
+ * ```ts
+ * await getSessionId(); // => "018f4f3e-1a2b-7c3d-8e4f-5a6b7c8d9e0f"
+ * ```
+ * @source
+ */
+async function getSessionId(): Promise<string> {
+  const current = await readStoredSessionId();
+  if (current && Date.now() - current.createdAt < SESSION_MAX_AGE_MS) {
+    return current.id;
+  }
+
+  sessionWriteChain = sessionWriteChain.then(async () => {
+    // Re-check inside the chain: a concurrent call in this same context may
+    // have already minted a fresh id while this one waited its turn.
+    const latest = await readStoredSessionId();
+    if (latest && Date.now() - latest.createdAt < SESSION_MAX_AGE_MS) {
+      return latest.id;
+    }
+    const fresh: StoredSessionId = { id: generateUuidV7(), createdAt: Date.now() };
+    try {
+      await cstorage.session.set({ [CACHE.ANALYTICS_SESSION_ID]: fresh });
+    } catch {
+      // Best-effort: a missed persist just means the next call regenerates.
+    }
+    return fresh.id;
+  });
+  return sessionWriteChain;
+}
+
+/**
+ * Whether an event should actually leave the device right now: an API key is
+ * configured in `config.json` (`analytics`), this isn't a Vitest run
+ * (`MODE === "test"`, independent of whether the test mocked this module —
+ * a safety net against real events leaking from a run that skips the usual
+ * test setup), and the user hasn't opted out. Shared by every capture path so
+ * `trackEvent` can skip `getSessionId`'s storage write entirely when
+ * the answer is no (an opted-out user shouldn't get session-id writes just
+ * because something called `trackEvent`), and `postCaptureEvent`
+ * re-checks it as the final gate right before the fetch. The e2e suite is
+ * deliberately *not* covered here: it intercepts and aborts capture requests
+ * at the page level (see `e2e/search-query.e2e.test.ts`) and asserts on them
+ * actually firing.
+ * @returns `true` if a capture request should be sent.
+ * @source
+ */
+async function canSendAnalytics(): Promise<boolean> {
+  if (import.meta.env.MODE === 'test') return false;
+  if (!analyticsConfig.apiKey) return false;
+  return analyticsEnabled();
+}
+
+/**
+ * Fetch behind every PostHog capture send (`trackEvent` and the one-time
+ * `$create_alias` migration) — re-checks `canSendAnalytics` as a final
+ * gate, then posts. Never throws.
+ *
+ * `no-cors` keeps this a "simple" request: no preflight, no host permission,
+ * and no CORS failure mode. It also pins the body to text/plain, which the
+ * capture endpoint reads as raw JSON — so never set a Content-Type header, as
+ * `no-cors` rejects `application/json` outright. `keepalive` lets the send
+ * complete even if the page is tearing down after a crash; the response is
+ * opaque and never inspected.
+ * @param body - The capture-endpoint fields specific to this event
+ * (`event`/`distinct_id`/`properties`, or `$create_alias`'s shape) — `api_key`
+ * and `timestamp` are added here for every call.
+ * @returns A promise that resolves once the send settles.
+ * @source
+ */
+async function postCaptureEvent(body: Record<string, AnalyticsValue>): Promise<void> {
+  if (!(await canSendAnalytics())) return;
+  const { apiKey, host } = analyticsConfig;
+
+  try {
+    await fetch(`${host}${CAPTURE_PATH}`, {
+      method: 'POST',
+      mode: 'no-cors',
+      keepalive: true,
+      body: JSON.stringify({
+        api_key: apiKey,
+        timestamp: new Date().toISOString(),
+        ...body,
+      }),
+    });
+  } catch {
+    // Best-effort telemetry: swallow all failures.
+  }
+}
+
+/**
+ * Sends one event to PostHog's capture endpoint, identified by
+ * `getFingerprintDistinctId` and tagged with the current
+ * `getSessionId`. No-ops (before touching session storage) when
+ * `canSendAnalytics` says not to. Text params are truncated to
+ * {@link PARAM_VALUE_LIMIT}; numeric params pass through as numbers. Never
+ * throws.
  * @param name - Event name (e.g. `"$exception"`).
  * @param params - Non-PII event properties.
  * @returns A promise that resolves once the send settles.
@@ -426,45 +666,23 @@ async function getDistinctId(): Promise<string> {
  * @source
  */
 export async function trackEvent(name: string, params: Record<string, AnalyticsValue> = {}): Promise<void> {
-  if (import.meta.env.MODE === 'test') return;
-  const { apiKey, host } = analyticsConfig;
-  if (!apiKey) return;
-  if (!(await analyticsEnabled())) return;
+  if (!(await canSendAnalytics())) return;
 
-  try {
-    const properties: Record<string, AnalyticsValue> = {
-      // Anonymous: PostHog skips person-profile creation and person-property
-      // updates entirely (and bills the event at the anonymous rate).
-      $process_person_profile: false,
-      $lib: 'chempal-extension',
-      $lib_version: __APP_VERSION__,
-    };
-    for (const [key, value] of Object.entries(params)) {
-      // Only plain string params get the length clamp — structured properties
-      // like $exception_list pass through untouched.
-      properties[key] = typeof value === 'string' ? value.slice(0, PARAM_VALUE_LIMIT) : value;
-    }
-    // no-cors keeps this a "simple" request: no preflight, no host permission,
-    // and no CORS failure mode. It also pins the body to text/plain, which the
-    // capture endpoint reads as raw JSON — so never set a Content-Type header,
-    // as no-cors rejects application/json outright. The API key goes in the
-    // body, not the URL. keepalive lets the send complete even if the page is
-    // tearing down after a crash; the response is opaque and never inspected.
-    await fetch(`${host}${CAPTURE_PATH}`, {
-      method: 'POST',
-      mode: 'no-cors',
-      keepalive: true,
-      body: JSON.stringify({
-        api_key: apiKey,
-        event: name,
-        distinct_id: await getDistinctId(),
-        properties,
-        timestamp: new Date().toISOString(),
-      }),
-    });
-  } catch {
-    // Best-effort telemetry: swallow all failures.
+  const properties: Record<string, AnalyticsValue> = {
+    $lib: 'chempal-extension',
+    $lib_version: __APP_VERSION__,
+    $session_id: await getSessionId(),
+  };
+  for (const [key, value] of Object.entries(params)) {
+    // Only plain string params get the length clamp — structured properties
+    // like $exception_list pass through untouched.
+    properties[key] = typeof value === 'string' ? value.slice(0, PARAM_VALUE_LIMIT) : value;
   }
+  return postCaptureEvent({
+    event: name,
+    distinct_id: getFingerprintDistinctId(),
+    properties,
+  });
 }
 
 /**
@@ -483,6 +701,11 @@ export async function trackEvent(name: string, params: Record<string, AnalyticsV
  * one runs in the background service worker, whose requests the e2e suite's
  * page-level route interception can't see or abort, so it would otherwise
  * reach production PostHog.
+ *
+ * A real `UPDATE` also runs `migrateLegacyDistinctId` first — this is
+ * the one place that fires exactly once per upgrade, only in the service
+ * worker, precisely when an existing install may still have the retired
+ * random-UUID `distinct_id` to migrate.
  * @param reason - The reason from `chrome.runtime.onInstalled`.
  * @param previousVersion - Version being upgraded from; Chrome supplies this only on an update.
  * @returns A promise that resolves once the send settles.
@@ -504,6 +727,9 @@ export async function trackInstallOrUpgrade(
   // previousVersion equal to the version already running. Reporting that would count
   // every dev reload as an upgrade.
   if (reason === UPDATE && previousVersion === __APP_VERSION__) return;
+  if (reason === UPDATE) {
+    await migrateLegacyDistinctId();
+  }
   const params: Record<string, string | number> = { app_version: __APP_VERSION__ };
   if (previousVersion) params.previous_version = previousVersion;
   return trackEvent(reason === INSTALL ? 'extension_installed' : 'extension_upgraded', params);
@@ -535,7 +761,7 @@ function describeCause(cause: unknown): string {
  * properties alongside the structured list, for any existing dashboard built
  * on those two fields; `error_cause` is added the same way when `error.cause`
  * is set, even though the full cause chain is also walked into
- * `$exception_list` (see {@link buildExceptionList}) — this flat field makes
+ * `$exception_list` (see `buildExceptionList`) — this flat field makes
  * the immediate cause filterable/visible without opening the stack trace.
  *
  * A caller-supplied `{ fatal: 1 }` (as `main.tsx`'s uncaught-root handler
@@ -549,7 +775,7 @@ function describeCause(cause: unknown): string {
  * `error` was thrown (from `ErrorBoundary.componentDidCatch` or the root's
  * `onCaughtError`/`onUncaughtError`), if available. Folded into the outermost
  * `$exception_list` entry's `stacktrace.component_stack` — see
- * {@link buildExceptionList} — rather than passed as a flat param, since it
+ * `buildExceptionList` — rather than passed as a flat param, since it
  * belongs with the stack trace it describes.
  * @returns A promise that resolves once the send settles.
  * @example

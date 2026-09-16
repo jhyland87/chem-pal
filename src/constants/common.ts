@@ -139,8 +139,15 @@ export const CACHE = {
   ERROR_RING_BUFFER: 'error_ring_buffer',
   /** Retired GA4 client id — kept only so the PostHog sender can delete it on upgrade */
   ANALYTICS_CLIENT_ID: 'analytics_client_id',
-  /** Stable per-install random id used as the PostHog `distinct_id` */
+  /**
+   * Retired per-install random `distinct_id`. No longer read to identify
+   * events — the PostHog sender now derives `distinct_id` from a device
+   * fingerprint instead. Kept only so `trackInstallOrUpgrade` can read it once
+   * on upgrade to `$create_alias` it into the new fingerprint id, then delete it.
+   */
   ANALYTICS_DISTINCT_ID: 'analytics_distinct_id',
+  /** Session-scoped PostHog `$session_id` (UUIDv7) plus its creation time */
+  ANALYTICS_SESSION_ID: 'analytics_session_id',
 } as const;
 
 export type Cache = (typeof CACHE)[keyof typeof CACHE];
