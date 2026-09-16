@@ -132,6 +132,14 @@ declare global {
       }[];
     }[];
 
+    /**
+     * The attribute combination this item represents, e.g. "Size: 40 Pound
+     * Pail (40lbs), Item Form: Sodium Metasilicate (Anhydrous)". Only
+     * present on a single-product/variation fetch (`type: 'variation'`), not
+     * on a plain search-result item — see {@link WooCommerceProductVariant}.
+     */
+    variation?: string;
+
     /** Product variations if this is a variable product */
     variations: {
       /** Unique identifier for the variation */

@@ -5,6 +5,7 @@ import { SupplierDiyChemicals } from '..';
 
 type DiyChemicalsInternals = {
   getAdditionalQuantityStrings: (item: WooCommerceSearchResponseItem) => string[];
+  getVariantTitle: (data: WooCommerceSearchResponseItem) => string;
   initProductBuilders: (results: WooCommerceSearchResponseItem[]) => ProductBuilder<Product>[];
 };
 
@@ -90,6 +91,33 @@ describe('SupplierDiyChemicals', () => {
         ],
       });
       expect(supplier.getAdditionalQuantityStrings(item)).toEqual([]);
+    });
+  });
+
+  describe('getVariantTitle', () => {
+    it("prefers the variation attribute-combination string over the flat product name", () => {
+      const supplier = makeSupplier() as unknown as DiyChemicalsInternals;
+      const data = baseItem({
+        name: 'Sodium Metasilicate',
+        variation: 'Size: 40 Pound Pail (40lbs), Item Form: Sodium Metasilicate (Anhydrous)',
+      } as Partial<WooCommerceSearchResponseItem>);
+
+      expect(supplier.getVariantTitle(data)).toBe(
+        'Size: 40 Pound Pail (40lbs), Item Form: Sodium Metasilicate (Anhydrous)',
+      );
+    });
+
+    it('falls back to the product name when variation is empty or absent', () => {
+      const supplier = makeSupplier() as unknown as DiyChemicalsInternals;
+
+      expect(supplier.getVariantTitle(baseItem({ name: 'Sodium Metasilicate' }))).toBe(
+        'Sodium Metasilicate',
+      );
+      expect(
+        supplier.getVariantTitle(
+          baseItem({ name: 'Sodium Metasilicate', variation: '' } as Partial<WooCommerceSearchResponseItem>),
+        ),
+      ).toBe('Sodium Metasilicate');
     });
   });
 
