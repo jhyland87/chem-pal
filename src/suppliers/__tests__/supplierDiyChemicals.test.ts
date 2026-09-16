@@ -183,5 +183,100 @@ describe('SupplierDiyChemicals', () => {
         .build();
       expect(outOfStock?.availability).toBe(AVAILABILITY.OUT_OF_STOCK);
     });
+
+    it('extracts a "DOWNLOAD SDS" link wrapped in a paragraph into sdsUrl and strips it from the description', async () => {
+      const supplier = makeSupplier() as unknown as DiyChemicalsInternals;
+      const item = baseItem({
+        name: 'EDTA 40% 1 Gallon',
+        description:
+          '<p><a class="button primary is-primary is-medium" ' +
+          'href="https://diychemicals.com/wp-content/uploads/2024/03/EDTA-40-MSDS-DIYChemicals-Chemboys.pdf" ' +
+          'rel="noopener" target="_blank"><br />\n<span>DOWNLOAD SDS</span><br />\n</a></p>\n' +
+          '<h1><strong>EDTA 40% Solution – Chelating Agent – CAS# 64-02-8</strong></h1>',
+      });
+
+      const [builder] = supplier.initProductBuilders([item]);
+      const product = await builder.build();
+
+      expect(product?.sdsUrl).toBe(
+        'https://diychemicals.com/wp-content/uploads/2024/03/EDTA-40-MSDS-DIYChemicals-Chemboys.pdf',
+      );
+      expect(product?.description).not.toContain('DOWNLOAD SDS');
+      expect(product?.description).not.toContain('.pdf');
+    });
+
+    it('extracts a bare "DOWNLOAD SDS" anchor with no wrapping paragraph', async () => {
+      const supplier = makeSupplier() as unknown as DiyChemicalsInternals;
+      const item = baseItem({
+        name: 'Sodium Thiosulfate 1 Gallon',
+        description:
+          '<a href="https://diychemicals.com/wp-content/uploads/2024/02/Sodium-Thiosulfate-Pentahydrate-MSDS-DIYChemicals-Chemboys.pdf" ' +
+          'target="_blank" class="button primary is-primary is-medium" rel="noopener">\n\t\t<span>DOWNLOAD SDS</span>\n\t</a>\n\n' +
+          '<h2>Sodium Thiosulfate Pentahydrate Crystals</h2>',
+      });
+
+      const [builder] = supplier.initProductBuilders([item]);
+      const product = await builder.build();
+
+      expect(product?.sdsUrl).toBe(
+        'https://diychemicals.com/wp-content/uploads/2024/02/Sodium-Thiosulfate-Pentahydrate-MSDS-DIYChemicals-Chemboys.pdf',
+      );
+      expect(product?.description).not.toContain('DOWNLOAD SDS');
+    });
+
+    it('extracts a trailing "DOWNLOAD SDS" link that appears after the main description body', async () => {
+      const supplier = makeSupplier() as unknown as DiyChemicalsInternals;
+      const item = baseItem({
+        name: 'SLES 70% 1 Gallon',
+        description:
+          '<h1>SLES 70%</h1><p>Sodium Laureth Sulfate, a foaming surfactant.</p>' +
+          '<h2>Safety Data Sheet</h2>' +
+          '<p>Review the SDS before handling for hazards, protective equipment, storage and safe handling information.</p>' +
+          '<p><a href="https://diychemicals.com/wp-content/uploads/2024/02/SLES-70-MSDS-DIYChemicals-Chemboys.pdf" ' +
+          'target="_blank" class="button primary is-primary is-medium" rel="noopener">DOWNLOAD SDS</a></p>',
+      });
+
+      const [builder] = supplier.initProductBuilders([item]);
+      const product = await builder.build();
+
+      expect(product?.sdsUrl).toBe(
+        'https://diychemicals.com/wp-content/uploads/2024/02/SLES-70-MSDS-DIYChemicals-Chemboys.pdf',
+      );
+      expect(product?.description).not.toContain('DOWNLOAD SDS');
+      // The instructional text around it is untouched — only the anchor is removed.
+      expect(product?.description).toContain('Review the SDS before handling');
+    });
+
+    it('ignores an unrelated PDF link whose URL does not mention SDS', async () => {
+      const supplier = makeSupplier() as unknown as DiyChemicalsInternals;
+      const item = baseItem({
+        name: 'Decyl Glucoside 1 Gallon',
+        description:
+          '<h1>Decyl Glucoside</h1><p>A mild, plant-derived surfactant. ' +
+          '<a href="https://diychemicals.com/wp-content/uploads/2024/spec-sheet.pdf">Spec Sheet</a></p>',
+      });
+
+      const [builder] = supplier.initProductBuilders([item]);
+      const product = await builder.build();
+
+      expect(product?.sdsUrl).toBeUndefined();
+      // Left untouched — only a confirmed SDS link is extracted/stripped.
+      expect(product?.description).toContain('Spec Sheet');
+    });
+
+    it('leaves sdsUrl unset and the description untouched when there is no SDS link', async () => {
+      const supplier = makeSupplier() as unknown as DiyChemicalsInternals;
+      const item = baseItem({
+        name: 'Decyl Glucoside 1 Gallon',
+        description: '<h1>Decyl Glucoside</h1><p>A mild, plant-derived surfactant.</p>',
+      });
+
+      const [builder] = supplier.initProductBuilders([item]);
+      const product = await builder.build();
+
+      expect(product?.sdsUrl).toBeUndefined();
+      expect(product?.description).toContain('Decyl Glucoside');
+      expect(product?.description).toContain('A mild, plant-derived surfactant.');
+    });
   });
 });

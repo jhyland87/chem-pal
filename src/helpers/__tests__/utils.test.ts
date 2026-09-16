@@ -23,6 +23,7 @@ import {
   serialize,
   sleep,
   stripHTML,
+  stripPdfLink,
   toFiniteNumber,
   tryParseJson,
 } from '@/helpers/utils';
@@ -44,6 +45,24 @@ describe('findPdfHref', () => {
   it('should return undefined when there is no PDF link', () => {
     expect(findPdfHref('<a href="https://x.com/page">Info</a>')).toBeUndefined();
     expect(findPdfHref('')).toBeUndefined();
+  });
+});
+
+describe('stripPdfLink', () => {
+  it('should remove a PDF-linking anchor wrapped in a paragraph', () => {
+    const html = '<p><a href="https://x.com/sds.pdf">DOWNLOAD SDS</a></p><p>Body.</p>';
+    expect(stripPdfLink(html)).toBe('<p></p><p>Body.</p>');
+  });
+
+  it('should remove a bare PDF-linking anchor with no wrapping paragraph', () => {
+    const html = '<a href="https://x.com/sds.pdf"><span>DOWNLOAD SDS</span></a>\n<h2>Title</h2>';
+    expect(stripPdfLink(html)).toBe('\n<h2>Title</h2>');
+  });
+
+  it('should leave HTML with no PDF link unchanged', () => {
+    const html = '<p>No documents here</p>';
+    expect(stripPdfLink(html)).toBe(html);
+    expect(stripPdfLink('')).toBe('');
   });
 });
 
