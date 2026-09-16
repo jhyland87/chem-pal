@@ -17,6 +17,9 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 - DIY Chemicals: descriptions no longer show a stray "DOWNLOAD SDS" link — it's now a proper
   SDS download in its own column.
+- DIY Chemicals: variants of the same product no longer show identical names in the results
+  table — each now shows its actual size/option (e.g. "Size: 40 Pound Pail (40lbs), Item
+  Form: Sodium Metasilicate (Anhydrous)").
 
 ## [1.14.1] - 2026-09-15
 

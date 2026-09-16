@@ -81,6 +81,31 @@ export class SupplierDiyChemicals extends SupplierBaseWoocommerce implements ISu
   }
 
   /**
+   * DIY Chemicals's per-variant `name` is just the flat parent product name
+   * — identical across every size/option of a product (e.g. every "Sodium
+   * Metasilicate" variant shares that one name), so the base class's default
+   * leaves every variant in the results table indistinguishable. The Store
+   * API's `variation` field carries the actual attribute combination
+   * instead (e.g. "Size: 40 Pound Pail (40lbs), Item Form: Sodium
+   * Metasilicate (Anhydrous)"), so prefer that when present.
+   * @param data - The raw variant detail data
+   * @returns The variant's attribute-combination string, or the base
+   * class's default (the product name) when `variation` is empty
+   * @example
+   * ```typescript
+   * this.getVariantTitle({
+   *   name: 'Sodium Metasilicate',
+   *   variation: 'Size: 40 Pound Pail (40lbs), Item Form: Sodium Metasilicate (Anhydrous)',
+   * });
+   * // "Size: 40 Pound Pail (40lbs), Item Form: Sodium Metasilicate (Anhydrous)"
+   * ```
+   * @source
+   */
+  protected getVariantTitle(data: WooCommerceSearchResponseItem): string {
+    return data.variation || super.getVariantTitle(data);
+  }
+
+  /**
    * DIY Chemicals embeds its SDS link directly in the product description as
    * an `<a href="….pdf">DOWNLOAD SDS</a>` anchor (usually at the start,
    * occasionally at the end), rather than exposing it as its own field.

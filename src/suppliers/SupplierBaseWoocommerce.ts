@@ -217,7 +217,7 @@ export abstract class SupplierBaseWoocommerce
           return;
         }
 
-        variant.title = String(data.name ?? '');
+        variant.title = this.getVariantTitle(data);
         variant.price = Number(data.prices.price) / 100;
         variant.currencyCode = data.prices.currency_code;
         variant.currencySymbol = data.prices.currency_symbol;
@@ -233,6 +233,26 @@ export abstract class SupplierBaseWoocommerce
 
       builder.setVariants(enriched);
     }
+  }
+
+  /**
+   * Derives a variant's display title from its enrichment data. Default:
+   * the variant's own product `name` — WooCommerce doesn't vary `name` per
+   * variation, so every size/option of a product shares the same one; this
+   * matches every WooCommerce supplier's behavior today. Subclasses whose
+   * store surfaces a more descriptive per-variant string (e.g. the Store
+   * API's `variation` field, `"Size: X, Item Form: Y"`) can override this to
+   * prefer it instead, without changing enrichment for every other supplier.
+   * @param data - The raw variant detail data
+   * @returns The title to store on the variant
+   * @example
+   * ```typescript
+   * this.getVariantTitle({ name: 'Sodium Chloride', ... }); // "Sodium Chloride"
+   * ```
+   * @source
+   */
+  protected getVariantTitle(data: WooCommerceSearchResponseItem): string {
+    return String(data.name ?? '');
   }
 
   /**
