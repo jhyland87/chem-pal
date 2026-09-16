@@ -440,6 +440,33 @@ export function findPdfHref(html: string): string | undefined {
   return html.match(PDF_HREF_REGEX)?.[1];
 }
 
+// Matches an entire <a>…</a> element whose href points at a PDF.
+const PDF_ANCHOR_REGEX = /<a[^>]*href\s*=\s*["'][^"']*\.pdf[^"']*["'][^>]*>[\s\S]*?<\/a>/i;
+
+/**
+ * Removes the first PDF-linking anchor from a block of HTML — the removal
+ * counterpart to {@link findPdfHref}. Meant to be used together: pull the
+ * document's URL out with `findPdfHref`, then strip the anchor that pointed
+ * to it out of the surrounding text with this, so a supplier's "Download
+ * SDS"-style link text doesn't linger as dead text once its URL has been
+ * captured elsewhere (e.g. a product's `sdsUrl`).
+ * @category Helpers
+ * @param html - Raw HTML that may contain a PDF-linking anchor
+ * @returns The HTML with the first `<a href="….pdf">…</a>` removed, or the
+ * original value unchanged if none is found
+ * @example
+ * ```typescript
+ * stripPdfLink('<p><a href="https://x.com/sds.pdf">DOWNLOAD SDS</a></p><p>Body.</p>')
+ * // "<p></p><p>Body.</p>"
+ * stripPdfLink("<p>No documents here</p>") // "<p>No documents here</p>"
+ * ```
+ * @source
+ */
+export function stripPdfLink(html: string): string {
+  if (!html || typeof html !== 'string') return html;
+  return html.replace(PDF_ANCHOR_REGEX, '');
+}
+
 /**
  * Tries to parse a JSON string. If it fails, it returns the original string.
  *

@@ -13,6 +13,11 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+### Fixed
+
+- DIY Chemicals: descriptions no longer show a stray "DOWNLOAD SDS" link — it's now a proper
+  SDS download in its own column.
+
 ## [1.14.1] - 2026-09-15
 
 ### Added
