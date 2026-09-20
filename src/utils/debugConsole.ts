@@ -320,6 +320,45 @@ async function seedPriceHistory(count: number = 5): Promise<number> {
   return changed;
 }
 
+/**
+ * Dev-only: appends one new price point to a single stored price-history series,
+ * identified by its exact series id (`productKey`, or `productKey::variantKey`
+ * for a variant). Unlike {@link nudgePriceHistory}/{@link seedPriceHistory}
+ * (which touch every series), this targets exactly one — useful for putting a
+ * specific row in front of the UI (e.g. the price history panel) without
+ * disturbing the rest of the store. Writes through the app's own storage layer
+ * (the `price_history` store); the new point is dated now and rounded to 2
+ * decimals.
+ * @param id - The exact price-history series id to update.
+ * @param usd - The new price in USD.
+ * @returns `true` if a matching series was found and updated, else `false`.
+ * @example
+ * ```typescript
+ * // In the console:
+ * await chempal.setPriceHistoryPrice('0128d52a7ccf7e4bc60d127b8e18702c::6982', 24.99);
+ * ```
+ * @source
+ */
+async function setPriceHistoryPrice(id: string, usd: number): Promise<boolean> {
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+
+  const entry = await getPriceSeries(id);
+  if (!entry) {
+    console.warn(`No price-history series found for id "${id}"`);
+    return false;
+  }
+
+  const point = { t: Date.now(), usd: round2(usd) };
+  entry.points = [...entry.points, point];
+  entry.updatedAt = point.t;
+  await putPriceSeries(entry);
+
+  printDebug(
+    `✅ Appended $${point.usd.toFixed(2)} to "${id}" (${entry.points.length} point(s) total). Re-open a product's detail panel or the price history panel to see it.`,
+  );
+  return true;
+}
+
 /** Stand-in notes used when CHANGELOG.md has nothing under `## [Unreleased]`. */
 const SAMPLE_RELEASE_NOTES: ReleaseSection[] = [
   { title: 'Added', items: ['A shiny new thing', 'Another new thing'] },
@@ -627,6 +666,8 @@ function help(): void {
       '              one point per series by a random ±1–8%; 0=latest, 1=one back, …)',
       '              seedPriceHistory(count=5) (mutates price_history — APPENDS count',
       '              points per series so trends/sparklines have ≥2 points to draw)',
+      '              setPriceHistoryPrice(id, usd) (mutates price_history — appends',
+      '              one new point with the given price to a single series by id)',
       '  Updates:    simulateUpdate(version?, opts?) — preview the next release:',
       '                defaults to the next minor + CHANGELOG.md [Unreleased] notes',
       '                opts: { notes: ReleaseSection[] | false, releaseUrl: string }',
@@ -649,6 +690,7 @@ function help(): void {
       "  await chempal.astTest('acid OR base', { fuzzyWords: false, threshold: 70 })",
       '  await chempal.nudgePriceHistory(2) // nudge the price 2 entries back',
       '  await chempal.seedPriceHistory() // append 5 points to every series (build a trend)',
+      "  await chempal.setPriceHistoryPrice('<seriesId>', 24.99) // set one series's price",
       "  await chempal.simulateUpdate() // then reload → prompt with the next release's notes",
       "  await chempal.simulateUpdate('1.3.0', { notes: false }) // no-notes fallback",
       '  await chempal.resetUpdatePrompt() // back to a clean slate',
@@ -702,6 +744,7 @@ const chempal = {
   // Testing / fixtures (mutates IndexedDB)
   nudgePriceHistory,
   seedPriceHistory,
+  setPriceHistoryPrice,
   // Update-prompt simulation (mutates chrome.storage.local)
   simulateUpdate,
   simulateWebstoreUpdate,

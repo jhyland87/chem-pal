@@ -47,6 +47,8 @@ import { resolveInitialPanel } from './state/resolveInitialPanel';
 // Always lazy — the panel is now reachable in any build via advanced mode, so the
 // chunk (MUI X charts + data grid) must exist. It's only fetched when opened.
 const StatsPanel = lazy(() => import('./components/StatsPanel'));
+// Same rationale as StatsPanel: advanced-mode-only, so fetched on demand.
+const PriceHistoryPanel = lazy(() => import('./components/PriceHistoryPanel/PriceHistoryPanel'));
 
 /**
  * Enhanced App component using React v19 features for improved performance
@@ -450,10 +452,13 @@ function App() {
     dispatch({ type: APP_ACTION.SET_PANEL, panel });
   };
 
-  // Leaving advanced mode while the stats panel is open would otherwise strand
-  // the user on a panel that no longer renders anything.
+  // Leaving advanced mode while the stats or price-history panel is open would
+  // otherwise strand the user on a panel that no longer renders anything.
   useEffect(() => {
-    if (!statsVisible && appState.panel === PANEL.STATS) {
+    if (
+      !statsVisible &&
+      (appState.panel === PANEL.STATS || appState.panel === PANEL.PRICE_HISTORY)
+    ) {
       dispatch({ type: APP_ACTION.SET_PANEL, panel: PANEL.SEARCH_HOME });
     }
   }, [statsVisible, appState.panel]);
@@ -585,6 +590,11 @@ function App() {
               {statsVisible && appState.panel === PANEL.STATS && (
                 <Suspense fallback={null}>
                   <StatsPanel />
+                </Suspense>
+              )}
+              {statsVisible && appState.panel === PANEL.PRICE_HISTORY && (
+                <Suspense fallback={null}>
+                  <PriceHistoryPanel />
                 </Suspense>
               )}
               <StatusBadges />

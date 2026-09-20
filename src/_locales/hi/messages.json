@@ -725,6 +725,10 @@
   "speed_dial_clear_cache": { "message": "कैश साफ़ करें", "description": "Speed-dial action." },
   "speed_dial_toggle_theme": { "message": "थीम बदलें", "description": "Speed-dial action." },
   "speed_dial_stats": { "message": "आँकड़े", "description": "Speed-dial action (dev)." },
+  "speed_dial_price_history": {
+    "message": "मूल्य इतिहास",
+    "description": "Speed-dial action (dev)."
+  },
   "speed_dial_about": { "message": "परिचय", "description": "Speed-dial action." },
   "speed_dial_report_bug": { "message": "बग रिपोर्ट करें", "description": "Speed-dial action." },
   "settings_report_bug": { "message": "बग रिपोर्ट करें", "description": "Settings action button label." },
@@ -946,6 +950,26 @@
   "product_detail_price_history_col_price": {
     "message": "मूल्य",
     "description": "Column header for the price of a price-history point in the variant trend popover."
+  },
+  "price_history_panel_title": {
+    "message": "मूल्य इतिहास",
+    "description": "Price history panel title (advanced mode)."
+  },
+  "price_history_panel_empty": {
+    "message": "अभी तक कोई मूल्य परिवर्तन दर्ज नहीं किया गया है।",
+    "description": "Shown in the price history panel when no series has more than one recorded price."
+  },
+  "price_history_panel_col_date": {
+    "message": "दिनांक",
+    "description": "Price history panel column header for the date a price change was recorded."
+  },
+  "price_history_panel_col_old_price": {
+    "message": "पुरानी कीमत",
+    "description": "Price history panel column header for the price before a change."
+  },
+  "price_history_panel_col_new_price": {
+    "message": "नई कीमत",
+    "description": "Price history panel column header for the price after a change."
   },
   "product_detail_variants_currency": {
     "message": "विकल्प ($currency$)",

@@ -55,6 +55,8 @@ export enum PANEL {
   RESULTS = 1,
   /** Stats panel index */
   STATS = 2,
+  /** Price history panel index */
+  PRICE_HISTORY = 3,
 }
 
 /**

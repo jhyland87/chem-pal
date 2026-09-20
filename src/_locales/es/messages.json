@@ -743,6 +743,10 @@
   "speed_dial_clear_cache": { "message": "Borrar caché", "description": "Speed-dial action." },
   "speed_dial_toggle_theme": { "message": "Cambiar tema", "description": "Speed-dial action." },
   "speed_dial_stats": { "message": "Estadísticas", "description": "Speed-dial action (dev)." },
+  "speed_dial_price_history": {
+    "message": "Historial de precios",
+    "description": "Speed-dial action (dev)."
+  },
   "speed_dial_about": { "message": "Acerca de", "description": "Speed-dial action." },
   "speed_dial_report_bug": { "message": "Informar de un error", "description": "Speed-dial action." },
   "settings_report_bug": { "message": "Informar de un error", "description": "Settings action button label." },
@@ -969,6 +973,26 @@
   "product_detail_price_history_col_price": {
     "message": "Precio",
     "description": "Column header for the price of a price-history point in the variant trend popover."
+  },
+  "price_history_panel_title": {
+    "message": "Historial de precios",
+    "description": "Price history panel title (advanced mode)."
+  },
+  "price_history_panel_empty": {
+    "message": "Aún no se han registrado cambios de precio.",
+    "description": "Shown in the price history panel when no series has more than one recorded price."
+  },
+  "price_history_panel_col_date": {
+    "message": "Fecha",
+    "description": "Price history panel column header for the date a price change was recorded."
+  },
+  "price_history_panel_col_old_price": {
+    "message": "Precio anterior",
+    "description": "Price history panel column header for the price before a change."
+  },
+  "price_history_panel_col_new_price": {
+    "message": "Precio nuevo",
+    "description": "Price history panel column header for the price after a change."
   },
   "product_detail_variants_currency": {
     "message": "Variantes ($currency$)",

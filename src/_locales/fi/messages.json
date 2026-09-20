@@ -740,6 +740,10 @@
   },
   "speed_dial_toggle_theme": { "message": "Vaihda teemaa", "description": "Speed-dial action." },
   "speed_dial_stats": { "message": "Tilastot", "description": "Speed-dial action (dev)." },
+  "speed_dial_price_history": {
+    "message": "Hintahistoria",
+    "description": "Speed-dial action (dev)."
+  },
   "speed_dial_about": { "message": "Tietoja", "description": "Speed-dial action." },
   "speed_dial_report_bug": { "message": "Ilmoita virheestä", "description": "Speed-dial action." },
   "settings_report_bug": { "message": "Ilmoita virheestä", "description": "Settings action button label." },
@@ -969,6 +973,26 @@
   "product_detail_price_history_col_price": {
     "message": "Hinta",
     "description": "Column header for the price of a price-history point in the variant trend popover."
+  },
+  "price_history_panel_title": {
+    "message": "Hintahistoria",
+    "description": "Price history panel title (advanced mode)."
+  },
+  "price_history_panel_empty": {
+    "message": "Hintamuutoksia ei ole vielä kirjattu.",
+    "description": "Shown in the price history panel when no series has more than one recorded price."
+  },
+  "price_history_panel_col_date": {
+    "message": "Päivämäärä",
+    "description": "Price history panel column header for the date a price change was recorded."
+  },
+  "price_history_panel_col_old_price": {
+    "message": "Vanha hinta",
+    "description": "Price history panel column header for the price before a change."
+  },
+  "price_history_panel_col_new_price": {
+    "message": "Uusi hinta",
+    "description": "Price history panel column header for the price after a change."
   },
   "product_detail_variants_currency": {
     "message": "Variantit ($currency$)",

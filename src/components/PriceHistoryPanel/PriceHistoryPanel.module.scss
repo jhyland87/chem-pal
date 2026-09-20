@@ -1,0 +1,27 @@
+.price-history-panel {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+
+  &__top-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  &__content {
+    flex: 1;
+    overflow: auto;
+    margin: 8px;
+  }
+}

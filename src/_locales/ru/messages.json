@@ -959,6 +959,10 @@
     "message": "Статистика",
     "description": "Speed-dial action (dev)."
   },
+  "speed_dial_price_history": {
+    "message": "История цен",
+    "description": "Speed-dial action (dev)."
+  },
   "speed_dial_about": {
     "message": "О приложении",
     "description": "Speed-dial action."
@@ -1248,6 +1252,26 @@
   "product_detail_price_history_col_price": {
     "message": "Цена",
     "description": "Column header for the price of a price-history point in the variant trend popover."
+  },
+  "price_history_panel_title": {
+    "message": "История цен",
+    "description": "Price history panel title (advanced mode)."
+  },
+  "price_history_panel_empty": {
+    "message": "Изменений цен пока не зафиксировано.",
+    "description": "Shown in the price history panel when no series has more than one recorded price."
+  },
+  "price_history_panel_col_date": {
+    "message": "Дата",
+    "description": "Price history panel column header for the date a price change was recorded."
+  },
+  "price_history_panel_col_old_price": {
+    "message": "Старая цена",
+    "description": "Price history panel column header for the price before a change."
+  },
+  "price_history_panel_col_new_price": {
+    "message": "Новая цена",
+    "description": "Price history panel column header for the price after a change."
   },
   "product_detail_variants_currency": {
     "message": "Варианты ($currency$)",

@@ -10,6 +10,7 @@ import { SupplierCache } from '@/utils/SupplierCache';
 import { clearSearchResults } from '@/utils/idbCache';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import BugReportIcon from '@mui/icons-material/BugReport';
+import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
@@ -119,9 +120,19 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
   };
 
   /**
+   * Handles navigating to the price history panel. No-op while the panel is
+   * hidden, so it can't be reached outside advanced mode.
+   * @source
+   */
+  const handlePriceHistoryOpen = () => {
+    if (!statsVisible) return;
+    appContext.setPanel?.(PANEL.PRICE_HISTORY);
+  };
+
+  /**
    * Array of action configurations for the speed dial menu.
    * Each action includes an icon, name, and click handler.
-   * The Stats action appears only in advanced mode.
+   * The Stats and Price History actions appear only in advanced mode.
    * @source
    */
   const actions = [
@@ -129,7 +140,14 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
     { icon: <AutoDeleteIcon />, name: i18n('speed_dial_clear_cache'), onClick: handleClearCache },
     { icon: <ContrastIcon />, name: i18n('speed_dial_toggle_theme'), onClick: handleToggleTheme },
     ...(statsVisible
-      ? [{ icon: <BarChartIcon />, name: i18n('speed_dial_stats'), onClick: handleStatsOpen }]
+      ? [
+          { icon: <BarChartIcon />, name: i18n('speed_dial_stats'), onClick: handleStatsOpen },
+          {
+            icon: <PriceChangeIcon />,
+            name: i18n('speed_dial_price_history'),
+            onClick: handlePriceHistoryOpen,
+          },
+        ]
       : []),
     { icon: <BugReportIcon />, name: i18n('speed_dial_report_bug'), onClick: handleReportBug },
     { icon: <InfoOutlineIcon />, name: i18n('speed_dial_about'), onClick: handleAboutOpen },

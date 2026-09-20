@@ -958,6 +958,10 @@
     "message": "Statystyki",
     "description": "Speed-dial action (dev)."
   },
+  "speed_dial_price_history": {
+    "message": "Historia cen",
+    "description": "Speed-dial action (dev)."
+  },
   "speed_dial_about": {
     "message": "O aplikacji",
     "description": "Speed-dial action."
@@ -1247,6 +1251,26 @@
   "product_detail_price_history_col_price": {
     "message": "Cena",
     "description": "Column header for the price of a price-history point in the variant trend popover."
+  },
+  "price_history_panel_title": {
+    "message": "Historia cen",
+    "description": "Price history panel title (advanced mode)."
+  },
+  "price_history_panel_empty": {
+    "message": "Nie odnotowano jeszcze żadnych zmian cen.",
+    "description": "Shown in the price history panel when no series has more than one recorded price."
+  },
+  "price_history_panel_col_date": {
+    "message": "Data",
+    "description": "Price history panel column header for the date a price change was recorded."
+  },
+  "price_history_panel_col_old_price": {
+    "message": "Stara cena",
+    "description": "Price history panel column header for the price before a change."
+  },
+  "price_history_panel_col_new_price": {
+    "message": "Nowa cena",
+    "description": "Price history panel column header for the price after a change."
   },
   "product_detail_variants_currency": {
     "message": "Warianty ($currency$)",
