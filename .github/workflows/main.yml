@@ -119,6 +119,15 @@ jobs:
         run: pnpm install
       - name: Generate documentation
         run: pnpm run docs
+      # Published at <pages>/coverage/. Pages serves a single artifact per deploy, so the
+      # report has to ride along with the TypeDoc output rather than deploy separately.
+      - name: Generate coverage report
+        run: >-
+          ulimit -n 65536 &&
+          pnpm exec vitest run --config configs/vitest.config.ts
+          --coverage --coverage.reporter=html
+      - name: Add coverage report to the docs site
+        run: cp -R coverage docs/coverage
       - name: Setup Pages
         uses: actions/configure-pages@v6
       - name: Upload artifact
