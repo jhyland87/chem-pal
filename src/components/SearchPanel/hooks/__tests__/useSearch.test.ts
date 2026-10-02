@@ -22,11 +22,12 @@ import {
 } from '../useSearch';
 
 vi.mock('@/helpers/pubchem', () => ({
-  getCompoundNameFromAlias: vi.fn(),
+  suggestAlternativeSearch: vi.fn(),
+  suggestAdvancedQuery: vi.fn(),
 }));
 
 // Import after mocking so we can control the mock implementation
-import { getCompoundNameFromAlias } from '@/helpers/pubchem';
+import { suggestAdvancedQuery, suggestAlternativeSearch } from '@/helpers/pubchem';
 
 describe('useSearch helpers', () => {
   beforeAll(() => {
@@ -251,36 +252,66 @@ describe('useSearch helpers', () => {
   });
 
   describe('buildNoResultsMessage', () => {
-    const mockedGetCompoundNameFromAlias = vi.mocked(getCompoundNameFromAlias);
+    const mockedSuggestAlternative = vi.mocked(suggestAlternativeSearch);
+    const mockedSuggestAdvanced = vi.mocked(suggestAdvancedQuery);
+
+    beforeEach(() => {
+      mockedSuggestAlternative.mockResolvedValue({});
+      mockedSuggestAdvanced.mockResolvedValue(undefined);
+    });
 
     it('returns just the basic message when filters are inactive and PubChem has no alternative', async () => {
-      mockedGetCompoundNameFromAlias.mockResolvedValueOnce(undefined);
-
       const msg = await buildNoResultsMessage('zzzzz', false);
       expect(msg).toBe('No results found for "zzzzz"');
     });
 
     it('includes the filter-broadening hint when filters are active', async () => {
-      mockedGetCompoundNameFromAlias.mockResolvedValueOnce(undefined);
-
       const msg = await buildNoResultsMessage('zzzzz', true);
       expect(msg).toContain('No results found for "zzzzz"');
       expect(msg).toContain('broadening your search filters');
     });
 
-    // Disabled the Pubchem name suggestion for now as it's not very useful.
-    it.skip('suggests the PubChem name when it differs from the query', async () => {
-      mockedGetCompoundNameFromAlias.mockResolvedValueOnce('acetone');
-
+    it('suggests a single alternative name when the advanced setting is off', async () => {
+      mockedSuggestAlternative.mockResolvedValue({ name: 'acetone' });
       const msg = await buildNoResultsMessage('propan-2-one', false);
-      expect(msg).toContain('Perhaps try the PubChem name instead: acetone');
+      expect(msg).toContain('Perhaps try searching for: acetone');
+      expect(mockedSuggestAdvanced).not.toHaveBeenCalled();
     });
 
-    it('does not suggest the PubChem name when it matches the query case-insensitively', async () => {
-      mockedGetCompoundNameFromAlias.mockResolvedValueOnce('Acetone');
+    it('suggests an advanced query for a basic search when the setting is on', async () => {
+      mockedSuggestAdvanced.mockResolvedValue('2-propanone OR propanone OR 67-64-1');
+      const msg = await buildNoResultsMessage('acetone', false, true);
+      expect(msg).toContain('Try this advanced search: 2-propanone OR propanone OR 67-64-1');
+      expect(mockedSuggestAlternative).not.toHaveBeenCalled();
+    });
 
-      const msg = await buildNoResultsMessage('acetone', false);
-      expect(msg).not.toContain('Perhaps try');
+    it('falls back to the single-name suggestion when no advanced query can be built', async () => {
+      mockedSuggestAlternative.mockResolvedValue({ cas: '67-64-1' });
+      const msg = await buildNoResultsMessage('acetone', false, true);
+      expect(msg).toContain('Try searching by CAS number instead: 67-64-1');
+    });
+
+    it('suggests a simpler phrase for a user-written advanced query and skips PubChem', async () => {
+      const msg = await buildNoResultsMessage('sodium AND (hydroxide OR carbonate)', false, true);
+      expect(msg).toContain('Try a simpler search, such as: sodium');
+      expect(mockedSuggestAdvanced).not.toHaveBeenCalled();
+      expect(mockedSuggestAlternative).not.toHaveBeenCalled();
+    });
+
+    it('does not suggest anything for an advanced query when the setting is off', async () => {
+      const msg = await buildNoResultsMessage('a OR b', false, false);
+      expect(msg).toBe('No results found for "a OR b"');
+    });
+
+    it('does not loop: a recommended advanced query that finds nothing gets no suggestion', async () => {
+      const advanced = 'loopa OR loopb OR 1-1-1';
+      mockedSuggestAdvanced.mockResolvedValue(advanced);
+
+      const first = await buildNoResultsMessage('loopname', false, true);
+      expect(first).toContain(advanced);
+
+      const second = await buildNoResultsMessage(advanced, false, true);
+      expect(second).toBe(`No results found for "${advanced}"`);
     });
   });
 });

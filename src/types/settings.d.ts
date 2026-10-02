@@ -41,6 +41,11 @@ declare global {
     groupProductVariants?: boolean;
     /** When `true` (the default), hide products the user cannot buy (shipping or restricted). */
     hideRestrictedProducts?: boolean;
+    /**
+     * When `true`, a search with no results suggests an advanced (AST) query combining the
+     * compound's most common names and CAS number. Defaults to `false`.
+     */
+    suggestAdvancedQuery?: boolean;
   };
 
   /** Results-table display config: empty-column auto-hiding and default-hidden columns. */
@@ -207,7 +212,9 @@ declare global {
      * single results-table row (off gives each variant its own row so sorting and
      * filtering apply across all variants); `hideRestrictedProducts` (default `true`)
      * hides products the user cannot buy — not shipped to their `location`, or
-     * restricted to business/government/professional buyers.
+     * restricted to business/government/professional buyers; `suggestAdvancedQuery`
+     * (default `false`) suggests an advanced OR query of alternative names when a basic
+     * search finds nothing.
      * @example
      * ```ts
      * const search = { groupProductVariants: true, hideRestrictedProducts: true };

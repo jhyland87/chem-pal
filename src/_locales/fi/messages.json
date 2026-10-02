@@ -118,6 +118,14 @@
     "message": "Kokeile hakea CAS-numerolla: $cas$",
     "placeholders": { "cas": { "content": "$1" } }
   },
+  "search_suggest_advanced": {
+    "message": "Kokeile tätä tarkennettua hakua: $query$",
+    "placeholders": { "query": { "content": "$1" } }
+  },
+  "search_suggest_simpler": {
+    "message": "Kokeile yksinkertaisempaa hakua, esimerkiksi: $query$",
+    "placeholders": { "query": { "content": "$1" } }
+  },
   "loading_loading": {
     "message": "Ladataan...",
     "description": "Status shown when loading a search."
@@ -682,6 +690,14 @@
   },
   "settings_group_product_variants_desc": {
     "message": "Kun tämä on käytössä, tuotteen variantit ryhmitellään sen rivin alle. Poista käytöstä, jotta jokainen variantti saa oman rivinsä, jolloin lajittelu ja suodatus koskevat kaikkia variantteja.",
+    "description": "Setting description."
+  },
+  "settings_suggest_advanced_query": {
+    "message": "Ehdota tarkennettua hakua",
+    "description": "Setting label."
+  },
+  "settings_suggest_advanced_query_desc": {
+    "message": "Kun perushaku ei löydä mitään, ehdota tarkennettua hakua, jossa yhdistyvät yhdisteen yleisimmät nimet ja CAS-numero.",
     "description": "Setting description."
   },
   "settings_excluded_empty": {

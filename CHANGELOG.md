@@ -13,6 +13,12 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+### Added
+
+- New "Suggest advanced search" setting: when a basic search finds nothing, ChemPal suggests an
+  advanced search combining the compound's three most common alternative names and its CAS
+  number. Searches that were already advanced get a simpler-phrase hint instead.
+
 ## [1.14.2] - 2026-09-16
 
 ### Fixed

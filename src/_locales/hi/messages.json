@@ -115,6 +115,14 @@
     "message": "इसके बजाय CAS संख्या से खोजें: $cas$",
     "placeholders": { "cas": { "content": "$1" } }
   },
+  "search_suggest_advanced": {
+    "message": "यह उन्नत खोज आज़माएँ: $query$",
+    "placeholders": { "query": { "content": "$1" } }
+  },
+  "search_suggest_simpler": {
+    "message": "कोई सरल खोज आज़माएँ, जैसे: $query$",
+    "placeholders": { "query": { "content": "$1" } }
+  },
   "loading_loading": {
     "message": "लोड हो रहा है...",
     "description": "Status shown when loading a search."
@@ -658,6 +666,14 @@
   },
   "settings_group_product_variants_desc": {
     "message": "चालू होने पर, किसी उत्पाद के वेरिएंट उसकी पंक्ति के अंतर्गत समूहित होते हैं। इसे बंद करें ताकि प्रत्येक वेरिएंट को अपनी अलग पंक्ति मिले, जिससे छँटाई और फ़िल्टरिंग सभी वेरिएंट पर लागू हो।",
+    "description": "Setting description."
+  },
+  "settings_suggest_advanced_query": {
+    "message": "उन्नत खोज सुझाएँ",
+    "description": "Setting label."
+  },
+  "settings_suggest_advanced_query_desc": {
+    "message": "जब सामान्य खोज में कुछ न मिले, तो यौगिक के सबसे आम नामों और CAS संख्या को मिलाकर उन्नत खोज सुझाएँ।",
     "description": "Setting description."
   },
   "settings_excluded_empty": {

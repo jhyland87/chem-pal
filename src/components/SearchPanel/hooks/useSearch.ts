@@ -15,7 +15,7 @@ import { flushPendingPriceHistory, recordProductPrices } from '@/helpers/priceHi
 import { recordSearch } from '@/utils/reviewStats';
 import { dedupeProducts, getProductDedupeKey } from '@/helpers/productIdentity';
 import { shippingCovers, suppliersExcludedBySearchFilters } from '@/helpers/supplierFilters';
-import { suggestAlternativeSearch } from '@/helpers/pubchem';
+import { suggestAdvancedQuery, suggestAlternativeSearch } from '@/helpers/pubchem';
 import { HotkeyEvent } from '@/hotkeys';
 import type { SupplierFactory } from '@/suppliers/SupplierFactory';
 import {
@@ -28,6 +28,8 @@ import {
   updateSearchHistoryResultCount as idbUpdateHistoryResultCount,
 } from '@/utils/idbCache';
 import { Logger } from '@/utils/Logger';
+import { extractAllPositiveTerms } from '@/utils/search-query/extractPositiveTerms';
+import { hasAdvancedSyntax, parseSearchQuery } from '@/utils/search-query/parseSearchQuery';
 import { cstorage } from '@/utils/storage';
 import { flushPendingStats } from '@/utils/SupplierStatsStore';
 import { startTransition, useCallback, useEffect, useRef, useState } from 'react';
@@ -155,13 +157,35 @@ async function getZeroResultQueries(): Promise<Set<string>> {
 }
 
 /**
+ * Advanced queries this session recommended after a basic search found nothing (lowercased).
+ * A recommended query that also finds nothing gets no further suggestion, which prevents a
+ * basic → advanced → basic suggestion loop.
+ */
+const suggestedAdvancedQueries = new Set<string>();
+
+/**
  * Builds the "no results found" message for the results table, optionally suggesting
  * broader filters or a simpler PubChem alternative name (falling back to a CAS number).
  * Only simple common names are suggested, and never one that previously returned no results.
+ *
+ * With `suggestAdvanced` on, a failed basic search instead gets an advanced (OR) query of the
+ * compound's most common names and CAS. A failed advanced search gets a simpler-phrase hint,
+ * unless that advanced query was itself our recommendation, in which case nothing is suggested.
+ * @param query - The search query that returned no results
+ * @param filtersActive - Whether pre-search filters are active
+ * @param suggestAdvanced - Whether the "suggest advanced search" setting is enabled
+ * @returns The newline-joined message to show in the results table
+ * @example
+ * ```typescript
+ * await buildNoResultsMessage('acetone', false, true);
+ * // 'No results found for "acetone"\nTry this advanced search: 2-propanone OR propanone OR 67-64-1'
+ * ```
+ * @source
  */
 export async function buildNoResultsMessage(
   query: string,
   filtersActive: boolean,
+  suggestAdvanced = false,
 ): Promise<string> {
   const lines = [i18n('search_no_results_for', [query])];
 
@@ -169,8 +193,31 @@ export async function buildNoResultsMessage(
     lines.push(i18n('search_try_broaden'));
   }
 
+  const isAdvancedQuery = hasAdvancedSyntax(query);
+
   try {
+    if (isAdvancedQuery) {
+      // PubChem can't resolve an AST query, so only a simpler phrase can be offered.
+      if (suggestAdvanced && !suggestedAdvancedQueries.has(query.trim().toLowerCase())) {
+        const [simpler] = extractAllPositiveTerms(parseSearchQuery(query).ast);
+        if (simpler) {
+          lines.push(i18n('search_suggest_simpler', [simpler]));
+        }
+      }
+      return lines.join('\n');
+    }
+
     const excluded = await getZeroResultQueries();
+
+    if (suggestAdvanced) {
+      const advanced = await suggestAdvancedQuery(query, excluded);
+      if (advanced) {
+        suggestedAdvancedQueries.add(advanced.toLowerCase());
+        lines.push(i18n('search_suggest_advanced', [advanced]));
+        return lines.join('\n');
+      }
+    }
+
     const { name, cas } = await suggestAlternativeSearch(query, excluded);
     if (name) {
       lines.push(i18n('search_suggest_name', [name]));
@@ -735,7 +782,11 @@ export function useSearch() {
           // directly instead of the generic "no products" suggestion flow.
           const message = productQueryFactory.shippingExcludedAll
             ? i18n('search_no_shipping_suppliers')
-            : await buildNoResultsMessage(query, filtersActive);
+            : await buildNoResultsMessage(
+                query,
+                filtersActive,
+                appContext.userSettings.search?.suggestAdvancedQuery ?? false,
+              );
           setTableText(message);
           logger.debug('setting table text', { tableText: message });
         } else {

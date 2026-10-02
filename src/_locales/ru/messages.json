@@ -115,6 +115,14 @@
     "message": "Попробуйте поиск по номеру CAS: $cas$",
     "placeholders": { "cas": { "content": "$1" } }
   },
+  "search_suggest_advanced": {
+    "message": "Попробуйте этот расширенный поиск: $query$",
+    "placeholders": { "query": { "content": "$1" } }
+  },
+  "search_suggest_simpler": {
+    "message": "Попробуйте более простой запрос, например: $query$",
+    "placeholders": { "query": { "content": "$1" } }
+  },
   "loading_loading": {
     "message": "Загрузка...",
     "description": "Status shown when loading a search."
@@ -871,6 +879,14 @@
   },
   "settings_group_product_variants_desc": {
     "message": "Когда включено, варианты товара группируются под его строкой. Отключите, чтобы каждый вариант получил свою строку, и сортировка и фильтрация применялись ко всем вариантам.",
+    "description": "Setting description."
+  },
+  "settings_suggest_advanced_query": {
+    "message": "Предлагать расширенный поиск",
+    "description": "Setting label."
+  },
+  "settings_suggest_advanced_query_desc": {
+    "message": "Если обычный поиск ничего не нашёл, предлагать расширенный поиск с самыми распространёнными названиями вещества и номером CAS.",
     "description": "Setting description."
   },
   "settings_excluded_empty": {

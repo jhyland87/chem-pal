@@ -931,6 +931,27 @@ export default function SettingsPanel() {
                 label=""
               />
             </ListItem>
+
+            {/* Suggest an advanced (AST) query of alternative names when a basic search
+                returns nothing. */}
+            <ListItem className={styles['settings-panel__helper-on-hover']}>
+              <ListItemText
+                primary={i18n('settings_suggest_advanced_query')}
+                secondary={i18n('settings_suggest_advanced_query_desc')}
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={currentSettings.search?.suggestAdvancedQuery ?? false}
+                    onChange={handleNestedSwitchChange('search')}
+                    name="suggestAdvancedQuery"
+                    disabled={isPending}
+                  />
+                }
+                labelPlacement="start"
+                label=""
+              />
+            </ListItem>
           </List>
         </AccordionDetails>
       </Accordion>

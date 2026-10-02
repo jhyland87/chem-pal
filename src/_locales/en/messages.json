@@ -117,6 +117,14 @@
     "message": "Try searching by CAS number instead: $cas$",
     "placeholders": { "cas": { "content": "$1" } }
   },
+  "search_suggest_advanced": {
+    "message": "Try this advanced search: $query$",
+    "placeholders": { "query": { "content": "$1" } }
+  },
+  "search_suggest_simpler": {
+    "message": "Try a simpler search, such as: $query$",
+    "placeholders": { "query": { "content": "$1" } }
+  },
   "loading_loading": {
     "message": "Loading...",
     "description": "Status shown when loading a search."
@@ -679,6 +687,14 @@
   },
   "settings_group_product_variants_desc": {
     "message": "When on, a product's variants are grouped under its row. Turn off to give each variant its own row, so sorting and filtering apply across all variants.",
+    "description": "Setting description."
+  },
+  "settings_suggest_advanced_query": {
+    "message": "Suggest advanced search",
+    "description": "Setting label."
+  },
+  "settings_suggest_advanced_query_desc": {
+    "message": "When a basic search finds nothing, suggest an advanced search combining the compound's most common names and CAS number.",
     "description": "Setting description."
   },
   "settings_excluded_empty": {

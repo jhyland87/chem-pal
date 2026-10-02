@@ -1,9 +1,9 @@
 import { CAS_REGEX, SPIN_SPEED, UOM, type Uom } from '@/constants/common';
 import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
+import { SUPPLIER_CLASS_NAMES } from '@/constants/suppliers';
 import { findCountryByIso2 } from '@/helpers/country';
 import { looksLikeSmiles } from '@/helpers/smiles';
 import { addActualValueToIssues } from '@/helpers/utils';
-import { SUPPLIER_CLASS_NAMES } from '@/constants/suppliers';
 //import { currencies } from "price-parser";
 import * as v from 'valibot';
 
@@ -874,6 +874,7 @@ function buildUserSettingsSchema() {
   // via `Number` in a pipe (mirroring zod's `z.coerce.number()`), then apply the
   // same int/nonnegative/positive constraints as `v.integer()` / `v.minValue()`.
   const coercedNonnegative = v.pipe(v.unknown(), v.transform(Number), v.number(), v.minValue(0));
+  const optionalBoolean = v.optional(v.boolean());
   const coercedNonnegativeInt = v.pipe(
     v.unknown(),
     v.transform(Number),
@@ -882,17 +883,17 @@ function buildUserSettingsSchema() {
     v.minValue(0),
   );
   return v.object({
-    showHelp: v.optional(v.boolean()),
+    showHelp: optionalBoolean,
     caching: v.optional(
       v.object({
-        enabled: v.optional(v.boolean()),
-        doNotCacheEmptyResults: v.optional(v.boolean()),
+        enabled: optionalBoolean,
+        doNotCacheEmptyResults: optionalBoolean,
         ttlMinutes: v.optional(coercedNonnegative),
       }),
     ),
     priceTracking: v.optional(
       v.object({
-        enabled: v.optional(v.boolean()),
+        enabled: optionalBoolean,
         maxDataPoints: v.optional(coercedNonnegativeInt),
       }),
     ),
@@ -916,25 +917,26 @@ function buildUserSettingsSchema() {
       v.object({
         theme: v.optional(v.picklist(['light', 'dark'])),
         fontSize: v.optional(v.picklist(['small', 'medium', 'large'])),
-        openInTab: v.optional(v.boolean()),
+        openInTab: optionalBoolean,
       }),
     ),
     suppliers: v.optional(
       v.object({
         disabled: v.optional(v.array(v.picklist(SUPPLIER_CLASS_NAMES))),
-        excludeNonShipping: v.optional(v.boolean()),
+        excludeNonShipping: optionalBoolean,
         resultLimit: v.optional(coercedNonnegativeInt),
       }),
     ),
     search: v.optional(
       v.object({
-        groupProductVariants: v.optional(v.boolean()),
-        hideRestrictedProducts: v.optional(v.boolean()),
+        groupProductVariants: optionalBoolean,
+        hideRestrictedProducts: optionalBoolean,
+        suggestAdvancedQuery: optionalBoolean,
       }),
     ),
     results: v.optional(
       v.object({
-        autoHideEmpty: v.optional(v.boolean()),
+        autoHideEmpty: optionalBoolean,
         hidden: v.optional(v.array(v.string())),
       }),
     ),

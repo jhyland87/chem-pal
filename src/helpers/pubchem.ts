@@ -1,6 +1,7 @@
 import { isCAS } from '@/utils/typeGuards/common';
 import { withTtlCache } from '@/helpers/requestCache';
 import { isPubChemCID } from '@/utils/typeGuards/common';
+import { hasAdvancedSyntax } from '@/utils/search-query/parseSearchQuery';
 
 /**
  * SDQ (Structure Data Query) agent from PubChem API
@@ -935,6 +936,73 @@ export async function suggestAlternativeSearch(
   const name = match ? formatSuggestedName(match) : undefined;
   const cas = ranked.find((entry) => isCAS(entry) && !excluded.has(entry.toLowerCase()));
   return { name, cas };
+}
+
+/**
+ * How many alternative names {@link suggestAdvancedQuery} combines into one advanced query.
+ * @source
+ */
+const ADVANCED_QUERY_NAME_COUNT = 3;
+
+/**
+ * Formats a single term for an advanced (AST) query, quoting it when it contains whitespace or
+ * parentheses so the parser keeps it as one phrase.
+ * @param term - The name or CAS number
+ * @returns The term, quoted if necessary
+ * @example
+ * ```typescript
+ * quoteAdvancedTerm("dimethyl ketone") // '"dimethyl ketone"'
+ * quoteAdvancedTerm("propanone")       // 'propanone'
+ * ```
+ * @source
+ */
+function quoteAdvancedTerm(term: string): string {
+  return /[\s()]/.test(term) ? `"${term}"` : term;
+}
+
+/**
+ * Suggests an advanced (AST) search for a query that returned no results. Combines the three most
+ * common PubChem names for the compound, plus its CAS number, with `OR`. The original query (and
+ * any term in `excluded`) is left out of the result, since it is already known to find nothing.
+ * Returns undefined when PubChem has no match or fewer than two terms remain.
+ * @category Science Helpers
+ * @param query - The original (unsuccessful) basic search query
+ * @param excluded - Lowercased terms to skip (e.g. previously searched, zero-result queries)
+ * @returns The advanced query string, or undefined if there is nothing worth suggesting
+ * @example
+ * ```typescript
+ * await suggestAdvancedQuery("acetone", new Set(["acetone"]));
+ * // Returns: "2-propanone OR propanone OR propan-2-one OR 67-64-1"
+ * ```
+ * @source
+ */
+export async function suggestAdvancedQuery(
+  query: string,
+  excluded: ReadonlySet<string>,
+): Promise<string | undefined> {
+  const ranked = await getRankedNamesByName(query);
+  if (!ranked) return undefined;
+
+  const seen = new Set<string>([query.trim().toLowerCase(), ...excluded]);
+  const take = (entry: string): boolean => {
+    const key = entry.toLowerCase();
+    if (seen.has(key) || entry.includes('"')) return false;
+    seen.add(key);
+    return true;
+  };
+
+  const names = ranked
+    .filter((entry) => !isCAS(entry))
+    .filter(take)
+    .slice(0, ADVANCED_QUERY_NAME_COUNT)
+    .map((entry) => quoteAdvancedTerm(formatSuggestedName(entry)));
+  const cas = ranked.find((entry) => isCAS(entry) && take(entry));
+
+  const terms = cas ? [...names, cas] : names;
+  if (terms.length < 2) return undefined;
+
+  const advanced = terms.join(' OR ');
+  return hasAdvancedSyntax(advanced) ? advanced : undefined;
 }
 
 /**

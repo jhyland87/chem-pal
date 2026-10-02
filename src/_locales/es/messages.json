@@ -118,6 +118,14 @@
     "message": "Prueba a buscar por número CAS: $cas$",
     "placeholders": { "cas": { "content": "$1" } }
   },
+  "search_suggest_advanced": {
+    "message": "Prueba esta búsqueda avanzada: $query$",
+    "placeholders": { "query": { "content": "$1" } }
+  },
+  "search_suggest_simpler": {
+    "message": "Prueba una búsqueda más sencilla, como: $query$",
+    "placeholders": { "query": { "content": "$1" } }
+  },
   "loading_loading": {
     "message": "Cargando...",
     "description": "Status shown when loading a search."
@@ -673,6 +681,14 @@
   },
   "settings_group_product_variants_desc": {
     "message": "Cuando está activado, las variantes de un producto se agrupan bajo su fila. Desactívalo para que cada variante tenga su propia fila, de modo que la ordenación y el filtrado se apliquen a todas las variantes.",
+    "description": "Setting description."
+  },
+  "settings_suggest_advanced_query": {
+    "message": "Sugerir búsqueda avanzada",
+    "description": "Setting label."
+  },
+  "settings_suggest_advanced_query_desc": {
+    "message": "Cuando una búsqueda básica no encuentra nada, sugiere una búsqueda avanzada que combine los nombres más comunes del compuesto y su número CAS.",
     "description": "Setting description."
   },
   "settings_excluded_empty": {

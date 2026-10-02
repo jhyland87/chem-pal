@@ -64,11 +64,11 @@ const unusedFilterFn: FilterFn<PriceChangeRow> = () => true;
  * Full-panel, sortable log of every price change ChemPal has ever recorded
  * across every supplier and product — one row per change, newest first by
  * default. Only available in advanced mode; wired up the same way as
- * {@link StatsPanel}: a `PANEL.PRICE_HISTORY` entry in the app's panel switch,
+ * `StatsPanel`: a `PANEL.PRICE_HISTORY` entry in the app's panel switch,
  * reached from the speed-dial menu, hidden the moment advanced mode turns off.
  *
  * Reads the full `price_history` IndexedDB store via {@link getAllPriceSeries}
- * and flattens it with {@link buildPriceChangeRows} — series with only one
+ * and flattens it with `buildPriceChangeRows` — series with only one
  * recorded price (never changed) contribute no rows, so this view answers
  * "which products actually do have price changes logged".
  * @category Components

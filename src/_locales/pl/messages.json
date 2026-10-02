@@ -115,6 +115,14 @@
     "message": "Spróbuj wyszukać według numeru CAS: $cas$",
     "placeholders": { "cas": { "content": "$1" } }
   },
+  "search_suggest_advanced": {
+    "message": "Spróbuj tego wyszukiwania zaawansowanego: $query$",
+    "placeholders": { "query": { "content": "$1" } }
+  },
+  "search_suggest_simpler": {
+    "message": "Spróbuj prostszego wyszukiwania, np.: $query$",
+    "placeholders": { "query": { "content": "$1" } }
+  },
   "loading_loading": {
     "message": "Ładowanie...",
     "description": "Status shown when loading a search."
@@ -870,6 +878,14 @@
   },
   "settings_group_product_variants_desc": {
     "message": "Gdy włączone, warianty produktu są grupowane pod jego wierszem. Wyłącz, aby każdy wariant miał własny wiersz, dzięki czemu sortowanie i filtrowanie obejmą wszystkie warianty.",
+    "description": "Setting description."
+  },
+  "settings_suggest_advanced_query": {
+    "message": "Sugeruj wyszukiwanie zaawansowane",
+    "description": "Setting label."
+  },
+  "settings_suggest_advanced_query_desc": {
+    "message": "Gdy zwykłe wyszukiwanie nic nie znajdzie, zaproponuj wyszukiwanie zaawansowane łączące najpopularniejsze nazwy związku i numer CAS.",
     "description": "Setting description."
   },
   "settings_excluded_empty": {

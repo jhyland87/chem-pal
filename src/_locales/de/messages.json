@@ -118,6 +118,14 @@
     "message": "Versuchen Sie stattdessen die Suche nach CAS-Nummer: $cas$",
     "placeholders": { "cas": { "content": "$1" } }
   },
+  "search_suggest_advanced": {
+    "message": "Versuchen Sie diese erweiterte Suche: $query$",
+    "placeholders": { "query": { "content": "$1" } }
+  },
+  "search_suggest_simpler": {
+    "message": "Versuchen Sie eine einfachere Suche, z. B.: $query$",
+    "placeholders": { "query": { "content": "$1" } }
+  },
   "loading_loading": {
     "message": "Wird geladen...",
     "description": "Status shown when loading a search."
@@ -682,6 +690,14 @@
   },
   "settings_group_product_variants_desc": {
     "message": "Wenn aktiviert, werden die Varianten eines Produkts unter dessen Zeile gruppiert. Deaktivieren Sie die Option, damit jede Variante eine eigene Zeile erhält, sodass Sortierung und Filterung für alle Varianten gelten.",
+    "description": "Setting description."
+  },
+  "settings_suggest_advanced_query": {
+    "message": "Erweiterte Suche vorschlagen",
+    "description": "Setting label."
+  },
+  "settings_suggest_advanced_query_desc": {
+    "message": "Wenn eine einfache Suche nichts findet, eine erweiterte Suche mit den gebräuchlichsten Namen und der CAS-Nummer der Verbindung vorschlagen.",
     "description": "Setting description."
   },
   "settings_excluded_empty": {

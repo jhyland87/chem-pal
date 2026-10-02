@@ -8,7 +8,11 @@
     "language": "en-US",
     "currencyRate": 1.0,
     "display": { "theme": "light", "fontSize": "medium", "openInTab": true },
-    "search": { "groupProductVariants": true, "hideRestrictedProducts": true },
+    "search": {
+      "groupProductVariants": true,
+      "hideRestrictedProducts": true,
+      "suggestAdvancedQuery": false
+    },
     "results": {
       "autoHideEmpty": true,
       "hidden": [

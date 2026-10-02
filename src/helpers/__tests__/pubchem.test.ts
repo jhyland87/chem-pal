@@ -15,6 +15,7 @@ import {
   pubchemCompoundUrl,
   pubchemStructureImageUrl,
   resolveIdentifierNames,
+  suggestAdvancedQuery,
   suggestAlternativeSearch,
 } from '@/helpers/pubchem';
 import {
@@ -189,6 +190,45 @@ describe('PubChem Helpers', () => {
       mockSynonymsFetch(undefined);
       const result = await getRankedNamesByName('zzqqxxnotathing');
       expect(result).toBeUndefined();
+    });
+  });
+
+  describe('suggestAdvancedQuery', () => {
+    beforeAll(() => {
+      global.fetch = vi.fn() as Mock;
+    });
+
+    afterEach(() => {
+      (global.fetch as Mock).mockReset();
+    });
+
+    it('combines the three most common names and the CAS, omitting the original query', async () => {
+      mockSynonymsFetch(ACETONE.rankedSynonyms());
+      const result = await suggestAdvancedQuery(ACETONE.name, new Set());
+      expect(result).toBe('2-propanone OR propanone OR propan-2-one OR 67-64-1');
+      expect(result?.toLowerCase()).not.toMatch(/\bacetone\b/);
+    });
+
+    it('omits the CAS when the CAS was the original query', async () => {
+      mockSynonymsFetch(ACETONE.rankedSynonyms());
+      const result = await suggestAdvancedQuery(ACETONE.cas, new Set());
+      expect(result).toBe('acetone OR 2-propanone OR propanone');
+    });
+
+    it('skips names that already returned no results', async () => {
+      mockSynonymsFetch(ACETONE.rankedSynonyms());
+      const result = await suggestAdvancedQuery('2-propanone', new Set(['acetone']));
+      expect(result).toBe('propanone OR propan-2-one OR "Dimethyl ketone" OR 67-64-1');
+    });
+
+    it('returns undefined when fewer than two terms remain', async () => {
+      mockSynonymsFetch(['acetone', '67-64-1']);
+      expect(await suggestAdvancedQuery('acetone', new Set())).toBeUndefined();
+    });
+
+    it('returns undefined when PubChem has no match', async () => {
+      mockSynonymsFetch(undefined);
+      expect(await suggestAdvancedQuery('zzqqxxnotathing', new Set())).toBeUndefined();
     });
   });
 
