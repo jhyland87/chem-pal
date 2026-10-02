@@ -18,6 +18,7 @@ vi.mock('@/helpers/i18n', () => ({
 
 const mocks = vi.hoisted(() => ({
   getCurrencyRate: vi.fn(),
+  reloadPage: vi.fn(),
   loadExcludedProducts: vi.fn(),
   removeExcludedProduct: vi.fn(),
   clearAllCaches: vi.fn(),
@@ -31,6 +32,7 @@ const mocks = vi.hoisted(() => ({
   storageClear: vi.fn(),
 }));
 
+vi.mock('@/helpers/dom', () => ({ reloadPage: mocks.reloadPage }));
 vi.mock('@/helpers/currency', () => ({ getCurrencyRate: mocks.getCurrencyRate }));
 
 vi.mock('@/helpers/excludedProducts', () => ({
@@ -234,8 +236,6 @@ describe('SettingsPanel', () => {
   });
 
   it('full reset clears every store except app_meta after confirmation', async () => {
-    // The handler ends with window.location.reload(); jsdom logs a benign
-    // "Not implemented: navigation" for it, which doesn't affect these assertions.
     setContext(baseSettings());
     render(<SettingsPanel />);
     openSection('settings_section_actions');
@@ -254,6 +254,7 @@ describe('SettingsPanel', () => {
       expect(mocks.clearPriceHistory).toHaveBeenCalled();
       expect(mocks.clearExports).toHaveBeenCalled();
       expect(mocks.storageClear).toHaveBeenCalled();
+      expect(mocks.reloadPage).toHaveBeenCalledOnce();
     });
   });
 

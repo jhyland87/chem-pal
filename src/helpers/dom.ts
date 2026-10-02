@@ -39,3 +39,18 @@ export function findElementWithText(
   }
   return undefined;
 }
+
+/**
+ * Reloads the current page. A named seam over `window.location.reload()` so tests can
+ * stub it (jsdom can't navigate, and its `location` can't be redefined).
+ * @category Helpers
+ * @returns Nothing; the page reloads as a side effect.
+ * @example
+ * ```typescript
+ * reloadPage(); // the extension page reloads
+ * ```
+ * @source
+ */
+export function reloadPage(): void {
+  window.location.reload();
+}

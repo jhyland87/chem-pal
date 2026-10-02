@@ -5,6 +5,7 @@ import { COUNTRIES } from '@/constants/countries';
 import { CURRENCIES } from '@/constants/currency';
 import { FUZZ_SCORER_NAMES } from '@/constants/fuzzScorers';
 import { getCurrencyRate } from '@/helpers/currency';
+import { reloadPage } from '@/helpers/dom';
 import {
   loadExcludedProducts,
   removeExcludedProduct,
@@ -358,7 +359,7 @@ export default function SettingsPanel() {
     try {
       await Promise.all([clearAllCaches(), clearPriceHistory(), clearExports()]);
       await cstorage.local.clear();
-      window.location.reload();
+      reloadPage();
     } catch (error) {
       console.warn('Failed to perform full reset:', error);
     }

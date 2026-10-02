@@ -3,6 +3,7 @@ import LoadingBackdrop from '@/components/LoadingBackdrop';
 import resultStyles from '@/components/ResultsPanel.module.scss';
 import { CACHE, DRAWER_INDEX } from '@/constants/common';
 import { emitSearchEvent, SearchEvent } from '@/events/searchEvents';
+import { reloadPage } from '@/helpers/dom';
 import { i18n } from '@/helpers/i18n';
 import { countActiveSearchFilters } from '@/helpers/searchFilters';
 import { generatePageSizes } from '@/helpers/utils';
@@ -991,10 +992,7 @@ export default function ResultsTable({
           {error && (
             <ErrorContainer className={resultStyles['error-container']}>
               <p>{i18n('results_error', [error])}</p>
-              <ErrorRetryButton
-                onClick={() => window.location.reload()}
-                className={resultStyles['error-retry-button']}
-              >
+              <ErrorRetryButton onClick={reloadPage} className={resultStyles['error-retry-button']}>
                 {i18n('results_retry')}
               </ErrorRetryButton>
             </ErrorContainer>

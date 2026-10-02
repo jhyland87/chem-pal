@@ -84,18 +84,14 @@ describe('TabLink', () => {
     render(<TabLink href={mockHref}>{mockText}</TabLink>);
 
     const link = screen.getByText(mockText);
-    const preventDefault = vi.fn();
-
-    // Create a proper event object with preventDefault
     const clickEvent = new MouseEvent('click', {
       bubbles: true,
       cancelable: true,
       view: window,
     });
-    Object.defineProperty(clickEvent, 'preventDefault', {
-      value: preventDefault,
-      writable: false,
-    });
+    // Spy (calls through) so the default navigation really is cancelled; a no-op
+    // stub would let jsdom follow the link and log "Not implemented: navigation".
+    const preventDefault = vi.spyOn(clickEvent, 'preventDefault');
     Object.defineProperty(clickEvent, 'target', {
       value: link,
       writable: false,
