@@ -70,6 +70,12 @@ export default defineConfig({
         'src/components/SearchPanel/hooks/index.ts',
         'src/icons/index.ts',
         'src/components/SearchPanel/Inputs/index.ts',
+        // Type-only modules (interfaces/aliases compile away) and the utils barrel — no runtime code.
+        'src/hotkeys/types.ts',
+        'src/utils/search-query/types.ts',
+        'src/types/labchem.ts',
+        'src/migrations/types.ts',
+        'src/utils/index.ts',
       ],
     },
   },
