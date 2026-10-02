@@ -192,8 +192,10 @@ describe('useSearch hook', () => {
       vi.mocked(getSearchResultsRecord).mockRejectedValue(new Error('idb'));
       const { result } = renderHook(() => useSearch());
 
-      await waitFor(() => expect(console.warn).toHaveBeenCalled());
+      await waitFor(() => expect(getSearchResultsRecord).toHaveBeenCalled());
+      await act(async () => {});
       expect(result.current.searchResults).toEqual([]);
+      expect(result.current.isLoading).toBe(false);
     });
 
     it('clears results when the global clear event fires', async () => {
