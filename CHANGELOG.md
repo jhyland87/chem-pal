@@ -13,6 +13,13 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+## [1.15.1] - 2026-10-05
+
+### Changed
+
+- ChemPal is now published to the Chrome Web Store automatically with each release, so Web Store
+  users get updates as soon as they clear review. No behavior changes from 1.15.0.
+
 ## [1.15.0] - 2026-10-05
 
 ### Added
