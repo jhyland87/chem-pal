@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/jhyland87/chem-pal/actions/workflows/main.yml"><img src="https://img.shields.io/github/actions/workflow/status/jhyland87/chem-pal/main.yml?branch=main&label=build%20%26%20tests" alt="Build and tests status"/></a>
-  <a href="https://jhyland87.github.io/chem-pal/coverage/"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fjhyland87%2Fchem-pal%2Fbadges%2Fcoverage.json" alt="Unit test coverage"/></a>
+  <a href="https://chem-pal.com/coverage/"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fjhyland87%2Fchem-pal%2Fbadges%2Fcoverage.json" alt="Unit test coverage"/></a>
 </p>
 
 Open source project aimed at helping amateur chemistry hobbyists find the best deals on chemical reagents. There are plenty of similar services out there for businesses, universities and research institutions, but none are available for individuals and hobbyists. ChemPal only searches suppliers that sell to individuals and ship to residences.

@@ -7,7 +7,7 @@ Not published anywhere (kept out of `pages/`, so TypeDoc doesn't render it).
 
 - **Publisher contact email:** `jhyland87@gmail.com` — must be entered **and verified**
   (Chrome emails a verification link) before the item can be published.
-- **Privacy policy URL:** `https://jhyland87.github.io/chem-pal/documents/PRIVACY.html`
+- **Privacy policy URL:** `https://chem-pal.com/documents/PRIVACY.html`
   (generated from [`pages/PRIVACY.md`](pages/PRIVACY.md) by `pnpm docs`; also compiled into the
   build as `__APP_PRIVACY__` from `package.json` → `config.links.privacy`). Regenerate and
   publish the docs site before submitting so the URL is live.
