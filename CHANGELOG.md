@@ -13,6 +13,8 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+## [1.15.0] - 2026-10-05
+
 ### Added
 
 - New "Suggest advanced search" setting: when a basic search finds nothing, ChemPal suggests an
