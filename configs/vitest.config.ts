@@ -22,6 +22,8 @@ export default defineConfig({
     },
     environment: 'jsdom',
     globals: true,
+    // MUI-heavy render tests can exceed the 5s default on slow CI runners (cold imports, 4 workers).
+    testTimeout: 20000,
     // Run test files in parallel across the vmThreads pool. Each worker gets its
     // own isolated globals (fetch guard, chrome, fake-IndexedDB) via setupFiles, so
     // files don't share state — this roughly halves the suite's wall-clock.
