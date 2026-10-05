@@ -632,25 +632,4 @@ function App() {
   );
 }
 
-/**
- * MIGRATION GUIDE:
- *
- * To migrate from App.tsx to this React v19 version:
- *
- * 1. Replace multiple useState hooks with single useActionState
- * 2. Move Chrome storage operations into the action handler
- * 3. Add searchResults to AppContext to fix linter error
- * 4. Consolidate theme and currency rate management
- * 5. Add loading states for settings changes
- * 6. Use dispatch pattern for state updates
- *
- * PERFORMANCE BENEFITS:
- * - ~60% reduction in re-renders during settings changes
- * - Automatic batching of related state updates
- * - Better error handling for Chrome storage operations
- * - Cleaner separation of concerns
- * - Built-in loading states for async operations
- * @source
- */
-
 export default App;
