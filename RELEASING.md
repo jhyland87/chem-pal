@@ -11,6 +11,11 @@ Releases are produced by [`.github/workflows/release.yml`](.github/workflows/rel
   - `POSTHOG_PROJECT_ID`: from the PostHog project's Settings page. Not sensitive — add under Settings → Secrets and variables → Actions → **Variables** tab → New repository variable.
   - `POSTHOG_HOST`: the PostHog API host for the project. Same **Variables** tab as `POSTHOG_PROJECT_ID`.
   - The vite config only wires up the upload plugin when `POSTHOG_API_KEY` is non-empty, and does so silently — a missing/misplaced value (e.g. a variable read via `secrets.*`, or vice versa) produces no error, just a build with no source maps. Check the **Build production extension**/**Build Firefox extension** step output for the plaintext `POSTHOG_PROJECT_ID`/`POSTHOG_HOST` values (and a masked `***` for `POSTHOG_API_KEY`) if source maps are missing from a release.
+- **Chrome Web Store publishing.** The `publish-chrome-store` job uploads the release's `chem-pal-<version>-unpacked.zip` and submits it for review. Stable tags only — prereleases (`-beta.1`) are skipped.
+  - **Variables** tab: `CHROME_EXTENSION_ID` (the ID from the Web Store dashboard), `CHROME_CLIENT_ID` (Google Cloud OAuth client ID).
+  - **Secrets** tab: `CHROME_CLIENT_SECRET` (the OAuth client secret), `CHROME_REFRESH_TOKEN` (generate once with `npx chrome-webstore-upload-keys`, signed in as the extension's owner).
+  - Keep the OAuth consent screen "In production" — in "Testing" the refresh token expires after 7 days.
+  - If the job fails, re-run it alone from the Actions UI; the GitHub release is already published.
 
 ## Cutting a release
 

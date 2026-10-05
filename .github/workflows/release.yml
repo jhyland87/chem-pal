@@ -335,3 +335,38 @@ jobs:
       - name: Always remove signing key
         if: always()
         run: rm -f chem-pal.pem
+
+  publish-chrome-store:
+    name: Publish to Chrome Web Store
+    needs: release
+    # Prereleases (e.g. -beta.1) stay on GitHub only.
+    if: ${{ !contains(github.event.inputs.version || github.ref_name, '-') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download release zip
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          TAG="${{ github.event.inputs.version || github.ref_name }}"
+          gh release download "$TAG" --pattern 'chem-pal-*-unpacked.zip' --output chem-pal-webstore.zip
+
+      - name: Upload and submit for review
+        env:
+          EXTENSION_ID: ${{ vars.CHROME_EXTENSION_ID }}
+          CLIENT_ID: ${{ vars.CHROME_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+        run: |
+          for v in EXTENSION_ID CLIENT_ID CLIENT_SECRET REFRESH_TOKEN; do
+            if [ -z "${!v}" ]; then
+              echo "::error::CHROME_$v is not set (secret or repo variable)"
+              exit 1
+            fi
+          done
+          npx --yes chrome-webstore-upload-cli@3 upload --source chem-pal-webstore.zip --auto-publish
