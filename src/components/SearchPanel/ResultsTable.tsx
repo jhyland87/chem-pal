@@ -1,3 +1,5 @@
+import { ChemicalChips } from '@/components/SearchPanel/ChemicalChips';
+import { ChemicalInfoDialog } from '@/components/SearchPanel/ChemicalInfoDialog';
 import { defaultSettings } from '@/../config.json';
 import LoadingBackdrop from '@/components/LoadingBackdrop';
 import resultStyles from '@/components/ResultsPanel.module.scss';
@@ -80,7 +82,6 @@ import {
   PageSizeSelect,
   PaginationContainer,
   ProductDetailPanelCell,
-  ResultsCountDisplay,
   ResultsHeaderContainer,
   SearchResultsTable,
   SortIndicator,
@@ -195,6 +196,7 @@ export default function ResultsTable({
   const [showFilters, setShowFilters] = useState(false);
   const [columnMenuAnchor, setColumnMenuAnchor] = useState<null | HTMLElement>(null);
   const [globalFilter, setGlobalFilter] = useState('');
+  const [chemicalInfoTerm, setChemicalInfoTerm] = useState<string | undefined>();
   const globalFilterInputRef = useRef<HTMLInputElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -754,13 +756,11 @@ export default function ResultsTable({
         {/* <div className="results-title">Search Results ({searchResults.length} found)</div> */}
 
         <ResultsHeaderContainer>
-          {/* Show the originating query here; the result count lives in the
-              pagination footer below. */}
-          <ResultsCountDisplay
-            title={executedQuery ? i18n('results_searched_for', [executedQuery]) : undefined}
-          >
-            {executedQuery ? i18n('results_query', [executedQuery]) : ''}
-          </ResultsCountDisplay>
+          {/* One chip per searched reagent; clicking opens its chemical details. The
+              result count lives in the pagination footer below. */}
+          {executedQuery ? (
+            <ChemicalChips query={executedQuery} onSelect={setChemicalInfoTerm} />
+          ) : null}
           {/* Only show the global filter if there are results. Based on
               searchResults (not the filtered row model) so the input doesn't
               vanish once the user's filter query matches zero rows. */}
@@ -781,6 +781,10 @@ export default function ResultsTable({
             />
           )}
         </ResultsHeaderContainer>
+        <ChemicalInfoDialog
+          term={chemicalInfoTerm}
+          onClose={() => setChemicalInfoTerm(undefined)}
+        />
 
         <Box
           ref={scrollContainerRef}

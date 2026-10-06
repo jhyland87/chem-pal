@@ -5,6 +5,8 @@ import {
 import {
   getCidByFormula,
   getCidByName,
+  extractGhs,
+  extractSolubility,
   getCidsByCas,
   getCompoundDescription,
   getCompoundProperties,
@@ -385,7 +387,7 @@ describe('PubChem Helpers', () => {
           title: 'Acetone',
         });
         expect(global.fetch).toHaveBeenCalledWith(
-          'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/180/property/MolecularFormula,MolecularWeight,IUPACName,SMILES,InChI,InChIKey,Title/JSON',
+          'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/180/property/MolecularFormula,MolecularWeight,IUPACName,SMILES,InChI,InChIKey,Title,XLogP,TPSA/JSON',
         );
       });
 
@@ -480,5 +482,89 @@ describe('PubChem Helpers', () => {
         );
       });
     });
+  });
+});
+
+describe('extractGhs / extractSolubility', () => {
+  const ghsJson = {
+    Record: {
+      Section: [
+        {
+          Section: [
+            {
+              Information: [
+                {
+                  Name: 'Pictogram(s)',
+                  Value: {
+                    StringWithMarkup: [
+                      {
+                        String: '  ',
+                        Markup: [
+                          {
+                            Extra: 'Flammable',
+                            URL: 'https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS02.svg',
+                          },
+                          {
+                            Extra: 'Flammable',
+                            URL: 'https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS02.svg',
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                },
+                { Name: 'Signal', Value: { StringWithMarkup: [{ String: 'Danger' }] } },
+                {
+                  Name: 'GHS Hazard Statements',
+                  Value: {
+                    StringWithMarkup: [
+                      {
+                        String:
+                          'H225: Highly Flammable liquid and vapor [Danger Flammable liquids]',
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  };
+
+  it('parses pictograms, signal and statements', () => {
+    expect(extractGhs(ghsJson)).toEqual({
+      pictograms: [
+        {
+          code: 'GHS02',
+          label: 'Flammable',
+          url: 'https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS02.svg',
+        },
+      ],
+      signal: 'Danger',
+      hazardStatements: ['H225: Highly Flammable liquid and vapor'],
+    });
+  });
+
+  it.each([[undefined], [{}], [{ Record: {} }]])('returns undefined for %j', (input) => {
+    expect(extractGhs(input)).toBeUndefined();
+    expect(extractSolubility(input)).toBeUndefined();
+  });
+
+  it('dedupes solubility lines', () => {
+    const data = {
+      Record: {
+        Section: [
+          {
+            Information: [
+              { Value: { StringWithMarkup: [{ String: 'Miscible with water' }] } },
+              { Value: { StringWithMarkup: [{ String: 'Miscible with water' }] } },
+            ],
+          },
+        ],
+      },
+    };
+    expect(extractSolubility(data)).toEqual(['Miscible with water']);
   });
 });

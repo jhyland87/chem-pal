@@ -4,14 +4,14 @@ This document describes the structure of the `chempal` IndexedDB database — ev
 
 ## Key Concepts
 
-- **One database, `chempal`**: Opened once via a singleton (`getDB()`) using the [`idb`](https://github.com/jakearchibald/idb) wrapper. Current schema version is **7** (`DB_VERSION`). Object stores are created in the `upgrade` callback.
+- **One database, `chempal`**: Opened once via a singleton (`getDB()`) using the [`idb`](https://github.com/jakearchibald/idb) wrapper. Current schema version is **8** (`DB_VERSION`). Object stores are created in the `upgrade` callback.
 - **Store names are centralized**: Every store name lives in the `IDB_STORE` constant (`src/constants/common.ts`) and is **snake_case** to match the `chrome.storage` key convention (`CACHE`). `IDB_STORE` is an `as const` object rather than a string enum because idb's typed store-name API needs literal string types.
 - **IndexedDB vs `chrome.storage`**: Bulk/cached data lives here in IndexedDB (no quota pressure). Lightweight app state — user settings, session query, table state — stays in `chrome.storage` via the `cstorage` wrapper and the `CACHE` enum. The two are separate namespaces.
 - **Single-row stores**: `search_results`, `excluded_products`, and `app_meta` hold everything under one row keyed `"current"`, so a read/write is a full replace of that row.
 - **Capacity caps live in `config.json`**: The tunables — `maxSupplierCacheEntries` (100), `maxHistoryEntries` (100), `maxExportEntries` (20), and `maxExportsCacheBytes` (25 MB) — are build-time config, not hardcoded constants.
 - **Two LRU-capped caches**: `supplier_query_cache` and `supplier_product_data_cache` each cap at `maxSupplierCacheEntries`, evicting the least-recently-used via an index (`cachedAt` / `timestamp`).
-- **Schema version ≠ cache version**: `DB_VERSION` (7) versions the IndexedDB schema. `SupplierCache.CACHE_VERSION` (4), stored in each query-cache entry's `__cacheMetadata.version`, versions the cached *payload* format and evicts stale entries on read — independent of the DB schema version. A third version, the app version stamped in `app_meta`, drives the `src/migrations/` step chain.
-- **`clearAllCaches` spares user data**: The bulk clear wipes six cache/derived stores but **not** `price_history` (user-accumulated data with its own clear action), `exports` (saved spreadsheets with their own delete actions), or `app_meta` (the migration marker — wiping it would re-run migrations).
+- **Schema version ≠ cache version**: `DB_VERSION` (8) versions the IndexedDB schema. `SupplierCache.CACHE_VERSION` (4), stored in each query-cache entry's `__cacheMetadata.version`, versions the cached *payload* format and evicts stale entries on read — independent of the DB schema version. A third version, the app version stamped in `app_meta`, drives the `src/migrations/` step chain.
+- **`clearAllCaches` spares user data**: The bulk clear wipes seven cache/derived stores but **not** `price_history` (user-accumulated data with its own clear action), `exports` (saved spreadsheets with their own delete actions), or `app_meta` (the migration marker — wiping it would re-run migrations).
 
 ## Overview
 
@@ -165,7 +165,7 @@ Generated `.xlsx` result exports, retained so the export-history list can re-dow
 
 ## Bulk Clear & Versioning
 
-- **`clearAllCaches()`** clears, in one transaction: `search_results`, `search_history`, `supplier_query_cache`, `supplier_product_data_cache`, `supplier_stats`, and `excluded_products` — then dispatches `IDB_SEARCH_RESULTS_CLEARED`. `price_history`, `exports`, and `app_meta` are intentionally left intact.
+- **`clearAllCaches()`** clears, in one transaction: `search_results`, `search_history`, `supplier_query_cache`, `supplier_product_data_cache`, `supplier_stats`, `excluded_products`, and `chemical_db` — then dispatches `IDB_SEARCH_RESULTS_CLEARED`. `price_history`, `exports`, and `app_meta` are intentionally left intact.
 - **Schema migrations** run in the `upgrade` callback. Each store is created behind an `objectStoreNames.contains(...)` guard, so bumping `DB_VERSION` adds new stores without touching existing ones.
 - **Data migrations** are separate from schema migrations: `src/migrations/registry.ts` loads semver-named step files (`vX.Y.Z-to-vX.Y.Z.ts` under `src/migrations/steps/`), compares the `app_meta` version marker against the running build, runs the pending chain, and re-stamps the marker.
 
@@ -180,3 +180,7 @@ Generated `.xlsx` result exports, retained so the export-history list can re-dow
 | `src/helpers/productIdentity.ts` | `getProductIdentityKey` — the shared identity used by the product cache and exclusions |
 | `src/migrations/registry.ts` | Version-marker comparison and the ordered data-migration step chain |
 | `config.json` | Capacity caps: `maxSupplierCacheEntries`, `maxHistoryEntries`, `maxExportEntries`, `maxExportsCacheBytes` |
+
+### `chemical_db`
+
+Single row keyed `"current"`: `{ id, fetchedAt, chemicals }`. The slimmed OSHA OBIS chemical dataset (~830 records), downloaded lazily the first time a chemical-info dialog opens and refreshed after `chemicalDb.ttlDays` in `config.json`.

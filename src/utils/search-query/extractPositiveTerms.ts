@@ -72,3 +72,43 @@ export function extractOrGroups(ast: SearchAst): string[][] {
 export function extractAllPositiveTerms(ast: SearchAst): string[] {
   return [...new Set(extractOrGroups(ast).flat())];
 }
+
+/** Matches a bare purity/concentration token such as `99%` or `99.5 %`. */
+const PURITY_TOKEN = /^\d+(\.\d+)?%$/;
+
+/**
+ * Expands a query tree into the distinct reagent names it searches for. Each positive AND-group
+ * (see {@link extractOrGroups}) becomes one name by joining its words with a space, so
+ * `(sodium OR potassium) hydroxide OR potassium carbonate` yields three names. Bare purity
+ * tokens like `99%` are dropped, and names are de-duplicated case-insensitively.
+ *
+ * @category Utils
+ * @group Search
+ * @param ast - The parsed query tree.
+ * @returns Unique reagent names in first-seen order (original casing preserved).
+ * @example
+ * ```ts
+ * // (sodium OR potassium) hydroxide OR potassium carbonate
+ * extractReagentNames(ast); // ["sodium hydroxide", "potassium hydroxide", "potassium carbonate"]
+ * // acetone 99% AND NOT water
+ * extractReagentNames(ast); // ["acetone"]
+ * ```
+ * @source
+ */
+export function extractReagentNames(ast: SearchAst): string[] {
+  const seen = new Set<string>();
+  const names: string[] = [];
+  for (const group of extractOrGroups(ast)) {
+    const name = group
+      .join(' ')
+      .split(/\s+/)
+      .filter((word) => !PURITY_TOKEN.test(word))
+      .join(' ')
+      .trim();
+    const key = name.toLowerCase();
+    if (name === '' || seen.has(key)) continue;
+    seen.add(key);
+    names.push(name);
+  }
+  return names;
+}

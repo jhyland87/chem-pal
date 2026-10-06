@@ -186,6 +186,8 @@ export const IDB_STORE = {
   APP_META: 'app_meta',
   /** Cached `.xlsx` result exports, keyed by a unique id, for the export-history list. */
   EXPORTS: 'exports',
+  /** OSHA OBIS chemical reference dataset (single row keyed `"current"`), downloaded lazily. */
+  CHEMICAL_DB: 'chemical_db',
 } as const;
 
 export type IdbStore = (typeof IDB_STORE)[keyof typeof IDB_STORE];

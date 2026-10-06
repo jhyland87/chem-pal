@@ -1,6 +1,7 @@
 import { storage } from '@/../config.json';
 import { IDB_STORE, type IdbStore } from '@/constants/common';
 import type { ExcludedProductsMap } from '@/helpers/excludedProducts';
+import type { ChemicalDbRecord, OshaChemical } from '@/helpers/oshaChemicalDb';
 import { Logger } from '@/utils/Logger';
 import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
 
@@ -29,7 +30,10 @@ export const IDB_EXPORTS_UPDATED = 'idb:exports-updated';
 const logger = new Logger('idbCache');
 
 const DB_NAME = 'chempal';
-const DB_VERSION = 7;
+const DB_VERSION = 8;
+
+/** Single-row key used by the `chemical_db` store. */
+const CHEMICAL_DB_KEY = 'current';
 
 /** Single-row key used by the `app_meta` store (mirrors the `"current"` pattern of `search_results`). */
 const APP_META_KEY = 'current';
@@ -144,6 +148,10 @@ interface ChemPalDBSchema extends DBSchema {
       createdAt: number;
     };
   };
+  chemical_db: {
+    key: string;
+    value: ChemicalDbRecord;
+  };
 }
 
 let dbPromise: Promise<IDBPDatabase<ChemPalDBSchema>> | null = null;
@@ -196,6 +204,10 @@ function getDB(): Promise<IDBPDatabase<ChemPalDBSchema>> {
         if (!db.objectStoreNames.contains(IDB_STORE.EXPORTS)) {
           const exports = db.createObjectStore(IDB_STORE.EXPORTS, { keyPath: 'id' });
           exports.createIndex('createdAt', 'createdAt');
+        }
+
+        if (!db.objectStoreNames.contains(IDB_STORE.CHEMICAL_DB)) {
+          db.createObjectStore(IDB_STORE.CHEMICAL_DB, { keyPath: 'id' });
         }
       },
     });
@@ -1370,6 +1382,7 @@ export async function getIdbStorageBreakdown(): Promise<IdbStorageBreakdown> {
     [IDB_STORE.PRICE_HISTORY]: { count: 0, bytes: 0 },
     [IDB_STORE.APP_META]: { count: 0, bytes: 0 },
     [IDB_STORE.EXPORTS]: { count: 0, bytes: 0 },
+    [IDB_STORE.CHEMICAL_DB]: { count: 0, bytes: 0 },
   };
   try {
     const db = await getDB();
@@ -1427,6 +1440,7 @@ export async function clearAllCaches(): Promise<void> {
         IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE,
         IDB_STORE.SUPPLIER_STATS,
         IDB_STORE.EXCLUDED_PRODUCTS,
+        IDB_STORE.CHEMICAL_DB,
       ],
       'readwrite',
     );
@@ -1437,10 +1451,57 @@ export async function clearAllCaches(): Promise<void> {
       tx.objectStore(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE).clear(),
       tx.objectStore(IDB_STORE.SUPPLIER_STATS).clear(),
       tx.objectStore(IDB_STORE.EXCLUDED_PRODUCTS).clear(),
+      tx.objectStore(IDB_STORE.CHEMICAL_DB).clear(),
       tx.done,
     ]);
     emitSearchResultsCleared();
   } catch (error) {
     logger.error('Failed to clear all IndexedDB caches', { error });
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              Chemical reference DB                         */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Reads the cached OSHA OBIS chemical dataset from the single `chemical_db` row.
+ * @category Utils
+ * @returns The stored record, or `undefined` when nothing is cached or the read fails.
+ * @example
+ * ```ts
+ * const record = await getChemicalDb();
+ * record?.chemicals.length; // => 835
+ * ```
+ * @source
+ */
+export async function getChemicalDb(): Promise<ChemicalDbRecord | undefined> {
+  try {
+    const db = await getDB();
+    return await db.get(IDB_STORE.CHEMICAL_DB, CHEMICAL_DB_KEY);
+  } catch (error) {
+    logger.error('Failed to read chemical DB from IndexedDB', { error });
+    return undefined;
+  }
+}
+
+/**
+ * Replaces the cached OSHA OBIS chemical dataset.
+ * @category Utils
+ * @param chemicals - The slimmed chemical records to store.
+ * @param fetchedAt - Epoch milliseconds the dataset was downloaded; drives TTL expiry.
+ * @returns Resolves once the write completes; errors are logged, not thrown.
+ * @example
+ * ```ts
+ * await putChemicalDb(records, Date.now());
+ * ```
+ * @source
+ */
+export async function putChemicalDb(chemicals: OshaChemical[], fetchedAt: number): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.put(IDB_STORE.CHEMICAL_DB, { id: CHEMICAL_DB_KEY, fetchedAt, chemicals });
+  } catch (error) {
+    logger.error('Failed to write chemical DB to IndexedDB', { error });
   }
 }

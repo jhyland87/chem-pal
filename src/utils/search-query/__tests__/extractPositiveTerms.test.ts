@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { extractAllPositiveTerms, extractOrGroups } from '../extractPositiveTerms';
+import {
+  extractAllPositiveTerms,
+  extractOrGroups,
+  extractReagentNames,
+} from '../extractPositiveTerms';
 import { parseSearchQuery } from '../parseSearchQuery';
 import type { SearchAst } from '../types';
 
@@ -60,5 +64,22 @@ describe('extractAllPositiveTerms', () => {
     expect(
       extractAllPositiveTerms(parseSearchQuery('(Sodium OR Potassium) AND Hydroxide').ast).sort(),
     ).toEqual(['Hydroxide', 'Potassium', 'Sodium']);
+  });
+});
+
+describe('extractReagentNames', () => {
+  it.each([
+    [
+      '(sodium OR potassium) hydroxide OR potassium carbonate',
+      ['sodium hydroxide', 'potassium hydroxide', 'potassium carbonate'],
+    ],
+    ['acetone', ['acetone']],
+    ['acetone AND NOT water', ['acetone']],
+    ['acetone 99%', ['acetone']],
+    ['Acetone OR acetone', ['Acetone']],
+    ['67-64-1', ['67-64-1']],
+    ['', []],
+  ])('%s', (query, expected) => {
+    expect(extractReagentNames(parseSearchQuery(query).ast)).toEqual(expected);
   });
 });

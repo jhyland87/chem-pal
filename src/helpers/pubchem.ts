@@ -20,12 +20,19 @@ import { hasAdvancedSyntax } from '@/utils/search-query/parseSearchQuery';
 const PUG_REST_BASE = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug';
 
 /**
+ * Base URL for PubChem's PUG-View API (annotation data such as GHS and solubility).
+ * @see https://pubchem.ncbi.nlm.nih.gov/docs/pug-view
+ * @source
+ */
+const PUG_VIEW_BASE = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data';
+
+/**
  * Compound property fields requested from PUG-REST's `/property` operation. Uses the current
  * `SMILES` field (PubChem retired `CanonicalSMILES` in 2025).
  * @source
  */
 const COMPOUND_PROPERTY_FIELDS =
-  'MolecularFormula,MolecularWeight,IUPACName,SMILES,InChI,InChIKey,Title';
+  'MolecularFormula,MolecularWeight,IUPACName,SMILES,InChI,InChIKey,Title,XLogP,TPSA';
 
 /**
  * A subset of PubChem compound properties, normalized to friendly camelCase field names.
@@ -50,6 +57,10 @@ export interface PubChemProperties {
   inchiKey?: string;
   /** PubChem's preferred title/name for the compound. */
   title?: string;
+  /** Computed octanol/water partition coefficient (XLogP3); a lipophilicity/polarity indicator. */
+  xLogP?: number;
+  /** Topological polar surface area in Å². */
+  tpsa?: number;
 }
 
 /**
@@ -120,6 +131,9 @@ function extractProperties(data: unknown): PubChemProperties | undefined {
     inchi: readString('InChI'),
     inchiKey: readString('InChIKey'),
     title: readString('Title'),
+    xLogP:
+      typeof Reflect.get(first, 'XLogP') === 'number' ? Reflect.get(first, 'XLogP') : undefined,
+    tpsa: typeof Reflect.get(first, 'TPSA') === 'number' ? Reflect.get(first, 'TPSA') : undefined,
   };
 }
 
@@ -612,6 +626,206 @@ export const getCompoundDescription: (cid: PubChemCID) => Promise<PubChemDescrip
   withTtlCache(getCompoundDescriptionUncached, {
     namespace: 'descriptionByCid',
   });
+
+/**
+ * GHS classification for a compound, from PubChem's PUG-View `GHS Classification` section.
+ * @category Science Helpers
+ * @group Chemical Info
+ * @source
+ */
+export interface PubChemGhs {
+  /** Pictogram codes, e.g. `"GHS02"`, with the icon URL PubChem serves for each. */
+  pictograms: Array<{ code: string; label: string; url: string }>;
+  /** Signal word: `"Danger"` or `"Warning"`. */
+  signal?: string;
+  /** Hazard statements, e.g. `"H225: Highly Flammable liquid and vapor"`. */
+  hazardStatements: string[];
+}
+
+/**
+ * Recursively collects every `Information` entry in a PUG-View record, which nests them under
+ * arbitrarily deep `Section` arrays.
+ * @param node - A PUG-View record or section
+ * @returns All information entries found
+ * @source
+ */
+function collectInformation(node: unknown): object[] {
+  if (typeof node !== 'object' || node === null) return [];
+  const found: object[] = [];
+  const information = Reflect.get(node, 'Information');
+  if (Array.isArray(information)) {
+    for (const entry of information) {
+      if (typeof entry === 'object' && entry !== null) found.push(entry);
+    }
+  }
+  for (const key of ['Record', 'Section']) {
+    const child = Reflect.get(node, key);
+    const children = Array.isArray(child) ? child : [child];
+    for (const item of children) found.push(...collectInformation(item));
+  }
+  return found;
+}
+
+/**
+ * Reads an information entry's `Value.StringWithMarkup` items.
+ * @param entry - A PUG-View information entry
+ * @returns The string/markup items
+ * @source
+ */
+function markupItems(entry: object): Array<{ text: string; markup: object[] }> {
+  const value = Reflect.get(entry, 'Value');
+  const items =
+    typeof value === 'object' && value !== null
+      ? Reflect.get(value, 'StringWithMarkup')
+      : undefined;
+  if (!Array.isArray(items)) return [];
+  return items.flatMap((item: unknown) => {
+    if (typeof item !== 'object' || item === null) return [];
+    const text = Reflect.get(item, 'String');
+    const markup = Reflect.get(item, 'Markup');
+    return typeof text === 'string'
+      ? [
+          {
+            text,
+            markup: Array.isArray(markup)
+              ? markup.filter((m) => typeof m === 'object' && m !== null)
+              : [],
+          },
+        ]
+      : [];
+  });
+}
+
+/**
+ * Parses a PUG-View `GHS Classification` response into a {@link PubChemGhs}. Multiple sources
+ * report the same fields; pictograms and statements are de-duplicated and the first signal word
+ * wins.
+ * @param data - The parsed JSON response body
+ * @returns The classification, or undefined when it holds no pictograms, signal, or statements
+ * @source
+ */
+export function extractGhs(data: unknown): PubChemGhs | undefined {
+  const pictograms = new Map<string, { code: string; label: string; url: string }>();
+  const statements = new Set<string>();
+  let signal: string | undefined;
+
+  for (const entry of collectInformation(data)) {
+    const name = Reflect.get(entry, 'Name');
+    for (const { text, markup } of markupItems(entry)) {
+      if (name === 'Pictogram(s)') {
+        for (const mark of markup) {
+          const url = Reflect.get(mark, 'URL');
+          const label = Reflect.get(mark, 'Extra');
+          const code = typeof url === 'string' ? /(GHS\d{2})\.svg$/.exec(url)?.[1] : undefined;
+          if (code !== undefined && typeof url === 'string') {
+            pictograms.set(code, { code, label: typeof label === 'string' ? label : code, url });
+          }
+        }
+      } else if (name === 'Signal') {
+        signal ??= text.trim() || undefined;
+      } else if (name === 'GHS Hazard Statements') {
+        const statement = text.replace(/\s*\[.*\]\s*$/, '').trim();
+        if (statement !== '') statements.add(statement);
+      }
+    }
+  }
+
+  if (pictograms.size === 0 && signal === undefined && statements.size === 0) return undefined;
+  return {
+    pictograms: [...pictograms.values()].sort((a, b) => a.code.localeCompare(b.code)),
+    signal,
+    hazardStatements: [...statements],
+  };
+}
+
+/**
+ * Network implementation for {@link getGhsClassification}; see it for details.
+ * @param cid - The compound's CID
+ * @returns The classification, or undefined
+ * @source
+ */
+async function getGhsClassificationUncached(cid: PubChemCID): Promise<PubChemGhs | undefined> {
+  try {
+    const response = await fetch(
+      `${PUG_VIEW_BASE}/compound/${cid}/JSON?heading=GHS+Classification`,
+    );
+    if (!response.ok) return undefined;
+    return extractGhs(await response.json());
+  } catch (error) {
+    console.error('Error fetching PubChem GHS classification:', error);
+    return undefined;
+  }
+}
+
+/**
+ * Fetches a compound's GHS pictograms, signal word and hazard statements via PUG-View. Cached for
+ * three days.
+ * @category Science Helpers
+ * @group Chemical Info
+ * @param cid - The compound's CID
+ * @returns The GHS classification, or undefined if PubChem has none
+ * @example
+ * ```typescript
+ * await getGhsClassification(180);
+ * // Returns: { pictograms: [{ code: "GHS02", label: "Flammable", url: "https://..." }, ...],
+ * //           signal: "Danger", hazardStatements: ["H225: Highly Flammable liquid and vapor", ...] }
+ * ```
+ * @source
+ */
+export const getGhsClassification: (cid: PubChemCID) => Promise<PubChemGhs | undefined> =
+  withTtlCache(getGhsClassificationUncached, { namespace: 'ghsByCid' });
+
+/**
+ * Parses a PUG-View `Solubility` response into de-duplicated plain-text statements.
+ * @param data - The parsed JSON response body
+ * @returns Up to five distinct solubility statements, or undefined when none exist
+ * @source
+ */
+export function extractSolubility(data: unknown): string[] | undefined {
+  const lines = new Set<string>();
+  for (const entry of collectInformation(data)) {
+    for (const { text } of markupItems(entry)) {
+      const trimmed = text.trim();
+      if (trimmed !== '') lines.add(trimmed);
+    }
+  }
+  return lines.size > 0 ? [...lines].slice(0, 5) : undefined;
+}
+
+/**
+ * Network implementation for {@link getSolubility}; see it for details.
+ * @param cid - The compound's CID
+ * @returns The statements, or undefined
+ * @source
+ */
+async function getSolubilityUncached(cid: PubChemCID): Promise<string[] | undefined> {
+  try {
+    const response = await fetch(`${PUG_VIEW_BASE}/compound/${cid}/JSON?heading=Solubility`);
+    if (!response.ok) return undefined;
+    return extractSolubility(await response.json());
+  } catch (error) {
+    console.error('Error fetching PubChem solubility:', error);
+    return undefined;
+  }
+}
+
+/**
+ * Fetches experimental solubility statements for a compound via PUG-View. Cached for three days.
+ * @category Science Helpers
+ * @group Chemical Info
+ * @param cid - The compound's CID
+ * @returns Up to five solubility statements, or undefined if PubChem has none
+ * @example
+ * ```typescript
+ * await getSolubility(180);
+ * // Returns: ["Miscible with water", "Miscible with benzene", ...]
+ * ```
+ * @source
+ */
+export const getSolubility: (cid: PubChemCID) => Promise<string[] | undefined> = withTtlCache(
+  getSolubilityUncached,
+  { namespace: 'solubilityByCid' },
+);
 
 /**
  * Builds the URL of a compound's PubChem summary page from its CID.

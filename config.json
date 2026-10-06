@@ -48,6 +48,10 @@
     "maxExportsCacheBytes": 26214400,
     "useStorageCompression": false
   },
+  "chemicalDb": {
+    "url": "https://obis.osha.gov/chemicaldata/Chemical_DB.xml",
+    "ttlDays": 30
+  },
   "reviewPrompt": {
     "minDaysInstalled": 14,
     "minSearches": 5,

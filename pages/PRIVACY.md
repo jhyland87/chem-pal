@@ -142,6 +142,9 @@ may send requests to:
 - **Public chemistry databases** — the U.S. National Institutes of Health services
   PubChem (`pubchem.ncbi.nlm.nih.gov`) and the CACTUS chemical resolver
   (`cactus.nci.nih.gov`) — to resolve chemical names, CAS numbers, and formulas.
+  The chemical-details panel also downloads the public OSHA chemical database
+  (`obis.osha.gov`) once and caches it locally, and loads structure images from NIST
+  (`webbook.nist.gov`).
   Only the chemical identifier you are looking up is sent.
 - **A currency exchange‑rate service** — to convert supplier prices into your
   chosen currency. Only the rate request is sent; none of your personal data is

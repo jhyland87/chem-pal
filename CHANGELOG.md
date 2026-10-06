@@ -13,6 +13,13 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+### Added
+
+- Each searched chemical now appears as a clickable chip above the results. Click one for a details
+  panel with its IUPAC name, synonyms, formula, SMILES, molar mass, structure, NFPA fire diamond,
+  GHS hazard pictograms, solubility and exposure limits, with a link to PubChem. Searches like
+  `(sodium OR potassium) hydroxide OR potassium carbonate` get one chip per reagent.
+
 ## [1.15.1] - 2026-10-05
 
 ### Changed
