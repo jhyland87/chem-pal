@@ -24,16 +24,13 @@ describe('TabHeader', () => {
     expect(screen.getByText(label)).toBeInTheDocument();
   });
 
-  it.each(TABS)(
-    'wires accessibility ids for the "$label" tab (index $index)',
-    ({ index }) => {
-      render(<TabHeader page={0} setPage={vi.fn()} />);
+  it.each(TABS)('wires accessibility ids for the "$label" tab (index $index)', ({ index }) => {
+    render(<TabHeader page={0} setPage={vi.fn()} />);
 
-      const tab = screen.getAllByRole('tab')[index];
-      expect(tab).toHaveAttribute('id', `full-width-tab-${index}`);
-      expect(tab).toHaveAttribute('aria-controls', `full-width-tabpanel-${index}`);
-    },
-  );
+    const tab = screen.getAllByRole('tab')[index];
+    expect(tab).toHaveAttribute('id', `full-width-tab-${index}`);
+    expect(tab).toHaveAttribute('aria-controls', `full-width-tabpanel-${index}`);
+  });
 
   it('marks the tab matching the page prop as selected', () => {
     render(<TabHeader page={2} setPage={vi.fn()} />);

@@ -59,8 +59,16 @@ const makeRow = (product: Product, subRows: Array<{ original: Product }> = []) =
 const makeTable = (userSettings: Record<string, unknown> = { currency: 'USD' }) =>
   ({ options: { meta: { userSettings } } }) as unknown as Table<Product>;
 
-const renderPanel = (product: Product, opts: { subRows?: Array<{ original: Product }>; userSettings?: Record<string, unknown> } = {}) =>
-  render(<ProductDetailPanel row={makeRow(product, opts.subRows)} table={makeTable(opts.userSettings)} />);
+const renderPanel = (
+  product: Product,
+  opts: { subRows?: Array<{ original: Product }>; userSettings?: Record<string, unknown> } = {},
+) =>
+  render(
+    <ProductDetailPanel
+      row={makeRow(product, opts.subRows)}
+      table={makeTable(opts.userSettings)}
+    />,
+  );
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -136,13 +144,21 @@ describe('ProductDetailPanel document links & images', () => {
   it('omits the image column when there are no images and no documents', () => {
     renderPanel(makeProduct({}));
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: i18n('product_detail_sds') })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: i18n('product_detail_sds') }),
+    ).not.toBeInTheDocument();
   });
 });
 
 describe('ProductDetailPanel variants', () => {
   it('lists displayed variants with price and quantity', () => {
-    const variant = makeProduct({ title: '500 g', permalink: 'https://x.test/v', price: 12, quantity: 500, uom: 'g' });
+    const variant = makeProduct({
+      title: '500 g',
+      permalink: 'https://x.test/v',
+      price: 12,
+      quantity: 500,
+      uom: 'g',
+    });
     mockedDisplayedVariants.mockReturnValue([variant] as never);
     renderPanel(makeProduct({ variants: [variant] }));
     expect(screen.getByRole('link', { name: '500 g' })).toHaveAttribute('href', 'https://x.test/v');
@@ -160,11 +176,20 @@ describe('ProductDetailPanel variants', () => {
     const parent = makeProduct({ title: 'Parent', permalink: 'https://x.test/parent' });
     renderPanel(makeProduct({ parentProduct: parent }));
     expect(screen.getByText(i18n('product_detail_parent_product'))).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Parent' })).toHaveAttribute('href', 'https://x.test/parent');
+    expect(screen.getByRole('link', { name: 'Parent' })).toHaveAttribute(
+      'href',
+      'https://x.test/parent',
+    );
   });
 
   it('renders a variant price-history tooltip on hover once history loads', async () => {
-    const variant = makeProduct({ title: '500 g', permalink: 'https://x.test/v', price: 12, quantity: 500, uom: 'g' });
+    const variant = makeProduct({
+      title: '500 g',
+      permalink: 'https://x.test/v',
+      price: 12,
+      quantity: 500,
+      uom: 'g',
+    });
     mockedDisplayedVariants.mockReturnValue([variant] as never);
     // baseline (row 1), flat (row 2 equal price), up (row 3) — exercises all EntryTrend branches.
     const points = [
@@ -184,7 +209,9 @@ describe('ProductDetailPanel variants', () => {
 
     // The card (VariantPriceHistoryCard) is in the tooltip title — rendered only on hover.
     fireEvent.mouseOver(trigger);
-    expect(await screen.findByText(i18n('product_detail_price_history_col_date'))).toBeInTheDocument();
+    expect(
+      await screen.findByText(i18n('product_detail_price_history_col_date')),
+    ).toBeInTheDocument();
   });
 });
 
@@ -206,7 +233,9 @@ describe('ProductDetailPanel price history block', () => {
 
   it('renders nothing for the block when tracking is disabled and there is no history', () => {
     mockedTrendPoints.mockReturnValue(undefined);
-    renderPanel(makeProduct({}), { userSettings: { currency: 'USD', priceTracking: { enabled: false } } });
+    renderPanel(makeProduct({}), {
+      userSettings: { currency: 'USD', priceTracking: { enabled: false } },
+    });
     expect(screen.queryByText(i18n('product_detail_no_history'))).not.toBeInTheDocument();
     expect(
       screen.queryByText(i18n('product_detail_price_history_currency', ['USD'])),

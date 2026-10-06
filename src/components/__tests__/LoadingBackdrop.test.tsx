@@ -87,7 +87,9 @@ describe('LoadingBackdrop', () => {
 
   it('invokes onClick when the cancel button is pressed', () => {
     const onClick = vi.fn();
-    render(<LoadingBackdrop {...makeProps({ resultCount: 2, supplierResultsCount: 2, onClick })} />);
+    render(
+      <LoadingBackdrop {...makeProps({ resultCount: 2, supplierResultsCount: 2, onClick })} />,
+    );
 
     const cancelButton = screen.getByText('Cancel search').closest('button');
     expect(cancelButton).toBeTruthy();

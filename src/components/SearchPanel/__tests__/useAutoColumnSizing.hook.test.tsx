@@ -15,13 +15,7 @@ function fakeTable(leafColumns: LeafColumn[]) {
 }
 
 /** Renders a harness that wires the hook to a one-column measurement table. */
-function Harness({
-  table,
-  data,
-}: {
-  table: ReturnType<typeof fakeTable>;
-  data: Product[];
-}) {
+function Harness({ table, data }: { table: ReturnType<typeof fakeTable>; data: Product[] }) {
   const { getMeasurementTableProps } = useAutoColumnSizing(table, data);
   return (
     <table {...getMeasurementTableProps()}>

@@ -134,7 +134,10 @@ describe('appReducer', () => {
       const current = settings({ currency: 'USD' });
       const state: Partial<AppState> = { userSettings: current };
       expect(
-        appReducer(state, { type: APP_ACTION.HYDRATE_SETTINGS, settings: settings({ currency: 'USD' }) }),
+        appReducer(state, {
+          type: APP_ACTION.HYDRATE_SETTINGS,
+          settings: settings({ currency: 'USD' }),
+        }),
       ).toBe(state);
     });
   });
@@ -149,10 +152,7 @@ describe('appReducer', () => {
   describe('SET_SELECTED_SUPPLIERS', () => {
     it('stores the selection and persists it to local storage', async () => {
       const suppliers = ['SupplierAmbeed'] as AppState['selectedSuppliers'];
-      const next = appReducer(
-        {},
-        { type: APP_ACTION.SET_SELECTED_SUPPLIERS, suppliers },
-      );
+      const next = appReducer({}, { type: APP_ACTION.SET_SELECTED_SUPPLIERS, suppliers });
 
       expect(next.selectedSuppliers).toBe(suppliers);
       await flush();
@@ -173,9 +173,9 @@ describe('appReducer', () => {
   describe('unknown action', () => {
     it('returns the current state unchanged (same reference)', () => {
       const state: Partial<AppState> = { panel: PANEL.RESULTS };
-      expect(appReducer(state, { type: 'NOPE' } as unknown as Parameters<typeof appReducer>[1])).toBe(
-        state,
-      );
+      expect(
+        appReducer(state, { type: 'NOPE' } as unknown as Parameters<typeof appReducer>[1]),
+      ).toBe(state);
     });
   });
 });

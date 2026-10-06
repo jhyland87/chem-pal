@@ -93,11 +93,14 @@ function renderMenu(over: Record<string, unknown> = {}) {
     executedQuery: 'acetone',
     ...over,
   };
-  const utils = render(<ContextMenu {...(props as unknown as ComponentProps<typeof ContextMenu>)} />);
+  const utils = render(
+    <ContextMenu {...(props as unknown as ComponentProps<typeof ContextMenu>)} />,
+  );
   return { ...utils, props };
 }
 
-const clickItem = (key: string) => fireEvent.click(screen.getByRole('menuitem', { name: i18n(key) }));
+const clickItem = (key: string) =>
+  fireEvent.click(screen.getByRole('menuitem', { name: i18n(key) }));
 
 const writeText = vi.fn().mockResolvedValue(undefined);
 
@@ -133,8 +136,12 @@ afterEach(() => {
 describe('ContextMenu rendering', () => {
   it('renders the core menu items', () => {
     renderMenu();
-    expect(screen.getByRole('menuitem', { name: i18n('context_menu_copy_title') })).toBeInTheDocument();
-    expect(screen.getByRole('menuitem', { name: i18n('context_menu_export_all') })).toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', { name: i18n('context_menu_copy_title') }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', { name: i18n('context_menu_export_all') }),
+    ).toBeInTheDocument();
   });
 
   it('renders nothing when no product is supplied', () => {
@@ -153,7 +160,9 @@ describe('ContextMenu rendering', () => {
   it('repositions to stay within the viewport when placed off-screen', () => {
     // getBoundingClientRect is 0×0 in jsdom, so a huge x/y trips the overflow branches.
     renderMenu({ x: 99999, y: 99999 });
-    expect(screen.getByRole('menuitem', { name: i18n('context_menu_copy_title') })).toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', { name: i18n('context_menu_copy_title') }),
+    ).toBeInTheDocument();
   });
 });
 
@@ -197,17 +206,25 @@ describe('ContextMenu open in new tab', () => {
   it('opens via chrome.tabs when available', async () => {
     renderMenu();
     clickItem('context_menu_open_in_new_tab');
-    const chromeGlobal = globalThis as unknown as { chrome: { tabs: { create: ReturnType<typeof vi.fn> } } };
-    await waitFor(() => expect(chromeGlobal.chrome.tabs.create).toHaveBeenCalledWith({ url: OPEN_URL }));
+    const chromeGlobal = globalThis as unknown as {
+      chrome: { tabs: { create: ReturnType<typeof vi.fn> } };
+    };
+    await waitFor(() =>
+      expect(chromeGlobal.chrome.tabs.create).toHaveBeenCalledWith({ url: OPEN_URL }),
+    );
   });
 
   it('falls back to window.open when chrome.tabs.create rejects', async () => {
-    const chromeGlobal = globalThis as unknown as { chrome: { tabs: { create: ReturnType<typeof vi.fn> } } };
+    const chromeGlobal = globalThis as unknown as {
+      chrome: { tabs: { create: ReturnType<typeof vi.fn> } };
+    };
     chromeGlobal.chrome.tabs.create.mockRejectedValueOnce(new Error('no'));
     const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
     renderMenu();
     clickItem('context_menu_open_in_new_tab');
-    await waitFor(() => expect(openSpy).toHaveBeenCalledWith(OPEN_URL, '_blank', 'noopener,noreferrer'));
+    await waitFor(() =>
+      expect(openSpy).toHaveBeenCalledWith(OPEN_URL, '_blank', 'noopener,noreferrer'),
+    );
     openSpy.mockRestore();
   });
 
@@ -311,9 +328,7 @@ describe('ContextMenu export', () => {
     mocks.buildResultsWorkbook.mockRejectedValueOnce(new Error('boom'));
     renderMenu({ table: exportTable() });
     clickItem('context_menu_export_all');
-    await waitFor(() =>
-      expect(mocks.flashStatusText).toHaveBeenCalledWith(i18n('export_failed')),
-    );
+    await waitFor(() => expect(mocks.flashStatusText).toHaveBeenCalledWith(i18n('export_failed')));
     expect(mocks.downloadBlob).not.toHaveBeenCalled();
   });
 });
@@ -356,7 +371,9 @@ describe('ContextMenu bookmarks', () => {
     const chromeGlobal = globalThis as unknown as {
       chrome: { bookmarks: { get: ReturnType<typeof vi.fn>; getTree: ReturnType<typeof vi.fn> } };
     };
-    chromeGlobal.chrome.bookmarks.get.mockResolvedValue([{ id: 'cached', title: 'ChemPal Favorites' }]);
+    chromeGlobal.chrome.bookmarks.get.mockResolvedValue([
+      { id: 'cached', title: 'ChemPal Favorites' },
+    ]);
     renderMenu();
     clickItem('context_menu_create_bookmark');
     await waitFor(() => expect(chromeGlobal.chrome.bookmarks.get).toHaveBeenCalledWith('cached'));
@@ -371,7 +388,9 @@ describe('ContextMenu share', () => {
     (navigator as { share?: unknown }).share = share;
     renderMenu();
     clickItem('context_menu_share');
-    await waitFor(() => expect(share).toHaveBeenCalledWith(expect.objectContaining({ url: OPEN_URL })));
+    await waitFor(() =>
+      expect(share).toHaveBeenCalledWith(expect.objectContaining({ url: OPEN_URL })),
+    );
   });
 
   it('falls back to copying the URL when sharing fails', async () => {
@@ -391,7 +410,9 @@ describe('ContextMenu share', () => {
 describe('ContextMenu expand/collapse all', () => {
   it('shows expand-all for collapsed rows and expands them on click', () => {
     const toggle = vi.fn();
-    const rows = [makeRow(makeProduct(), { canExpand: true, expanded: false, toggleExpanded: toggle })];
+    const rows = [
+      makeRow(makeProduct(), { canExpand: true, expanded: false, toggleExpanded: toggle }),
+    ];
     const { props } = renderMenu({ table: makeTable({ rows }) });
     clickItem('context_menu_expand_all');
     expect(toggle).toHaveBeenCalledWith(true);
@@ -400,7 +421,9 @@ describe('ContextMenu expand/collapse all', () => {
 
   it('shows collapse-all for expanded rows and collapses them on click', () => {
     const toggle = vi.fn();
-    const rows = [makeRow(makeProduct(), { canExpand: true, expanded: true, toggleExpanded: toggle })];
+    const rows = [
+      makeRow(makeProduct(), { canExpand: true, expanded: true, toggleExpanded: toggle }),
+    ];
     renderMenu({ table: makeTable({ rows }) });
     clickItem('context_menu_collapse_all');
     expect(toggle).toHaveBeenCalledWith(false);

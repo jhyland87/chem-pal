@@ -5,7 +5,16 @@ import {
 } from '@/__fixtures__/helpers/chrome/actionMock';
 import { SearchEvent, emitSearchEvent } from '@/events/searchEvents';
 import { renderHook } from '@testing-library/react';
-import { afterAll, afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
+import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+  type MockInstance,
+} from 'vitest';
 import { BadgeAnimator } from '../BadgeAnimator';
 import {
   BadgeEvent,

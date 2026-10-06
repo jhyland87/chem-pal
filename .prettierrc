@@ -2,9 +2,5 @@
   "trailingComma": "all",
   "printWidth": 100,
   "singleQuote": true,
-  "jsxSingleQuote": false,
-  "organizeImports": true,
-  "organizeImportsSkipDestructiveCodeActions": true,
-  "organizeImportsStyle": "alphabetical",
-  "formatOnSave": true
+  "jsxSingleQuote": false
 }

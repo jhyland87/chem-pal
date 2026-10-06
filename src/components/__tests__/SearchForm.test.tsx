@@ -121,9 +121,7 @@ describe('SearchForm', () => {
     fireEvent.click(screen.getByRole('button', { name: 'search_submit' }));
 
     expect(onSearch).toHaveBeenCalledWith('acetone');
-    expect(ctx.setSearchFilters).toHaveBeenCalledWith(
-      expect.objectContaining({ titleQuery: '' }),
-    );
+    expect(ctx.setSearchFilters).toHaveBeenCalledWith(expect.objectContaining({ titleQuery: '' }));
   });
 
   it('does not submit when the query is empty', () => {

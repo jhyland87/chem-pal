@@ -95,7 +95,7 @@ describe('SupplierDiyChemicals', () => {
   });
 
   describe('getVariantTitle', () => {
-    it("prefers the variation attribute-combination string over the flat product name", () => {
+    it('prefers the variation attribute-combination string over the flat product name', () => {
       const supplier = makeSupplier() as unknown as DiyChemicalsInternals;
       const data = baseItem({
         name: 'Sodium Metasilicate',
@@ -115,7 +115,10 @@ describe('SupplierDiyChemicals', () => {
       );
       expect(
         supplier.getVariantTitle(
-          baseItem({ name: 'Sodium Metasilicate', variation: '' } as Partial<WooCommerceSearchResponseItem>),
+          baseItem({
+            name: 'Sodium Metasilicate',
+            variation: '',
+          } as Partial<WooCommerceSearchResponseItem>),
         ),
       ).toBe('Sodium Metasilicate');
     });

@@ -10,8 +10,7 @@ type LabProInternals = {
   queryProducts(query: string, limit: number): Promise<ProductBuilder<Product>[] | void>;
 };
 
-const asInternals = (supplier: SupplierLabProServices) =>
-  supplier as unknown as LabProInternals;
+const asInternals = (supplier: SupplierLabProServices) => supplier as unknown as LabProInternals;
 
 const items = (benzoicSearch as unknown as { data: { products: { items: Magento2ProductItem[] } } })
   .data.products.items;

@@ -90,7 +90,12 @@ const SESSION_MAX_AGE_MS = analyticsConfig.sessionMaxAgeMs;
  * @category Helpers
  * @source
  */
-export type AnalyticsValue = string | number | boolean | AnalyticsValue[] | { [key: string]: AnalyticsValue };
+export type AnalyticsValue =
+  | string
+  | number
+  | boolean
+  | AnalyticsValue[]
+  | { [key: string]: AnalyticsValue };
 
 /**
  * Stack-frame shape PostHog's Error Tracking product expects inside
@@ -360,7 +365,10 @@ function buildExceptionList(
   depth = 0,
   componentStack?: string,
 ): ExceptionEntry[] {
-  const stacktrace: StackTrace = { type: 'raw', frames: error.stack ? parseStackFrames(error.stack) : [] };
+  const stacktrace: StackTrace = {
+    type: 'raw',
+    frames: error.stack ? parseStackFrames(error.stack) : [],
+  };
   if (depth === 0 && componentStack) {
     stacktrace.component_stack = componentStack.slice(0, COMPONENT_STACK_LIMIT);
   }
@@ -375,7 +383,10 @@ function buildExceptionList(
   if (depth >= MAX_CAUSE_DEPTH || !(cause instanceof Error)) {
     return [entry];
   }
-  return [entry, ...buildExceptionList(cause, { type: 'generic', handled: true, synthetic: false }, depth + 1)];
+  return [
+    entry,
+    ...buildExceptionList(cause, { type: 'generic', handled: true, synthetic: false }, depth + 1),
+  ];
 }
 
 /**
@@ -532,7 +543,9 @@ async function readStoredSessionId(): Promise<StoredSessionId | undefined> {
   try {
     const stored = await cstorage.session.get(CACHE.ANALYTICS_SESSION_ID);
     const value = stored[CACHE.ANALYTICS_SESSION_ID] as StoredSessionId | undefined;
-    return value && typeof value.id === 'string' && typeof value.createdAt === 'number' ? value : undefined;
+    return value && typeof value.id === 'string' && typeof value.createdAt === 'number'
+      ? value
+      : undefined;
   } catch {
     return undefined;
   }
@@ -665,7 +678,10 @@ async function postCaptureEvent(body: Record<string, AnalyticsValue>): Promise<v
  * ```
  * @source
  */
-export async function trackEvent(name: string, params: Record<string, AnalyticsValue> = {}): Promise<void> {
+export async function trackEvent(
+  name: string,
+  params: Record<string, AnalyticsValue> = {},
+): Promise<void> {
   if (!(await canSendAnalytics())) return;
 
   const properties: Record<string, AnalyticsValue> = {

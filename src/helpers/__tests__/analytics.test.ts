@@ -209,7 +209,9 @@ describe('analytics (PostHog capture)', () => {
     });
 
     const error = new Error('boom');
-    error.stack = ['Error: boom', '    at outerFn (chrome-extension://abc/main.js:20:15)'].join('\n');
+    error.stack = ['Error: boom', '    at outerFn (chrome-extension://abc/main.js:20:15)'].join(
+      '\n',
+    );
     await trackRenderError(error);
 
     const [frame] = payloadFromCall().properties.$exception_list[0].stacktrace.frames;
@@ -222,7 +224,9 @@ describe('analytics (PostHog capture)', () => {
     });
 
     const error = new Error('boom');
-    error.stack = ['Error: boom', '    at outerFn (chrome-extension://abc/other.js:20:15)'].join('\n');
+    error.stack = ['Error: boom', '    at outerFn (chrome-extension://abc/other.js:20:15)'].join(
+      '\n',
+    );
     await trackRenderError(error);
 
     const [frame] = payloadFromCall().properties.$exception_list[0].stacktrace.frames;
@@ -310,7 +314,10 @@ describe('analytics (PostHog capture)', () => {
   });
 
   it('truncates text params to the length limit and keeps numbers numeric', async () => {
-    await trackEvent('search_query', { error_message: 'x'.repeat(PARAM_VALUE_LIMIT * 5), count: 3 });
+    await trackEvent('search_query', {
+      error_message: 'x'.repeat(PARAM_VALUE_LIMIT * 5),
+      count: 3,
+    });
     const { properties } = payloadFromCall();
     expect(properties.error_message.length).toBe(PARAM_VALUE_LIMIT);
     expect(properties.count).toBe(3);
@@ -400,7 +407,11 @@ describe('analytics (PostHog capture)', () => {
   it('reports a fatal (uncaught-root) error as onuncaughtexception/handled: false', async () => {
     await trackRenderError(new Error('boom'), { fatal: 1 });
     const [exception] = payloadFromCall().properties.$exception_list;
-    expect(exception.mechanism).toEqual({ type: 'onuncaughtexception', handled: false, synthetic: false });
+    expect(exception.mechanism).toEqual({
+      type: 'onuncaughtexception',
+      handled: false,
+      synthetic: false,
+    });
   });
 
   it('reports an ErrorBoundary catch (no fatal param) as generic/handled: true', async () => {

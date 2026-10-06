@@ -20,8 +20,7 @@ vi.mock('../../themes', () => ({ useTheme: () => ({ toggleTheme: mocks.toggleThe
 
 // Reflect the aboutOpen prop so the About action's effect is observable.
 vi.mock('../AboutModal', () => ({
-  default: ({ aboutOpen }: { aboutOpen: boolean }) =>
-    aboutOpen ? <div>about-open</div> : null,
+  default: ({ aboutOpen }: { aboutOpen: boolean }) => (aboutOpen ? <div>about-open</div> : null),
 }));
 
 vi.mock('@/utils/idbCache', () => ({ clearSearchResults: mocks.clearSearchResults }));
@@ -83,9 +82,7 @@ describe('SpeedDialMenu actions', () => {
     await waitFor(() => expect(mocks.clearSearchResults).toHaveBeenCalledOnce());
     expect(ctx.setSearchResults).toHaveBeenCalledWith([]);
     expect(ctx.setUserSettings).toHaveBeenCalledWith(expect.objectContaining({ theme: 'light' }));
-    expect(ctx.setSearchFilters).toHaveBeenCalledWith(
-      expect.objectContaining({ titleQuery: '' }),
-    );
+    expect(ctx.setSearchFilters).toHaveBeenCalledWith(expect.objectContaining({ titleQuery: '' }));
   });
 
   it('still resets state when clearing results rejects', async () => {

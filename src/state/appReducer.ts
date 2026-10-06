@@ -107,10 +107,7 @@ export const initialAppState: Partial<AppState> = buildInitialAppState();
  * ```
  * @source
  */
-export function appReducer(
-  currentState: Partial<AppState>,
-  action: AppAction,
-): Partial<AppState> {
+export function appReducer(currentState: Partial<AppState>, action: AppAction): Partial<AppState> {
   switch (action.type) {
     // Applies new user settings (theme, currency, caching, suppliers, etc.) and
     // persists them to cstorage.local. Also fetches the updated currency rate.

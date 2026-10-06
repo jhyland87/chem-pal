@@ -189,9 +189,7 @@ describe('App', () => {
       </ErrorBoundary>,
     );
 
-    await waitFor(() =>
-      expect(screen.getByTestId('error-boundary-report')).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByTestId('error-boundary-report')).toBeInTheDocument());
     expect(screen.queryByTestId('search-home')).not.toBeInTheDocument();
   });
 });

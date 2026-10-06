@@ -131,7 +131,9 @@ export class SupplierDiyChemicals extends SupplierBaseWoocommerce implements ISu
    * ```
    * @source
    */
-  protected initProductBuilders(results: WooCommerceSearchResponseItem[]): ProductBuilder<Product>[] {
+  protected initProductBuilders(
+    results: WooCommerceSearchResponseItem[],
+  ): ProductBuilder<Product>[] {
     const builders = super.initProductBuilders(results);
     return builders.map((builder, index) => {
       const description = results[index]?.description;

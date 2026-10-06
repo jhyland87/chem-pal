@@ -137,7 +137,9 @@ describe('ResultsTable', () => {
 
   it('preserves persisted column filters on restore (no search runs)', async () => {
     const stored = [{ id: 'supplier', value: ['Loudwolf'] }];
-    h.sessionGet.mockResolvedValue({ table_state: { columnFilters: stored, columnVisibility: { cas: false } } });
+    h.sessionGet.mockResolvedValue({
+      table_state: { columnFilters: stored, columnVisibility: { cas: false } },
+    });
     const { setColumnFilters } = renderTable();
 
     // The load effect restores the stored filters as-is…

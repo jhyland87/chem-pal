@@ -77,7 +77,12 @@ declare global {
         name: string;
         checked: boolean;
       }
-    | { type: typeof ACTION_TYPE.NESTED_BUTTON_CLICK; group: SettingGroup; name: string; value: string }
+    | {
+        type: typeof ACTION_TYPE.NESTED_BUTTON_CLICK;
+        group: SettingGroup;
+        name: string;
+        value: string;
+      }
     | { type: typeof ACTION_TYPE.INPUT_CHANGE; name: string; value: string }
     | { type: typeof ACTION_TYPE.SUPPLIER_TOGGLE; value: Array<SupplierClassName> }
     | { type: typeof ACTION_TYPE.PRICE_TRACKING_CHANGE; value: PriceTracking }

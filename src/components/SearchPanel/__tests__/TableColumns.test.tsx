@@ -94,9 +94,7 @@ function renderCell(id: string, context: ReturnType<typeof cellContext>) {
 
 describe('TableColumns structure', () => {
   it('returns the columns in the documented order', () => {
-    const ids = TableColumns().map(
-      (c) => c.id ?? (c as { accessorKey?: string }).accessorKey,
-    );
+    const ids = TableColumns().map((c) => c.id ?? (c as { accessorKey?: string }).accessorKey);
     expect(ids).toEqual(COLUMN_ORDER);
   });
 
@@ -122,7 +120,9 @@ describe('TableColumns structure', () => {
 describe('TableColumns accessors', () => {
   it('unitPrice accessor returns the per-base-unit price, or undefined without data', () => {
     const accessor = accessorOf('unitPrice');
-    expect(accessor(makeProduct({ usdPrice: 10, quantity: 100, uom: 'g' }), 0)).toBeTypeOf('number');
+    expect(accessor(makeProduct({ usdPrice: 10, quantity: 100, uom: 'g' }), 0)).toBeTypeOf(
+      'number',
+    );
     expect(accessor(makeProduct({}), 0)).toBeUndefined();
   });
 
@@ -136,13 +136,10 @@ describe('TableColumns accessors', () => {
     expect(accessor(makeProduct(over), 0)).toBe(expected);
   });
 
-  it.each(['priceTrend', 'priceChange'])(
-    '%s accessor reads the stamped priceTrendValue',
-    (id) => {
-      const accessor = accessorOf(id);
-      expect(accessor(makeProduct({ priceTrendValue: -12.5 }), 0)).toBe(-12.5);
-    },
-  );
+  it.each(['priceTrend', 'priceChange'])('%s accessor reads the stamped priceTrendValue', (id) => {
+    const accessor = accessorOf(id);
+    expect(accessor(makeProduct({ priceTrendValue: -12.5 }), 0)).toBe(-12.5);
+  });
 });
 
 describe('TableColumns cell — empty/absent branches render nothing', () => {
@@ -155,7 +152,10 @@ describe('TableColumns cell — empty/absent branches render nothing', () => {
   );
 
   it('expander is empty when the row cannot expand', () => {
-    const { container } = renderCell('expander', cellContext(makeProduct({}), { canExpand: false }));
+    const { container } = renderCell(
+      'expander',
+      cellContext(makeProduct({}), { canExpand: false }),
+    );
     expect(container).toBeEmptyDOMElement();
   });
 
@@ -209,22 +209,34 @@ describe('TableColumns cell — present branches', () => {
       'title',
       cellContext(makeProduct({ title: 'Variant', url: 'https://x.test/v' }), { depth: 2 }),
     );
-    expect(screen.getByRole('link', { name: 'Variant' })).toHaveAttribute('href', 'https://x.test/v');
+    expect(screen.getByRole('link', { name: 'Variant' })).toHaveAttribute(
+      'href',
+      'https://x.test/v',
+    );
   });
 
   it('supplier cell shows the supplier name', () => {
-    const { container } = renderCell('supplier', cellContext(makeProduct({}), { value: 'Loudwolf' }));
+    const { container } = renderCell(
+      'supplier',
+      cellContext(makeProduct({}), { value: 'Loudwolf' }),
+    );
     expect(container).toHaveTextContent('Loudwolf');
   });
 
   it('country cell renders a flag for a known country code', () => {
-    const { container } = renderCell('country', cellContext(makeProduct({ supplierCountry: 'US' })));
+    const { container } = renderCell(
+      'country',
+      cellContext(makeProduct({ supplierCountry: 'US' })),
+    );
     expect(container.querySelector('span')).not.toBeNull();
     expect(container.textContent?.length).toBeGreaterThan(0);
   });
 
   it('country cell falls back to the raw code when no flag exists', () => {
-    const { container } = renderCell('country', cellContext(makeProduct({ supplierCountry: 'ZZ' })));
+    const { container } = renderCell(
+      'country',
+      cellContext(makeProduct({ supplierCountry: 'ZZ' })),
+    );
     expect(container).toHaveTextContent('ZZ');
   });
 
@@ -311,13 +323,10 @@ describe('TableColumns cell — present branches', () => {
     expect(screen.getByRole('link')).toHaveTextContent('180');
   });
 
-  it.each(['formula', 'moleweight', 'concentration'])(
-    '%s cell renders its raw value',
-    (id) => {
-      const { container } = renderCell(id, cellContext(makeProduct({}), { value: 'X-123' }));
-      expect(container).toHaveTextContent('X-123');
-    },
-  );
+  it.each(['formula', 'moleweight', 'concentration'])('%s cell renders its raw value', (id) => {
+    const { container } = renderCell(id, cellContext(makeProduct({}), { value: 'X-123' }));
+    expect(container).toHaveTextContent('X-123');
+  });
 
   it('purity cell renders a grade value directly', () => {
     const { container } = renderCell('purity', cellContext(makeProduct({}), { value: 'ACS' }));

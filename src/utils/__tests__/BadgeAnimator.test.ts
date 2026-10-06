@@ -164,7 +164,9 @@ describe('BadgeAnimator', () => {
 
   describe('setBadgeText failures', () => {
     it('records a chrome-api error instead of letting a rejection float unhandled', async () => {
-      mockChromeAction.setBadgeText.mockRejectedValueOnce(new Error('extension context invalidated'));
+      mockChromeAction.setBadgeText.mockRejectedValueOnce(
+        new Error('extension context invalidated'),
+      );
 
       await BadgeAnimator.clear();
 
