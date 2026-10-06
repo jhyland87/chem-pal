@@ -178,9 +178,10 @@ const DrawerSearchPanel: FC<{
       </StyledAccordionSummary>
       <StyledAccordionDetails>
         <TextField
-          style={{ width: '100%' }}
+          fullWidth
+          size="small"
           label={i18n('drawer_results_limit_label')}
-          value={userSettings.suppliers?.resultLimit}
+          value={userSettings.suppliers?.resultLimit ?? ''}
           onChange={(e) =>
             setUserSettings({
               ...userSettings,
