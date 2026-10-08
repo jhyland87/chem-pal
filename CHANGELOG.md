@@ -13,6 +13,8 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+## [1.16.0] - 2026-10-07
+
 ### Added
 
 - Each searched chemical now appears as a clickable chip above the results. Click one for a details
