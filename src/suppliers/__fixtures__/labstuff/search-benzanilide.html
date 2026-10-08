@@ -1,0 +1,508 @@
+<script language="JavaScript" charset="utf-8">
+  var d=document, tf=(window.content?this:parent.tf), LD=tf, tfc=tf.content;
+
+  function jumpPage(formname, page, pgid) {
+      if(pgid=='') {
+          /* check if serachformcontentstring is empty or undefined */
+          var existserach = $('#searchFormContentString').val();
+          if(existserach=='undefined' || existserach == undefined ||   existserach == '')
+          {
+              var searchstring = $('#searchContentString').val();
+              $('#searchFormContentString').val(searchstring);
+          }
+      }
+
+      document.forms[formname].elements.start_page.value = page;
+      if ($('#filter-search-content').length == 0) {
+          searchFormSubmit(document.forms[formname],unescape(tf.wm.hostbaseurl)+'contents/phpsearch/search.php');
+      }
+      else if (typeof filter_Timer !== 'undefined') {
+          if (document.forms.frmfilter) document.forms.frmfilter.elements.start_page.value = page;
+              filter_Timer();
+      }
+  }
+  function init() {
+      var elPageTitle = gl('PageTitle') || gl('PageTitle-'+tf.pgid);
+
+      LD['LD_SEARCH_IN_FOR'] = LD['LD_SEARCH_IN_FOR'].replace('%%', elPageTitle ? elPageTitle.innerHTML : '');
+      LD['LD_SEARCH_SORTBY_PRICEASCENDING'] = '&lt;i class="icon-arrow-up8"&gt;&lt;/i&gt;&nbsp;' + LD['LD_PRICE'];
+      LD['LD_SEARCH_SORTBY_PRICEDESCENDING'] = '&lt;i class="icon-arrow-down8"&gt;&lt;/i&gt;&nbsp;' + LD['LD_PRICE'];
+      LD['LD_SEARCH_SORTBY_TITLEASCENDING'] = '&lt;i class="icon-arrow-up8"&gt;&lt;/i&gt;&nbsp;' + LD['LD_SEARCH_PRODUCTTITLE'];
+      LD['LD_SEARCH_SORTBY_TITLEDESCENDING'] = '&lt;i class="icon-arrow-down8"&gt;&lt;/i&gt;&nbsp;' + LD['LD_SEARCH_PRODUCTTITLE'];
+      LD['LD_SEARCH_SORTBY_RELEVANCEASCENDING'] = '&lt;i class="icon-arrow-up8"&gt;&lt;/i&gt;&nbsp;' + LD['LD_SEARCH_RELEVANCE'];
+      LD['LD_SEARCH_SORTBY_RELEVANCEDESCENDING'] = '&lt;i class="icon-arrow-down8"&gt;&lt;/i&gt;&nbsp;' + LD['LD_SEARCH_RELEVANCE'];
+      var ldarr=[
+          'LD.LD_LINK_COPIED_SUCCESSFULLY', 'LD.LD_NEXT', 'LD.LD_PREVIOUS',
+          'LD.LD_PRICE', 'LD.LD_PRODUCT_CLICKHERE', 'LD.LD_RESET', 'LD.LD_SEARCH_ADVANCEDFORM',
+          'LD.LD_SEARCH', 'LD.LD_SEARCH_ADVANCED_OPTIONS', 'LD.LD_SEARCH_ALL',
+          'LD.LD_SEARCH_ALLCATEGORIES', 'LD.LD_SEARCH_ALLDETAILS',
+          'LD.LD_SEARCH_BRAND', 'LD.LD_SEARCH_CATALOGNUMBER',
+          'LD.LD_SEARCH_CLASSIC', 'LD.LD_SEARCH_DISPLAYSTYLE',
+          'LD.LD_SEARCH_EXAMPLE', 'LD.LD_SEARCH_FOR', 'LD.LD_SEARCH_IN_FOR',
+          'LD.LD_SEARCH_HELP', 'LD.LD_SEARCH_INVALIDKEYWORD',
+          'LD.LD_SEARCH_LIMITTO', 'LD.LD_SEARCH_LIST',
+          'LD.LD_SEARCH_MOREDETAILS', 'LD.LD_SEARCH_NOMOREFOUND',
+          'LD.LD_SEARCH_NORESULTS', 'LD.LD_SEARCH_NUMRESULTS',
+          'LD.LD_SEARCH_PRODUCTS', 'LD.LD_SEARCH_PRODUCTTITLE',
+          'LD.LD_SEARCH_RELEVANCE', 'LD.LD_SEARCH_RESULTSFROM',
+          'LD.LD_SEARCH_RESULTSOF', 'LD.LD_SEARCH_RESULTSTO', 'LD.LD_SEARCH_SHOW',
+          'LD.LD_SEARCH_SORTBY', 'LD.LD_SEARCH_SORTBY_PRICEASCENDING',
+          'LD.LD_SEARCH_SORTBY_PRICEDESCENDING', 'LD.LD_SEARCH_SORTBY_RELEVANCEASCENDING',
+          'LD.LD_SEARCH_SORTBY_RELEVANCEDESCENDING', 'LD.LD_SEARCH_SORTBY_TITLEASCENDING',
+          'LD.LD_SEARCH_SORTBY_TITLEDESCENDING', 'LD.LD_SEARCH_SORTORDER',
+          'LD.LD_SEARCH_SPECIALS', 'LD.LD_SEARCH_THUMBNAIL',
+          'LD.LD_SEARCH_TOOMANYRESULTS', 'LD.LD_SEARCH_TOTALRESULTS',
+          'LD.LD_SEARCH_WEBSITECONTENTS', 'LD.LD_SEARCH_WITHIN',
+          'LD.LD_SEARCH_WORDTOCOMMON', 'LD.LD_SEARCH_YOUSEARCHEDFOR_POST',
+          'LD.LD_SEARCH_YOUSEARCHEDFOR_PRE', 'LD.LD_SEARCHING',
+          'LD.LD_SEARCHINGHEAD', 'LD.LD_SHIPPING_CHARGES', 'LD.LD_CANCEL'
+      ];
+
+      for(var n=0,num=ldarr.length;n<num;n++)
+      {
+          var el=tfc.document.getElementsByName(ldarr[n]);
+          for(var i=0,numi=el.length;i<numi;i++)
+          {
+              el[i].innerHTML=eval(ldarr[n]);
+          }
+          el=tfc.document.querySelectorAll('[title="'+ldarr[n]+'"]');
+          for(var i=0,numi=el.length;i<numi;i++)
+          {
+              el[i].setAttribute('title', eval(ldarr[n]));
+          }
+      }
+
+      initPrices();
+
+      window.jumpPage=jumpPage;
+
+
+              jQuery('#filter-search-content').css('display','none');
+          filterSearchAcquire({}, jQuery('#searchfiltertpl')[0].innerHTML.replace(/{{/g, '<').replace(/}}/g, '>'));
+
+      jQuery('#filter-search-content').css('display','block');
+      jQuery(document).find('#searching-progress').css('display', 'none');
+  }
+  var pEx=null;
+  function initPrices(){
+
+      if(!tf.conf||!tf.core/*||!tf.core.currTime.setTime()*/){setTimeout(initPrices,100);return;}
+      tf.wm._pArrEx={};
+      pEx=tf.wm._pArrEx;
+                          pEx['P5876']={prc:28.86, code:'P5876~23.850000~-1.000~-1.000~100.000~0~0.000~~SM1,1,0.00,0.00;SM5,1,0.00,0.00;~~0.05~~~~~Chemicalien|Chemicalien A-B|~~~0.000000~0.000~~0~~~~/', taxid:'TD1',canbuy:'',nm:'',sku:''};
+
+      for(var prid in pEx) {
+          var pp=pEx[prid],el=gl('ProductPrice-'+prid);
+          tf.core.regPrc([pp['code']]);
+          if(el) {
+              var p=tf.wm.pProp(prid);
+              if($('[name=ProductPriceLayout]').length>0) {
+                  tf.core.ppriceTemplateLayout(el,[prid,'',pp['taxid']]);
+                  var el=gl('ProductBasePrice-'+prid);if(el)el.innerHTML=tf.core.bprice([prid,p[18],p[19],p[20]]);
+              }
+              else {
+                  var ret=tf.core.pprice(el, [prid,'',pp['taxid']]);
+                  if(ret)el.innerHTML=ret;
+              }
+          }
+      }
+  }
+  </script>
+
+
+  <div class="GC6 Search_Breadcrumb">
+    <div class="SearchForResults">
+      <span id="LD.LD_SEARCH_YOUSEARCHEDFOR_PRE" name="LD.LD_SEARCH_YOUSEARCHEDFOR_PRE"></span> <strong>'benzanilide'</strong> <span id="LD.LD_SEARCH_YOUSEARCHEDFOR_POST" name="LD.LD_SEARCH_YOUSEARCHEDFOR_POST"></span>
+            '<span id="LD.LD_SEARCH_ALLCATEGORIES" name="LD.LD_SEARCH_ALLCATEGORIES"></span>'
+
+
+        </div>
+      <div class="SearchNumberResults">
+          1&nbsp;<span id="LD.LD_SEARCH_RESULTSTO" name="LD.LD_SEARCH_RESULTSTO"></span>&nbsp;1&nbsp;<span id="LD.LD_SEARCH_RESULTSOF" name="LD.LD_SEARCH_RESULTSOF"></span>&nbsp;1 <span class="rest-btn" onClick="refresh_page()" title="LD.LD_RESET" id="LD.LD_RESET" name="LD.LD_RESET">[Reset]</span>
+        </div>
+    </div>
+
+
+
+
+  <div class="SearchNav">
+
+  <!-- for start advance filter -->
+  <div id="copymsg" class="success-message-alert" name="LD.LD_LINK_COPIED_SUCCESSFULLY">Link Copied Sucessfully</div>
+
+
+  <div id="search_depart" class="row">
+    <div class="col">
+          <input type="hidden" name="searchContentString" id="searchContentString" value="benzanilide">
+
+          <div class="GC48 sn-departmentlist">
+        <select class="SearchTextField adv_department" id="departmentlistid" name="departmentlist">
+                  <option value="" id="LD.LD_SEARCH_ALLCATEGORIES" name="LD.LD_SEARCH_ALLCATEGORIES"> All departments  </option>
+                          <option value="D215"  > Chemicalien A-B </option>
+                </select>
+      </div>
+        </div>
+
+    <div class="filter-nav-right col">
+          <form onsubmit="return asfValidate();" action="search.php" id="navform2" method="GET" name="frmsearch" accept-charset="utf-8" class="searchResults">
+      <input type="hidden" id="searchFormContentString" size="40" class="currentstring" name="searchFormContentString" value="benzanilide">
+
+        <div class="displayStylesBar" >
+          <div class="GC48 searchFormItem desktop tablet">
+                      <a href="#" class="icon-grid searchFormDisplayStyle-T" id="searchFormDisplayStyle" name="searchFormDisplayStyle" data-value="T"></a>
+                              </div>
+          <div class="GC48 searchFormSortByParent">
+            <select id="searchFormSortBy" size="1" name="searchFormSortBy" class="GC48">
+                          <option value="P-A" id="LD.LD_SEARCH_SORTBY" name="LD.LD_SEARCH_SORTBY" disabled></option>
+              <option value="R-A" selected="selected" id="LD.LD_SEARCH_SORTBY_RELEVANCEASCENDING" name="LD.LD_SEARCH_SORTBY_RELEVANCEASCENDING"></option>
+              <option value="P-A"  id="LD.LD_SEARCH_SORTBY_PRICEASCENDING" name="LD.LD_SEARCH_SORTBY_PRICEASCENDING"></option>
+              <option value="P-D" id="LD.LD_SEARCH_SORTBY_PRICEDESCENDING" name="LD.LD_SEARCH_SORTBY_PRICEDESCENDING"></option>
+              <option value="T-A" id="LD.LD_SEARCH_SORTBY_TITLEASCENDING" name="LD.LD_SEARCH_SORTBY_TITLEASCENDING"></option>
+              <option value="T-D" id="LD.LD_SEARCH_SORTBY_TITLEDESCENDING" name="LD.LD_SEARCH_SORTBY_TITLEDESCENDING"></option>
+                        </select>
+          </div>
+      </div>
+      <span id="dwLang1"><script>var el=gl('dwLang1');if(el)el.innerHTML='<INPUT type="hidden" name="lang" value="'+tf.lang+'">';</script></span>
+      <input type="hidden" name="filterproc" value="filtersearch" />
+      <input type="hidden" name="fmt" value="html" />
+
+      <input type="hidden" name="limitResultsPerPage" value="52">
+      <input type="hidden" name="searchFormRootUse" value="A" />
+
+
+
+      <input type="hidden" name="brands" value="" />
+      <input type="hidden" name="specifications" value="" />
+      <input type="hidden" name="options" value='' />
+      <input type="hidden" name="keywords" value="" />
+      <input type="hidden" name="specials" value="" />
+               <input type="hidden" name="sub" value="" />
+      <input type="hidden" name="pgid" value="" />
+      <input type="hidden" name="prid" value="" />
+        <input type="hidden" name="initialmin" value="" />
+      <input type="hidden" name="initialmax" value="" />
+      <input type="hidden" name="pricebuttonclick" value="" />
+          <input type="hidden" name="exact_match" value="" />
+      <input type="hidden" name="ignore_websitecontent" value="" />
+
+      <input type="hidden" name="design" value="sfx-372_1" />
+
+          <input type="hidden" name="searchFormPriceMin" id="navpricemin" value="0" />
+      <input type="hidden" name="searchFormPriceMax" id="navpricemax" value="0" />
+          <input type="hidden" name="searchFormMatchSelect" value="" />
+      <input type="hidden" name="searchFormDisplayStyle" value="L" />
+      <input type="hidden" name="searchtermEnabled" value="" />
+      <input type="hidden" name="dept" id="dept" value="" />
+          </form>
+                    <input type="hidden" id="ajaxurl" name="ajaxurl" value="/contents/phpsearch/search.php?searchphrase=benzanilide&#38;start_page=1&#38;searchFormSortBy=R-A&#38;searchFormRootUse=A&#38;lang=nl&#38;filterproc=filtersearch&#38;fmt=html&#38;pgid=&#38;sub=&#38;searchFormDisplayStyle=L&#38;design=sfx-372_1&#38;limitResultsPerPage=52&#38;searchtermEnabled=0&#38;pagereset=1">
+
+  </div>
+
+    </div>
+  </div>
+  <!-- for end advance filter -->
+
+
+  <div class="GC17 PageTitle">benzanilide</div>
+
+
+
+
+
+
+  <!-- <div style="float:right;margin-top:-2.6em;margin-right:1em;color:#a0a0a0;">1.0256Mb, 0.2379s</div> -->
+
+
+    <link rel="stylesheet" type="text/css" href="../phpsearch/template/sfx-372_1/sfx-372_1.css">
+
+      <div id="ProductLoop">
+      <div class="product__content sf-cb">
+               <div class="GC62 Product sf-cb  clearfix" itemscope="itemscope" itemtype="" id="Product-P5876">
+          <div class="price_list_wrap">
+          <div class="column custom_img">             <a href="javascript:linkTo('p5876')" title="">
+                  <div id="" class="ProductImageContainer ThumbnailSlider-vertical ProductImageContainerHeight">
+                      <div class="ImgLink">
+                          <div sf:object="ProductImage" id="" class="ProductImage">
+                                                      <i class="GC62 icon-image no-image"></i>
+                                                      </div>
+                      </div>
+                  </div>
+              </a>
+          </div>
+          <div class="column custom_content">
+              <div class="content_wrapper">
+                  <div class="title_part">
+                                 <a href="javascript:linkTo('p5876')" title="Benzanilide&#44; 50 gram">
+                  <h3 class="GC37 ProductTitle" itemprop="name" sf:object="ProductTitle" id=""><strong class="SearchStringFound">Benzanilide</strong>&#44; 50 gram</h3>
+              </a>
+
+
+              <div class="price-here">
+
+
+              </div>
+
+
+
+
+
+
+
+                                    </div>
+              </div>
+
+
+
+
+
+              <div class="column custom_button">
+
+                   <div class="price_more">
+
+
+
+
+                                     <div class="ProductPriceContainer ">
+                      <input name="ProductPriceLayout" type="hidden">
+                      <div class="GC66 ProductPriceOriginal" id="ProductPriceOriginal-P5876" >
+                          <span><span class="ProductCurrencySymbol"></span></span>
+                      </div>
+                      <div class="GC20 ProductPrice" id="ProductPrice-P5876"style="display: none;"></div>
+                      <div class="GC56 ProductPriceCalculated" id="ProductPriceCalculated-P5876">
+                          <span><span class="ProductCurrencySymbol"></span></span>
+                      </div>
+                  </div>
+                  <div class="GC55 ProductPriceOtherInformation">
+                  <input name="ProductPriceLayout" type="hidden">
+                  <div>
+                       <div class="ShippingChargeForProduct ProductPriceOtherInformationPart" id="ShippingChargeForProduct-P5876">
+                        <a href="#" class="ImgLink" onclick="cancelBuble(event);sfAddPop('shipping_charge',true);if(add_P5876(0,true)!=0){sfAddUnpop();}return false;">+<span tag="LD.LD_SHIPPING_CHARGES" id="LD.LD_SHIPPING_CHARGES" name="LD.LD_SHIPPING_CHARGES"></span></a>
+                      </div>
+
+                      <div class="ProductIncTaxes ProductPriceOtherInformationPart" id="ProductIncTaxes-P5876"></div>
+
+                      <div class="ProductBasePrice ProductPriceOtherInformationPart" id="ProductBasePrice-P5876"><nobr><span></span> </nobr></div>
+                      <div id="ProductPriceTaxPrice-P5876" class="ProductPriceTaxPrice ProductPriceOtherInformationPart"></div>
+                      <span id="ProductPriceTaxPriceText-P5876" class="ProductPriceTaxPriceText"></span>
+                  </div>
+                  </div>
+
+
+
+
+
+                                      <div class="GC13 ProductMoreDetails">
+                                                      <a title="Benzanilide&#44; 50 gram" href="javascript:linkTo('p5876')"><span tag="LD.LD_PRODUCT_CLICKHERE" id="LD.LD_PRODUCT_CLICKHERE" name="LD.LD_PRODUCT_CLICKHERE"></span></a>
+
+                      </div>
+
+
+
+
+          </div>
+
+              </div>
+
+              </div>
+              </div>
+
+              </div>
+              </div><!-- /.Product -->
+  <script type="text/javascript">
+  if(tf.autoText.apply)tf.autoText.apply();
+  </script>
+      </div><!-- /#ProductLoop -->
+
+
+  <script>
+  jQuery(window).off('.phpsearch');
+  jQuery(window).off('load resize domChanged');
+  if (window['sfEqualRowOnresize']) delEvent('onresize',window['sfEqualRowOnresize'],window);
+  if (window['equalRowPoll']) clearTimeout(window['equalRowPoll']);
+  _sfEqualRowArr = [];
+  </script>
+
+
+
+  <script type="text/javascript">
+  /*<![CDATA[*/
+  tf.sfOffsetCenterCols=0;
+  function sfEqualRow(oOffset, idChildPrefix, aItm, idItemPrefix) {
+    function affectHeight(els, x, mh, nn) {
+      for (var n = 0; n < nn; n++) {
+        var el = els[x - n];
+        if (el) {
+          jQuery(el).outerHeight(mh);
+        }
+      }
+    }
+    if (!tf.sfOffsetCenterCols) {
+      var w = jQuery(oOffset).find('[id^="' + idItemPrefix.split(',').join('"],[id^="') + '"]').first().outerWidth(true);
+      if (w > 0) {
+        tf.sfOffsetCenterCols = parseInt((jQuery(oOffset).width() / w));
+      }
+    }
+    var coll = jQuery(oOffset).find('.' + idChildPrefix);
+    if (coll.length > 0) {
+      var maxh = 0, idx = 0;
+      if(tf.isiPhone){
+        var $this=jQuery(this);
+        jQuery('img[src$="trans.gif"][data-echo]',coll).each(function(){
+          $this.attr('style', ($this.attr('style')||'')+'width:'+($this.attr('width')||'')+'px!important;height:'+($this.attr('height')||'')+'px!important;');
+        });
+      }
+      jQuery(coll).each(function () {
+        if(jQuery('img',this).length==0||(jQuery('img[data-echo]',this).length==0&&jQuery('img',this).height()>1))jQuery(this).css('height', '');
+        maxh = Math.max(maxh, jQuery(this).outerHeight());
+        if ((idx % tf.sfOffsetCenterCols) == tf.sfOffsetCenterCols - 1) {
+          affectHeight(coll, idx, maxh, tf.sfOffsetCenterCols);
+          maxh = 0;
+        }
+        idx++;
+      });
+      affectHeight(coll, idx, maxh, (coll.length % tf.sfOffsetCenterCols) + 1);
+    }
+  }
+  var _sfEqualRowOuter=_sfEqualRowOuter?_sfEqualRowOuter.concat('ProductLoop'):['ProductLoop'],_sfEqualRowArr=_sfEqualRowArr||[];
+
+  _sfEqualRowArr.push('ProductImageContainer');
+
+  _sfEqualRowArr.push('ProductPriceContainer');
+
+  _sfEqualRowArr.push('ProductContainer3');
+
+  _sfEqualRowArr.push('Product');
+
+
+  var equalRowPoll = null;
+  var sfEqualRowOnload = function() {
+    clearTimeout(equalRowPoll);
+    equalRowPoll = setTimeout(function(){
+      sfEqualRowCall();
+      equalRowPoll = null;
+    }, 500);
+  };
+  function sfEqualRowCall(){
+    for(var m=0,mm=_sfEqualRowOuter.length;m<mm;m++){
+      if(!gl(_sfEqualRowOuter[m]))continue;
+      tf.sfOffsetCenterCols=0;
+      for(var n=0,nn=_sfEqualRowArr.length;n<nn;n++){
+        sfEqualRow(gl(_sfEqualRowOuter[m]),_sfEqualRowArr[n],null,'Product-');
+      }
+    }
+  }
+  function sfEqualRowOnresize(){tf.sfOffsetCenterCols=0;if(typeof(sfOffsetCenterOnresize)!='undefined')sfOffsetCenterOnresize();sfEqualRowOnload();if(typeof(populateProductFlash)!='undefined')populateProductFlash(productFlashVarsArr,'DesignImage');}
+  addEvent('onresize',sfEqualRowOnresize,window);
+  if(tf.sfMakeSpace&&tf.sfMakeSpace.posthandlers) tf.sfMakeSpace.posthandlers.push(sfEqualRowOnload);
+  /*]]>*/
+  </script>
+
+
+
+
+  <div id="phpSearchLoaded" style="display:none;"></div>
+
+
+  <script type="text/template" id="searchfiltertpl">
+
+  {{script}}
+  var ldarr = ["LD.LD_FILTERSEARCH","LD.LD_KEYWORDS","LD.LD_OPTIONSANDCHOICES","LD.LD_PRICE","LD.LD_SEARCH","LD.LD_SEARCH_BRAND","LD.LD_SEARCH_ONLYSHOWSPECIALS","LD.LD_SEARCH_SHOWALL","LD.LD_SEARCH_SHOWRESULTS","LD.LD_SEARCH_SPECIALS","LD.LD_SPECIFICATIONS","LD.LD_SEARCH_WEBSITECONTENTS","LD.LD_SEARCH_ALLDETAILS"];
+  for(var n=0,num=ldarr.length;n{{num;n++) {
+  var el=tfc.document.getElementsByName(ldarr[n]);
+  for(var i=0,numi=el.length;i{{numi;i++) {
+  el[i].innerHTML=eval(ldarr[n]);
+  if (el[i].getAttribute('title') == ldarr[n]) {
+  el[i].setAttribute('title', eval(ldarr[n]));
+  }
+  }
+  }
+  {{/script}}
+  {{div class="header_filter"}}
+  {{span name="LD.LD_FILTERSEARCH"}}Filters{{/span}}
+  {{a href="javascript:;" data-link="" class="copy-icon"}}{{i class="icon-new-tab22"}}{{/i}}{{/a}}
+  {{button class="GC14 filter-search-close mobile"}}{{i class="icon-arrow-right3"}}{{/i}}{{span name="LD.LD_SEARCH_SHOWRESULTS"}}{{/span}}{{/button}}
+  {{span class="filter-search-cancel mobile" title="LD.LD_CANCEL"}}{{i class="icon-cross2"}}{{/i}}{{/span}}
+  {{/div}}
+  {{div class="container container_700"}}
+  {{div class="row"}}
+  {{div class="col-md-6 col-md-offset-3"}}
+  {{!-- requires $pgid, $sub variables --}}
+  {{form action="search.php" method="GET" name="frmfilter" id="frmfilter"  accept-charset="utf-8"}}
+  {{input type="hidden" id="lastsearchvalue" name="lastsearchvalue" value="" /}}
+  {{input type="hidden" id="pricebuttonclick" name="pricebuttonclick" value="0" /}}
+  {{input type="hidden" id="initialmin" name="initialmin" value="28.86" /}}
+  {{input type="hidden" id="initialmax" name="initialmax" value="28.86" /}}
+  {{input type="hidden" id="pagereset" name="pagereset" value="0" /}}
+  {{input type="hidden" name="dept" value="" /}}
+  {{input type="hidden" name="start_page" value="1" /}}
+  {{input type="hidden" value="filtersearch" id="filterproc"  name="filterproc"/}}
+  {{input type="hidden" id="exact_match" name="exact_match" value="yes" /}}
+  {{input type="hidden" id="ignore_websitecontent" name="ignore_websitecontent" value="" /}}
+  {{input type="hidden" value="html" id="fmt" name="fmt"/}}
+  {{input type="hidden" value="" id="pgid" name="pgid"/}}
+  {{input type="hidden" value="" id="sub" name="sub"/}}
+  {{input type="hidden" id="searchFormRootUse" name="searchFormRootUse" value="A" /}}
+  {{input type="hidden" id="max_specs_opts" name="max_specs_opts" value="30" /}}
+  {{div class="sidebar_filter"}}
+  {{div class="outer_section styleclass" id="filter-top-content" data-id="filter-top-content"}}
+  {{div class="webcontent-wrap checkbox"}}
+  {{label class="webcontent-label"}}
+  {{input type ="checkbox"checked="checked" name="webcontent" class="allproductcheck" value="W" id="searchwithincontent"}}
+  {{p class="lable_p"}}{{span id="LD.LD_SEARCH_WEBSITECONTENTS" name="LD.LD_SEARCH_WEBSITECONTENTS"}}{{/span}}{{/p}}
+  {{/label}}
+  {{/div}}
+  {{div  class="allproductcheck-wrap checkbox"}}
+  {{label class="allproductcheck-label"}}
+  {{input type="checkbox"checked="checked" name="allproductcheck" value="P" class="allproductcheck"  id="allproductcheck"}}
+  {{p class="lable_p"}}{{span id="LD.LD_SEARCH_ALLDETAILS" name="LD.LD_SEARCH_ALLDETAILS"}}{{/span}}{{/p}}
+  {{/label}}
+  {{/div}}
+  {{/div}}
+  {{!-- price min / max --}}
+  {{!-- requires $relevantPricess variable with data returned from PriceHandler::getRelevant --}}
+  {{div class="outer_section styleclass" id="prices" data-id="prices"}}
+  {{div  class="newtoggle"}}
+  {{div class="panel-heading"}}
+  {{h4 class="panel-title"}}
+  {{span class="icon- find_class sm_removeclass" style="display:none;"}}{{/span}}{{span name="LD.LD_PRICE"}}{{/span}}
+  {{/h4}}
+  {{/div}}
+  {{/div}}
+  {{div id="price" class="panel-collapse collapse in"}}
+  {{div class="panel-body"}}
+  {{div class="price_box"}}
+  {{input type="hidden" value="0" id="minValue" name="searchFormPriceMin" /}}
+  {{input type="hidden" value="0" id="maxValue" name="searchFormPriceMax" /}}
+  {{div class="price_label_top"}}
+  {{label for="amount"}}{{/label}}
+  {{div id="amountL"}}{{/div}}
+  {{div id="amountR"}}{{/div}}
+  {{input type="hidden" id="lastEventChecked" name="lastEventChecked" value="" /}}
+  {{/div}}
+  {{div id="slider-range"}}{{/div}}
+  {{span class="rest-btn rest-arrow-wrapper" onClick="submit()"}}{{span class="new_search_icon" title="LD.LD_SEARCH"}}{{/span}}{{/span}}
+  {{/div}}
+  {{/div}}
+  {{/div}}
+  {{/div}}
+  {{!-- features --}}
+  {{!-- requires $relevantSpecs variable with data returned from SpecsHandler::getRelevant --}}
+  {{!-- options --}}
+  {{!-- requires $relevantOptions variable with data returned from OptionsHandler::getRelevant --}}
+  {{!-- brands --}}
+  {{!-- requires $relevantBrands variable with data returned from BrandHandler::getRelevant --}}
+  {{/div}}
+  {{/form}}
+  {{/div}}
+  {{/div}}
+  {{/div}}</script>
+
+  <script type="text/javascript">
+  init();
+  </script>
+
+
+  <!--
+  Version tag, please don't remove
+  $Revision: 46759 $
+  $HeadURL: svn://localhost/ShopFactory/branches/V14_60/bin/Common%20Files/phpsearch/search.php $ -->

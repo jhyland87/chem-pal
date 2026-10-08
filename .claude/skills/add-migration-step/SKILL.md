@@ -82,7 +82,7 @@ export const migration: Migration = {
   (`i18n('migration_step', [from, to, description])` in `MigrationPrompt.tsx`), so
   the wrapper text is localized but your description shows verbatim in every locale.
   Keep it short and plain — but **do not** add it to the 7 `_locales/*/messages.json`
-  files. This is the opposite of the usual "i18n hits all 7 locales" rule.
+  files. This is the opposite of the usual "i18n hits all 8 locales" rule.
 - **Forward-only.** Steps define `up` only; there is no `down`. The user's "Cancel"
   in the update prompt clears the cache and starts fresh instead.
 - **Tolerate re-running over your own partial writes.** The version marker advances

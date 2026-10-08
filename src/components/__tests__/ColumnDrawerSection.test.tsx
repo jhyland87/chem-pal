@@ -23,9 +23,12 @@ vi.mock('@/constants/supplierMeta', () => ({
 
 vi.mock('@/constants/suppliers', () => ({
   isSupplierClassName: mocks.isSupplierClassName,
+  SUPPLIER_CLASS_NAMES: ['SupplierAlpha', 'SupplierBeta', 'SupplierGamma'],
 }));
 
-vi.mock('@/helpers/supplierFilters', () => ({
+vi.mock('@/helpers/supplierFilters', async (importOriginal) => ({
+  resolveSupplierSelection: (await importOriginal<typeof import('@/helpers/supplierFilters')>())
+    .resolveSupplierSelection,
   suppliersExcludedBySearchFilters: mocks.suppliersExcludedBySearchFilters,
   countriesForSuppliers: mocks.countriesForSuppliers,
   fulfillableShippingRanges: mocks.fulfillableShippingRanges,
@@ -144,9 +147,8 @@ describe('ColumnDrawerSection', () => {
       setContext({ userSettings: { location: 'US' }, setUserSettings });
       renderSection('supplier', config);
 
-      const switches = screen.getAllByRole('checkbox');
-      fireEvent.click(switches[0]);
-      fireEvent.click(switches[1]);
+      fireEvent.click(screen.getByLabelText('drawer_only_shipping_suppliers'));
+      fireEvent.click(screen.getByLabelText('drawer_hide_restricted_products'));
 
       expect(setUserSettings).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -156,6 +158,90 @@ describe('ColumnDrawerSection', () => {
       expect(setUserSettings).toHaveBeenCalledWith(
         expect.objectContaining({
           search: expect.objectContaining({ hideRestrictedProducts: false }),
+        }),
+      );
+    });
+  });
+
+  describe('autocompleteStrings (supplier exclusion checkbox)', () => {
+    const config: ColumnDrawerConfig = {
+      label: 'Supplier',
+      widget: DRAWER_WIDGET.AUTOCOMPLETE_STRINGS,
+      options: ['SupplierAlpha', 'SupplierBeta', 'SupplierGamma'],
+      emptyHelperText: 'pick suppliers',
+      placeholder: 'type a supplier',
+      bind: { kind: DRAWER_BINDING.SELECTED_SUPPLIERS },
+    };
+    const invertBox = () => screen.getByLabelText('drawer_supplier_invert');
+
+    it('is unchecked and disabled when no suppliers are selected', () => {
+      renderSection('supplier', config);
+
+      expect(invertBox()).not.toBeChecked();
+      expect(invertBox()).toBeDisabled();
+    });
+
+    it('stays unchecked and disabled even if a stale invert flag is stored', () => {
+      setContext({ userSettings: { search: { invertSuppliersSelection: true } } });
+      renderSection('supplier', config);
+
+      expect(invertBox()).not.toBeChecked();
+      expect(invertBox()).toBeDisabled();
+      expect(screen.getByText('Supplier')).toBeInTheDocument();
+    });
+
+    it('is enabled and unchecked by default once a supplier is selected', () => {
+      setContext({ selectedSuppliers: ['SupplierAlpha'] });
+      renderSection('supplier', config);
+
+      expect(invertBox()).toBeEnabled();
+      expect(invertBox()).not.toBeChecked();
+    });
+
+    it('writes the invert setting when toggled', () => {
+      const setUserSettings = vi.fn();
+      setContext({ selectedSuppliers: ['SupplierAlpha'], setUserSettings });
+      renderSection('supplier', config);
+
+      fireEvent.click(invertBox());
+
+      expect(setUserSettings).toHaveBeenCalledWith(
+        expect.objectContaining({
+          search: expect.objectContaining({ invertSuppliersSelection: true }),
+        }),
+      );
+    });
+
+    it('relabels the section and its count hint while acting as an exclusion list', () => {
+      setContext({
+        selectedSuppliers: ['SupplierAlpha'],
+        userSettings: { search: { invertSuppliersSelection: true } },
+      });
+      renderSection('supplier', config);
+
+      expect(invertBox()).toBeChecked();
+      expect(screen.getByText('drawer_supplier_exclude_label')).toBeInTheDocument();
+      expect(screen.getByText(/drawer_supplier_excluded_count:1/)).toBeInTheDocument();
+      expect(screen.queryByText('Supplier')).not.toBeInTheDocument();
+    });
+
+    it('resets the invert setting when the last supplier is removed', () => {
+      const setUserSettings = vi.fn();
+      const setSelectedSuppliers = vi.fn();
+      setContext({
+        selectedSuppliers: ['SupplierAlpha'],
+        userSettings: { search: { invertSuppliersSelection: true } },
+        setUserSettings,
+        setSelectedSuppliers,
+      });
+      renderSection('supplier', config);
+
+      fireEvent.click(screen.getByLabelText('Clear'));
+
+      expect(setSelectedSuppliers).toHaveBeenCalledWith([]);
+      expect(setUserSettings).toHaveBeenCalledWith(
+        expect.objectContaining({
+          search: expect.objectContaining({ invertSuppliersSelection: false }),
         }),
       );
     });

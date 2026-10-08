@@ -46,6 +46,11 @@ declare global {
      * compound's most common names and CAS number. Defaults to `false`.
      */
     suggestAdvancedQuery?: boolean;
+    /**
+     * When `true`, the drawer's selected suppliers are an exclusion list: every supplier
+     * except the selected ones is searched. Disabled suppliers stay disabled. Defaults to `false`.
+     */
+    invertSuppliersSelection?: boolean;
   };
 
   /** Results-table display config: empty-column auto-hiding and default-hidden columns. */

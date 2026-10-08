@@ -241,6 +241,19 @@
     "message": "Buscar proveedores",
     "description": "Drawer accordion label for the supplier selector."
   },
+  "drawer_supplier_exclude_label": {
+    "message": "Excluir proveedores",
+    "description": "Drawer accordion label for the supplier selector while it acts as an exclusion list."
+  },
+  "drawer_supplier_excluded_count": {
+    "message": "$count$ excluidos",
+    "description": "Accordion hint: how many suppliers are excluded.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "drawer_supplier_invert": {
+    "message": "Buscar en todos los proveedores excepto los seleccionados",
+    "description": "Checkbox label that turns the supplier selection into an exclusion list."
+  },
   "drawer_supplier_empty_helper": {
     "message": "Todos los proveedores se incluyen de forma predeterminada",
     "description": "Helper text shown when no supplier is selected."
@@ -548,6 +561,10 @@
   },
   "history_filter_suppliers": {
     "message": "Proveedores: $count$ seleccionados",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "history_filter_suppliers_excluded": {
+    "message": "Proveedores: $count$ excluidos",
     "placeholders": { "count": { "content": "$1" } }
   },
 

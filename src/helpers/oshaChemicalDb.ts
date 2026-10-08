@@ -219,7 +219,8 @@ function buildIndex(chemicals: OshaChemical[]): OshaIndex {
 
 /**
  * Loads the OBIS dataset from IndexedDB, downloading and caching it when missing or older than
- * `chemicalDb.ttlDays`. A stale copy is still used when the refresh fails. The result is memoized
+ * `chemicalDb.ttlDays`. The download is abandoned after `chemicalDb.fetchTimeoutMs`, and a stale copy is
+ * still used when the refresh fails or times out. The result is memoized
  * for the page's lifetime.
  * @category Science Helpers
  * @group Chemical Info
@@ -238,7 +239,10 @@ function loadOshaIndex(): Promise<OshaIndex | undefined> {
       return buildIndex(cached.chemicals);
     }
     try {
-      const response = await fetch(chemicalDb.url);
+      // The signal also covers reading the body, so a stalled download can't hang the dialog.
+      const response = await fetch(chemicalDb.url, {
+        signal: AbortSignal.timeout(chemicalDb.fetchTimeoutMs),
+      });
       if (!response.ok) throw new Error(`OSHA OBIS responded ${response.status}`);
       const chemicals = parseOshaXml(await response.text());
       await putChemicalDb(chemicals, Date.now());

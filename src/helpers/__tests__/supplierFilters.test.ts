@@ -1,6 +1,7 @@
 import {
   countriesForSuppliers,
   fulfillableShippingRanges,
+  resolveSupplierSelection,
   shippingCovers,
   suppliersExcludedBySearchFilters,
   type SupplierMetaMap,
@@ -114,5 +115,22 @@ describe.concurrent('countriesForSuppliers', () => {
 
   it('returns the distinct home countries', () => {
     expect([...countriesForSuppliers(meta, ['DomUS', 'Intl'])].sort()).toEqual(['DE', 'US'].sort());
+  });
+});
+
+describe('resolveSupplierSelection', () => {
+  const all = ['A', 'B', 'C'];
+
+  it.each([
+    [[], false, [], false],
+    [['A'], false, ['A'], false],
+    [['A'], true, ['B', 'C'], false],
+    [['A', 'C'], true, ['B'], false],
+    // Nothing selected: nothing to invert, so the empty "search all" list is kept.
+    [[], true, [], false],
+    // Excluding every supplier leaves nothing to search.
+    [['A', 'B', 'C'], true, [], true],
+  ])('selected %j, invert %s -> %j (none: %s)', (selected, invert, suppliers, none) => {
+    expect(resolveSupplierSelection(selected, invert, all)).toEqual({ suppliers, none });
   });
 });

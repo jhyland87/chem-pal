@@ -44,8 +44,15 @@ import { StyledAccordionDetailsNoPadding, StyledAccordionSummary } from './Style
 const HistoryPanel: FC = () => {
   const [history, setHistory] = useState<SearchHistoryEntry[]>([]);
   const [expandedSection, setExpandedSection] = useState<'history' | 'exports' | false>('history');
-  const { setPendingSearchQuery, setDrawerTab, setSearchFilters, setSelectedSuppliers, setPanel } =
-    useAppContext();
+  const {
+    setPendingSearchQuery,
+    setDrawerTab,
+    setSearchFilters,
+    setSelectedSuppliers,
+    setPanel,
+    userSettings,
+    setUserSettings,
+  } = useAppContext();
 
   /**
    * Returns an MUI Accordion `onChange` handler that opens the given section and
@@ -110,6 +117,15 @@ const HistoryPanel: FC = () => {
     }
     if (entry.selectedSuppliers) {
       setSelectedSuppliers(entry.selectedSuppliers);
+      // Restore whether the list was an exclusion list; older entries predate the checkbox.
+      setUserSettings({
+        ...userSettings,
+        search: {
+          ...userSettings.search,
+          invertSuppliersSelection:
+            (entry.excludeSelectedSuppliers ?? false) && entry.selectedSuppliers.length > 0,
+        },
+      });
     }
     setPendingSearchQuery(entry.query);
     setDrawerTab(DRAWER_INDEX.CLOSED); // Close the drawer
@@ -127,7 +143,14 @@ const HistoryPanel: FC = () => {
         parts.push(i18n('history_filter_shipping', [entry.filters.shippingType.join(', ')]));
     }
     if (entry.selectedSuppliers && entry.selectedSuppliers.length > 0) {
-      parts.push(i18n('history_filter_suppliers', [String(entry.selectedSuppliers.length)]));
+      parts.push(
+        i18n(
+          entry.excludeSelectedSuppliers
+            ? 'history_filter_suppliers_excluded'
+            : 'history_filter_suppliers',
+          [String(entry.selectedSuppliers.length)],
+        ),
+      );
     }
     return parts.length > 0 ? parts.join('\n') : null;
   };

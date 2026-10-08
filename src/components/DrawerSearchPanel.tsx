@@ -151,12 +151,17 @@ const DrawerSearchPanel: FC<{
   };
 
   // Reset every advanced filter to its default, matching the set counted by
-  // countActiveSearchFilters. The title query is the search term, not a filter,
-  // so it's left untouched.
+  // countActiveSearchFilters (including the supplier-exclusion checkbox, which goes with the
+  // supplier selection). The title query is the search term, not a filter, so it's left untouched.
   const handleClearFilters = () => {
     setSelectedSuppliers([]);
     setSearchFilters({ ...searchFilters, availability: [], country: [], shippingType: [] });
-    setUserSettings({ ...userSettings, priceMin: undefined, priceMax: undefined });
+    setUserSettings({
+      ...userSettings,
+      priceMin: undefined,
+      priceMax: undefined,
+      search: { ...userSettings.search, invertSuppliersSelection: false },
+    });
   };
 
   const renderResultLimit = () => (

@@ -1,12 +1,13 @@
 import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
 import { DRAWER_ADORNMENT, DRAWER_BINDING, DRAWER_WIDGET } from '@/constants/drawer';
 import { supplierShippingMeta, supplierShipsTo } from '@/constants/supplierMeta';
-import { isSupplierClassName } from '@/constants/suppliers';
+import { SUPPLIER_CLASS_NAMES, isSupplierClassName } from '@/constants/suppliers';
 import { useAppContext } from '@/context';
 import { i18n } from '@/helpers/i18n';
 import {
   countriesForSuppliers,
   fulfillableShippingRanges,
+  resolveSupplierSelection,
   suppliersExcludedBySearchFilters,
 } from '@/helpers/supplierFilters';
 import { toFiniteNumber } from '@/helpers/utils';
@@ -15,6 +16,7 @@ import {
   Accordion,
   Autocomplete,
   Box,
+  Checkbox,
   Chip,
   FormControlLabel,
   InputAdornment,
@@ -130,12 +132,33 @@ export default function ColumnDrawerSection({
     return excluded;
   }, [isSupplierSelector, excludeSuppliers, location, shippingMeta, searchFilters]);
 
+  // The supplier selection can act as an exclusion list ("search all but these"). It only
+  // applies while something is selected, so the checkbox below is disabled when nothing is.
+  const selectedCount = (selectedSuppliers ?? []).length;
+  const invertSuppliersSelection =
+    (userSettings.search?.invertSuppliersSelection ?? false) && selectedCount > 0;
+  // The suppliers that will actually be searched, for the country/shipping cross-filters.
+  const searchedSuppliers = useMemo(
+    () =>
+      resolveSupplierSelection(
+        selectedSuppliers ?? [],
+        invertSuppliersSelection,
+        SUPPLIER_CLASS_NAMES,
+      ).suppliers,
+    [selectedSuppliers, invertSuppliersSelection],
+  );
+  // The supplier selector's label flips to say the list now excludes suppliers.
+  const sectionLabel =
+    isSupplierSelector && invertSuppliersSelection
+      ? i18n('drawer_supplier_exclude_label')
+      : config.label;
+
   const panelId = `search-${columnId}`;
   const isExpanded = expandedAccordion === panelId;
   const summary = (hint?: ReactNode) => (
     <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
       <Typography>
-        {config.label}
+        {sectionLabel}
         {hint !== undefined && <span className={styles['accordion-hint']}>{hint}</span>}
       </Typography>
     </StyledAccordionSummary>
@@ -164,7 +187,15 @@ export default function ColumnDrawerSection({
     const handleChange = (_event: SyntheticEvent, newValue: string[]) => {
       if (config.bind.kind === DRAWER_BINDING.SELECTED_SUPPLIERS) {
         // Autocomplete yields plain strings; keep only valid supplier names.
-        setSelectedSuppliers(newValue.filter(isSupplierClassName));
+        const next = newValue.filter(isSupplierClassName);
+        setSelectedSuppliers(next);
+        // With nothing selected there's no list to invert, so the checkbox resets.
+        if (next.length === 0 && userSettings.search?.invertSuppliersSelection) {
+          setUserSettings({
+            ...userSettings,
+            search: { ...userSettings.search, invertSuppliersSelection: false },
+          });
+        }
       } else if (config.bind.kind === DRAWER_BINDING.SEARCH_FILTERS) {
         setSearchFilters({ ...searchFilters, [config.bind.key]: newValue });
       }
@@ -172,7 +203,13 @@ export default function ColumnDrawerSection({
 
     return (
       <Accordion expanded={isExpanded} onChange={onAccordionChange(panelId)}>
-        {summary(currentValue.length > 0 ? ` (${currentValue.length} selected)` : undefined)}
+        {summary(
+          currentValue.length > 0
+            ? isSupplierSelector && invertSuppliersSelection
+              ? ` (${i18n('drawer_supplier_excluded_count', [String(currentValue.length)])})`
+              : ` (${currentValue.length} selected)`
+            : undefined,
+        )}
         <StyledAccordionDetails>
           <Autocomplete
             multiple
@@ -209,13 +246,35 @@ export default function ColumnDrawerSection({
             renderInput={(params) => (
               <TextField
                 {...params}
-                label={i18n('filter_by_label', [config.label.toLowerCase()])}
+                label={i18n('filter_by_label', [sectionLabel.toLowerCase()])}
                 placeholder={placeholder}
                 helperText={currentValue.length === 0 ? emptyHelperText : undefined}
                 slotProps={{ formHelperText: { sx: { fontStyle: 'italic' } } }}
               />
             )}
           />
+          {isSupplierSelector && (
+            <FormControlLabel
+              sx={{ mt: 1, display: 'flex' }}
+              control={
+                <Checkbox
+                  size="small"
+                  checked={invertSuppliersSelection}
+                  disabled={selectedCount === 0}
+                  onChange={(e) =>
+                    setUserSettings({
+                      ...userSettings,
+                      search: {
+                        ...userSettings.search,
+                        invertSuppliersSelection: e.target.checked,
+                      },
+                    })
+                  }
+                />
+              }
+              label={i18n('drawer_supplier_invert')}
+            />
+          )}
           {isSupplierSelector && (
             <FormControlLabel
               sx={{ mt: 1 }}
@@ -272,7 +331,7 @@ export default function ColumnDrawerSection({
 
     // When suppliers are selected and this is the country filter, grey out
     // countries none of the selected suppliers reside in — they could never match.
-    const suppliers = selectedSuppliers ?? [];
+    const suppliers = searchedSuppliers;
     const offeredCountries =
       bindKey === 'country' && suppliers.length > 0
         ? new Set<string>(countriesForSuppliers(shippingMeta, suppliers))
@@ -338,7 +397,7 @@ export default function ColumnDrawerSection({
     // grey out shipping scopes none of them can fulfill (respecting the hierarchy,
     // so a domestic supplier still enables "local") — but never a currently-selected
     // chip, so the user can always toggle it back off.
-    const suppliers = selectedSuppliers ?? [];
+    const suppliers = searchedSuppliers;
     const fulfillable =
       bindKey === 'shippingType' && suppliers.length > 0
         ? new Set<string>(fulfillableShippingRanges(shippingMeta, suppliers))

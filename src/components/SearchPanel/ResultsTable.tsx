@@ -613,6 +613,7 @@ export default function ResultsTable({
       ...appContext.userSettings,
       priceMin: undefined,
       priceMax: undefined,
+      search: { ...appContext.userSettings.search, invertSuppliersSelection: false },
     });
     if (executedQuery) appContext.setPendingSearchQuery(executedQuery);
   };

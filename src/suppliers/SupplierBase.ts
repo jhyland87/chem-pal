@@ -195,6 +195,9 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   /** Memoized {@link effectiveQueryCandidates}; cleared when {@link setResolvedStructures} runs. */
   private effectiveQueryCandidatesCache?: string[];
 
+  /** Extra candidate names (e.g. localized names) appended by {@link setExtraQueryCandidates}. */
+  private extraQueryCandidates: string[] = [];
+
   /**
    * Runtime flag resolved from `userSettings.fuzzyFilteringDisabled`. When true,
    * `fuzzyFilterAst` skips fuzzball scoring: plain queries return raw supplier
@@ -902,9 +905,50 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    */
   protected effectiveQueryCandidates(): string[] {
     if (this.effectiveQueryCandidatesCache === undefined) {
-      this.effectiveQueryCandidatesCache = this.resolveEffectiveQueryCandidates();
+      this.effectiveQueryCandidatesCache = this.withExtraCandidates(
+        this.resolveEffectiveQueryCandidates(),
+      );
     }
     return this.effectiveQueryCandidatesCache;
+  }
+
+  /**
+   * Registers extra candidate names for this supplier to match products against, on top of
+   * the query and any resolved identifier names — e.g. the Dutch name of a chemical for a
+   * Dutch-language store. Resets the memoized {@link effectiveQueryCandidates}.
+   * @param names - Extra candidate names; blanks are ignored.
+   * @example
+   * ```typescript
+   * this.setExtraQueryCandidates(["zoutzuur"]); // "hydrochloric acid" also matches "Zoutzuur"
+   * ```
+   * @source
+   */
+  protected setExtraQueryCandidates(names: readonly string[]): void {
+    this.extraQueryCandidates = names.map((name) => name.trim()).filter((name) => name !== '');
+    this.effectiveQueryCandidatesCache = undefined;
+  }
+
+  /**
+   * Appends {@link extraQueryCandidates} to a candidate list, skipping case-insensitive duplicates.
+   * @param candidates - The base candidates, best first.
+   * @returns The base candidates followed by any new extra candidates.
+   * @example
+   * ```typescript
+   * // extras = ["zoutzuur"]
+   * this.withExtraCandidates(["hydrochloric acid"]); // ["hydrochloric acid", "zoutzuur"]
+   * ```
+   * @source
+   */
+  private withExtraCandidates(candidates: string[]): string[] {
+    const seen = new Set(candidates.map((name) => name.toLowerCase()));
+    const merged = [...candidates];
+    for (const name of this.extraQueryCandidates) {
+      if (!seen.has(name.toLowerCase())) {
+        seen.add(name.toLowerCase());
+        merged.push(name);
+      }
+    }
+    return merged;
   }
 
   /**

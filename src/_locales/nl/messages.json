@@ -4,45 +4,45 @@
     "description": "The extension name shown in the browser and web store."
   },
   "app_description": {
-    "message": "Hae ja vertaile laboratoriokemikaalien tuotelistauksia tuetuilta toimittajien verkkosivustoilta.",
+    "message": "Zoek en vergelijk aanbiedingen van laboratoriumchemicaliën op ondersteunde websites van leveranciers.",
     "description": "The extension description shown in the browser and web store."
   },
   "app_title": {
-    "message": "ChemPal – kemiallisten reagenssien hakukone",
+    "message": "ChemPal - Zoekmachine voor chemische reagentia",
     "description": "The browser tab title."
   },
   "app_error_generic": {
-    "message": "Jokin meni pieleen",
+    "message": "Er is iets misgegaan",
     "description": "Fallback message shown when the app crashes."
   },
 
   "common_open_in_tab": {
-    "message": "Avaa välilehdessä",
+    "message": "Openen in tabblad",
     "description": "Accessible label for the button that opens the extension in a full browser tab."
   },
   "common_show_more": {
-    "message": "lisää",
+    "message": "meer",
     "description": "Inline link label to expand a truncated product description."
   },
   "common_show_less": {
-    "message": "vähemmän",
+    "message": "minder",
     "description": "Inline link label to collapse an expanded product description."
   },
   "common_back_to_search": {
-    "message": "Takaisin haun aloitussivulle",
+    "message": "Terug naar zoekstartpagina",
     "description": "Accessible label for the back button that returns to the search home."
   },
 
   "about_title": {
-    "message": "Tietoja ChemPalista",
+    "message": "Over ChemPal",
     "description": "The title of the About ChemPal section."
   },
   "about_description": {
-    "message": "Avoimen lähdekoodin projekti, jonka tavoitteena on auttaa kemian harrastajia löytämään parhaat tarjoukset kemiallisista reagensseista. Yrityksille, yliopistoille ja tutkimuslaitoksille on tarjolla runsaasti vastaavia palveluita, mutta yksityishenkilöille ja harrastajille ei ole yhtään. ChemPal hakee vain toimittajilta, jotka myyvät yksityishenkilöille ja toimittavat koteihin.",
+    "message": "Open-sourceproject dat amateurchemici en hobbyisten helpt de beste aanbiedingen voor chemische reagentia te vinden. Er bestaan genoeg vergelijkbare diensten voor bedrijven, universiteiten en onderzoeksinstellingen, maar geen enkele voor particulieren en hobbyisten. ChemPal doorzoekt alleen leveranciers die aan particulieren verkopen en aan woonadressen leveren.",
     "description": "The description of the application."
   },
   "about_contributors": {
-    "message": "Osallistujat",
+    "message": "Bijdragers",
     "description": "The title of the contributors section."
   },
   "about_logo_alt": {
@@ -50,11 +50,11 @@
     "description": "Alt text for the ChemPal logo in the About modal."
   },
   "about_repository_link_title": {
-    "message": "Koodivarasto",
+    "message": "Coderepository",
     "description": "Alt text for the Code Repository link in the About modal."
   },
   "about_homepage_link_title": {
-    "message": "Kotisivu",
+    "message": "Startpagina",
     "description": "Alt text for the Homepage link in the About modal."
   },
   "about_wiki_link_title": {
@@ -62,163 +62,162 @@
     "description": "Alt text for the Wiki link in the About modal."
   },
   "about_privacy_link_title": {
-    "message": "Tietosuojakäytäntö",
+    "message": "Privacybeleid",
     "description": "Alt text for the Privacy Policy link in the About modal."
   },
   "about_bugs_link_title": {
-    "message": "Virheet",
+    "message": "Bugs",
     "description": "Alt text for the Bugs link in the About modal."
   },
-
   "loading_cancel": {
-    "message": "Peruuta haku",
+    "message": "Zoekopdracht annuleren",
     "description": "The text of the button to cancel the search."
   },
   "loading_aborting": {
-    "message": "Keskeytetään...",
+    "message": "Afbreken...",
     "description": "Status shown when aborting a search."
   },
   "search_status_fetching": {
-    "message": "Haetaan tuloksia... ($count$ löytynyt)",
+    "message": "Resultaten ophalen... ($count$ gevonden)",
     "placeholders": { "count": { "content": "$1" } }
   },
   "search_status_found_one": {
-    "message": "Löytyi $count$ tulos...",
+    "message": "$count$ resultaat gevonden...",
     "placeholders": { "count": { "content": "$1" } }
   },
   "search_status_found_other": {
-    "message": "Löytyi $count$ tulosta...",
+    "message": "$count$ resultaten gevonden...",
     "placeholders": { "count": { "content": "$1" } }
   },
   "search_status_aborted": {
-    "message": "Haku keskeytetty",
+    "message": "Zoekopdracht afgebroken",
     "description": "Status/table text when the user aborts a search."
   },
   "search_error_failed": {
-    "message": "Haku epäonnistui",
+    "message": "Zoekopdracht mislukt",
     "description": "Fallback error text when a search fails without a specific message."
   },
   "search_no_shipping_suppliers": {
-    "message": "Yksikään toimittaja ei toimita sijaintiisi. Poista käytöstä ”Vain toimittajat, jotka toimittavat sijaintiini” hakupaneelista ottaaksesi ne mukaan.",
+    "message": "Geen leveranciers leveren aan uw locatie. Schakel “Alleen leveranciers die aan mijn locatie leveren” uit in de zoeklade om ze toch mee te nemen.",
     "description": "Shown when the ship-to filter excludes every supplier."
   },
   "search_no_results_for": {
-    "message": "Ei tuloksia haulle ”$query$”",
+    "message": "Geen resultaten gevonden voor \"$query$\"",
     "placeholders": { "query": { "content": "$1" } }
   },
   "search_try_broaden": {
-    "message": "Kokeile laajentaa hakusuodattimia paneelissa.",
+    "message": "Probeer uw zoekfilters in de lade te verruimen.",
     "description": "No-results hint when filters are active."
   },
   "search_suggest_name": {
-    "message": "Kokeile ehkä hakea: $name$",
+    "message": "Probeer misschien te zoeken naar: $name$",
     "placeholders": { "name": { "content": "$1" } }
   },
   "search_suggest_cas": {
-    "message": "Kokeile hakea CAS-numerolla: $cas$",
+    "message": "Probeer in plaats daarvan te zoeken op CAS-nummer: $cas$",
     "placeholders": { "cas": { "content": "$1" } }
   },
   "search_suggest_advanced": {
-    "message": "Kokeile tätä tarkennettua hakua: $query$",
+    "message": "Probeer deze geavanceerde zoekopdracht: $query$",
     "placeholders": { "query": { "content": "$1" } }
   },
   "search_suggest_simpler": {
-    "message": "Kokeile yksinkertaisempaa hakua, esimerkiksi: $query$",
+    "message": "Probeer een eenvoudigere zoekopdracht, zoals: $query$",
     "placeholders": { "query": { "content": "$1" } }
   },
   "loading_loading": {
-    "message": "Ladataan...",
+    "message": "Laden...",
     "description": "Status shown when loading a search."
   },
   "loading_aria": {
-    "message": "haku latautuu",
+    "message": "zoekopdracht wordt geladen",
     "description": "Accessible label for the loading backdrop."
   },
   "loading_found_single": {
-    "message": "Löytyi $count$ tulos.",
+    "message": "$count$ resultaat gevonden.",
     "placeholders": { "count": { "content": "$1" } }
   },
   "loading_found_one_supplier": {
-    "message": "Löytyi $count$ tulosta $suppliers$ toimittajalta",
+    "message": "$count$ resultaten gevonden bij $suppliers$ leverancier",
     "placeholders": { "count": { "content": "$1" }, "suppliers": { "content": "$2" } }
   },
   "loading_found_many_suppliers": {
-    "message": "Löytyi $count$ tulosta $suppliers$ toimittajalta",
+    "message": "$count$ resultaten gevonden bij $suppliers$ leveranciers",
     "placeholders": { "count": { "content": "$1" }, "suppliers": { "content": "$2" } }
   },
 
   "search_open_settings": {
-    "message": "Avaa asetukset",
+    "message": "Instellingen openen",
     "description": "Accessible label for the settings button on the search home."
   },
   "search_go_to_results": {
-    "message": "Siirry tuloksiin",
+    "message": "Naar resultaten",
     "description": "Accessible label for the button that jumps to cached search results."
   },
   "search_logo_alt": {
-    "message": "Toimittajahaun logo",
+    "message": "Logo van leverancierszoeker",
     "description": "Alt text for the search home logo."
   },
   "search_placeholder": {
-    "message": "Hae tuotteita...",
+    "message": "Zoek naar producten...",
     "description": "Placeholder text for the main search input."
   },
   "search_form_aria": {
-    "message": "hae tuotteita",
+    "message": "zoeken naar producten",
     "description": "Accessible label for the main search input."
   },
   "search_submit": {
-    "message": "hae",
+    "message": "zoeken",
     "description": "Accessible label for the search submit button."
   },
   "search_advanced_options": {
-    "message": "lisäasetukset",
+    "message": "geavanceerde opties",
     "description": "Accessible label for the advanced-options (drawer) button."
   },
   "search_active_filters": {
-    "message": "$count$ aktiivista hakusuodatinta",
+    "message": "$count$ actieve zoekfilters",
     "description": "Tooltip on the advanced-search button when filters are active.",
     "placeholders": { "count": { "content": "$1" } }
   },
   "search_invalid_query": {
-    "message": "Virheellinen hakukysely.",
+    "message": "Ongeldige zoekopdracht.",
     "description": "Fallback error hint shown when a search query is invalid."
   },
 
   "drawer_tab_search": {
-    "message": "HAKU",
+    "message": "ZOEKEN",
     "description": "Label for the Search tab in the side drawer."
   },
   "drawer_tab_history": {
-    "message": "HISTORIA",
+    "message": "GESCHIEDENIS",
     "description": "Label for the History tab in the side drawer."
   },
   "drawer_tab_settings": {
-    "message": "ASETUKSET",
+    "message": "INSTELLINGEN",
     "description": "Label for the Settings tab in the side drawer."
   },
   "drawer_product_name_label": {
-    "message": "Tuotteen nimi tai avainsana",
+    "message": "Productnaam of trefwoord",
     "description": "Label for the product-name field in the search drawer."
   },
   "drawer_search_button": {
-    "message": "Hae",
+    "message": "Zoeken",
     "description": "Label for the search button in the search drawer."
   },
   "drawer_clear_filters": {
-    "message": "Tyhjennä kaikki suodattimet",
+    "message": "Alle filters wissen",
     "description": "Label for the button that clears all advanced search filters in the drawer."
   },
   "drawer_results_limit": {
-    "message": "Tulosraja",
+    "message": "Resultaatlimiet",
     "description": "Accordion title for the per-supplier results limit."
   },
   "drawer_results_limit_hint": {
-    "message": "($count$ toimittajaa kohti)",
+    "message": "($count$ per leverancier)",
     "placeholders": { "count": { "content": "$1" } }
   },
   "drawer_results_limit_label": {
-    "message": "Tulosraja (toimittajaa kohti)",
+    "message": "Resultaatlimiet (per leverancier)",
     "description": "Field label for the per-supplier results limit."
   },
   "drawer_range_min": {
@@ -226,104 +225,98 @@
     "description": "Label for the minimum value of a numeric range input."
   },
   "drawer_range_max": {
-    "message": "Maks",
+    "message": "Max",
     "description": "Label for the maximum value of a numeric range input."
   },
   "drawer_only_shipping_suppliers": {
-    "message": "Vain toimittajat, jotka toimittavat sijaintiini",
+    "message": "Alleen leveranciers die aan mijn locatie leveren",
     "description": "Checkbox label to hide suppliers that do not ship to the user's location."
   },
   "drawer_hide_restricted_products": {
-    "message": "Piilota tuotteet, joita en voi ostaa",
+    "message": "Producten verbergen die ik niet kan kopen",
     "description": "Checkbox label to hide products restricted by region or to business/government buyers."
   },
   "drawer_supplier_label": {
-    "message": "Hae toimittajia",
+    "message": "Leveranciers doorzoeken",
     "description": "Drawer accordion label for the supplier selector."
   },
   "drawer_supplier_exclude_label": {
-    "message": "Jätä toimittajia pois",
+    "message": "Leveranciers uitsluiten",
     "description": "Drawer accordion label for the supplier selector while it acts as an exclusion list."
   },
   "drawer_supplier_excluded_count": {
-    "message": "$count$ pois jätetty",
+    "message": "$count$ uitgesloten",
     "description": "Accordion hint: how many suppliers are excluded.",
     "placeholders": { "count": { "content": "$1" } }
   },
   "drawer_supplier_invert": {
-    "message": "Hae kaikilta toimittajilta paitsi valituilta",
+    "message": "Alle leveranciers doorzoeken behalve de geselecteerde",
     "description": "Checkbox label that turns the supplier selection into an exclusion list."
   },
   "drawer_supplier_empty_helper": {
-    "message": "Kaikki toimittajat mukana oletuksena",
+    "message": "Standaard alle leveranciers inbegrepen",
     "description": "Helper text shown when no supplier is selected."
   },
   "drawer_supplier_placeholder": {
-    "message": "Kirjoita toimittajan nimi",
+    "message": "Typ de naam van een leverancier",
     "description": "Placeholder for the supplier selector input."
   },
   "drawer_country_label": {
-    "message": "Maa",
+    "message": "Land",
     "description": "Drawer accordion label for the country selector."
   },
   "drawer_country_empty_helper": {
-    "message": "Kaikki maat mukana oletuksena",
+    "message": "Standaard alle landen inbegrepen",
     "description": "Helper text shown when no country is selected."
   },
   "drawer_country_placeholder": {
-    "message": "Kirjoita maa tai koodi",
+    "message": "Typ land of code",
     "description": "Placeholder for the country selector input."
   },
   "drawer_shipping_label": {
-    "message": "Toimitustyyppi",
+    "message": "Verzendtype",
     "description": "Drawer accordion label for the shipping-type filter."
   },
   "drawer_availability_label": {
-    "message": "Saatavuus",
+    "message": "Beschikbaarheid",
     "description": "Drawer accordion label for the availability filter."
   },
   "drawer_price_label": {
-    "message": "Hintahaarukka",
+    "message": "Prijsbereik",
     "description": "Drawer accordion label for the price-range filter."
   },
 
-  "shipping_worldwide": { "message": "Maailmanlaajuinen", "description": "Shipping range value." },
-  "shipping_international": { "message": "Kansainvälinen", "description": "Shipping range value." },
-  "shipping_domestic": { "message": "Kotimainen", "description": "Shipping range value." },
-  "shipping_local": { "message": "Paikallinen", "description": "Shipping range value." },
+  "shipping_worldwide": { "message": "Wereldwijd", "description": "Shipping range value." },
+  "shipping_international": { "message": "Internationaal", "description": "Shipping range value." },
+  "shipping_domestic": { "message": "Binnenlands", "description": "Shipping range value." },
+  "shipping_local": { "message": "Lokaal", "description": "Shipping range value." },
 
-  "availability_in_stock": { "message": "Varastossa", "description": "Availability value." },
+  "availability_in_stock": { "message": "Op voorraad", "description": "Availability value." },
   "availability_limited_stock": {
-    "message": "Rajallinen varasto",
+    "message": "Beperkte voorraad",
     "description": "Availability value."
   },
-  "availability_out_of_stock": {
-    "message": "Loppunut varastosta",
-    "description": "Availability value."
-  },
-  "availability_preorder": { "message": "Ennakkotilaus", "description": "Availability value." },
-  "availability_backorder": { "message": "Jälkitoimitus", "description": "Availability value." },
-  "availability_discontinued": {
-    "message": "Poistettu valikoimasta",
-    "description": "Availability value."
-  },
-  "availability_unavailable": { "message": "Ei saatavilla", "description": "Availability value." },
-  "availability_unknown": { "message": "Tuntematon", "description": "Availability value." },
+  "availability_out_of_stock": { "message": "Niet op voorraad", "description": "Availability value." },
+  "availability_preorder": { "message": "Vooruitbestellen", "description": "Availability value." },
+  "availability_backorder": { "message": "Nabestelling", "description": "Availability value." },
+  "availability_discontinued": { "message": "Uit het assortiment", "description": "Availability value." },
+  "availability_unavailable": { "message": "Niet beschikbaar", "description": "Availability value." },
+  "availability_unknown": { "message": "Onbekend", "description": "Availability value." },
 
   "filter_by_label": {
-    "message": "Suodata: $label$",
+    "message": "Filteren op $label$",
     "placeholders": { "label": { "content": "$1" } }
   },
   "filter_range_aria": {
-    "message": "$header$-haarukka",
+    "message": "Bereik van $header$",
     "placeholders": { "header": { "content": "$1" } }
   },
   "filter_placeholder_title": {
-    "message": "Otsikko...",
+    "message": "Titel...",
     "description": "Placeholder for the Title column filter."
   },
   "filter_placeholder_supplier": {
-    "message": "BVV, HiMedia, jne...",
+    "message": "BVV, HiMedia, enz...",
     "description": "Placeholder for the Supplier column filter."
   },
   "filter_placeholder_country": {
@@ -331,19 +324,19 @@
     "description": "Placeholder for the Country column filter."
   },
   "filter_placeholder_shipping": {
-    "message": "Toimitus...",
+    "message": "Verzending...",
     "description": "Placeholder for the Shipping column filter."
   },
   "filter_placeholder_availability": {
-    "message": "Saatavuus...",
+    "message": "Beschikbaarheid...",
     "description": "Placeholder for the Availability column filter."
   },
   "filter_placeholder_description": {
-    "message": "Kuvaus...",
+    "message": "Beschrijving...",
     "description": "Placeholder for the Description column filter."
   },
   "filter_placeholder_price": {
-    "message": "1.00 - 1000.00",
+    "message": "1,00 - 1000,00",
     "description": "Placeholder for the Price column filter."
   },
   "filter_placeholder_quantity": {
@@ -351,11 +344,11 @@
     "description": "Placeholder for the Quantity column filter."
   },
   "filter_placeholder_unit": {
-    "message": "Yksikkö",
+    "message": "Eenheid",
     "description": "Placeholder for the Unit column filter."
   },
   "filter_placeholder_unit_price": {
-    "message": "0.01 - 100.00",
+    "message": "0,01 - 100,00",
     "description": "Placeholder for the Unit Price column filter."
   },
   "filter_placeholder_cas": {
@@ -363,7 +356,7 @@
     "description": "Placeholder for the CAS column filter."
   },
   "filter_placeholder_formula": {
-    "message": "Kaava...",
+    "message": "Formule...",
     "description": "Placeholder for the Formula column filter."
   },
   "filter_placeholder_moleweight": {
@@ -371,82 +364,98 @@
     "description": "Placeholder for the Molecular Weight column filter."
   },
   "filter_placeholder_purity": {
-    "message": "Puhtaus...",
+    "message": "Zuiverheid...",
     "description": "Placeholder for the Purity column filter."
   },
   "filter_placeholder_concentration": {
-    "message": "Pitoisuus...",
+    "message": "Concentratie...",
     "description": "Placeholder for the Concentration column filter."
   },
 
-  "column_title": { "message": "Otsikko", "description": "Table column header." },
-  "column_supplier": { "message": "Toimittaja", "description": "Table column header." },
-  "column_country": { "message": "Maa", "description": "Table column header." },
-  "column_shipping": { "message": "Toimitus", "description": "Table column header." },
-  "column_availability": { "message": "Saatavuus", "description": "Table column header." },
-  "column_description": { "message": "Kuvaus", "description": "Table column header." },
+  "column_title": { "message": "Titel", "description": "Table column header for product title." },
+  "column_supplier": {
+    "message": "Leverancier",
+    "description": "Table column header for product supplier."
+  },
+  "column_url": { "message": "URL", "description": "Table column header for product URL." },
+  "column_country": {
+    "message": "Land",
+    "description": "Table column header for product country."
+  },
+  "column_shipping": {
+    "message": "Verzending",
+    "description": "Table column header for product shipping."
+  },
+  "column_availability": {
+    "message": "Beschikbaarheid",
+    "description": "Table column header for product availability."
+  },
+  "column_description": {
+    "message": "Beschrijving",
+    "description": "Table column header for product description."
+  },
   "column_price": {
-    "message": "Hinta",
-    "description": "Table column header / column-visibility menu label."
+    "message": "Prijs",
+    "description": "Table column header for product price."
   },
   "column_price_currency": {
-    "message": "Hinta ($currency$)",
+    "message": "Prijs ($currency$)",
     "placeholders": { "currency": { "content": "$1" } }
   },
-  "column_quantity": { "message": "Määrä", "description": "Table column header." },
-  "column_unit": { "message": "Yksikkö", "description": "Table column header." },
-  "column_unit_price": { "message": "Yksikköhinta", "description": "Table column header for price per base unit." },
-  "column_price_trend": { "message": "Trendi", "description": "Table column header for the price-history trend sparkline." },
-  "column_price_change": { "message": "Muutos", "description": "Table column header for the numeric price change (signed delta and percent)." },
-  "column_sds": { "message": "KTT", "description": "Table column header." },
-  "column_specs": { "message": "Tekn. tiedot", "description": "Table column header." },
+  "column_quantity": { "message": "Aantal", "description": "Table column header." },
+  "column_unit": { "message": "Eenheid", "description": "Table column header." },
+  "column_unit_price": { "message": "Eenheidsprijs", "description": "Table column header for price per base unit." },
+  "column_price_trend": { "message": "Trend", "description": "Table column header for the price-history trend sparkline." },
+  "column_price_change": { "message": "Wijziging", "description": "Table column header for the numeric price change (signed delta and percent)." },
+  "column_sds": { "message": "VIB", "description": "Table column header." },
+  "column_specs": { "message": "Specs", "description": "Table column header." },
   "column_coa": { "message": "COA", "description": "Table column header." },
   "column_cas": { "message": "CAS", "description": "Table column header." },
   "column_pubchem": { "message": "PubChem", "description": "Table column header." },
-  "column_formula": { "message": "Kaava", "description": "Table column header." },
-  "column_moleweight": { "message": "M.M.", "description": "Table column header." },
-  "column_purity": { "message": "Puhtaus", "description": "Table column header." },
-  "column_concentration": { "message": "Pitoisuus", "description": "Table column header." },
+  "column_formula": { "message": "Formule", "description": "Table column header." },
+  "column_moleweight": { "message": "Mol.gew.", "description": "Table column header." },
+  "column_purity": { "message": "Zuiverheid", "description": "Table column header." },
+  "column_concentration": { "message": "Conc.", "description": "Table column header." },
 
   "results_searched_for": {
-    "message": "Haettiin: $query$",
+    "message": "Gezocht naar: $query$",
     "placeholders": { "query": { "content": "$1" } }
   },
   "results_query": {
-    "message": "Haku: $query$",
+    "message": "Zoekopdracht: $query$",
     "placeholders": { "query": { "content": "$1" } }
   },
   "results_count": {
-    "message": "Tuloksia: $count$",
+    "message": "Resultaten: $count$",
     "placeholders": { "count": { "content": "$1" } }
   },
   "results_count_filtered": {
-    "message": "Tuloksia: $filtered$ / $total$",
+    "message": "Resultaten: $filtered$ van $total$",
     "placeholders": { "filtered": { "content": "$1" }, "total": { "content": "$2" } }
   },
   "results_filter_placeholder": {
-    "message": "Suodata tuloksia...",
+    "message": "Resultaten filteren...",
     "description": "Placeholder for the global results filter input."
   },
   "results_filter_aria": {
-    "message": "Suodata tuloksia",
+    "message": "Resultaten filteren",
     "description": "Accessible label for the global results filter input."
   },
   "results_clear_filters": {
-    "message": "Tyhjennä kaikki suodattimet",
+    "message": "Alle filters wissen",
     "description": "Tooltip/label for the button that clears all column filters."
   },
   "results_toggle_filters": {
-    "message": "Näytä/piilota sarakesuodattimet",
+    "message": "Kolomfilters in-/uitschakelen",
     "description": "Accessible label for the header button that shows/hides the per-column filter row."
   },
   "results_active_column_filters": {
-    "message": "$count$ aktiivista sarakesuodatinta",
+    "message": "$count$ actieve kolomfilters",
     "description": "Tooltip on the column-filter toggle showing how many columns are filtered.",
     "placeholders": { "count": { "content": "$1" } }
   },
   "results_column_visibility": {
-    "message": "Näytä tai piilota sarakkeita",
+    "message": "Kolommen tonen of verbergen",
     "description": "Accessible label for the header button that opens the column-visibility menu."
   },
   "results_column_filter_number_min": {
@@ -460,223 +469,211 @@
     "description": "Label for the maximum value of a numeric column filter."
   },
   "results_open_options": {
-    "message": "Avaa asetukset",
+    "message": "Opties openen",
     "description": "Accessible label for the header button that opens the search/settings options drawer."
   },
   "results_rows_per_page_aria": {
-    "message": "riviä sivulla",
+    "message": "rijen per pagina",
     "description": "Accessible label for the page-size selector."
   },
   "results_status_searching": {
-    "message": "Haetaan...",
+    "message": "Zoeken...",
     "description": "Status shown while a search is running."
   },
   "results_status_no_search_query": {
-    "message": "Ei hakukyselyä",
+    "message": "Geen zoekopdracht",
     "description": "Status shown when there is no search query."
   },
   "results_status_no_results_filtered": {
-    "message": "Hakusanallesi ja suodattimillesi ei löytynyt tuloksia.",
+    "message": "Geen resultaten gevonden voor uw zoekopdracht en filters.",
     "description": "Status shown when a search with active drawer filters returns nothing."
   },
   "results_retry_without_filters": {
-    "message": "Napsauta tästä yrittääksesi hakua ilman suodattimia",
+    "message": "Klik hier om opnieuw te zoeken zonder filters",
     "description": "Link that clears the search filters and re-runs the search."
   },
   "results_status_hidden_by_column_filters": {
-    "message": "Haullesi on $count$ tulosta.",
+    "message": "Er zijn $count$ resultaten voor uw zoekopdracht.",
     "description": "Status shown when column filters hide every result.",
     "placeholders": { "count": { "content": "$1" } }
   },
   "results_clear_column_filters": {
-    "message": "Tyhjennä sarakesuodattimet nähdäksesi kaikki",
+    "message": "Wis uw kolomfilters om ze allemaal te zien",
     "description": "Link that clears the results table's column filters."
   },
   "results_status_no_results_found": {
-    "message": "Ei tuloksia",
+    "message": "Geen resultaten gevonden",
     "description": "Status shown when a search returns nothing."
   },
   "results_error": {
-    "message": "Virhe: $error$",
+    "message": "Fout: $error$",
     "placeholders": { "error": { "content": "$1" } }
   },
   "results_retry": {
-    "message": "Yritä uudelleen",
+    "message": "Opnieuw proberen",
     "description": "Label for the retry button."
   },
   "results_show": {
-    "message": "Näytä",
+    "message": "Tonen",
     "description": "Label preceding the page-size selector."
   },
   "results_all": {
-    "message": "Kaikki",
+    "message": "Alles",
     "description": "Page-size option that shows all rows."
   },
   "results_rows": {
-    "message": "Riviä",
+    "message": "Rijen",
     "description": "Label following the page-size selector."
   },
   "results_page_of_total": {
-    "message": "Sivu $page$ / $total$",
+    "message": "Pagina $page$ van $total$",
     "placeholders": { "page": { "content": "$1" }, "total": { "content": "$2" } }
   },
   "results_total": {
-    "message": "($total$ tulosta yhteensä)",
+    "message": "($total$ resultaten in totaal)",
     "placeholders": { "total": { "content": "$1" } }
   },
   "results_showing": {
-    "message": "(Näytetään $filtered$ / $total$ tulosta)",
+    "message": "($filtered$ van $total$ resultaten getoond)",
     "placeholders": { "filtered": { "content": "$1" }, "total": { "content": "$2" } }
   },
 
   "history_count_single": {
-    "message": "$count$ haku",
+    "message": "$count$ zoekopdracht",
     "placeholders": { "count": { "content": "$1" } }
   },
   "history_count_plural": {
-    "message": "$count$ hakua",
+    "message": "$count$ zoekopdrachten",
     "placeholders": { "count": { "content": "$1" } }
   },
   "history_clear": {
-    "message": "Tyhjennä historia",
+    "message": "Geschiedenis wissen",
     "description": "Tooltip/label for the clear-history button."
   },
   "history_empty": {
-    "message": "Ei vielä hakuhistoriaa.",
+    "message": "Nog geen zoekgeschiedenis.",
     "description": "Empty-state text for the history panel."
   },
   "history_result_single": {
-    "message": "$count$ tulos",
+    "message": "$count$ resultaat",
     "placeholders": { "count": { "content": "$1" } }
   },
   "history_result_plural": {
-    "message": "$count$ tulosta",
+    "message": "$count$ resultaten",
     "placeholders": { "count": { "content": "$1" } }
   },
   "history_filter_availability": {
-    "message": "Saatavuus: $value$",
+    "message": "Beschikbaarheid: $value$",
     "placeholders": { "value": { "content": "$1" } }
   },
   "history_filter_country": {
-    "message": "Maa: $value$",
+    "message": "Land: $value$",
     "placeholders": { "value": { "content": "$1" } }
   },
   "history_filter_shipping": {
-    "message": "Toimitus: $value$",
+    "message": "Verzending: $value$",
     "placeholders": { "value": { "content": "$1" } }
   },
   "history_filter_suppliers": {
-    "message": "Toimittajat: $count$ valittu",
+    "message": "Leveranciers: $count$ geselecteerd",
     "placeholders": { "count": { "content": "$1" } }
   },
   "history_filter_suppliers_excluded": {
-    "message": "Toimittajat: $count$ pois jätetty",
+    "message": "Leveranciers: $count$ uitgesloten",
     "placeholders": { "count": { "content": "$1" } }
   },
 
   "settings_loading": {
-    "message": "Ladataan asetuksia...",
+    "message": "Instellingen laden...",
     "description": "Fallback shown while the settings panel loads."
   },
-  "settings_section_behavior": { "message": "Toiminta", "description": "Settings section header." },
-  "settings_section_cache": { "message": "Välimuisti", "description": "Settings section header." },
+  "settings_section_behavior": { "message": "Gedrag", "description": "Settings section header." },
+  "settings_section_cache": { "message": "Cache", "description": "Settings section header." },
   "settings_section_price_history": {
-    "message": "Hintahistoria",
+    "message": "Prijsgeschiedenis",
     "description": "Settings section header."
   },
-  "settings_section_display": { "message": "Näyttö", "description": "Settings section header." },
+  "settings_section_display": { "message": "Weergave", "description": "Settings section header." },
   "settings_section_excluded": {
-    "message": "Poissuljetut tuotteet",
+    "message": "Uitgesloten producten",
     "description": "Settings section header."
   },
   "settings_excluded_count": {
-    "message": "määrä: $count$",
+    "message": "aantal: $count$",
     "placeholders": { "count": { "content": "$1" } },
     "description": "Italic badge by the Excluded Products header; placeholder is the number of excluded products."
   },
   "settings_supplier_disabled_count": {
-    "message": "$count$ poistettu käytöstä",
+    "message": "$count$ uitgeschakeld",
     "placeholders": { "count": { "content": "$1" } },
     "description": "Italic badge by the Supplier Status header; placeholder is the number of disabled suppliers."
   },
   "settings_section_supplier_status": {
-    "message": "Toimittajien tila",
+    "message": "Status van leveranciers",
     "description": "Settings section header."
   },
   "settings_supplier_status_desc": {
-    "message": "Toimittajan poistaminen käytöstä täällä poistaa sen kaikista hauista ja toimittajien valintasuodattimista.",
+    "message": "Een leverancier hier uitschakelen verwijdert deze uit alle zoekopdrachten en uit de leveranciersfilters.",
     "description": "Description at the top of the Supplier Status settings list."
   },
-  "settings_section_advanced": {
-    "message": "Lisäasetukset",
-    "description": "Settings section header."
-  },
-  "settings_section_actions": { "message": "Toiminnot", "description": "Settings section header." },
-  "settings_cache_results": {
-    "message": "Tallenna hakutulokset välimuistiin",
-    "description": "Setting label."
-  },
-  "settings_currency": { "message": "Valuutta", "description": "Setting label / placeholder." },
-  "settings_location": { "message": "Sijainti", "description": "Setting label." },
+  "settings_section_advanced": { "message": "Geavanceerd", "description": "Settings section header." },
+  "settings_section_actions": { "message": "Acties", "description": "Settings section header." },
+  "settings_cache_results": { "message": "Zoekresultaten cachen", "description": "Setting label." },
+  "settings_currency": { "message": "Valuta", "description": "Setting label / placeholder." },
+  "settings_location": { "message": "Locatie", "description": "Setting label." },
   "settings_location_placeholder": {
-    "message": "Maa tai koodi",
+    "message": "Land of code",
     "description": "Placeholder for the location input."
   },
-  "settings_language": { "message": "Kieli", "description": "Setting label." },
+  "settings_language": { "message": "Taal", "description": "Setting label." },
   "settings_currency_rate_hint": {
     "message": "1 USD = $rate$ $currency$",
     "placeholders": { "rate": { "content": "$1" }, "currency": { "content": "$2" } }
   },
   "settings_do_not_cache_empty": {
-    "message": "Älä tallenna tyhjiä tuloksia välimuistiin",
+    "message": "Lege resultaten niet cachen",
     "description": "Setting label."
   },
-  "settings_cache_ttl": {
-    "message": "Välimuistin voimassaoloaika (minuuttia)",
-    "description": "Setting label."
-  },
+  "settings_cache_ttl": { "message": "Cache-TTL (minuten)", "description": "Setting label." },
   "settings_cache_ttl_days_one": {
-    "message": "≈ $days$ päivä",
+    "message": "≈ $days$ dag",
     "placeholders": { "days": { "content": "$1" } },
     "description": "Day-equivalent hint under the cache TTL input; placeholder is the number of days."
   },
   "settings_cache_ttl_days_other": {
-    "message": "≈ $days$ päivää",
+    "message": "≈ $days$ dagen",
     "placeholders": { "days": { "content": "$1" } },
     "description": "Day-equivalent hint under the cache TTL input; placeholder is the number of days."
   },
   "settings_cache_stats": {
-    "message": "$count$ välimuistitietuetta · $size$",
+    "message": "$count$ gecachete records · $size$",
     "placeholders": { "count": { "content": "$1" }, "size": { "content": "$2" } },
     "description": "Small stats line under the cache section showing record count and storage size."
   },
-  "settings_clear_cache": { "message": "Tyhjennä välimuisti", "description": "Button label." },
-  "settings_cache_cleared": {
-    "message": "Välimuisti tyhjennetty.",
-    "description": "Confirmation text."
-  },
+  "settings_clear_cache": { "message": "Cache wissen", "description": "Button label." },
+  "settings_cache_cleared": { "message": "Cache gewist.", "description": "Confirmation text." },
   "settings_track_price_history": {
-    "message": "Seuraa hintahistoriaa",
+    "message": "Prijsgeschiedenis bijhouden",
     "description": "Setting label."
   },
   "settings_track_price_history_desc": {
-    "message": "Tallenna kunkin tuotteen USD-hinta ajan mittaan, jotta näet, nouseeko vai laskeeko se.",
+    "message": "Leg de USD-prijs van elk product in de loop van de tijd vast, zodat u kunt zien of die stijgt of daalt.",
     "description": "Description for the track-price-history setting."
   },
   "settings_max_price_points": {
-    "message": "Hintayksiköiden enimmäismäärä tuotetta kohti (0 = rajoittamaton)",
+    "message": "Max. prijspunten per product (0 = onbeperkt)",
     "description": "Setting label."
   },
   "settings_clear_price_history": {
-    "message": "Tyhjennä hintahistoria",
+    "message": "Prijsgeschiedenis wissen",
     "description": "Button label."
   },
   "settings_price_history_cleared": {
-    "message": "Hintahistoria tyhjennetty.",
+    "message": "Prijsgeschiedenis gewist.",
     "description": "Confirmation text."
   },
   "settings_price_history_stats": {
-    "message": "$products$ tuotetta · $points$ datapistettä · $size$",
+    "message": "$products$ producten · $points$ datapunten · $size$",
     "placeholders": {
       "products": { "content": "$1" },
       "points": { "content": "$2" },
@@ -684,194 +681,189 @@
     },
     "description": "Small stats line under the price history section showing tracked products, total data points, and storage size."
   },
-  "settings_font_size": { "message": "Fonttikoko", "description": "Setting label." },
-  "settings_font_small": { "message": "Pieni", "description": "Font-size option." },
-  "settings_font_medium": { "message": "Keskikokoinen", "description": "Font-size option." },
-  "settings_font_large": { "message": "Suuri", "description": "Font-size option." },
-  "settings_open_in_tab": { "message": "Avaa välilehdessä", "description": "Setting label." },
+  "settings_font_size": { "message": "Lettergrootte", "description": "Setting label." },
+  "settings_font_small": { "message": "Klein", "description": "Font-size option." },
+  "settings_font_medium": { "message": "Gemiddeld", "description": "Font-size option." },
+  "settings_font_large": { "message": "Groot", "description": "Font-size option." },
+  "settings_open_in_tab": { "message": "Openen in een tabblad", "description": "Setting label." },
   "settings_open_in_tab_desc": {
-    "message": "Työkalurivin kuvakkeen napsauttaminen avaa Chem Palin koko selaimen välilehteen ponnahdusikkunan sijaan.",
+    "message": "Een klik op het werkbalkpictogram opent ChemPal in een volledig browsertabblad in plaats van in de pop-up.",
     "description": "Setting description."
   },
   "settings_auto_hide_empty_columns": {
-    "message": "Piilota tyhjät sarakkeet automaattisesti",
+    "message": "Lege kolommen automatisch verbergen",
     "description": "Setting label."
   },
   "settings_auto_hide_empty_columns_desc": {
-    "message": "Piilota automaattisesti tulossarakkeet, joissa ei ole tietoja nykyiselle haulle.",
+    "message": "Verberg automatisch resultaatkolommen zonder gegevens voor de huidige zoekopdracht.",
     "description": "Setting description."
   },
   "settings_group_product_variants": {
-    "message": "Ryhmittele tuotevariantit",
+    "message": "Productvarianten groeperen",
     "description": "Setting label."
   },
   "settings_group_product_variants_desc": {
-    "message": "Kun tämä on käytössä, tuotteen variantit ryhmitellään sen rivin alle. Poista käytöstä, jotta jokainen variantti saa oman rivinsä, jolloin lajittelu ja suodatus koskevat kaikkia variantteja.",
+    "message": "Indien ingeschakeld worden de varianten van een product onder zijn rij gegroepeerd. Schakel uit om elke variant een eigen rij te geven, zodat sorteren en filteren voor alle varianten geldt.",
     "description": "Setting description."
   },
   "settings_suggest_advanced_query": {
-    "message": "Ehdota tarkennettua hakua",
+    "message": "Geavanceerd zoeken voorstellen",
     "description": "Setting label."
   },
   "settings_suggest_advanced_query_desc": {
-    "message": "Kun perushaku ei löydä mitään, ehdota tarkennettua hakua, jossa yhdistyvät yhdisteen yleisimmät nimet ja CAS-numero.",
+    "message": "Als een eenvoudige zoekopdracht niets oplevert, stel dan een geavanceerde zoekopdracht voor die de meest gebruikte namen en het CAS-nummer van de stof combineert.",
     "description": "Setting description."
   },
   "settings_excluded_empty": {
-    "message": "Ei poissuljettuja tuotteita.",
+    "message": "Geen uitgesloten producten.",
     "description": "Empty-state text."
   },
-  "settings_remove": { "message": "Poista", "description": "Tooltip for the remove button." },
+  "settings_remove": { "message": "Verwijderen", "description": "Tooltip for the remove button." },
   "settings_remove_item": {
-    "message": "Poista $item$",
+    "message": "$item$ verwijderen",
     "placeholders": { "item": { "content": "$1" } }
   },
-  "settings_clear_all": { "message": "Tyhjennä kaikki", "description": "Button label." },
-  "settings_fuzz_scorer": {
-    "message": "Sumea täsmäysmenetelmä",
-    "description": "Setting label (dev)."
-  },
+  "settings_clear_all": { "message": "Alles wissen", "description": "Button label." },
+  "settings_fuzz_scorer": { "message": "Fuzzy-matchmethode", "description": "Setting label (dev)." },
   "settings_fuzz_scorer_helper": {
-    "message": "Ohittaa kunkin toimittajan oletuspisteyttäjän",
+    "message": "Vervangt de standaardscorer van elke leverancier",
     "description": "Helper text (dev)."
   },
   "settings_fuzz_scorer_default": {
-    "message": "Oletus (toimittajakohtainen)",
+    "message": "Standaard (per leverancier)",
     "description": "Default scorer option (dev)."
   },
   "settings_max_search_time": {
-    "message": "Haun enimmäisaika (sekuntia)",
+    "message": "Maximale zoektijd (seconden)",
     "description": "Setting label (dev)."
   },
   "settings_max_search_time_helper": {
-    "message": "Ohittaa kunkin toimittajan hakuajan budjetin. Tyhjä = oletus ($seconds$ s); 0 = ei rajaa",
+    "message": "Vervangt het zoektijdbudget van elke leverancier. Leeg = standaard ($seconds$ s); 0 = geen limiet",
     "placeholders": { "seconds": { "content": "$1" } },
     "description": "Helper text; the placeholder is the default budget in seconds."
   },
   "settings_disable_fuzzy": {
-    "message": "Poista sumea suodatus käytöstä",
+    "message": "Fuzzy-filtering uitschakelen",
     "description": "Setting label (dev)."
   },
   "settings_disable_fuzzy_desc": {
-    "message": "Näytä raakatulokset (tavallinen haku) tai vain totuusarvotäsmäykset (tarkennettu haku) ilman sumeaa pisteytystä",
+    "message": "Toon ruwe resultaten (gewoon zoeken) of alleen booleaanse overeenkomsten (geavanceerd zoeken) zonder fuzzy-scoring",
     "description": "Description for the disable-fuzzy setting (dev)."
   },
-  "settings_restore_defaults": { "message": "Palauta oletukset", "description": "Button label." },
+  "settings_restore_defaults": { "message": "Standaardwaarden herstellen", "description": "Button label." },
 
-  "settings_full_reset": { "message": "Täydellinen nollaus", "description": "Button label; clears all stored data and reloads." },
-  "settings_full_reset_confirm_title": { "message": "Täydellinen nollaus?", "description": "Confirmation dialog title." },
-  "settings_full_reset_confirm_body": { "message": "Tämä poistaa pysyvästi kaikki ChemPalin tiedot – asetukset, hakuhistorian, välimuistit, hintahistorian ja tallennetut viennit – ja lataa laajennuksen uudelleen. Tätä ei voi kumota.", "description": "Confirmation dialog body." },
-  "settings_full_reset_confirm": { "message": "Nollaa kaikki", "description": "Confirm button in the full-reset dialog." },
+  "settings_full_reset": { "message": "Volledige reset", "description": "Button label; clears all stored data and reloads." },
+  "settings_full_reset_confirm_title": { "message": "Volledig resetten?", "description": "Confirmation dialog title." },
+  "settings_full_reset_confirm_body": { "message": "Hiermee worden alle ChemPal-gegevens permanent gewist — instellingen, zoekgeschiedenis, caches, prijsgeschiedenis en opgeslagen exports — en wordt de extensie opnieuw geladen. Dit kan niet ongedaan worden gemaakt.", "description": "Confirmation dialog body." },
+  "settings_full_reset_confirm": { "message": "Alles resetten", "description": "Confirm button in the full-reset dialog." },
 
-  "speed_dial_clear_results": {
-    "message": "Tyhjennä tulokset",
-    "description": "Speed-dial action."
-  },
-  "speed_dial_clear_cache": {
-    "message": "Tyhjennä välimuisti",
-    "description": "Speed-dial action."
-  },
-  "speed_dial_toggle_theme": { "message": "Vaihda teemaa", "description": "Speed-dial action." },
-  "speed_dial_stats": { "message": "Tilastot", "description": "Speed-dial action (dev)." },
+  "speed_dial_clear_results": { "message": "Resultaten wissen", "description": "Speed-dial action." },
+  "speed_dial_clear_cache": { "message": "Cache wissen", "description": "Speed-dial action." },
+  "speed_dial_toggle_theme": { "message": "Thema wisselen", "description": "Speed-dial action." },
+  "speed_dial_stats": { "message": "Statistieken", "description": "Speed-dial action (dev)." },
   "speed_dial_price_history": {
-    "message": "Hintahistoria",
+    "message": "Prijsgeschiedenis",
     "description": "Speed-dial action (dev)."
   },
-  "speed_dial_about": { "message": "Tietoja", "description": "Speed-dial action." },
-  "speed_dial_report_bug": { "message": "Ilmoita virheestä", "description": "Speed-dial action." },
-  "settings_report_bug": { "message": "Ilmoita virheestä", "description": "Settings action button label." },
-  "error_boundary_report": { "message": "Ilmoita virheestä", "description": "Button in the crash fallback to report the error." },
-  "report_dialog_title": { "message": "Ilmoita tästä virheestä", "description": "Title of the bug-report dialog." },
-  "report_dialog_desc": { "message": "Täytämme tiedot valmiiksi alle. Voit muokata mitä tahansa ennen lähettämistä.", "description": "Explains that report details are prefilled and editable." },
-  "report_via_github": { "message": "Ilmoita GitHubin kautta", "description": "Button: open a prefilled GitHub issue." },
-  "report_via_google": { "message": "Ilmoita Googlen kautta", "description": "Button: open a prefilled Google Form." },
-  "report_copy": { "message": "Kopioi tiedot", "description": "Button: copy report details to the clipboard." },
-  "report_copied": { "message": "Kopioitu", "description": "Confirmation shown after copying report details." },
-  "report_close": { "message": "Sulje", "description": "Button: dismiss the bug-report dialog." },
-  "offline_title": { "message": "Ei internetyhteyttä", "description": "Title of the full-screen offline overlay." },
-  "offline_message": { "message": "Verkkoyhteydessä ilmeni ongelma. Tämä viesti katoaa, kun yhteys palautuu.", "description": "Body of the offline overlay." },
-  "settings_share_usage_data": { "message": "Jaa käyttötiedot", "description": "Settings toggle label: opt in/out of usage analytics." },
-  "settings_share_usage_data_desc": { "message": "Lähetä käyttö- ja virhetilastoja (haut, tulosmäärät, asennukset, päivitykset, kaatumiset) ChemPalin parantamiseksi. Tiedot liitetään laitetunnisteeseen, ei nimeesi tai tiliisi.", "description": "Description under the usage-data toggle." },
+  "speed_dial_about": { "message": "Over", "description": "Speed-dial action." },
+  "speed_dial_report_bug": { "message": "Bug melden", "description": "Speed-dial action." },
+  "settings_report_bug": { "message": "Bug melden", "description": "Settings action button label." },
+  "error_boundary_report": { "message": "Fout melden", "description": "Button in the crash fallback to report the error." },
+  "report_dialog_title": { "message": "Deze fout melden", "description": "Title of the bug-report dialog." },
+  "report_dialog_desc": { "message": "We vullen de onderstaande gegevens alvast in. U kunt alles aanpassen voordat u verzendt.", "description": "Explains that report details are prefilled and editable." },
+  "report_via_github": { "message": "Melden via GitHub", "description": "Button: open a prefilled GitHub issue." },
+  "report_via_google": { "message": "Melden via Google", "description": "Button: open a prefilled Google Form." },
+  "report_copy": { "message": "Gegevens kopiëren", "description": "Button: copy report details to the clipboard." },
+  "report_copied": { "message": "Gekopieerd", "description": "Confirmation shown after copying report details." },
+  "report_close": { "message": "Sluiten", "description": "Button: dismiss the bug-report dialog." },
+  "offline_title": { "message": "Geen internetverbinding", "description": "Title of the full-screen offline overlay." },
+  "offline_message": { "message": "Er is een probleem met de netwerkverbinding. Dit bericht verdwijnt zodra uw verbinding is hersteld.", "description": "Body of the offline overlay." },
+  "settings_share_usage_data": { "message": "Gebruiksgegevens delen", "description": "Settings toggle label: opt in/out of usage analytics." },
+  "settings_share_usage_data_desc": { "message": "Verstuur gebruiks- en foutstatistieken (zoekopdrachten, aantallen resultaten, installaties, updates, crashes) om ChemPal te helpen verbeteren, gekoppeld aan een apparaat-ID — niet aan uw naam of account.", "description": "Description under the usage-data toggle." },
   "speed_dial_aria": {
-    "message": "SpeedDial-valikko",
+    "message": "SpeedDial-menu",
     "description": "Accessible label for the speed dial."
   },
   "speed_dial_hint": {
-    "message": "Vie kursori näytön oikeaan alakulmaan avataksesi valikon",
+    "message": "Beweeg uw cursor naar de rechterbenedenhoek van het scherm om het menu te openen",
     "description": "Help tooltip explaining how to open the speed dial."
   },
 
   "context_menu_copy_title": {
-    "message": "Kopioi otsikko",
+    "message": "Titel kopiëren",
     "description": "Context menu option to copy the title."
   },
   "context_menu_copy_url": {
-    "message": "Kopioi URL-osoite",
+    "message": "URL kopiëren",
     "description": "Context menu option to copy the URL."
   },
   "context_menu_copy_product_info": {
-    "message": "Kopioi tuotetiedot",
+    "message": "Productinfo kopiëren",
     "description": "Context menu option to copy the product info."
   },
+  "context_menu_copy_product_info_json": {
+    "message": "Productinfo kopiëren als JSON",
+    "description": "Context menu option to copy the product info as JSON."
+  },
   "context_menu_ignore_product": {
-    "message": "Ohita tuote",
+    "message": "Product negeren",
     "description": "Context menu option to ignore the product."
   },
   "context_menu_remove_product_from_cache": {
-    "message": "Poista tuote välimuistista",
+    "message": "Product uit cache verwijderen",
     "description": "Context menu option to remove the product from the cache."
   },
   "context_menu_open_in_new_tab": {
-    "message": "Avaa uudessa välilehdessä",
+    "message": "Openen in nieuw tabblad",
     "description": "Context menu option to open the product in a new tab."
   },
   "context_menu_expand_all": {
-    "message": "Laajenna kaikki näkyvät rivit",
+    "message": "Alle zichtbare rijen uitklappen",
     "description": "Context menu option to expand every visible row in the results table."
   },
   "context_menu_collapse_all": {
-    "message": "Kutista kaikki näkyvät rivit",
+    "message": "Alle zichtbare rijen inklappen",
     "description": "Context menu option to collapse every visible row in the results table."
   },
   "context_menu_create_bookmark": {
-    "message": "Luo kirjanmerkki",
+    "message": "Bladwijzer maken",
     "description": "Context menu option to create a bookmark."
   },
   "context_menu_search_similar": {
-    "message": "Hae samankaltaisia",
+    "message": "Vergelijkbare zoeken",
     "description": "Context menu option to search for similar products."
   },
   "context_menu_share": {
-    "message": "Jaa",
+    "message": "Delen",
     "description": "Context menu option to share the product."
   },
   "context_menu_view_details": {
-    "message": "Näytä tiedot",
+    "message": "Details bekijken",
     "description": "Context menu option to view the details of the product."
   },
   "context_menu_cache_remove_unavailable": {
-    "message": "Tätä tuotetta ei voi poistaa välimuistista",
+    "message": "Dit product kan niet uit de cache worden verwijderd",
     "description": "Shown when a product can't be removed from the cache."
   },
   "context_menu_removed_from_cache": {
-    "message": "Poistettiin $product$ välimuistista",
+    "message": "$product$ uit cache verwijderd",
     "placeholders": { "product": { "content": "$1" } }
   },
   "context_menu_search_selection": {
-    "message": "Hae ”%s” Chem Palissa",
+    "message": "\"%s\" zoeken in ChemPal",
     "description": "Right-click context menu label; %s is the selected text (substituted by Chrome)."
   },
   "omnibox_default_suggestion": {
-    "message": "Hae kemikaalitoimittajista ChemPalilla",
+    "message": "Chemicaliënleveranciers doorzoeken met ChemPal",
     "description": "Address-bar (omnibox) hint shown after the user types the ChemPal keyword."
   },
 
   "copy_info_price": {
-    "message": "Hinta: $price$",
+    "message": "Prijs: $price$",
     "placeholders": { "price": { "content": "$1" } }
   },
   "copy_info_supplier": {
-    "message": "Toimittaja: $supplier$",
+    "message": "Leverancier: $supplier$",
     "placeholders": { "supplier": { "content": "$1" } }
   },
   "copy_info_url": {
@@ -879,40 +871,40 @@
     "placeholders": { "url": { "content": "$1" } }
   },
   "copy_info_description": {
-    "message": "Kuvaus: $description$",
+    "message": "Beschrijving: $description$",
     "placeholders": { "description": { "content": "$1" } }
   },
 
   "share_fallback_title": {
-    "message": "Kemiallinen tuote",
+    "message": "Chemisch product",
     "description": "Fallback title used when sharing a product with no title."
   },
   "share_text": {
-    "message": "Katso tämä kemiallinen tuote: $product$",
+    "message": "Bekijk dit chemische product: $product$",
     "placeholders": { "product": { "content": "$1" } }
   },
 
   "bookmark_favorites_folder": {
-    "message": "ChemPal-suosikit",
+    "message": "ChemPal-favorieten",
     "description": "Name of the ChemPal favorites bookmark folder."
   },
   "bookmark_already_exists": {
-    "message": "Kirjanmerkki on jo kansiossa $folder$",
+    "message": "Bladwijzer bestaat al in $folder$",
     "placeholders": { "folder": { "content": "$1" } }
   },
   "bookmark_created": {
-    "message": "Kirjanmerkki luotu kansioon $folder$",
+    "message": "Bladwijzer gemaakt in $folder$",
     "placeholders": { "folder": { "content": "$1" } }
   },
 
   "product_detail_cas": { "message": "CAS", "description": "Product detail field label." },
-  "product_detail_formula": { "message": "Kaava", "description": "Product detail field label." },
+  "product_detail_formula": { "message": "Formule", "description": "Product detail field label." },
   "product_detail_molecular_weight": {
-    "message": "Moolimassa",
+    "message": "Molecuulgewicht",
     "description": "Product detail field label."
   },
   "product_detail_iupac_name": {
-    "message": "IUPAC-nimi",
+    "message": "IUPAC-naam",
     "description": "Product detail field label."
   },
   "product_detail_inchikey": {
@@ -921,17 +913,14 @@
   },
   "product_detail_inchi": { "message": "InChI", "description": "Product detail field label." },
   "product_detail_smiles": { "message": "SMILES", "description": "Product detail field label." },
-  "product_detail_purity": { "message": "Puhtaus", "description": "Product detail field label." },
-  "product_detail_grade": {
-    "message": "Laatuluokka",
-    "description": "Product detail field label."
-  },
+  "product_detail_purity": { "message": "Zuiverheid", "description": "Product detail field label." },
+  "product_detail_grade": { "message": "Kwaliteit", "description": "Product detail field label." },
   "product_detail_concentration": {
-    "message": "Pitoisuus",
+    "message": "Concentratie",
     "description": "Product detail field label."
   },
   "product_detail_manufacturer": {
-    "message": "Valmistaja",
+    "message": "Fabrikant",
     "description": "Product detail field label."
   },
   "product_detail_pubchem": { "message": "PubChem", "description": "Product detail field label." },
@@ -940,162 +929,159 @@
     "placeholders": { "cid": { "content": "$1" } }
   },
   "product_detail_pubchem_view": {
-    "message": "Näytä PubChemissä",
+    "message": "Bekijken op PubChem",
     "description": "Title for the PubChem link."
   },
   "product_detail_sds": {
-    "message": "Käyttöturvallisuustiedote (KTT)",
+    "message": "Veiligheidsinformatieblad (VIB)",
     "description": "Label/title for the SDS document link."
   },
   "product_detail_tds": {
-    "message": "Tekninen tiedote (TDS)",
+    "message": "Technisch informatieblad (TDS)",
     "description": "Label/title for the TDS document link."
   },
   "product_detail_coa": {
-    "message": "Analyysitodistus (COA)",
+    "message": "Analysecertificaat (COA)",
     "description": "Label/title for the COA document link."
   },
   "product_detail_open_full_image": {
-    "message": "Avaa koko kuva kohteelle $title$",
+    "message": "Volledige afbeelding van $title$ openen",
     "placeholders": { "title": { "content": "$1" } }
   },
   "product_detail_prev_image": {
-    "message": "Edellinen kuva",
+    "message": "Vorige afbeelding",
     "description": "Accessible label for the previous-image button."
   },
   "product_detail_next_image": {
-    "message": "Seuraava kuva",
+    "message": "Volgende afbeelding",
     "description": "Accessible label for the next-image button."
   },
   "product_detail_view_images": {
-    "message": "Näytä kohteen $title$ kuvat",
+    "message": "Afbeeldingen van $title$ bekijken",
     "placeholders": { "title": { "content": "$1" } }
   },
   "product_image_modal_title": {
-    "message": "Kuvat: $title$",
+    "message": "Afbeeldingen van $title$",
     "placeholders": { "title": { "content": "$1" } }
   },
   "product_image_modal_thumbnail": {
-    "message": "Näytä kuva $number$",
+    "message": "Afbeelding $number$ tonen",
     "placeholders": { "number": { "content": "$1" } }
   },
   "product_image_modal_close": {
-    "message": "Sulje",
+    "message": "Sluiten",
     "description": "Accessible label for the button that closes the image gallery modal."
   },
   "product_detail_sparkline_aria": {
-    "message": "Hintahistorian sparkline-kaavio",
+    "message": "Sparkline van prijsgeschiedenis",
     "description": "Accessible label for the price-history sparkline."
   },
   "product_detail_price_history_currency": {
-    "message": "Hintahistoria ($currency$)",
+    "message": "Prijsgeschiedenis ($currency$)",
     "placeholders": { "currency": { "content": "$1" } }
   },
   "product_detail_points": {
-    "message": "$count$ pistettä",
+    "message": "$count$ punten",
     "placeholders": { "count": { "content": "$1" } }
   },
   "product_detail_no_history": {
-    "message": "Ei vielä historiaa",
+    "message": "Nog geen geschiedenis",
     "description": "Shown when a product has no recorded price history."
   },
   "product_detail_price_history_col_date": {
-    "message": "Päivämäärä",
+    "message": "Datum",
     "description": "Column header for the date of a price-history point in the variant trend popover."
   },
   "product_detail_price_history_col_price": {
-    "message": "Hinta",
+    "message": "Prijs",
     "description": "Column header for the price of a price-history point in the variant trend popover."
   },
   "price_history_panel_title": {
-    "message": "Hintahistoria",
+    "message": "Prijsgeschiedenis",
     "description": "Price history panel title (advanced mode)."
   },
   "price_history_panel_empty": {
-    "message": "Hintamuutoksia ei ole vielä kirjattu.",
+    "message": "Nog geen prijswijzigingen vastgelegd.",
     "description": "Shown in the price history panel when no series has more than one recorded price."
   },
   "price_history_panel_col_date": {
-    "message": "Päivämäärä",
+    "message": "Datum",
     "description": "Price history panel column header for the date a price change was recorded."
   },
   "price_history_panel_col_old_price": {
-    "message": "Vanha hinta",
+    "message": "Oude prijs",
     "description": "Price history panel column header for the price before a change."
   },
   "price_history_panel_col_new_price": {
-    "message": "Uusi hinta",
+    "message": "Nieuwe prijs",
     "description": "Price history panel column header for the price after a change."
   },
   "product_detail_variants_currency": {
-    "message": "Variantit ($currency$)",
+    "message": "Varianten ($currency$)",
     "placeholders": { "currency": { "content": "$1" } }
   },
   "product_detail_parent_product": {
-    "message": "Päätuote",
+    "message": "Hoofdproduct",
     "description": "Label linking an ungrouped variant row back to its main product."
   },
   "product_detail_store_only_ebay": {
-    "message": "Toimittaa eBay-kaupastaan pienemmin rajoituksin kuin omalta verkkosivustoltaan.",
+    "message": "Wordt met minder beperkingen verzonden vanuit hun eBay-winkel dan vanaf hun eigen website.",
     "description": "Notice in the expanded product row when a supplier ships more freely via eBay than from their own site."
   },
   "product_detail_store_only_amazon": {
-    "message": "Toimittaa Amazon-kaupastaan pienemmin rajoituksin kuin omalta verkkosivustoltaan.",
+    "message": "Wordt met minder beperkingen verzonden vanuit hun Amazon-winkel dan vanaf hun eigen website.",
     "description": "Notice in the expanded product row when a supplier ships more freely via Amazon than from their own site."
   },
   "product_detail_store_only_both": {
-    "message": "Toimittaa eBay- ja Amazon-kaupoistaan pienemmin rajoituksin kuin omalta verkkosivustoltaan.",
+    "message": "Wordt met minder beperkingen verzonden vanuit hun eBay- en Amazon-winkels dan vanaf hun eigen website.",
     "description": "Notice in the expanded product row when a supplier ships more freely via both eBay and Amazon than from their own site."
   },
   "product_detail_store_more_ebay": {
-    "message": "Heidän eBay-kaupassaan on saatavilla enemmän tuotteita kuin heidän omalla verkkosivustollaan.",
+    "message": "In hun eBay-winkel zijn meer producten beschikbaar dan op hun website.",
     "description": "Notice in the expanded product row when a supplier lists additional products on eBay."
   },
   "product_detail_store_more_amazon": {
-    "message": "Heidän Amazon-kaupassaan on saatavilla enemmän tuotteita kuin heidän omalla verkkosivustollaan.",
+    "message": "In hun Amazon-winkel zijn meer producten beschikbaar dan op hun website.",
     "description": "Notice in the expanded product row when a supplier lists additional products on Amazon."
   },
   "product_detail_store_more_both": {
-    "message": "Heidän eBay- ja Amazon-kaupoissaan on saatavilla enemmän tuotteita kuin heidän omalla verkkosivustollaan.",
+    "message": "In hun eBay- en Amazon-winkels zijn meer producten beschikbaar dan op hun website.",
     "description": "Notice in the expanded product row when a supplier lists additional products on both eBay and Amazon."
   },
   "product_detail_store_only_ebay_link": {
-    "message": "eBay-kauppa",
+    "message": "eBay-winkel",
     "description": "Link text pointing to the supplier's eBay storefront."
   },
   "product_detail_store_only_amazon_link": {
-    "message": "Amazon-kauppa",
+    "message": "Amazon-winkel",
     "description": "Link text pointing to the supplier's Amazon storefront."
   },
 
-  "stats_title": { "message": "Toimittajatilastot", "description": "Stats panel title." },
+  "stats_title": { "message": "Leveranciersstatistieken", "description": "Stats panel title." },
   "stats_calls": {
-    "message": "$count$ kutsua",
+    "message": "$count$ aanroepen",
     "placeholders": { "count": { "content": "$1" } }
   },
   "stats_call_single": {
-    "message": "$count$ kutsu",
+    "message": "$count$ aanroep",
     "placeholders": { "count": { "content": "$1" } }
   },
-  "stats_clear": {
-    "message": "Tyhjennä tilastot",
-    "description": "Tooltip for the clear-stats button."
-  },
+  "stats_clear": { "message": "Statistieken wissen", "description": "Tooltip for the clear-stats button." },
   "stats_empty": {
-    "message": "Ei vielä tilastoja. Suorita haku aloittaaksesi seurannan.",
+    "message": "Nog geen statistieken. Voer een zoekopdracht uit om te beginnen met bijhouden.",
     "description": "Stats empty state."
   },
-  "stats_tab_by_supplier": { "message": "Toimittajittain", "description": "Stats tab label." },
-  "stats_tab_daily": { "message": "Päivittäin", "description": "Stats tab label." },
-  "stats_tab_totals": { "message": "Yhteensä", "description": "Stats tab label." },
-  "stats_toggle_http": { "message": "HTTP-kutsut", "description": "Stats pie view toggle." },
-  "stats_toggle_parsed": { "message": "Jäsennetty data", "description": "Stats pie view toggle." },
+  "stats_tab_by_supplier": { "message": "Per leverancier", "description": "Stats tab label." },
+  "stats_tab_daily": { "message": "Dagelijks", "description": "Stats tab label." },
+  "stats_tab_totals": { "message": "Totalen", "description": "Stats tab label." },
+  "stats_toggle_http": { "message": "HTTP-aanroepen", "description": "Stats pie view toggle." },
+  "stats_toggle_parsed": { "message": "Geparste gegevens", "description": "Stats pie view toggle." },
   "stats_center_http": { "message": "HTTP", "description": "Stats pie center label." },
-  "stats_center_parsed": { "message": "Jäsennetty", "description": "Stats pie center label." },
-  "stats_successes": { "message": "Onnistumiset", "description": "Stats pie segment label." },
-  "stats_fails": { "message": "Epäonnistumiset", "description": "Stats pie segment label." },
+  "stats_center_parsed": { "message": "Geparst", "description": "Stats pie center label." },
+  "stats_successes": { "message": "Geslaagd", "description": "Stats pie segment label." },
+  "stats_fails": { "message": "Mislukt", "description": "Stats pie segment label." },
   "stats_pie_inner_tooltip": {
-    "message": "$value$ / $total$ ($percent$ %)",
+    "message": "$value$ van $total$ ($percent$%)",
     "placeholders": {
       "value": { "content": "$1" },
       "total": { "content": "$2" },
@@ -1103,190 +1089,214 @@
     }
   },
   "stats_pie_outer_tooltip": {
-    "message": "$value$ ($percent$ %)",
+    "message": "$value$ ($percent$%)",
     "placeholders": { "value": { "content": "$1" }, "percent": { "content": "$2" } }
   },
-  "stats_col_supplier": { "message": "Toimittaja", "description": "Stats table column header." },
-  "stats_col_queries": { "message": "Kyselyt", "description": "Stats table column header." },
-  "stats_col_success": { "message": "Onnistui", "description": "Stats table column header." },
-  "stats_col_failure": { "message": "Epäonnistui", "description": "Stats table column header." },
-  "stats_col_products": { "message": "Tuotteet", "description": "Stats table column header." },
+  "stats_col_supplier": { "message": "Leverancier", "description": "Stats table column header." },
+  "stats_col_queries": { "message": "Zoekopdrachten", "description": "Stats table column header." },
+  "stats_col_success": { "message": "Geslaagd", "description": "Stats table column header." },
+  "stats_col_failure": { "message": "Mislukt", "description": "Stats table column header." },
+  "stats_col_products": { "message": "Producten", "description": "Stats table column header." },
   "stats_col_parse_errors": {
-    "message": "Jäsennysvirheet",
+    "message": "Parseerfouten",
     "description": "Stats table column header."
   },
-  "stats_range_label": { "message": "Aikaväli", "description": "Supplier stats panel." },
-  "stats_range_all": { "message": "Koko ajalta", "description": "Supplier stats panel." },
+  "stats_range_label": {
+    "message": "Tijdsbereik",
+    "description": "Supplier stats panel."
+  },
+  "stats_range_all": {
+    "message": "Alle tijd",
+    "description": "Supplier stats panel."
+  },
   "stats_range_last30": {
-    "message": "Viimeiset 30 päivää",
+    "message": "Laatste 30 dagen",
     "description": "Supplier stats panel."
   },
-  "stats_range_last7": { "message": "Viimeiset 7 päivää", "description": "Supplier stats panel." },
-  "stats_range_month": { "message": "Tässä kuussa", "description": "Supplier stats panel." },
-  "stats_range_week": { "message": "Tällä viikolla", "description": "Supplier stats panel." },
-  "stats_range_today": { "message": "Tänään", "description": "Supplier stats panel." },
+  "stats_range_last7": {
+    "message": "Laatste 7 dagen",
+    "description": "Supplier stats panel."
+  },
+  "stats_range_month": {
+    "message": "Deze maand",
+    "description": "Supplier stats panel."
+  },
+  "stats_range_week": {
+    "message": "Deze week",
+    "description": "Supplier stats panel."
+  },
+  "stats_range_today": {
+    "message": "Vandaag",
+    "description": "Supplier stats panel."
+  },
   "stats_empty_range": {
-    "message": "Tällä aikavälillä ei ole kirjattua toimintaa.",
+    "message": "Geen activiteit vastgelegd in dit tijdsbereik.",
     "description": "Supplier stats panel."
   },
-  "stats_col_status": { "message": "Tila", "description": "Supplier stats panel." },
-  "stats_status_ok": { "message": "OK", "description": "Supplier stats panel." },
+  "stats_col_status": {
+    "message": "Status",
+    "description": "Supplier stats panel."
+  },
+  "stats_status_ok": {
+    "message": "OK",
+    "description": "Supplier stats panel."
+  },
   "stats_status_disabled": {
-    "message": "Poistettu käytöstä",
+    "message": "Uitgeschakeld",
     "description": "Supplier stats panel."
   },
   "stats_status_parse_errors": {
-    "message": "Liikaa jäsennysvirheitä",
+    "message": "Te veel parseerfouten",
     "description": "Supplier stats panel."
   },
   "stats_status_parse_failure": {
-    "message": "Kaikki jäsennys epäonnistui",
+    "message": "Alle parsing mislukt",
     "description": "Supplier stats panel."
   },
   "stats_status_connection_errors": {
-    "message": "Liikaa yhteysvirheitä",
+    "message": "Te veel verbindingsfouten",
     "description": "Supplier stats panel."
   },
   "stats_status_no_success": {
-    "message": "Ei onnistuneita kutsuja",
+    "message": "Geen geslaagde aanroepen",
     "description": "Supplier stats panel."
   },
 
   "hotkeys_title": {
-    "message": "Pikanäppäimet",
+    "message": "Sneltoetsen",
     "description": "Title of the keyboard shortcuts modal."
   },
-  "hotkeys_group_general": { "message": "Yleiset", "description": "Hotkey group name." },
-  "hotkeys_group_search": { "message": "Haku", "description": "Hotkey group name." },
-  "hotkeys_group_navigation": { "message": "Navigointi", "description": "Hotkey group name." },
-  "hotkeys_group_results": { "message": "Tulokset", "description": "Hotkey group name." },
+  "hotkeys_group_general": { "message": "Algemeen", "description": "Hotkey group name." },
+  "hotkeys_group_search": { "message": "Zoeken", "description": "Hotkey group name." },
+  "hotkeys_group_navigation": { "message": "Navigatie", "description": "Hotkey group name." },
+  "hotkeys_group_results": { "message": "Resultaten", "description": "Hotkey group name." },
   "hotkeys_desc_showhotkeyhelp": {
-    "message": "Näytä tämä pikanäppäinluettelo",
+    "message": "Deze lijst met sneltoetsen tonen",
     "description": "Hotkey description."
   },
   "hotkeys_desc_clearandretrysearch": {
-    "message": "Tyhjennä välimuisti ja tulokset ja suorita nykyinen haku uudelleen",
+    "message": "Cache en resultaten wissen en de huidige zoekopdracht opnieuw uitvoeren",
     "description": "Hotkey description."
   },
   "hotkeys_desc_gotosearch": {
-    "message": "Siirry hakupaneeliin",
+    "message": "Naar het zoekpaneel gaan",
     "description": "Hotkey description."
   },
   "hotkeys_desc_openhistory": {
-    "message": "Avaa hakuhistoria sivupaneelissa",
+    "message": "Zoekgeschiedenis openen in de zijlade",
     "description": "Hotkey description."
   },
   "hotkeys_desc_opensearchdrawer": {
-    "message": "Avaa hakusuodattimet sivupaneelissa",
+    "message": "De zoekfilterlade openen",
     "description": "Hotkey description."
   },
   "hotkeys_desc_focusglobalfilter": {
-    "message": "Kohdista yleissuodattimeen tulospaneelissa",
+    "message": "Focus op het algemene filter in het resultatenpaneel",
     "description": "Hotkey description."
   },
   "hotkeys_desc_togglecolumnfilters": {
-    "message": "Näytä/piilota sarakesuodattimet tulostaulukossa",
+    "message": "Kolomfilters in de resultatentabel in-/uitschakelen",
     "description": "Hotkey description."
   },
   "hotkeys_desc_abortsearch": {
-    "message": "Keskeytä parhaillaan käynnissä oleva haku",
+    "message": "De lopende zoekopdracht afbreken",
     "description": "Hotkey description."
   },
   "hotkeys_desc_expandallrows": {
-    "message": "Laajenna kaikki rivit tulostaulukossa",
+    "message": "Alle rijen in de resultatentabel uitklappen",
     "description": "Hotkey description."
   },
   "hotkeys_desc_collapseallrows": {
-    "message": "Tiivistä kaikki rivit tulostaulukossa",
+    "message": "Alle rijen in de resultatentabel inklappen",
     "description": "Hotkey description."
   },
   "hotkeys_desc_scrollresultstotop": {
-    "message": "Vieritä tulostaulukko ylös",
+    "message": "De resultatentabel naar boven scrollen",
     "description": "Hotkey description."
   },
   "hotkeys_desc_showallrows": {
-    "message": "Näytä kaikki rivit yhdellä sivulla",
+    "message": "Alle rijen op één pagina tonen",
     "description": "Hotkey description."
   },
   "hotkeys_desc_clearcolumnfilters": {
-    "message": "Tyhjennä kaikki sarakesuodattimet",
+    "message": "Alle kolomfilters wissen",
     "description": "Hotkey description."
   },
   "hotkeys_desc_togglegroupvariants": {
-    "message": "Vaihda tuotevarianttien ryhmittelyä",
+    "message": "Groeperen van productvarianten in-/uitschakelen",
     "description": "Hotkey description."
   },
-  "hotkeys_desc_konami": { "message": "Sano hei", "description": "Hotkey description." },
+  "hotkeys_desc_konami": { "message": "Hallo zeggen", "description": "Hotkey description." },
   "hotkeys_flash_clearandretrysearch": {
-    "message": "Välimuisti tyhjennetty, haku käynnistetty uudelleen",
+    "message": "Cache gewist, zoekopdracht opnieuw gestart",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_advanced_on": {
-    "message": "Edistynyt tila käytössä",
+    "message": "Geavanceerde modus aan",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_advanced_off": {
-    "message": "Edistynyt tila pois käytöstä",
+    "message": "Geavanceerde modus uit",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_group_variants_on": {
-    "message": "Varianttien ryhmittely käytössä",
+    "message": "Variantengroepering aan",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_group_variants_off": {
-    "message": "Varianttien ryhmittely pois käytöstä",
+    "message": "Variantengroepering uit",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_openhistory": {
-    "message": "Hakuhistoria avattu",
+    "message": "Zoekgeschiedenis geopend",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_opensearchdrawer": {
-    "message": "Hakusuodattimet avattu",
+    "message": "Zoekfilters geopend",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_abortsearch": {
-    "message": "Haku keskeytetty",
+    "message": "Zoekopdracht afgebroken",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_expandallrows": {
-    "message": "Kaikki rivit laajennettu",
+    "message": "Alle rijen uitgeklapt",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_collapseallrows": {
-    "message": "Kaikki rivit tiivistetty",
+    "message": "Alle rijen ingeklapt",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_showallrows": {
-    "message": "Näytetään kaikki rivit",
+    "message": "Alle rijen worden getoond",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_clearcolumnfilters": {
-    "message": "Sarakesuodattimet tyhjennetty",
+    "message": "Kolomfilters gewist",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_search_placeholder": {
-    "message": "Hae pikanäppäimiä…",
+    "message": "Sneltoetsen zoeken…",
     "description": "Placeholder for the hotkey modal search box."
   },
   "hotkeys_no_matches": {
-    "message": "Ei osumia pikanäppäimiin",
+    "message": "Geen overeenkomende sneltoetsen",
     "description": "Shown when a hotkey search returns nothing."
   },
   "migration_title": {
-    "message": "Version päivitys havaittu",
+    "message": "Versie-update gedetecteerd",
     "description": "Title of the cache version-update prompt shown on open."
   },
   "migration_body": {
-    "message": "Nykyiseen versioosi on otettava käyttöön uusia ominaisuuksia ja muutoksia. Napsauta ”Ota päivitykset käyttöön” ottaaksesi ne käyttöön nyt tai ”Peruuta” tyhjentääksesi välimuistin ja aloittaaksesi alusta.",
+    "message": "Er zijn nieuwe functies en wijzigingen die op uw huidige versie moeten worden toegepast. Druk op “Updates toepassen” om ze nu toe te passen, of op “Annuleren” om de gecachete gegevens te wissen en opnieuw te beginnen.",
     "description": "Body text of the cache version-update prompt."
   },
   "migration_apply": {
-    "message": "Ota päivitykset käyttöön",
+    "message": "Updates toepassen",
     "description": "Button that applies the pending cache migrations."
   },
   "migration_cancel": {
-    "message": "Peruuta",
+    "message": "Annuleren",
     "description": "Button that clears the cache and starts fresh."
   },
   "migration_step": {
@@ -1305,19 +1315,19 @@
     "description": "One pending migration line: from-version, to-version, description."
   },
   "migration_error": {
-    "message": "Päivitysten käyttöönotossa tapahtui virhe. Voit yrittää uudelleen tai napsauttaa ”Peruuta” tyhjentääksesi välimuistin ja aloittaaksesi alusta.",
+    "message": "Er is iets misgegaan bij het toepassen van de updates. U kunt het opnieuw proberen, of op Annuleren drukken om de gecachete gegevens te wissen en opnieuw te beginnen.",
     "description": "Shown when applying the cache migrations failed."
   },
   "purity_ungraded": {
-    "message": "Luokittelematon",
+    "message": "Zonder kwaliteitsklasse",
     "description": "Shown when a product has no purity or grade."
   },
   "update_whats_new": {
-    "message": "Uutta",
+    "message": "Wat is er nieuw",
     "description": "Snackbar action that opens the what's-new modal."
   },
   "update_modal_title": {
-    "message": "Uutta versiossa v$version$",
+    "message": "Wat is er nieuw in v$version$",
     "placeholders": {
       "version": {
         "content": "$1"
@@ -1326,15 +1336,15 @@
     "description": "Title of the what's-new modal; the placeholder is the new version number."
   },
   "update_later": {
-    "message": "Myöhemmin",
+    "message": "Later",
     "description": "Button that closes the what's-new modal without updating."
   },
   "update_notes_unavailable": {
-    "message": "Julkaisutietoja ei voitu ladata.",
+    "message": "De release-opmerkingen konden niet worden geladen.",
     "description": "Shown in the what's-new modal when the release notes could not be fetched."
   },
   "update_installed_message": {
-    "message": "ChemPal päivitettiin versioon v$version$.",
+    "message": "ChemPal is bijgewerkt naar v$version$.",
     "placeholders": {
       "version": {
         "content": "$1"
@@ -1343,11 +1353,11 @@
     "description": "Snackbar text shown after the extension updates itself; the placeholder is the new version number."
   },
   "update_got_it": {
-    "message": "Selvä",
+    "message": "Begrepen",
     "description": "Button that acknowledges the what's-new notes for an already-installed release."
   },
   "update_available_message": {
-    "message": "ChemPal v$version$ on saatavilla.",
+    "message": "ChemPal v$version$ is beschikbaar.",
     "placeholders": {
       "version": {
         "content": "$1"
@@ -1356,19 +1366,19 @@
     "description": "Update snackbar text; the placeholder is the new version number."
   },
   "update_action_view": {
-    "message": "Näytä julkaisu",
+    "message": "Release bekijken",
     "description": "Snackbar action opening the GitHub release page (manual installs)."
   },
   "update_action_reload": {
-    "message": "Lataa uudelleen",
+    "message": "Nu herladen",
     "description": "Snackbar action reloading the extension to apply a staged update."
   },
   "update_dismiss": {
-    "message": "Hylkää",
+    "message": "Sluiten",
     "description": "Accessible label for the button that dismisses the update snackbar."
   },
   "review_prompt_message": {
-    "message": "ChemPal on ollut asennettuna $days$ päivää, ja olet tehnyt $searches$ hakua, jotka tuottivat $products$ tuotetta. Pidätkö siitä? Jätä arvostelu.",
+    "message": "U gebruikt ChemPal nu $days$ dagen en voerde $searches$ zoekopdrachten uit die $products$ producten opleverden. Bevalt het? Laat een beoordeling achter.",
     "placeholders": {
       "days": { "content": "$1" },
       "searches": { "content": "$2" },
@@ -1377,66 +1387,64 @@
     "description": "Review prompt snackbar text; placeholders are days installed, searches run, and total products returned."
   },
   "review_prompt_action": {
-    "message": "Jätä arvostelu",
+    "message": "Beoordeling achterlaten",
     "description": "Snackbar action that opens the Chrome Web Store reviews page."
   },
 
-  "context_menu_export_all": {"message": "Vie kaikki tulokset", "description": "Context-menu action to export all results to an xlsx file."},
-  "context_menu_export_filtered": {"message": "Vie suodatetut tulokset", "description": "Context-menu action to export the filtered results to an xlsx file."},
-  "export_success": {"message": "Vietiin $count$ tulosta", "placeholders": {"count": {"content": "$1"}}},
-  "export_failed": {"message": "Vienti epäonnistui", "description": "Status message shown when an xlsx export fails."},
-  "export_sheet_summary": {"message": "Yhteenveto", "description": "Worksheet name for the summary sheet in the xlsx export."},
-  "export_sheet_results": {"message": "Tulokset", "description": "Worksheet name for the results sheet in the xlsx export."},
-  "export_summary_version": {"message": "ChemPal-versio", "description": "Summary-sheet label for the ChemPal app version."},
-  "export_summary_query": {"message": "Hakukysely", "description": "Summary-sheet label for the originating search query."},
-  "export_summary_scope": {"message": "Viennin laajuus", "description": "Summary-sheet label for the export scope (all vs filtered)."},
-  "export_summary_scope_all": {"message": "Kaikki tulokset", "description": "Summary-sheet value for an all-results export."},
-  "export_summary_scope_filtered": {"message": "Suodatetut tulokset", "description": "Summary-sheet value for a filtered-results export."},
-  "export_summary_date": {"message": "Vientipäivä", "description": "Summary-sheet label for the export date/time."},
-  "export_summary_result_count": {"message": "Tulosten määrä", "description": "Summary-sheet label for the number of exported results."},
-  "export_summary_filters": {"message": "Aktiiviset suodattimet", "description": "Summary-sheet label for the active filters section."},
-  "export_summary_filter_global": {"message": "Hakusuodatin", "description": "Summary-sheet label for the global search filter."},
-  "export_summary_no_filters": {"message": "Ei mitään", "description": "Summary-sheet value shown when no filters are active."},
-  "history_section_search": {"message": "Hakuhistoria", "description": "Accordion section title for the search history."},
-  "history_section_exports": {"message": "Viedyt tiedot", "description": "Accordion section title for the cached data exports."},
-  "exports_count_single": {"message": "$count$ vienti", "placeholders": {"count": {"content": "$1"}}},
-  "exports_count_plural": {"message": "$count$ vientiä", "placeholders": {"count": {"content": "$1"}}},
-  "exports_result_single": {"message": "$count$ tulos", "placeholders": {"count": {"content": "$1"}}},
-  "exports_result_plural": {"message": "$count$ tulosta", "placeholders": {"count": {"content": "$1"}}},
-  "exports_empty": {"message": "Ei vientejä vielä.", "description": "Empty-state text for the exports list."},
-  "exports_clear": {"message": "Tyhjennä viennit", "description": "Tooltip/label for the clear-exports button."},
-  "exports_download": {"message": "Lataa vienti", "description": "Tooltip/label for the download-export button."},
-  "exports_delete": {"message": "Poista vienti", "description": "Tooltip/label for the delete-export button."},
-  "column_url": {"message": "URL", "description": "Table column header for product URL."},
-  "context_menu_copy_product_info_json": {"message": "Kopioi tuotetiedot JSON-muodossa", "description": "Context menu option to copy the product info as JSON."},
-  "chem_info_searched_for": { "message": "Haettu:" },
-  "chem_info_chip_aria": { "message": "Näytä kemialliset tiedot: $name$", "placeholders": { "name": { "content": "$1" } } },
-  "chem_info_loading": { "message": "Ladataan kemiallisia tietoja…" },
-  "chem_info_not_found": { "message": "Tälle hakusanalle ei löytynyt kemiallisia tietoja." },
-  "chem_info_iupac": { "message": "IUPAC-nimi" },
+  "context_menu_export_all": {"message": "Alle resultaten exporteren", "description": "Context-menu action to export all results to an xlsx file."},
+  "context_menu_export_filtered": {"message": "Gefilterde resultaten exporteren", "description": "Context-menu action to export the filtered results to an xlsx file."},
+  "export_success": {"message": "$count$ resultaten geëxporteerd", "placeholders": {"count": {"content": "$1"}}},
+  "export_failed": {"message": "Exporteren mislukt", "description": "Status message shown when an xlsx export fails."},
+  "export_sheet_summary": {"message": "Samenvatting", "description": "Worksheet name for the summary sheet in the xlsx export."},
+  "export_sheet_results": {"message": "Resultaten", "description": "Worksheet name for the results sheet in the xlsx export."},
+  "export_summary_version": {"message": "ChemPal-versie", "description": "Summary-sheet label for the ChemPal app version."},
+  "export_summary_query": {"message": "Zoekopdracht", "description": "Summary-sheet label for the originating search query."},
+  "export_summary_scope": {"message": "Exportbereik", "description": "Summary-sheet label for the export scope (all vs filtered)."},
+  "export_summary_scope_all": {"message": "Alle resultaten", "description": "Summary-sheet value for an all-results export."},
+  "export_summary_scope_filtered": {"message": "Gefilterde resultaten", "description": "Summary-sheet value for a filtered-results export."},
+  "export_summary_date": {"message": "Exportdatum", "description": "Summary-sheet label for the export date/time."},
+  "export_summary_result_count": {"message": "Aantal resultaten", "description": "Summary-sheet label for the number of exported results."},
+  "export_summary_filters": {"message": "Actieve filters", "description": "Summary-sheet label for the active filters section."},
+  "export_summary_filter_global": {"message": "Zoekfilter", "description": "Summary-sheet label for the global search filter."},
+  "export_summary_no_filters": {"message": "Geen", "description": "Summary-sheet value shown when no filters are active."},
+  "history_section_search": {"message": "Zoekgeschiedenis", "description": "Accordion section title for the search history."},
+  "history_section_exports": {"message": "Geëxporteerde gegevens", "description": "Accordion section title for the cached data exports."},
+  "exports_count_single": {"message": "$count$ export", "placeholders": {"count": {"content": "$1"}}},
+  "exports_count_plural": {"message": "$count$ exports", "placeholders": {"count": {"content": "$1"}}},
+  "exports_result_single": {"message": "$count$ resultaat", "placeholders": {"count": {"content": "$1"}}},
+  "exports_result_plural": {"message": "$count$ resultaten", "placeholders": {"count": {"content": "$1"}}},
+  "exports_empty": {"message": "Nog geen exports.", "description": "Empty-state text for the exports list."},
+  "exports_clear": {"message": "Exports wissen", "description": "Tooltip/label for the clear-exports button."},
+  "exports_download": {"message": "Export downloaden", "description": "Tooltip/label for the download-export button."},
+  "exports_delete": {"message": "Export verwijderen", "description": "Tooltip/label for the delete-export button."},
+  "chem_info_searched_for": { "message": "Gezocht naar:" },
+  "chem_info_chip_aria": { "message": "Chemische details voor $name$ tonen", "placeholders": { "name": { "content": "$1" } } },
+  "chem_info_loading": { "message": "Chemische details laden…" },
+  "chem_info_not_found": { "message": "Geen chemische gegevens gevonden voor deze term." },
+  "chem_info_iupac": { "message": "IUPAC-naam" },
   "chem_info_cas": { "message": "CAS" },
-  "chem_info_formula": { "message": "Kaava" },
-  "chem_info_mass": { "message": "Moolimassa" },
+  "chem_info_formula": { "message": "Formule" },
+  "chem_info_mass": { "message": "Molaire massa" },
   "chem_info_smiles": { "message": "SMILES" },
   "chem_info_inchikey": { "message": "InChIKey" },
-  "chem_info_synonyms": { "message": "Synonyymit" },
-  "chem_info_properties": { "message": "Ominaisuudet" },
-  "chem_info_appearance": { "message": "Ulkonäkö" },
-  "chem_info_boiling": { "message": "Kiehumispiste" },
-  "chem_info_melting": { "message": "Sulamispiste" },
-  "chem_info_flash": { "message": "Leimahduspiste" },
-  "chem_info_vapor": { "message": "Höyrynpaine" },
-  "chem_info_density": { "message": "Suhteellinen tiheys" },
-  "chem_info_solubility": { "message": "Liukoisuus" },
-  "chem_info_hazards": { "message": "Vaarat" },
-  "chem_info_signal": { "message": "Huomiosana" },
-  "chem_info_exposure": { "message": "Altistumisrajat" },
-  "chem_info_carcinogen": { "message": "Karsinogeeni" },
-  "chem_info_sources": { "message": "Lähteet: OSHA OBIS, PubChem, NIST WebBook" },
-  "chem_info_pubchem_link": { "message": "Näytä PubChemissä" },
-  "chem_info_close": { "message": "Sulje" },
-  "chem_info_wikipedia_link": { "message": "Näytä Wikipediassa" },
-  "chem_info_nist_link": { "message": "Näytä NIST WebBookissa" },
-  "chem_info_niosh_link": { "message": "NIOSH-taskuopas" },
-  "chem_info_cameo_link": { "message": "Näytä CAMEO Chemicalsissa" }
+  "chem_info_synonyms": { "message": "Synoniemen" },
+  "chem_info_properties": { "message": "Eigenschappen" },
+  "chem_info_appearance": { "message": "Uiterlijk" },
+  "chem_info_boiling": { "message": "Kookpunt" },
+  "chem_info_melting": { "message": "Smeltpunt" },
+  "chem_info_flash": { "message": "Vlampunt" },
+  "chem_info_vapor": { "message": "Dampspanning" },
+  "chem_info_density": { "message": "Soortelijk gewicht" },
+  "chem_info_solubility": { "message": "Oplosbaarheid" },
+  "chem_info_hazards": { "message": "Gevaren" },
+  "chem_info_signal": { "message": "Signaalwoord" },
+  "chem_info_exposure": { "message": "Blootstellingsgrenzen" },
+  "chem_info_carcinogen": { "message": "Kankerverwekkend" },
+  "chem_info_sources": { "message": "Bronnen: OSHA OBIS, PubChem, NIST WebBook" },
+  "chem_info_pubchem_link": { "message": "Bekijken op PubChem" },
+  "chem_info_close": { "message": "Sluiten" },
+  "chem_info_wikipedia_link": { "message": "Bekijken op Wikipedia" },
+  "chem_info_nist_link": { "message": "Bekijken op NIST WebBook" },
+  "chem_info_niosh_link": { "message": "NIOSH Pocket Guide" },
+  "chem_info_cameo_link": { "message": "Bekijken op CAMEO Chemicals" }
 }

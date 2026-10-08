@@ -233,6 +233,8 @@ declare global {
     filters?: SearchFilters;
     /** Supplier keys that were selected when this search was executed */
     selectedSuppliers?: SupplierClassName[];
+    /** Whether `selectedSuppliers` was an exclusion list when this search was executed */
+    excludeSelectedSuppliers?: boolean;
     data?: {
       suppliers: string[];
       query: string;

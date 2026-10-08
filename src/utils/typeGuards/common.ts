@@ -932,6 +932,7 @@ function buildUserSettingsSchema() {
         groupProductVariants: optionalBoolean,
         hideRestrictedProducts: optionalBoolean,
         suggestAdvancedQuery: optionalBoolean,
+        invertSuppliersSelection: optionalBoolean,
       }),
     ),
     results: v.optional(

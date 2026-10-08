@@ -6,23 +6,23 @@ paths: src/_locales/**
 
 # Changing i18n keys
 
-`src/_locales/<lang>/messages.json` — 7 locales, all in Chrome's i18n format:
+`src/_locales/<lang>/messages.json` — 8 locales, all in Chrome's i18n format:
 
 ```
-de  en  es  fi  hi  pl  ru
+de  en  es  fi  hi  nl  pl  ru
 ```
 
-They currently hold **364 keys each**, and that count must stay equal. English-only edits
+They currently hold **460 keys each**, and that count must stay equal. English-only edits
 ship broken UI to six locales.
 
 ## Rules
 
 **Edit as text, never reserialize.** Do not read a `messages.json` into a JSON parser and
 write the whole object back. Placeholder blocks are formatted inconsistently across the
-files, and a round-trip reformats every one of the 364 keys — burying the real change in a
+files, and a round-trip reformats every one of the 460 keys — burying the real change in a
 few hundred lines of noise. Insert or modify the specific key with a targeted text edit.
 
-**Translate for real.** Leaving English strings in `de`/`es`/`fi`/`hi`/`pl`/`ru` is worse
+**Translate for real.** Leaving English strings in `de`/`es`/`fi`/`hi`/`nl`/`pl`/`ru` is worse
 than not adding the key, because nothing flags it later.
 
 **Name keys `<area>_<thing>`**, following what's already there:

@@ -48,6 +48,7 @@ export { SupplierLaballey } from './SupplierLaballey';
 export { SupplierLabChem } from './SupplierLabChem';
 export { SupplierLaboratoriumDiscounter } from './SupplierLaboratoriumDiscounter';
 export { SupplierLabProServices } from './SupplierLabProServices';
+export { SupplierLabStuff } from './SupplierLabStuff';
 export { SupplierLeroChem } from './SupplierLeroChem';
 export { SupplierLibertySci } from './SupplierLibertySci';
 export { SupplierLiMac } from './SupplierLiMac';

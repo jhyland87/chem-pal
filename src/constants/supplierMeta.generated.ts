@@ -198,6 +198,11 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     country: 'US',
     shipping: 'domestic',
   },
+  SupplierLabStuff: {
+    displayName: 'LabStuff',
+    country: 'NL',
+    shipping: 'international',
+  },
   SupplierLeroChem: {
     displayName: 'LeroChem',
     country: 'LT',

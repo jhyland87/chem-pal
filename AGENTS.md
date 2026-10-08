@@ -63,7 +63,7 @@ diff is real.
 - `src/utils/` — `ProductBuilder`, `Logger`, `search-query/` (AST parsing), `typeGuards/`.
 - `src/helpers/` — domain parsing: currency, quantity, CAS, SMILES, purity/grade.
 - `src/components/SearchPanel/` — the results table and search UI (the bulk of the app).
-- `src/_locales/<lang>/messages.json` — 7 locales, Chrome i18n format.
+- `src/_locales/<lang>/messages.json` — 8 locales, Chrome i18n format.
 - `configs/` — vitest, playwright, and typedoc configs. Tests need the config flags.
 - `tools/` — build/codegen node scripts (`generate-logo-files.js`,
   `extractChangelog.js`, `pack-extension.js`).
@@ -90,8 +90,8 @@ Project invariants beyond style, all of which have bitten before:
 - **Declare all class properties at the top of the class**, above the methods. Don't
   interleave a field with the one method that uses it — supplier classes in particular
   keep their whole config block up top.
-- **i18n changes hit all 7 locales.** Adding, renaming, or rewording a key in
-  `src/_locales/en/messages.json` means the same edit, properly translated, in `de`, `es`,
+- **i18n changes hit all 8 locales.** Adding, renaming, or rewording a key in
+  `src/_locales/en/messages.json` means the same edit, properly translated, in `de`, `es`, `nl`,
   `fi`, `hi`, `pl`, and `ru`. Edit them as text — never round-trip a whole `messages.json`
   through a JSON serializer, because placeholder formatting differs between files and a
   reserialize rewrites every key. See the `add-i18n-key` skill.
@@ -161,7 +161,7 @@ corresponding task even if you're not using Claude Code:
   you'd guess).
 - `typedoc-comments` — TSDoc tag set and order, `@example` formatting, the
   `@category`/`@group` taxonomy.
-- `add-i18n-key` — adding or changing a message key across all 7 locales.
+- `add-i18n-key` — adding or changing a message key across all 8 locales.
 - `verify-changes` — what to run, and what each check does and doesn't prove.
 - `cut-release` — cutting and publishing a release.
 - `add-migration-step` — adding a cache migration step when a release changes the shape of

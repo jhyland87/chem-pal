@@ -14,7 +14,11 @@ import { i18n } from '@/helpers/i18n';
 import { flushPendingPriceHistory, recordProductPrices } from '@/helpers/priceHistory';
 import { recordSearch } from '@/utils/reviewStats';
 import { dedupeProducts, getProductDedupeKey } from '@/helpers/productIdentity';
-import { shippingCovers, suppliersExcludedBySearchFilters } from '@/helpers/supplierFilters';
+import {
+  resolveSupplierSelection,
+  shippingCovers,
+  suppliersExcludedBySearchFilters,
+} from '@/helpers/supplierFilters';
 import { suggestAdvancedQuery, suggestAlternativeSearch } from '@/helpers/pubchem';
 import { HotkeyEvent } from '@/hotkeys';
 import type { SupplierFactory } from '@/suppliers/SupplierFactory';
@@ -109,6 +113,7 @@ export async function createInitialHistoryEntry(
   timestamp: number,
   filters: SearchFilters,
   selectedSuppliers: SupplierClassName[],
+  excludeSelectedSuppliers = false,
 ): Promise<void> {
   try {
     await addSearchHistoryEntry({
@@ -118,6 +123,7 @@ export async function createInitialHistoryEntry(
       type: 'search',
       filters: { ...filters },
       selectedSuppliers: [...selectedSuppliers],
+      excludeSelectedSuppliers,
     });
   } catch (error) {
     logger.warn('Failed to save search history:', { error });
@@ -540,6 +546,7 @@ export function useSearch() {
         historyTimestamp,
         searchFilters,
         appContext.selectedSuppliers ?? [],
+        appContext.userSettings.search?.invertSuppliersSelection ?? false,
       );
 
       // Signal search start — the badge controller owns the loading animation.
@@ -573,12 +580,19 @@ export function useSearch() {
       // the post-filter would drop all their products anyway. Fall back to the
       // full selection if the filters would exclude every candidate (the
       // post-filter then yields zero results rather than querying everyone).
-      let suppliersToQuery = appContext.selectedSuppliers;
+      // The drawer selection may be an exclusion list ("everything but these"); resolve it
+      // to the suppliers to search first. `noSuppliersLeft` is an inverted selection that
+      // covers every supplier, which must search nothing rather than fall back to "all".
+      const { suppliers: selectedToQuery, none: noSuppliersLeft } = resolveSupplierSelection(
+        appContext.selectedSuppliers ?? [],
+        appContext.userSettings.search?.invertSuppliersSelection ?? false,
+        SUPPLIER_CLASS_NAMES,
+      );
+      let suppliersToQuery = selectedToQuery;
       if (searchFilters.shippingType.length > 0 || searchFilters.country.length > 0) {
         const excluded = suppliersExcludedBySearchFilters(supplierShippingMeta(), searchFilters);
         if (excluded.size > 0) {
-          const selected = appContext.selectedSuppliers ?? [];
-          const base = selected.length > 0 ? selected : SUPPLIER_CLASS_NAMES;
+          const base = selectedToQuery.length > 0 ? selectedToQuery : SUPPLIER_CLASS_NAMES;
           const compatible = base.filter((name) => !excluded.has(name));
           if (compatible.length > 0) suppliersToQuery = compatible;
         }
@@ -636,7 +650,9 @@ export function useSearch() {
           excludeNonShippingSuppliers:
             appContext.userSettings.suppliers?.excludeNonShipping ?? true,
           hideRestrictedProducts: appContext.userSettings.search?.hideRestrictedProducts ?? true,
-          disabledSuppliers: appContext.userSettings.suppliers?.disabled,
+          disabledSuppliers: noSuppliersLeft
+            ? [...SUPPLIER_CLASS_NAMES]
+            : appContext.userSettings.suppliers?.disabled,
         });
 
         // Execute the search for all suppliers.

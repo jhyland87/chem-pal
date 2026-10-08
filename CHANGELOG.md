@@ -19,6 +19,11 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
   panel with its IUPAC name, synonyms, formula, SMILES, molar mass, structure, NFPA fire diamond,
   GHS hazard pictograms, solubility and exposure limits, with a link to PubChem. Searches like
   `(sodium OR potassium) hydroxide OR potassium carbonate` get one chip per reagent.
+- Dutch (Nederlands) translation of the interface.
+- A checkbox under the supplier filter in the search drawer turns the selected suppliers into an
+  exclusion list, so you can search every supplier except the ones you pick. Suppliers you have
+  disabled stay disabled.
+- New supplier: LabStuff.
 
 ## [1.15.1] - 2026-10-05
 

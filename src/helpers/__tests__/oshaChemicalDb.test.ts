@@ -4,6 +4,7 @@ import {
   parseOshaXml,
   resetOshaIndex,
 } from '@/helpers/oshaChemicalDb';
+import { clearAllCaches } from '@/utils/idbCache';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const XML = `<?xml version="1.0" encoding="UTF-8"?>
@@ -72,5 +73,26 @@ describe('lookupOshaChemical', () => {
 
   it('returns undefined for unknown terms', async () => {
     expect(await lookupOshaChemical('unobtainium')).toBeUndefined();
+  });
+
+  it('passes a timeout signal to the download', async () => {
+    await clearAllCaches();
+    resetOshaIndex();
+    await lookupOshaChemical('acetone');
+    const init = vi.mocked(fetch).mock.calls[0][1];
+    expect(init?.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it('gives up (resolves undefined) when the download times out', async () => {
+    await clearAllCaches();
+    resetOshaIndex();
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new DOMException('The operation timed out.', 'TimeoutError');
+      }),
+    );
+    expect(await lookupOshaChemical('acetone')).toBeUndefined();
   });
 });

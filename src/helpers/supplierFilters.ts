@@ -154,3 +154,36 @@ export function countriesForSuppliers(
   }
   return countries;
 }
+
+/**
+ * Resolves the drawer's supplier selection to the list of suppliers to search. Normally the
+ * selection itself (empty meaning "all"). When `invert` is set and something is selected, the
+ * selection is an exclusion list: every other supplier. Suppliers the user disabled, or that
+ * don't ship to them, are removed later by `SupplierFactory`, so inverting never re-enables them.
+ * Inverting a selection that covers every supplier leaves nothing to search, reported by
+ * `none` so the caller doesn't fall back to the empty-means-all behavior.
+ * @category Helpers
+ * @param selected - The suppliers chosen in the drawer.
+ * @param invert - Whether the selection acts as an exclusion list.
+ * @param all - Every supplier class name.
+ * @returns The suppliers to search, and `none` when an inverted selection excludes them all.
+ * @example
+ * ```ts
+ * resolveSupplierSelection(['A'], false, ['A', 'B', 'C']); // => { suppliers: ['A'], none: false }
+ * resolveSupplierSelection(['A'], true, ['A', 'B', 'C']); // => { suppliers: ['B', 'C'], none: false }
+ * resolveSupplierSelection([], true, ['A', 'B']); // => { suppliers: [], none: false } (no selection: all)
+ * resolveSupplierSelection(['A', 'B'], true, ['A', 'B']); // => { suppliers: [], none: true }
+ * ```
+ * @source
+ */
+export function resolveSupplierSelection<T extends string>(
+  selected: readonly T[],
+  invert: boolean,
+  all: readonly T[],
+): { suppliers: T[]; none: boolean } {
+  if (!invert || selected.length === 0) {
+    return { suppliers: [...selected], none: false };
+  }
+  const suppliers = all.filter((name) => !selected.includes(name));
+  return { suppliers, none: suppliers.length === 0 };
+}

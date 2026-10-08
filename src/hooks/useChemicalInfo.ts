@@ -14,6 +14,7 @@ import {
   type PubChemGhs,
   type PubChemProperties,
 } from '@/helpers/pubchem';
+import { resolveEnglishChemical } from '@/helpers/wikidata';
 import { isCAS } from '@/utils/typeGuards/common';
 import { useEffect, useState } from 'react';
 
@@ -114,14 +115,20 @@ async function resolveCid(term: string, osha?: OshaChemical): Promise<PubChemCID
 }
 
 /**
- * Gathers and merges chemical data for a term from OSHA OBIS and PubChem.
+ * Gathers and merges chemical data for a term from OSHA OBIS and PubChem. A non-English name is
+ * first resolved to its English name and CAS number through Wikidata.
  * @param term - A chemical name or CAS number.
  * @returns The merged info; always resolves.
  * @source
  */
 async function fetchChemicalInfo(term: string): Promise<ChemicalInfo> {
-  const osha = await lookupOshaChemical(term);
-  const cid = await resolveCid(term, osha);
+  // A name in another language (e.g. Dutch "zoutzuur") matches nothing in OBIS or PubChem, so
+  // look the term up by its CAS number (or English name) instead; the dialog still shows `term`.
+  const english = isCAS(term) ? undefined : await resolveEnglishChemical(term);
+  const lookupTerm = english?.cas ?? english?.name ?? term;
+
+  const osha = await lookupOshaChemical(lookupTerm);
+  const cid = await resolveCid(lookupTerm, osha);
 
   const [properties, synonyms, description, ghs, solubility] =
     cid === undefined
@@ -135,7 +142,9 @@ async function fetchChemicalInfo(term: string): Promise<ChemicalInfo> {
         ]);
 
   const allSynonyms = synonyms ?? [];
-  const cas = isCAS(term) ? term : (osha?.cas ?? allSynonyms.find((name) => isCAS(name)));
+  const cas = isCAS(lookupTerm)
+    ? lookupTerm
+    : (osha?.cas ?? allSynonyms.find((name) => isCAS(name)));
   const imageUrls = [
     ...(cas === undefined ? [] : [nistStructureImageUrl(cas)]),
     ...(cid === undefined ? [] : [pubchemStructureImageUrl(cid)]),
@@ -146,7 +155,7 @@ async function fetchChemicalInfo(term: string): Promise<ChemicalInfo> {
     osha,
     cid,
     nistUrl: cas === undefined ? undefined : nistWebbookUrl(cas),
-    wikipediaUrl: wikipediaUrl(properties?.title ?? osha?.name ?? term),
+    wikipediaUrl: wikipediaUrl(properties?.title ?? osha?.name ?? english?.name ?? term),
     pubchemUrl: cid === undefined ? undefined : pubchemCompoundUrl(cid),
     properties,
     synonyms: allSynonyms,

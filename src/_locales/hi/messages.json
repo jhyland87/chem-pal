@@ -236,6 +236,19 @@
     "message": "आपूर्तिकर्ता खोजें",
     "description": "Drawer accordion label for the supplier selector."
   },
+  "drawer_supplier_exclude_label": {
+    "message": "आपूर्तिकर्ताओं को बाहर रखें",
+    "description": "Drawer accordion label for the supplier selector while it acts as an exclusion list."
+  },
+  "drawer_supplier_excluded_count": {
+    "message": "$count$ बाहर रखे गए",
+    "description": "Accordion hint: how many suppliers are excluded.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "drawer_supplier_invert": {
+    "message": "चयनित को छोड़कर सभी आपूर्तिकर्ताओं में खोजें",
+    "description": "Checkbox label that turns the supplier selection into an exclusion list."
+  },
   "drawer_supplier_empty_helper": {
     "message": "डिफ़ॉल्ट रूप से सभी आपूर्तिकर्ता शामिल हैं",
     "description": "Helper text shown when no supplier is selected."
@@ -540,6 +553,10 @@
   },
   "history_filter_suppliers": {
     "message": "आपूर्तिकर्ता: $count$ चयनित",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "history_filter_suppliers_excluded": {
+    "message": "आपूर्तिकर्ता: $count$ बाहर रखे गए",
     "placeholders": { "count": { "content": "$1" } }
   },
   "settings_loading": {

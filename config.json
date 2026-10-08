@@ -11,7 +11,8 @@
     "search": {
       "groupProductVariants": true,
       "hideRestrictedProducts": true,
-      "suggestAdvancedQuery": false
+      "suggestAdvancedQuery": false,
+      "invertSuppliersSelection": false
     },
     "results": {
       "autoHideEmpty": true,
@@ -36,6 +37,12 @@
     "defaultResultsLimitPerSupplier": 5,
     "supplierSearchTimeBudgetSec": 60
   },
+  "wikidata": {
+    "ttlDays": 30,
+    "maxAliases": 2,
+    "sourceLanguages": ["nl"],
+    "englishSearchHits": 5
+  },
   "display": {
     "descriptionPreviewLength": 300,
     "unitPriceMinDisplay": 0.01,
@@ -50,7 +57,8 @@
   },
   "chemicalDb": {
     "url": "https://obis.osha.gov/chemicaldata/Chemical_DB.xml",
-    "ttlDays": 30
+    "ttlDays": 30,
+    "fetchTimeoutMs": 10000
   },
   "reviewPrompt": {
     "minDaysInstalled": 14,
