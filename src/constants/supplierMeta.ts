@@ -45,6 +45,32 @@ export interface SupplierMetaEntry {
   readonly shipsTo?: readonly CountryCode[];
 }
 
+/** Reverse index of {@link SUPPLIER_META}, display name to class name; built on first use. */
+let classNameByDisplayName: ReadonlyMap<string, string> | undefined;
+
+/**
+ * Resolves a supplier's real class name from its `static supplierName`. Production builds
+ * minify class names to single letters, so `constructor.name` can't identify a supplier
+ * there; the generated registry is keyed by the real name and survives minification.
+ * @param displayName - A supplier class's `static supplierName`
+ * @returns The class name (e.g. `"SupplierCarolina"`), or `undefined` for a name the
+ * registry doesn't list (disabled suppliers, test doubles)
+ * @example
+ * ```ts
+ * supplierClassNameFor('Carolina'); // => "SupplierCarolina"
+ * supplierClassNameFor('Nope');     // => undefined
+ * ```
+ * @category Constants
+ * @group Suppliers
+ * @source
+ */
+export function supplierClassNameFor(displayName: string): string | undefined {
+  classNameByDisplayName ??= new Map(
+    Object.entries(SUPPLIER_META).map(([className, meta]) => [meta.displayName, className]),
+  );
+  return classNameByDisplayName.get(displayName);
+}
+
 /**
  * Supplier class names mapped to their human-readable display names — the shape the
  * results-table filter and the stats panel want.

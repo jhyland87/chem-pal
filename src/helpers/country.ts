@@ -1,27 +1,25 @@
 import { CACHE } from '@/constants/common';
+import { COUNTRY_DATA } from '@/constants/countryData';
 import { cstorage } from '@/utils/storage';
-import { findByIso2, findByName } from 'country-list-js';
 
 /**
  * @category Country Helpers
- * @categoryDescription Country lookups backed by the `country-list-js` library,
- * wrapped so callers get typed results instead of the library's `any`.
+ * @categoryDescription Country lookups backed by the compact `COUNTRY_DATA` table
+ * (ISO 3166-1 alpha-2 code to English name and primary currency).
  * @showCategories
  * @source
  */
 
 /**
- * Currency details attached to a country record from `country-list-js`.
+ * Currency details attached to a country record.
  * @category Country Helpers
  */
 interface CountryCurrency {
   code: string;
-  symbol: string;
-  decimal: string;
 }
 
 /**
- * The subset of a `country-list-js` country record that this app consumes.
+ * The subset of country data that this app consumes.
  * @category Country Helpers
  */
 interface CountryRecord {
@@ -30,31 +28,8 @@ interface CountryRecord {
 }
 
 /**
- * Narrows the untyped `country-list-js` lookup result to the
- * {@link CountryRecord} shape we rely on.
- *
- * @category Country Helpers
- * @param value - The raw value returned by `country-list-js`
- * @returns Whether the value is a usable country record
- * @example
- * ```typescript
- * isCountryRecord({ name: "United States" }) // true
- * isCountryRecord(undefined) // false
- * ```
- * @source
- */
-function isCountryRecord(value: unknown): value is CountryRecord {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
-  const record = value as Record<string, unknown>;
-  return typeof record.name === 'string';
-}
-
-/**
- * Looks up a country record by its two-letter ISO 3166-1 alpha-2 code.
- * Wraps the untyped `country-list-js` `findByIso2` in a type guard so callers
- * get a typed result instead of `any`.
+ * Looks up a country record by its two-letter ISO 3166-1 alpha-2 code. Codes are
+ * case-sensitive and upper-case, as in {@link COUNTRY_DATA}.
  *
  * @category Country Helpers
  * @param iso2 - Two-letter country code (e.g. `"US"`, `"GB"`)
@@ -68,12 +43,15 @@ function isCountryRecord(value: unknown): value is CountryRecord {
  * @source
  */
 export function findCountryByIso2(iso2: string): CountryRecord | undefined {
-  const result: unknown = findByIso2(iso2);
-  return isCountryRecord(result) ? result : undefined;
+  if (!Object.hasOwn(COUNTRY_DATA, iso2)) {
+    return undefined;
+  }
+  const [name, currency] = COUNTRY_DATA[iso2];
+  return { name, currency: currency ? { code: currency } : undefined };
 }
 
 /**
- * Narrows a string to a {@link CountryCode} by confirming `country-list-js` knows it. Kept local to
+ * Narrows a string to a {@link CountryCode} by confirming {@link COUNTRY_DATA} lists it. Kept local to
  * this module (rather than importing `isCountryCode` from typeGuards) to avoid a module cycle.
  *
  * @category Country Helpers
@@ -111,12 +89,13 @@ export function getCountryName(location?: string): string | undefined {
   return findCountryByIso2(location)?.name;
 }
 
+/** Reverse index of {@link COUNTRY_DATA}, English name to ISO code; built on first use. */
+let isoByName: ReadonlyMap<string, string> | undefined;
+
 /**
- * Resolves a country's ISO 3166-1 alpha-2 code from its full English name.
- * Wraps the untyped `country-list-js` `findByName` (whose record nests the code as
- * `{ code: { iso2 } }`), title-casing the input first since the library matches only
- * Title Case. Returns undefined for unknown names (including short aliases like "USA"
- * that the library doesn't index — callers handle those separately).
+ * Resolves a country's ISO 3166-1 alpha-2 code from its full English name. The input is
+ * title-cased first, and the match is exact against the table's names, so short aliases
+ * like "USA" are unknown (callers handle those separately).
  *
  * @category Country Helpers
  * @param name - A country name (any casing), e.g. `"germany"`, `"United States"`
@@ -134,16 +113,11 @@ export function findCountryByName(name: string): CountryCode | undefined {
     .trim()
     .toLowerCase()
     .replace(/\b[a-z]/g, (c) => c.toUpperCase());
-  const result: unknown = findByName(titleCased);
-  if (typeof result !== 'object' || result === null || !('code' in result)) {
-    return undefined;
-  }
-  const code: unknown = result.code;
-  if (typeof code !== 'object' || code === null || !('iso2' in code)) {
-    return undefined;
-  }
-  const iso2: unknown = code.iso2;
-  return typeof iso2 === 'string' && isKnownCountryCode(iso2) ? iso2 : undefined;
+  isoByName ??= new Map(
+    Object.entries(COUNTRY_DATA).map(([iso2, [countryName]]) => [countryName, iso2]),
+  );
+  const iso2 = isoByName.get(titleCased);
+  return iso2 !== undefined && isKnownCountryCode(iso2) ? iso2 : undefined;
 }
 
 /**

@@ -9,7 +9,11 @@ import {
 } from '@/helpers/updates';
 import { cstorage } from '@/utils/storage';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import semver from 'semver';
+import semverValid from 'semver/functions/valid';
+import semverGt from 'semver/functions/gt';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('useUpdateAvailable');
 
 /**
  * UI-owned bookkeeping persisted under {@link CACHE.UPDATE_CHECK}.
@@ -223,8 +227,8 @@ function isSuppressed(state: UpdateCheckState, version: string, now: number): bo
  */
 function shouldPrompt(state: UpdateCheckState, version: string | undefined, now: number): boolean {
   if (!version || isSuppressed(state, version, now)) return false;
-  const valid = semver.valid(version);
-  return valid !== null && semver.gt(valid, __APP_VERSION__);
+  const valid = semverValid(version);
+  return valid !== null && semverGt(valid, __APP_VERSION__);
 }
 
 /**
@@ -332,7 +336,7 @@ export function useUpdateAvailable(): UseUpdateAvailable {
           setNotice({ ...update, source: 'manual' });
         }
       } catch (error) {
-        console.error('Failed to check for updates:', { error });
+        logger.error('Failed to check for updates:', { error });
       }
     };
 
@@ -367,7 +371,7 @@ export function useUpdateAvailable(): UseUpdateAvailable {
       try {
         await persistSuppression({ dismissedVersion: dismissed });
       } catch (error) {
-        console.error('Failed to record update dismissal:', { error });
+        logger.error('Failed to record update dismissal:', { error });
       }
     })();
   }, [notice]);
@@ -382,7 +386,7 @@ export function useUpdateAvailable(): UseUpdateAvailable {
       try {
         await persistSuppression({ snoozedVersion: snoozed, snoozedUntil });
       } catch (error) {
-        console.error('Failed to record update snooze:', { error });
+        logger.error('Failed to record update snooze:', { error });
       }
     })();
   }, [notice]);

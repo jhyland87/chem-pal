@@ -265,7 +265,7 @@ async function decodeCache(key: string, area: 'session' | 'local' = 'session'): 
     //console.log(`%c_decodeCache("${key}", "${area}"):`, "color: #4fc3f7; font-weight: bold", value);
     return value;
   } catch (error) {
-    console.error(`Failed to decode cache key "${key}" from ${area}:`, error);
+    logger.error(`Failed to decode cache key "${key}" from ${area}:`, error);
     return undefined;
   }
 }

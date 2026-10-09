@@ -23,7 +23,7 @@ import {
 } from '@/helpers/smiles';
 import type { ReleaseSection } from '@/helpers/updates';
 import { getInstallSource, parseReleaseNotes } from '@/helpers/updates';
-import semver from 'semver';
+import semverInc from 'semver/functions/inc';
 import { formatBytes } from '@/helpers/utils';
 import { CACHE } from '@/constants/common';
 import { Cactus } from '@/utils/Cactus';
@@ -401,7 +401,7 @@ function upcomingReleaseNotes(): ReleaseSection[] {
  * @source
  */
 function nextVersion(): string {
-  return semver.inc(__APP_VERSION__, 'minor') ?? '99.0.0';
+  return semverInc(__APP_VERSION__, 'minor') ?? '99.0.0';
 }
 
 /**

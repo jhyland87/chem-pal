@@ -1,4 +1,5 @@
 import { CACHE } from '@/constants/common';
+import { HttpStatus } from '@/constants/httpStatus';
 import { HttpError } from '@/helpers/exceptions';
 import { parseQuantity } from '@/helpers/quantity';
 import { parseChemicalSpecs, parseGrade, parsePurity } from '@/helpers/science';
@@ -307,7 +308,7 @@ export class SupplierChemsavers
    * @source
    */
   private isUnauthorized(error: unknown): boolean {
-    return error instanceof HttpError && error.status === 401;
+    return error instanceof HttpError && error.status === HttpStatus.UNAUTHORIZED;
   }
 
   /**

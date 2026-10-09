@@ -1,5 +1,8 @@
 import { IS_DEV_BUILD } from '@/utils/isDevBuild';
 import { useEffect } from 'react';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('useDebugApi');
 
 /**
  * Attaches the `window.chempal` debug helpers while `enabled` is true, and
@@ -32,7 +35,7 @@ export function useDebugApi(enabled: boolean): void {
         const { exposeDebugApi } = await import('@/utils/debugConsole');
         if (!cancelled) exposeDebugApi();
       } catch (error) {
-        console.error('Failed to expose the debug helpers:', { error });
+        logger.error('Failed to expose the debug helpers:', { error });
       }
     })();
 
@@ -43,7 +46,7 @@ export function useDebugApi(enabled: boolean): void {
           const { removeDebugApi } = await import('@/utils/debugConsole');
           removeDebugApi();
         } catch (error) {
-          console.error('Failed to remove the debug helpers:', { error });
+          logger.error('Failed to remove the debug helpers:', { error });
         }
       })();
     };

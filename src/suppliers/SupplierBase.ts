@@ -14,6 +14,8 @@ import { pickBroadestName } from '@/helpers/science';
 import { shipsToCountry } from '@/helpers/shipping';
 import type { ResolvedStructure } from '@/helpers/smiles';
 import { sleep } from '@/helpers/utils';
+import { supplierClassNameFor } from '@/constants/supplierMeta';
+import { HttpStatus } from '@/constants/httpStatus';
 import { getSupplierColor } from '@/theme/colors';
 import { deleteSupplierQueryCacheEntry } from '@/utils/idbCache';
 import { IS_DEV_BUILD } from '@/utils/isDevBuild';
@@ -112,7 +114,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * assigning a hex string in a subclass constructor (also call
    * `this.logger.setColor(this.color)` there to recolor the already-built logger).
    */
-  public color: string = getSupplierColor(this.constructor.name);
+  public color: string = getSupplierColor(this.stableClassName);
 
   /** The minimum match percentage for a product to be considered a match. */
   protected readonly minMatchPercentage: number = 65;
@@ -177,6 +179,16 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    */
   private get supplierClass(): typeof SupplierBase {
     return this.constructor as typeof SupplierBase;
+  }
+
+  /**
+   * This supplier's real class name, for logger prefixes, the default color, and cache
+   * records. `constructor.name` is minified to a single letter in production builds, so the
+   * name is resolved from the generated supplier registry; classes it doesn't list
+   * (disabled suppliers, test doubles) fall back to `constructor.name`.
+   */
+  protected get stableClassName(): string {
+    return supplierClassNameFor(this.supplierClass.supplierName) ?? this.constructor.name;
   }
 
   /** Instance view of the static {@link supportsCAS} flag (keeps `this.supportsCAS` working). */
@@ -643,7 +655,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * product from being cached (see {@link shouldCacheProductData}). Mirrors
    * `userSettings.noCacheStatusCodes`; set by {@link initCache}. Defaults to `[429]`.
    */
-  protected noCacheStatusCodes: number[] = [429];
+  protected noCacheStatusCodes: number[] = [HttpStatus.TOO_MANY_REQUESTS];
 
   /**
    * Maps a product's fetch key (permalink, falling back to its processing URL) to the HTTP
@@ -719,7 +731,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     this.query = query;
     this.limit = limit;
     this.controller = controller ?? new AbortController();
-    this.logger = new Logger(this.constructor.name, undefined, this.color);
+    this.logger = new Logger(this.stableClassName, undefined, this.color);
   }
 
   /**
@@ -747,18 +759,18 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     enabled: boolean = true,
     doNotCacheEmptyResults: boolean = false,
     cacheTtlMinutes: number = 0,
-    noCacheStatusCodes: number[] = [429],
+    noCacheStatusCodes: number[] = [HttpStatus.TOO_MANY_REQUESTS],
   ): void {
     this.cache = new SupplierCache(
       this.supplierName,
-      this.constructor.name,
+      this.stableClassName,
       enabled,
       doNotCacheEmptyResults,
       cacheTtlMinutes,
     );
     // Stored on the supplier (not the cache): the decision is made at cache-write time in
     // getProductData(WithCache), where the per-product fetch status is known.
-    this.noCacheStatusCodes = noCacheStatusCodes ?? [429];
+    this.noCacheStatusCodes = noCacheStatusCodes ?? [HttpStatus.TOO_MANY_REQUESTS];
   }
 
   /**
@@ -782,7 +794,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * @source
    */
   public setFuzzScorerOverride(name: string | undefined): void {
-    console.debug('setFuzzScorerOverride', { name });
+    this.logger.debug('setFuzzScorerOverride', { name });
     if (isFuzzScorerName(name)) {
       this.fuzzScorerOverride = FUZZ_SCORERS[name];
     } else {
@@ -1103,7 +1115,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       return Object.fromEntries(httpResponse.headers.entries()) satisfies HeadersInit;
     } catch (error: unknown) {
       if (error instanceof Error && error.name === 'AbortError') {
-        this.logger.warn('Request was aborted', { error, signal: this.controller.signal });
+        this.logger.debug('Request was aborted', { reason: this.controller.signal.reason });
         this.controller.abort('Abort signal detected');
       } else {
         this.logger.error('Error received during fetch:', {
@@ -1417,8 +1429,8 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   }: RequestOptions): Promise<Maybe<Response>> {
     // Check if the request has been aborted before proceeding
     if (this.controller.signal.aborted) {
-      this.logger.warn('Request was aborted before fetch', {
-        signal: this.controller.signal,
+      this.logger.debug('Request was aborted before fetch', {
+        reason: this.controller.signal.reason,
       });
       return;
     }
@@ -1463,7 +1475,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       return httpResponse;
     } catch (error: unknown) {
       if (error instanceof Error && error.name === 'AbortError') {
-        this.logger.warn('Request was aborted', { error, signal: this.controller.signal });
+        this.logger.debug('Request was aborted', { reason: this.controller.signal.reason });
         this.controller.abort('Abort signal detected');
         return;
       }
@@ -1514,7 +1526,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       };
     });
 
-    console.table(scorerComparison);
+    this.logger.table(scorerComparison);
   }
 
   /**
@@ -3180,6 +3192,10 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * @source
    */
   private shouldRetryChallenge(error: unknown): boolean {
-    return this.challengeRetryLimit > 0 && error instanceof HttpError && error.status === 403;
+    return (
+      this.challengeRetryLimit > 0 &&
+      error instanceof HttpError &&
+      error.status === HttpStatus.FORBIDDEN
+    );
   }
 }

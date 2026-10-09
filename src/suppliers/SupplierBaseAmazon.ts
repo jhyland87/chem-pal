@@ -275,7 +275,7 @@ export abstract class SupplierBaseAmazon
       this.logger.warn('No QID found', { doc });
       return;
     }
-    console.log('Found QID:', link.href.split('qid=').at(1));
+    this.logger.debug('Found QID:', link.href.split('qid=').at(1));
     return link.href.split('qid=').at(1);
   }
 

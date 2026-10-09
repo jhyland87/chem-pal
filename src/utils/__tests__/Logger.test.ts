@@ -3,8 +3,8 @@ import {
   restoreConsoleMock,
   setupConsoleMock,
 } from '@/suppliers/__tests__/helpers/consoleTestUtils';
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Logger, LogLevel } from '../Logger';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { Logger, LogLevel, type RemoteLogLevel } from '../Logger';
 
 // Define the extended Window interface
 interface ExtendedWindow extends Window {
@@ -729,5 +729,87 @@ describe('Logger', () => {
         expect(new Logger('Fresh').getLogLevel()).toBe(LogLevel.ERROR);
       });
     });
+  });
+});
+
+describe('Logger remote sink', () => {
+  const emit = vi.fn();
+  const isEnabled = vi.fn<(level: RemoteLogLevel) => boolean>();
+
+  beforeEach(() => {
+    emit.mockReset();
+    isEnabled.mockReset().mockReturnValue(true);
+    Logger.setRemoteSink({ isEnabled, emit });
+    // An earlier suite may have left a level in the environment.
+    delete (window as ExtendedWindow).LOG_LEVEL;
+    delete process.env.LOG_LEVEL;
+  });
+
+  afterEach(() => {
+    Logger.setRemoteSink(undefined);
+  });
+
+  it.each([
+    ['debug', 'debug'],
+    ['info', 'log'],
+    ['log', 'log'],
+    ['warn', 'warn'],
+    ['error', 'error'],
+  ] as const)('forwards %s() to the sink as level %s', (method, level) => {
+    const err = new Error('boom');
+    new Logger('Remote')[method]('hello', 1, err);
+
+    expect(isEnabled).toHaveBeenCalledWith(level);
+    expect(emit).toHaveBeenCalledExactlyOnceWith({
+      level,
+      prefix: 'Remote',
+      message: 'hello',
+      args: [1, err],
+    });
+  });
+
+  it('does not emit when the sink does not want the level', () => {
+    isEnabled.mockReturnValue(false);
+    new Logger('Remote').error('nope');
+
+    expect(isEnabled).toHaveBeenCalledWith('error');
+    expect(emit).not.toHaveBeenCalled();
+  });
+
+  it('forwards independently of the console log level', () => {
+    const consoleDebug = vi.spyOn(console, 'debug').mockImplementation(() => undefined);
+    new Logger('Remote', LogLevel.ERROR).debug('quiet locally');
+
+    expect(consoleDebug).not.toHaveBeenCalled();
+    expect(emit).toHaveBeenCalledWith(expect.objectContaining({ level: 'debug' }));
+    consoleDebug.mockRestore();
+  });
+
+  it('forwards sub() loggers with the combined prefix', () => {
+    new Logger('Parent').sub('child').warn('nested');
+
+    expect(emit).toHaveBeenCalledWith(expect.objectContaining({ prefix: 'Parent|child' }));
+  });
+
+  it('keeps logging when the sink throws', () => {
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const consoleDebug = vi.spyOn(console, 'debug').mockImplementation(() => undefined);
+    emit.mockImplementation(() => {
+      throw new Error('sink down');
+    });
+
+    expect(() => new Logger('Remote').warn('still works')).not.toThrow();
+    expect(consoleDebug).toHaveBeenCalledWith('Remote log sink failed:', expect.any(Error));
+    expect(consoleWarn).toHaveBeenCalled();
+    consoleWarn.mockRestore();
+    consoleDebug.mockRestore();
+  });
+
+  it('is console-only once the sink is cleared', () => {
+    Logger.setRemoteSink(undefined);
+    new Logger('Remote').warn('local only');
+
+    expect(isEnabled).not.toHaveBeenCalled();
+    expect(emit).not.toHaveBeenCalled();
   });
 });

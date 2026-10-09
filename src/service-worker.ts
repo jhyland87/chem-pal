@@ -18,6 +18,9 @@ import { defaultSettings, extension } from '@/../config.json';
 import { CACHE, MESSAGE_TYPE } from '@/constants/common';
 import { trackInstallOrUpgrade } from '@/helpers/analytics';
 import { installErrorCapture } from '@/helpers/errorBuffer';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('service-worker');
 
 /**
  * Context-menu item id for the "Search selection in ChemPal" entry.
@@ -39,7 +42,7 @@ installErrorCapture();
 
 chrome.runtime.onInstalled.addListener(({ reason, previousVersion }) => {
   if (reason === chrome.runtime.OnInstalledReason.INSTALL) {
-    console.info('ChemPal installed');
+    logger.info('ChemPal installed');
     // Seed the review-prompt record with an exact install date. Raw chrome.storage
     // (not cstorage) for the same reason as the writes below: compression is off and
     // the app-side decoder passes non-envelope values through unchanged.
@@ -57,7 +60,7 @@ chrome.runtime.onInstalled.addListener(({ reason, previousVersion }) => {
     // an upgrade — and clearing UPDATE_PENDING here would silently drop a genuinely
     // staged update the UI is still meant to prompt for.
     if (previousVersion === __APP_VERSION__) return;
-    console.info('ChemPal updated');
+    logger.info('ChemPal updated');
     // The staged update just landed; drop the record so the UI doesn't keep
     // prompting for a version that is now running.
     void chrome.storage.local.remove(CACHE.UPDATE_PENDING);
@@ -196,7 +199,7 @@ async function readOpenInTab(): Promise<boolean> {
       ? Boolean(display.openInTab)
       : DEFAULT_OPEN_IN_TAB;
   } catch (error) {
-    console.warn('Failed to read openInTab setting:', error);
+    logger.warn('Failed to read openInTab setting:', error);
     return DEFAULT_OPEN_IN_TAB;
   }
 }

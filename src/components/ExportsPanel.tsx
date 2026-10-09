@@ -13,6 +13,9 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { Box, IconButton, List, ListItem, ListItemText, Tooltip, Typography } from '@mui/material';
 import { FC, useCallback, useEffect, useState } from 'react';
 import styles from './ExportsPanel.module.scss';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('ExportsPanel');
 
 /**
  * ExportsPanel lists the `.xlsx` result exports cached in IndexedDB, newest
@@ -39,7 +42,7 @@ const ExportsPanel: FC = () => {
     try {
       setExports(await getAllExports());
     } catch (error) {
-      console.warn('Failed to load exports:', error);
+      logger.warn('Failed to load exports:', error);
     }
   }, []);
 
@@ -68,7 +71,7 @@ const ExportsPanel: FC = () => {
     try {
       await deleteExport(id);
     } catch (error) {
-      console.warn('Failed to delete export:', error);
+      logger.warn('Failed to delete export:', error);
     }
   };
 
@@ -80,7 +83,7 @@ const ExportsPanel: FC = () => {
     try {
       await clearExports();
     } catch (error) {
-      console.warn('Failed to clear exports:', error);
+      logger.warn('Failed to clear exports:', error);
     }
   };
 

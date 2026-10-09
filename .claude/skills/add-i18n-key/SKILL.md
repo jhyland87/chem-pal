@@ -59,7 +59,11 @@ translated sentence reorders them.
 ## Consuming the key
 
 `i18n()` is a **custom reactive store**, not the raw `chrome.i18n` API — it bundles
-`_locales` and exposes `setLocale` / `useLocale`. A translation captured in a `useMemo`,
+`_locales` and exposes `setLocale` / `useLocale`. English ships in the startup bundle (it is
+the fallback); every other locale is its own lazy chunk, so `setLocale` is **async** and the UI
+switches once the table has loaded. A build plugin strips each entry's `description` from the
+bundled tables (the copies Chrome reads from `_locales/` keep it), so never read `description`
+at runtime. A translation captured in a `useMemo`,
 `useCallback`, or module-level constant needs the current locale as a dependency, or it
 will keep rendering the old language after a locale switch.
 

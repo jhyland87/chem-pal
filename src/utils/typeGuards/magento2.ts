@@ -1,5 +1,8 @@
 import { addActualValueToIssues } from '@/helpers/utils';
 import * as v from 'valibot';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('typeGuards.magento2');
 
 const magento2MoneySchema = v.object({
   value: v.number(),
@@ -165,7 +168,7 @@ export function isValidMagento2SearchResponse(
 ): response is Magento2SearchResponse {
   const parsed = v.safeParse(magento2SearchResponseSchema, response);
   if (!parsed.success) {
-    console.warn('isValidMagento2SearchResponse: response is not a valid Magento2SearchResponse', {
+    logger.warn('isValidMagento2SearchResponse: response is not a valid Magento2SearchResponse', {
       response,
       parsed,
       issues: addActualValueToIssues(parsed.issues, response),

@@ -42,6 +42,9 @@ vi.mock('@/helpers/analytics', () => ({
   trackEvent: vi.fn().mockResolvedValue(undefined),
   trackInstallOrUpgrade: vi.fn().mockResolvedValue(undefined),
   trackRenderError: vi.fn().mockResolvedValue(undefined),
+  canSendAnalytics: vi.fn().mockResolvedValue(false),
+  getFingerprintDistinctId: vi.fn().mockReturnValue('fp_test'),
+  getSessionId: vi.fn().mockResolvedValue('test-session'),
 }));
 
 // Mock specific MUI CSS file

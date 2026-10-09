@@ -9,6 +9,10 @@
  * @source
  */
 
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('displayContext');
+
 /**
  * Query-string key that flags the full-tab view.
  * @category Utils
@@ -75,7 +79,7 @@ export async function openExtensionTab(): Promise<void> {
       }
     }
   } catch (error) {
-    console.error('Failed to open extension tab:', { error });
+    logger.error('Failed to open extension tab:', { error });
   }
   window.close();
 }

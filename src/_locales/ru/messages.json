@@ -934,6 +934,14 @@
     "message": "Заменяет алгоритм по умолчанию для каждого поставщика",
     "description": "Helper text (dev)."
   },
+  "settings_remote_log_levels": {
+    "message": "Уровни диагностических журналов",
+    "description": "Label for the advanced multi-select of log levels sent as diagnostic logs."
+  },
+  "settings_remote_log_levels_helper": {
+    "message": "Какие уровни журнала отправляются, когда включена отправка данных об использовании",
+    "description": "Helper text under the diagnostic log levels select."
+  },
   "settings_fuzz_scorer_default": {
     "message": "По умолчанию (для каждого поставщика)",
     "description": "Default scorer option (dev)."
@@ -1013,7 +1021,7 @@
   "offline_title": { "message": "Нет подключения к интернету", "description": "Title of the full-screen offline overlay." },
   "offline_message": { "message": "Возникла проблема с сетевым подключением. Это сообщение исчезнет, как только соединение восстановится.", "description": "Body of the offline overlay." },
   "settings_share_usage_data": { "message": "Делиться данными об использовании", "description": "Settings toggle label: opt in/out of usage analytics." },
-  "settings_share_usage_data_desc": { "message": "Отправлять статистику использования и ошибок (поиски, число результатов, установки, обновления, сбои), чтобы улучшать ChemPal. Данные привязаны к идентификатору устройства, а не к вашему имени или аккаунту.", "description": "Description under the usage-data toggle." },
+  "settings_share_usage_data_desc": { "message": "Отправлять статистику использования и ошибок (поиски, число результатов, установки, обновления, сбои) и диагностические журналы, чтобы улучшать ChemPal. Данные привязаны к идентификатору устройства, а не к вашему имени или аккаунту.", "description": "Description under the usage-data toggle." },
   "speed_dial_aria": {
     "message": "Меню SpeedDial",
     "description": "Accessible label for the speed dial."

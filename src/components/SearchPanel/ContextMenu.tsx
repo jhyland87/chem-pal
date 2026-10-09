@@ -31,6 +31,9 @@ import type { Table } from '@tanstack/react-table';
 import { dump as yamlDump } from 'js-yaml';
 import { useEffect, useRef, useState } from 'react';
 import styles from './ContextMenu.module.scss';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('ContextMenu');
 
 /**
  * Props for the ContextMenu component.
@@ -263,9 +266,9 @@ export default function ContextMenu({
   const handleCopyTitle = async () => {
     try {
       await navigator.clipboard.writeText(product.title || 'Unknown Product');
-      console.log('Product title copied to clipboard');
+      logger.debug('Product title copied to clipboard');
     } catch (err) {
-      console.error('Failed to copy product title:', err);
+      logger.error('Failed to copy product title:', err);
     }
     onClose();
   };
@@ -279,9 +282,9 @@ export default function ContextMenu({
     if (openUrl) {
       try {
         await navigator.clipboard.writeText(openUrl);
-        console.log('Product URL copied to clipboard');
+        logger.debug('Product URL copied to clipboard');
       } catch (err) {
-        console.error('Failed to copy product URL:', err);
+        logger.error('Failed to copy product URL:', err);
       }
     }
     onClose();
@@ -393,7 +396,7 @@ export default function ContextMenu({
         flashStatusText(i18n('bookmark_created', [FOLDER_NAME]));
       }
     } catch (error) {
-      console.error('Failed to create bookmark:', { error, product });
+      logger.error('Failed to create bookmark:', { error, product });
     }
 
     onClose();
@@ -413,7 +416,7 @@ export default function ContextMenu({
           url: openUrl,
         });
       } catch (error) {
-        console.error('Share failed, falling back to clipboard', { error });
+        logger.error('Share failed, falling back to clipboard', { error });
         await handleCopyUrl();
       }
     } else {
@@ -456,7 +459,7 @@ export default function ContextMenu({
     try {
       await onExcludeProduct?.(product);
     } catch (error) {
-      console.warn('Failed to ignore product:', { error });
+      logger.warn('Failed to ignore product:', { error });
     }
     onClose();
   };
@@ -481,7 +484,7 @@ export default function ContextMenu({
       await deleteSupplierProductDataCacheEntry(cacheKey);
       flashStatusText(i18n('context_menu_removed_from_cache', [product.title]));
     } catch (error) {
-      console.error('Failed to remove product from cache:', { error, product });
+      logger.error('Failed to remove product from cache:', { error, product });
     }
 
     onClose();
@@ -493,9 +496,9 @@ export default function ContextMenu({
 
     try {
       await navigator.clipboard.writeText(productInfo);
-      console.log('JSON product info copied to clipboard', { productInfoObj, productInfo });
+      logger.debug('JSON product info copied to clipboard', { productInfoObj, productInfo });
     } catch (error) {
-      console.error('Failed to copy JSON product info', { productInfoObj, productInfo, error });
+      logger.error('Failed to copy JSON product info', { productInfoObj, productInfo, error });
     }
     onClose();
   };
@@ -511,12 +514,12 @@ export default function ContextMenu({
 
     try {
       await navigator.clipboard.writeText(productInfo);
-      console.log('YAML product info copied to clipboard', {
+      logger.debug('YAML product info copied to clipboard', {
         productInfo,
         productInfoObj,
       });
     } catch (error) {
-      console.error('Failed to copy YAML product info', { productInfoObj, productInfo, error });
+      logger.error('Failed to copy YAML product info', { productInfoObj, productInfo, error });
     }
     onClose();
   };
@@ -602,7 +605,7 @@ export default function ContextMenu({
       downloadBlob(blob, filename);
       flashStatusText(i18n('export_success', [String(groups.length)]));
     } catch (error) {
-      console.error('Failed to export results', { error });
+      logger.error('Failed to export results', { error });
       flashStatusText(i18n('export_failed'));
     }
     onClose();

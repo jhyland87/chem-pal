@@ -2,6 +2,9 @@ import { captureOwnerStack, Component, ReactNode } from 'react';
 import { trackRenderError } from '@/helpers/analytics';
 import { i18n } from '@/helpers/i18n';
 import { showReportDialog } from './ReportDialog';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('ErrorBoundary');
 
 /** Internal state: whether a descendant threw, and the captured error details. */
 interface ErrorBoundaryState {
@@ -62,7 +65,8 @@ class ErrorBoundary extends Component<
    * @source
    */
   componentDidCatch(error: Error, info: { componentStack: string }) {
-    console.error(
+    logger.error(
+      'Component render error:',
       error,
       // Example "componentStack":
       //   in ComponentThatThrows (created by App)

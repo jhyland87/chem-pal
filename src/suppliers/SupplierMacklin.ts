@@ -1,5 +1,6 @@
 import { AVAILABILITY } from '@/constants/common';
 import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
+import { HttpStatus } from '@/constants/httpStatus';
 import { parseQuantity } from '@/helpers/quantity';
 import { mapDefined } from '@/helpers/utils';
 import { ProductBuilder } from '@/utils/ProductBuilder';
@@ -844,10 +845,10 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
         throw new MacklinApiError('Authentication required');
       }
 
-      // Anything other than 200 is a failure (e.g. 504 "Signature failed").
+      // Anything other than 200 (OK) is a failure (e.g. 504 "Signature failed").
       // The data payload is empty/invalid in that case; downstream typeguards
       // drop it, but surface the failure here so it isn't silent.
-      if (response.code !== 200) {
+      if (response.code !== HttpStatus.OK) {
         this.logger.warn('Macklin API returned a non-success code', {
           path,
           response,

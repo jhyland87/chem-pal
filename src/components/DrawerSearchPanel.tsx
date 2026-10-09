@@ -12,6 +12,9 @@ import { FC, KeyboardEvent, SyntheticEvent, useEffect, useMemo } from 'react';
 import ColumnDrawerSection from './ColumnDrawerSection';
 import styles from './DrawerSearchPanel.module.scss';
 import { StyledAccordionDetails, StyledAccordionSummary } from './StyledComponents';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('DrawerSearchPanel');
 
 /**
  * Pre-search filter drawer. Renders the product-name field, then walks
@@ -99,7 +102,7 @@ const DrawerSearchPanel: FC<{
           setSearchFilters({ ...searchFilters, titleQuery: stored });
         }
       } catch (error) {
-        console.warn('Failed to load search input from session storage:', { error });
+        logger.warn('Failed to load search input from session storage:', { error });
       }
     };
     loadSearchInput();
@@ -111,7 +114,7 @@ const DrawerSearchPanel: FC<{
     try {
       await cstorage.session.set({ [CACHE.SEARCH_INPUT]: value });
     } catch (error) {
-      console.warn('Failed to persist search input to session storage:', { error });
+      logger.warn('Failed to persist search input to session storage:', { error });
     }
   };
 
@@ -127,7 +130,7 @@ const DrawerSearchPanel: FC<{
     try {
       await cstorage.session.set({ [CACHE.SEARCH_INPUT]: '' });
     } catch (error) {
-      console.warn('Failed to clear search input draft in session storage:', { error });
+      logger.warn('Failed to clear search input draft in session storage:', { error });
     }
     // Clear the drawer's visible field to match the cleared draft so re-opening
     // the drawer doesn't show stale text from the just-submitted query.

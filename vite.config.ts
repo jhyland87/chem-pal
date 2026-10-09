@@ -15,6 +15,34 @@ import { buildManifest } from './tools/buildManifest.js';
 const _resolve = (p: string) => path.resolve(__dirname, p);
 
 /**
+ * Strips the translator-only `description` field from every bundled
+ * `src/_locales/<code>/messages.json`. The runtime i18n store reads only `message` and
+ * `placeholders`, so the descriptions (about a third of each file) would otherwise ship
+ * to every user for nothing. The copies emitted into the extension's `_locales` folder
+ * for `chrome.i18n` come straight from disk and are left untouched.
+ *
+ * @returns A Vite plugin that rewrites locale JSON modules as they are imported.
+ * @source
+ */
+function stripLocaleDescriptionsPlugin(): Plugin {
+  return {
+    name: 'chem-pal-strip-locale-descriptions',
+    // Run before Vite's own JSON handling, while the module is still raw JSON text.
+    enforce: 'pre',
+    transform(code, id) {
+      if (!/\/src\/_locales\/[^/]+\/messages\.json$/.test(normalizePath(id.split('?')[0]))) {
+        return undefined;
+      }
+      const table: Record<string, Record<string, unknown>> = JSON.parse(code);
+      for (const entry of Object.values(table)) {
+        delete entry.description;
+      }
+      return { code: JSON.stringify(table), map: null };
+    },
+  };
+}
+
+/**
  * Emits a browser-specific `manifest.json` into the build output, derived from
  * the shared `public/manifest.json` base. Chrome gets the base unchanged;
  * Firefox gets the MV3 transforms from {@link buildManifest}.
@@ -171,6 +199,7 @@ export default ({ mode }: { mode: string }) => {
       },
     },
     plugins: [
+      stripLocaleDescriptionsPlugin(),
       react(),
       graphqlLoader(),
       manifestPlugin(browser),

@@ -708,6 +708,14 @@
     "message": "प्रत्येक आपूर्तिकर्ता के डिफ़ॉल्ट स्कोरर को ओवरराइड करता है",
     "description": "Helper text (dev)."
   },
+  "settings_remote_log_levels": {
+    "message": "डायग्नोस्टिक लॉग स्तर",
+    "description": "Label for the advanced multi-select of log levels sent as diagnostic logs."
+  },
+  "settings_remote_log_levels_helper": {
+    "message": "उपयोग डेटा साझा करना चालू होने पर कौन-से लॉग स्तर भेजे जाते हैं",
+    "description": "Helper text under the diagnostic log levels select."
+  },
   "settings_fuzz_scorer_default": {
     "message": "डिफ़ॉल्ट (प्रति आपूर्तिकर्ता)",
     "description": "Default scorer option (dev)."
@@ -776,7 +784,7 @@
   "offline_title": { "message": "इंटरनेट कनेक्शन नहीं है", "description": "Title of the full-screen offline overlay." },
   "offline_message": { "message": "नेटवर्क कनेक्शन में समस्या आई है। कनेक्शन बहाल होते ही यह संदेश गायब हो जाएगा।", "description": "Body of the offline overlay." },
   "settings_share_usage_data": { "message": "उपयोग डेटा साझा करें", "description": "Settings toggle label: opt in/out of usage analytics." },
-  "settings_share_usage_data_desc": { "message": "ChemPal को बेहतर बनाने में मदद के लिए उपयोग और त्रुटि आँकड़े (खोज, परिणाम संख्या, इंस्टॉल, अपडेट, क्रैश) भेजें। यह डेटा आपके नाम या खाते से नहीं, बल्कि एक डिवाइस पहचानकर्ता से जुड़ा होता है।", "description": "Description under the usage-data toggle." },
+  "settings_share_usage_data_desc": { "message": "ChemPal को बेहतर बनाने में मदद के लिए उपयोग और त्रुटि आँकड़े (खोज, परिणाम संख्या, इंस्टॉल, अपडेट, क्रैश) और डायग्नोस्टिक लॉग भेजें। यह डेटा आपके नाम या खाते से नहीं, बल्कि एक डिवाइस पहचानकर्ता से जुड़ा होता है।", "description": "Description under the usage-data toggle." },
   "speed_dial_aria": {
     "message": "SpeedDial मेनू",
     "description": "Accessible label for the speed dial."

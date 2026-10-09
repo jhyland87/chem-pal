@@ -11,6 +11,9 @@ import {
 } from '@/helpers/formulaPattern';
 import { looksLikeSmiles } from '@/helpers/smiles';
 import { decodeHTMLEntities, ucfirst } from '@/helpers/utils';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('science');
 
 /**
  * @category Science Helpers
@@ -668,7 +671,7 @@ const matchGrade = (value: string): string | undefined => {
   const hits = Object.entries(matches.groups).filter(([, v]) => Boolean(v));
   if (hits.length === 0) return undefined;
   if (hits.length > 1) {
-    console.warn(
+    logger.warn(
       `Multiple grades found in "${value}": ${hits.map(([k]) => k).join(', ')}, returning first`,
     );
   }

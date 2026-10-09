@@ -43,6 +43,9 @@ import { getCurrencyRate } from './helpers/currency';
 import { i18n, setLocale, useLocale } from './helpers/i18n';
 import { appReducer, initialAppState, type AppState } from './state/appReducer';
 import { resolveInitialPanel } from './state/resolveInitialPanel';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('App');
 
 // Always lazy — the panel is now reachable in any build via advanced mode, so the
 // chunk (MUI X charts + data grid) must exist. It's only fetched when opened.
@@ -218,7 +221,7 @@ function App() {
   // so picking a language in Settings updates the whole UI immediately.
   const settingsLanguage = appState.userSettings?.language;
   useEffect(() => {
-    if (settingsLanguage) setLocale(settingsLanguage.split('-')[0]);
+    if (settingsLanguage) void setLocale(settingsLanguage.split('-')[0]);
   }, [settingsLanguage]);
 
   // Fetch the USD→currency conversion rate whenever the selected currency changes
@@ -233,7 +236,7 @@ function App() {
         const rate = await getCurrencyRate('USD', selectedCurrency);
         if (!cancelled) dispatch({ type: APP_ACTION.SET_CURRENCY_RATE, rate });
       } catch (error) {
-        console.error('Failed to get currency rate:', { error });
+        logger.error('Failed to get currency rate:', { error });
       }
     };
     void loadRate();
@@ -287,7 +290,7 @@ function App() {
         dispatch({ type: APP_ACTION.LOAD_FROM_STORAGE, data: loadedData });
       }
     } catch (error) {
-      console.error('Failed to load from Chrome storage:', { error });
+      logger.error('Failed to load from Chrome storage:', { error });
     }
   }, [dispatch]);
 
@@ -304,7 +307,7 @@ function App() {
         }
         await seedVersionIfUnset();
       } catch (error) {
-        console.error('Migration check failed:', { error });
+        logger.error('Migration check failed:', { error });
       }
       await loadFromStorage();
     };
@@ -321,7 +324,7 @@ function App() {
       setMigrationSteps([]);
       await loadFromStorage();
     } catch (error) {
-      console.error('Failed to apply migrations:', { error });
+      logger.error('Failed to apply migrations:', { error });
       setMigrationError(i18n('migration_error'));
       setMigrationBusy(false);
     }
@@ -334,7 +337,7 @@ function App() {
     try {
       await resetToCurrentVersion();
     } catch (error) {
-      console.error('Failed to reset caches:', { error });
+      logger.error('Failed to reset caches:', { error });
     }
     setMigrationSteps([]);
     setMigrationBusy(false);
@@ -354,7 +357,7 @@ function App() {
     ) => {
       for (const [key, change] of Object.entries(changes)) {
         if (!watchedKeys.has(key)) continue;
-        console.debug(`[storage:${areaName}] ${key} changed`, {
+        logger.debug(`[storage:${areaName}] ${key} changed`, {
           oldValue: change.oldValue,
           newValue: change.newValue,
           diff: diff(change.oldValue, change.newValue),
@@ -402,7 +405,7 @@ function App() {
         setPendingSearchQuery(query);
         dispatch({ type: APP_ACTION.SET_PANEL, panel: PANEL.RESULTS });
       } catch (error) {
-        console.warn('Failed to handle context-menu search', { error });
+        logger.warn('Failed to handle context-menu search', { error });
       }
     };
 

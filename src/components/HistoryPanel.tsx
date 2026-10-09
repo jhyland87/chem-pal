@@ -21,6 +21,9 @@ import { FC, SyntheticEvent, useEffect, useState } from 'react';
 import ExportsPanel from './ExportsPanel';
 import styles from './HistoryPanel.module.scss';
 import { StyledAccordionDetailsNoPadding, StyledAccordionSummary } from './StyledComponents';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('HistoryPanel');
 
 /**
  * HistoryPanel component that displays past search queries,
@@ -72,7 +75,7 @@ const HistoryPanel: FC = () => {
         const entries = await getSearchHistory();
         setHistory(entries);
       } catch (error) {
-        console.warn('Failed to load search history:', error);
+        logger.warn('Failed to load search history:', error);
       }
     };
     loadHistory();
@@ -94,7 +97,7 @@ const HistoryPanel: FC = () => {
       await clearSearchHistory();
       setHistory([]);
     } catch (error) {
-      console.warn('Failed to clear search history:', error);
+      logger.warn('Failed to clear search history:', error);
     }
   };
 

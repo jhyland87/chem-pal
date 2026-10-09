@@ -4,6 +4,7 @@ import { sleep } from '@/helpers/utils';
 import { ProductBuilder } from '@/utils/ProductBuilder';
 import { isHtmlResponse } from '@/utils/typeGuards/common';
 import { SupplierBaseMagento2 } from './SupplierBaseMagento2';
+import { HttpStatus } from '@/constants/httpStatus';
 
 /** Outcome of a single product-page fetch attempt. */
 export type PageFetchResult =
@@ -168,7 +169,7 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
       this.recordFetchFailure(url, result.httpStatus);
 
       // Only a 429 triggers the shared backoff; any other failure ends this product's fetch.
-      if (result.httpStatus !== 429) {
+      if (result.httpStatus !== HttpStatus.TOO_MANY_REQUESTS) {
         return undefined;
       }
 
@@ -216,7 +217,7 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
         }
 
         this.recordFetchFailure(url, result.httpStatus);
-        if (result.httpStatus !== 429) {
+        if (result.httpStatus !== HttpStatus.TOO_MANY_REQUESTS) {
           return undefined;
         }
         // Still rate limited: wait another (longer) interval and probe again.

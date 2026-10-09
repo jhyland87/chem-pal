@@ -8,6 +8,10 @@
  * @source
  */
 
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('advancedMode');
+
 /** Bundled chimes for entering and leaving advanced mode. */
 const ADVANCED_MODE_SOUNDS = {
   on: '/static/sounds/power-up.mp3',
@@ -37,6 +41,6 @@ export async function playAdvancedModeSound(enabled: boolean): Promise<void> {
     audio.volume = VOLUME;
     await audio.play();
   } catch (error) {
-    console.warn('Failed to play the advanced-mode sound', { error });
+    logger.warn('Failed to play the advanced-mode sound', { error });
   }
 }

@@ -245,7 +245,7 @@ export abstract class SupplierBaseSearchanise
 
         builder.setQuantity(quantity.quantity, quantity.uom);
 
-        console.log('item.shopify_variants', { item });
+        this.logger.debug('item.shopify_variants', { item });
         if ('shopify_variants' in item && Array.isArray(item.shopify_variants)) {
           item.shopify_variants.forEach((variant) => {
             if (!isSearchaniseVariant(variant)) return;
@@ -256,7 +256,7 @@ export abstract class SupplierBaseSearchanise
               variant.sku,
             ]);
 
-            console.log('variantQuantity', { variantQuantity, item });
+            this.logger.debug('variantQuantity', { variantQuantity, item });
 
             builder.addVariant({
               id: variant.variant_id,

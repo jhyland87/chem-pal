@@ -1,5 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
+import { i18n as i18nConfig } from '@/../config.json';
 import { getAvailableLocales, getLocale, i18n, setLocale, useLocale } from '@/helpers/i18n';
 
 /** The shape of a single entry in a `messages.json` table. */
@@ -36,36 +37,59 @@ function Sample() {
 }
 
 describe('reactive i18n', () => {
-  afterEach(() => {
-    act(() => setLocale('en'));
+  afterEach(async () => {
+    await act(async () => setLocale('en'));
   });
 
   it('lists the locales that ship a messages.json', () => {
     expect(getAvailableLocales()).toEqual(expect.arrayContaining(['en', 'pl']));
   });
 
-  it('resolves and substitutes in the active locale', () => {
-    setLocale('en');
+  it('keeps English bundled eagerly: it is the config default and works synchronously', () => {
+    expect(i18nConfig.defaultLocale).toBe('en');
+    expect(getLocale()).toBe('en');
+    expect(i18n('results_retry')).toBe('Retry');
+  });
+
+  it('resolves and substitutes in the active locale', async () => {
+    await setLocale('en');
     expect(i18n('results_retry')).toBe('Retry');
     expect(i18n('results_error', ['boom'])).toBe('Error: boom');
 
-    setLocale('pl');
+    await setLocale('pl');
     expect(i18n('results_retry')).toBe('Ponów');
     expect(i18n('results_error', ['boom'])).toBe('Błąd: boom');
   });
 
-  it('re-renders subscribed components when the locale changes (no refresh)', () => {
-    setLocale('en');
+  it('stays in the current language until the requested locale has loaded', async () => {
+    const pending = setLocale('de');
+    expect(getLocale()).toBe('en');
+
+    await pending;
+    expect(getLocale()).toBe('de');
+  });
+
+  it('re-renders subscribed components when the locale changes (no refresh)', async () => {
+    await setLocale('en');
     render(<Sample />);
     expect(screen.getByText('Retry')).toBeInTheDocument();
 
-    act(() => setLocale('pl'));
+    await act(async () => setLocale('pl'));
     expect(screen.getByText('Ponów')).toBeInTheDocument();
     expect(screen.queryByText('Retry')).not.toBeInTheDocument();
   });
 
-  it('falls back to the default locale for an unknown locale', () => {
-    setLocale('xx');
+  it('keeps the latest request when an older, slower one resolves afterwards', async () => {
+    const slower = setLocale('ru');
+    const latest = setLocale('pl');
+    await Promise.all([slower, latest]);
+
+    expect(getLocale()).toBe('pl');
+  });
+
+  it('falls back to the default locale for an unknown locale', async () => {
+    await setLocale('pl');
+    await setLocale('xx');
     expect(getLocale()).toBe('en');
   });
 });

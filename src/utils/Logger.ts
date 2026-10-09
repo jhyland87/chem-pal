@@ -24,6 +24,96 @@ export enum LogLevel {
   ERROR = 'error',
 }
 
+/**
+ * Every severity bucket a remote log sink can opt into, least to most severe.
+ * `Logger.info` and `Logger.log` both map to `'log'`.
+ * @category Utils
+ * @group Constants
+ * @example
+ * ```typescript
+ * REMOTE_LOG_LEVELS.includes('warn'); // true
+ * ```
+ * @source
+ */
+export const REMOTE_LOG_LEVELS = ['debug', 'log', 'warn', 'error'] as const;
+
+/**
+ * A severity bucket a remote log sink can opt into.
+ * @category Utils
+ * @group Types
+ * @example
+ * ```typescript
+ * const levels: RemoteLogLevel[] = ['log', 'warn', 'error'];
+ * ```
+ * @source
+ */
+export type RemoteLogLevel = (typeof REMOTE_LOG_LEVELS)[number];
+
+/**
+ * Narrows an arbitrary value to a {@link RemoteLogLevel}.
+ * @category Utils
+ * @group Types
+ * @param value - The value to test
+ * @returns `true` if the value is one of the remote log levels
+ * @example
+ * ```typescript
+ * isRemoteLogLevel('warn');  // true
+ * isRemoteLogLevel('fatal'); // false
+ * ```
+ * @source
+ */
+export function isRemoteLogLevel(value: unknown): value is RemoteLogLevel {
+  return REMOTE_LOG_LEVELS.some((level) => level === value);
+}
+
+/**
+ * One log call as handed to a {@link RemoteLogSink}.
+ * - `level` - The remote severity bucket of the call.
+ * - `prefix` - The emitting logger's prefix (includes any `sub()` segments).
+ * - `message` - The message passed to the logger, before any formatting.
+ * - `args` - The extra arguments passed to the logger, unsanitized.
+ * @category Utils
+ * @group Types
+ * @example
+ * ```typescript
+ * const record: RemoteLogRecord = {
+ *   level: 'warn',
+ *   prefix: 'SupplierBase|fetch',
+ *   message: 'Request failed',
+ *   args: [new Error('timeout')],
+ * };
+ * ```
+ * @source
+ */
+export interface RemoteLogRecord {
+  level: RemoteLogLevel;
+  prefix: string;
+  message: string;
+  args: readonly unknown[];
+}
+
+/**
+ * A destination that receives log calls in addition to the console, such as PostHog Logs.
+ * `isEnabled` is checked first so a disabled level costs no more than one function call.
+ * - `isEnabled` - Whether records at this level are currently wanted.
+ * - `emit` - Receives a record. Must not throw.
+ * @category Utils
+ * @group Types
+ * @example
+ * ```typescript
+ * const sink: RemoteLogSink = {
+ *   isEnabled: (level) => level === 'error',
+ *   emit: (record) => queue.push(record),
+ * };
+ * Logger.setRemoteSink(sink);
+ * ```
+ * @source
+ */
+export interface RemoteLogSink {
+  isEnabled(level: RemoteLogLevel): boolean;
+  emit(record: RemoteLogRecord): void;
+}
+
 /** Default log level when nothing is set via window/process env. DEBUG in dev, WARN in prod. */
 const DEFAULT_LOG_LEVEL_FOR_BUILD: LogLevel = IS_DEV_BUILD ? LogLevel.DEBUG : LogLevel.WARN;
 
@@ -99,6 +189,13 @@ export class Logger {
     [LogLevel.WARN]: '#f5a623',
     [LogLevel.ERROR]: '#e5484d',
   };
+
+  /**
+   * The registered remote sink, shared by every logger instance. Unset by default, in
+   * which case logging is console-only.
+   * @source
+   */
+  private static remoteSink?: RemoteLogSink;
 
   /**
    * Stores named counters for the `count()` and `countReset()` methods.
@@ -184,6 +281,25 @@ export class Logger {
     if (typeof process !== 'undefined' && process.env) {
       process.env.LOG_LEVEL = level;
     }
+  }
+
+  /**
+   * Registers (or clears) the sink that receives `debug`/`info`/`log`/`warn`/`error` calls
+   * from every logger instance, independent of the console log level.
+   *
+   * The sink is registered here rather than imported so `Logger` stays free of the
+   * analytics and storage modules that themselves create loggers.
+   * @param sink - The sink to register, or `undefined` to detach the current one
+   * @example
+   * ```typescript
+   * Logger.setRemoteSink({ isEnabled: () => true, emit: (record) => send(record) });
+   * new Logger('App').warn('Heads up'); // also reaches the sink as level 'warn'
+   * Logger.setRemoteSink(undefined);
+   * ```
+   * @source
+   */
+  public static setRemoteSink(sink?: RemoteLogSink): void {
+    Logger.remoteSink = sink;
   }
 
   /**
@@ -462,6 +578,32 @@ export class Logger {
   }
 
   /**
+   * Hands a log call to the registered remote sink, if it wants this level. Runs before the
+   * console gate, so the sink's levels are independent of the console log level.
+   *
+   * @param level - The remote severity bucket of the call
+   * @param message - The message passed to the logger
+   * @param args - The extra arguments passed to the logger
+   * @example
+   * ```typescript
+   * this.forwardRemote('warn', 'Request failed', [error]);
+   * ```
+   * @source
+   */
+  private forwardRemote(level: RemoteLogLevel, message: string, args: readonly unknown[]): void {
+    const sink = Logger.remoteSink;
+    if (sink === undefined || !sink.isEnabled(level)) {
+      return;
+    }
+    try {
+      sink.emit({ level, prefix: this.prefix, message, args });
+    } catch (err) {
+      // A broken sink must never break the caller's logging.
+      console.debug('Remote log sink failed:', err);
+    }
+  }
+
+  /**
    * Logs a debug message if the current log level is `DEBUG` or lower.
    * If environment syncing is enabled, checks environment variables before logging.
    *
@@ -477,6 +619,7 @@ export class Logger {
    * @source
    */
   public debug(message: string, ...args: unknown[]): void {
+    this.forwardRemote('debug', message, args);
     if (!this.shouldLog(LogLevel.DEBUG)) return;
     console.debug(...this.formatArgs(LogLevel.DEBUG, message), ...args);
   }
@@ -497,6 +640,7 @@ export class Logger {
    * @source
    */
   public info(message: string, ...args: unknown[]): void {
+    this.forwardRemote('log', message, args);
     if (!this.shouldLog(LogLevel.INFO)) return;
     console.info(...this.formatArgs(LogLevel.INFO, message), ...args);
   }
@@ -517,6 +661,7 @@ export class Logger {
    * @source
    */
   public warn(message: string, ...args: unknown[]): void {
+    this.forwardRemote('warn', message, args);
     if (!this.shouldLog(LogLevel.WARN)) return;
     console.warn(...this.formatArgs(LogLevel.WARN, message), ...args);
   }
@@ -550,6 +695,7 @@ export class Logger {
    * @source
    */
   public error(message: string, ...args: unknown[]): void {
+    this.forwardRemote('error', message, args);
     if (!this.shouldLog(LogLevel.ERROR)) return;
     console.error(...this.formatArgs(LogLevel.ERROR, message), ...args);
   }
@@ -580,6 +726,7 @@ export class Logger {
    * @source
    */
   public log(message: string, ...args: unknown[]): void {
+    this.forwardRemote('log', message, args);
     if (!this.shouldLog(LogLevel.INFO)) return;
     console.log(...this.formatArgs(LogLevel.INFO, message), ...args);
   }

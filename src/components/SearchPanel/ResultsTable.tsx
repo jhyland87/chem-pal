@@ -103,6 +103,9 @@ import styles from './ResultsTable.module.scss';
 import { useAutoColumnSizing } from './useAutoColumnSizing.hook';
 import { useContextMenu } from './useContextMenu.hook';
 import { useResultsTable } from './useResultsTable.hook';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('ResultsTable');
 
 type FilterVariant = 'text' | 'range' | 'select';
 
@@ -400,7 +403,7 @@ export default function ResultsTable({
           setTableState((prev) => ({ ...prev, ...stored }));
         }
       } catch (error) {
-        console.warn('Failed to load table state from session storage:', { error });
+        logger.warn('Failed to load table state from session storage:', { error });
       }
       isStateLoadedRef.current = true;
     };
@@ -437,7 +440,7 @@ export default function ResultsTable({
           },
         });
       } catch (error) {
-        console.warn('Failed to persist table state:', { error });
+        logger.warn('Failed to persist table state:', { error });
       }
     }, 300),
     [],

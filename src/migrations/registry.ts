@@ -5,7 +5,11 @@ import {
   setStoredAppVersion,
 } from '@/utils/idbCache';
 import { Logger } from '@/utils/Logger';
-import semver from 'semver';
+import semverCompare from 'semver/functions/compare';
+import semverValid from 'semver/functions/valid';
+import semverGt from 'semver/functions/gt';
+import semverLte from 'semver/functions/lte';
+import semverNeq from 'semver/functions/neq';
 import type { Migration } from './types';
 
 const logger = new Logger('migrations');
@@ -65,7 +69,7 @@ function isMigration(value: unknown): value is Migration {
  * @source
  */
 function sortMigrations(migrations: Migration[]): Migration[] {
-  return [...migrations].sort((a, b) => semver.compare(a.to, b.to));
+  return [...migrations].sort((a, b) => semverCompare(a.to, b.to));
 }
 
 /**
@@ -101,10 +105,10 @@ function loadMigrations(): Migration[] {
         `Migration ${path} metadata (${migration.from} → ${migration.to}) does not match its filename (${fromFile} → ${toFile})`,
       );
     }
-    if (semver.valid(migration.from) == null || semver.valid(migration.to) == null) {
+    if (semverValid(migration.from) == null || semverValid(migration.to) == null) {
       throw new Error(`Migration ${path} has invalid semver versions`);
     }
-    if (!semver.gt(migration.to, migration.from)) {
+    if (!semverGt(migration.to, migration.from)) {
       throw new Error(`Migration ${path} must move forward (to > from)`);
     }
     migrations.push(migration);
@@ -138,11 +142,11 @@ export function computePendingMigrations(
 ): Migration[] {
   if (storedVersion == null) return [];
   const pending = sortMigrations(
-    migrations.filter((m) => semver.gt(m.to, storedVersion) && semver.lte(m.to, currentVersion)),
+    migrations.filter((m) => semverGt(m.to, storedVersion) && semverLte(m.to, currentVersion)),
   );
   for (let i = 0; i < pending.length; i++) {
     const expectedFrom = i === 0 ? storedVersion : pending[i - 1].to;
-    if (semver.neq(pending[i].from, expectedFrom)) {
+    if (semverNeq(pending[i].from, expectedFrom)) {
       logger.warn("Migration chain is not contiguous — a release's step may be missing", {
         expectedFrom,
         actualFrom: pending[i].from,

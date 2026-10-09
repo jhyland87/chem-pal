@@ -7,6 +7,9 @@ import { setLocale } from '@/helpers/i18n';
 import { cstorage } from '@/utils/storage';
 import { isValidUserSettings } from '@/utils/typeGuards/common';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('useUserSettings');
 
 // config.json is trusted static config; validate once so the JSON-inferred type
 // narrows to UserSettings without an `as` assertion. Falls back to an empty
@@ -62,7 +65,7 @@ export function useUserSettings(): UseUserSettings {
           setSettingsState({ ...DEFAULT_SETTINGS, ...stored });
         }
       } catch (error) {
-        console.error('Failed to load user settings:', { error });
+        logger.error('Failed to load user settings:', { error });
       }
     };
     void load();
@@ -80,7 +83,7 @@ export function useUserSettings(): UseUserSettings {
       try {
         await cstorage.local.set({ [CACHE.USER_SETTINGS]: newSettings });
       } catch (error) {
-        console.error('Failed to save user settings:', { error });
+        logger.error('Failed to save user settings:', { error });
       }
     })();
   }, []);
@@ -89,7 +92,7 @@ export function useUserSettings(): UseUserSettings {
   // full locale ("en-US"); the message tables are keyed by base code ("en").
   const language = userSettings.language;
   useEffect(() => {
-    if (language) setLocale(language.split('-')[0]);
+    if (language) void setLocale(language.split('-')[0]);
   }, [language]);
 
   // Fetch the USD→currency rate whenever the currency changes and persist it, so
@@ -109,7 +112,7 @@ export function useUserSettings(): UseUserSettings {
         setSettingsState(updated);
         await cstorage.local.set({ [CACHE.USER_SETTINGS]: updated });
       } catch (error) {
-        console.error('Failed to get currency rate:', { error });
+        logger.error('Failed to get currency rate:', { error });
       }
     };
     void loadRate();

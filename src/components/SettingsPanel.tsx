@@ -28,6 +28,7 @@ import {
   getIdbStorageBreakdown,
 } from '@/utils/idbCache';
 import { cstorage } from '@/utils/storage';
+import { Logger, REMOTE_LOG_LEVELS } from '@/utils/Logger';
 import { isButtonElement, isValidUserSettings } from '@/utils/typeGuards/common';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -42,6 +43,7 @@ import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
+import Checkbox from '@mui/material/Checkbox';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -72,6 +74,8 @@ import {
   useState,
 } from 'react';
 import styles from './SettingsPanel.module.scss';
+
+const logger = new Logger('SettingsPanel');
 
 // Languages the extension ships a translation (`messages.json`) for. Derived at
 // build time from src/_locales, so adding a locale folder adds a dropdown option.
@@ -116,7 +120,7 @@ async function getStorageUsageScale(jsonTotalBytes: number): Promise<number> {
     const usage = (await navigator.storage?.estimate?.())?.usage;
     if (usage && usage > 0) return usage / jsonTotalBytes;
   } catch (error) {
-    console.warn('Failed to read storage estimate:', error);
+    logger.warn('Failed to read storage estimate:', error);
   }
   return 1;
 }
@@ -177,6 +181,9 @@ export default function SettingsPanel() {
         case ACTION_TYPE.CACHE_CHANGE:
           newSettings = { ...currentSettings, caching: action.value };
           break;
+        case ACTION_TYPE.REMOTE_LOG_LEVELS_CHANGE:
+          newSettings = { ...currentSettings, remoteLogLevels: action.value };
+          break;
         case ACTION_TYPE.RESTORE_DEFAULTS:
           // Rebuild the whole object from the clean shipped defaults (not a spread
           // of currentSettings), so any stale or corrupted keys are dropped — the
@@ -201,7 +208,7 @@ export default function SettingsPanel() {
         try {
           appContext.setUserSettings(newSettings);
         } catch (error) {
-          console.error('Failed to update settings:', error);
+          logger.error('Failed to update settings:', error);
         }
       });
       return newSettings;
@@ -245,6 +252,18 @@ export default function SettingsPanel() {
     });
   };
 
+  const handleRemoteLogLevelsChange = (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { value } = event.target;
+    // A multi-select reports an array; autofill can report a comma-joined string.
+    const selected: string[] = typeof value === 'string' ? value.split(',') : value;
+    updateSetting({
+      type: ACTION_TYPE.REMOTE_LOG_LEVELS_CHANGE,
+      value: REMOTE_LOG_LEVELS.filter((level) => selected.includes(level)),
+    });
+  };
+
   const handleRestoreDefaults = () => {
     updateSetting({ type: ACTION_TYPE.RESTORE_DEFAULTS });
   };
@@ -266,7 +285,7 @@ export default function SettingsPanel() {
         const map = await loadExcludedProducts();
         setExcludedProducts(map);
       } catch (error) {
-        console.warn('Failed to load excluded products:', error);
+        logger.warn('Failed to load excluded products:', error);
       }
     };
     load();
@@ -298,7 +317,7 @@ export default function SettingsPanel() {
         bytes: Math.round(breakdown.byStore[IDB_STORE.PRICE_HISTORY].bytes * scale),
       });
     } catch (error) {
-      console.warn('Failed to load storage stats:', error);
+      logger.warn('Failed to load storage stats:', error);
     }
   };
 
@@ -315,7 +334,7 @@ export default function SettingsPanel() {
         return next;
       });
     } catch (error) {
-      console.warn('Failed to remove excluded product:', error);
+      logger.warn('Failed to remove excluded product:', error);
     }
   };
 
@@ -324,7 +343,7 @@ export default function SettingsPanel() {
       await clearExcludedProducts();
       setExcludedProducts({});
     } catch (error) {
-      console.warn('Failed to clear excluded products:', error);
+      logger.warn('Failed to clear excluded products:', error);
     }
   };
 
@@ -334,7 +353,7 @@ export default function SettingsPanel() {
       setPriceHistoryCleared(true);
       await loadStorageStats();
     } catch (error) {
-      console.warn('Failed to clear price history:', error);
+      logger.warn('Failed to clear price history:', error);
     }
   };
 
@@ -346,7 +365,7 @@ export default function SettingsPanel() {
       setCacheCleared(true);
       await loadStorageStats();
     } catch (error) {
-      console.warn('Failed to clear cache:', error);
+      logger.warn('Failed to clear cache:', error);
     }
   };
 
@@ -361,7 +380,7 @@ export default function SettingsPanel() {
       await cstorage.local.clear();
       reloadPage();
     } catch (error) {
-      console.warn('Failed to perform full reset:', error);
+      logger.warn('Failed to perform full reset:', error);
     }
   };
 
@@ -371,6 +390,8 @@ export default function SettingsPanel() {
   const excludedCount = excludedEntries.length;
 
   const currentSettings = formState || appContext.userSettings;
+  const selectedRemoteLogLevels =
+    currentSettings.remoteLogLevels ?? DEFAULT_SETTINGS.remoteLogLevels ?? [];
   const disabledSupplierCount = (currentSettings.suppliers?.disabled ?? []).length;
 
   // Toggles a supplier's disabled state. Switch on = enabled, so toggling off adds the
@@ -430,7 +451,7 @@ export default function SettingsPanel() {
         const rate = await getCurrencyRate('USD', selectedCurrency);
         if (!cancelled) setDisplayRate(rate);
       } catch (error) {
-        console.error('Failed to fetch currency rate for display', { error });
+        logger.error('Failed to fetch currency rate for display', { error });
         if (!cancelled) setDisplayRate(undefined);
       }
     };
@@ -1150,6 +1171,36 @@ export default function SettingsPanel() {
                 {FUZZ_SCORER_NAMES.map((name) => (
                   <MenuItem key={name} value={name}>
                     {name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
+          )}
+          {advancedMode && (
+            <Box sx={{ p: 1 }}>
+              <TextField
+                select
+                fullWidth
+                size="small"
+                name="remoteLogLevels"
+                label={i18n('settings_remote_log_levels')}
+                value={selectedRemoteLogLevels}
+                onChange={handleRemoteLogLevelsChange}
+                disabled={isPending || currentSettings.shareUsageData === false}
+                helperText={i18n('settings_remote_log_levels_helper')}
+                slotProps={{
+                  formHelperText: { sx: { fontStyle: 'italic' } },
+                  select: {
+                    multiple: true,
+                    renderValue: (selected) =>
+                      Array.isArray(selected) ? selected.join(', ') : String(selected),
+                  },
+                }}
+              >
+                {REMOTE_LOG_LEVELS.map((level) => (
+                  <MenuItem key={level} value={level}>
+                    <Checkbox size="small" checked={selectedRemoteLogLevels.includes(level)} />
+                    <ListItemText primary={level} />
                   </MenuItem>
                 ))}
               </TextField>

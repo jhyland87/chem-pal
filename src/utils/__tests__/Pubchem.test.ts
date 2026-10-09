@@ -34,7 +34,10 @@ describe('Pubchem', () => {
       global.fetch = vi.fn().mockResolvedValue(jsonResponse({ total: 'nope' }));
       const result = await new Pubchem('aspirin').getCompound();
       expect(result).toBeUndefined();
-      expect(console.error).toHaveBeenCalledWith('Error fetching compound:', expect.any(Error));
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining('Error fetching compound:'),
+        expect.any(Error),
+      );
     });
 
     it('returns undefined when fetch throws', async () => {
@@ -78,7 +81,10 @@ describe('Pubchem', () => {
         .mockResolvedValueOnce(jsonResponse({ ConceptsAndCIDs: { CID: [] } }));
       const result = await new Pubchem('aspirin').getCID();
       expect(result).toBeUndefined();
-      expect(console.error).toHaveBeenCalledWith('Error fetching CID:', expect.any(Error));
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining('Error fetching CID:'),
+        expect.any(Error),
+      );
     });
 
     it.each([
@@ -116,7 +122,10 @@ describe('Pubchem', () => {
       global.fetch = vi.fn().mockResolvedValue(jsonResponse({ notSdq: true }));
       const result = await new Pubchem('aspirin').querySdqAgent({ cid: 1 });
       expect(result).toBeUndefined();
-      expect(console.error).toHaveBeenCalledWith('Error querying SDQ agent:', expect.any(Error));
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining('Error querying SDQ agent:'),
+        expect.any(Error),
+      );
     });
 
     it.each([null, { foo: 1 }, { SDQOutputSet: 'nope' }])(

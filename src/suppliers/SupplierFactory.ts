@@ -1,9 +1,11 @@
 import { search } from '@/../config.json';
+import { SEARCH_ABORT_REASON } from '@/constants/common';
 import {
   supplierDisplayNames,
   supplierShippingMeta,
   supplierShipsTo,
 } from '@/constants/supplierMeta';
+import { HttpStatus } from '@/constants/httpStatus';
 import { recordException } from '@/helpers/errorBuffer';
 import { resolveIdentifierNames } from '@/helpers/pubchem';
 import { filterRestrictedProduct } from '@/helpers/purchaseRestriction';
@@ -44,6 +46,26 @@ type SupplierConstructor<P extends Product> = new (
  */
 function isAbortError(error: unknown): boolean {
   return error instanceof Error && error.name === 'AbortError';
+}
+
+/**
+ * True when a supplier stopped because the search was deliberately aborted. That covers an
+ * `AbortError`, and the bare reason strings (`SEARCH_ABORT_REASON`) that a fetch rejects
+ * with when `controller.abort(reason)` is given a string. Used only to choose a log level;
+ * whether the error is aggregated as a failure is still decided by {@link isAbortError}.
+ * @param error - The value a supplier's `execute()` threw.
+ * @returns `true` when the error is an expected stop rather than a failure.
+ * @example
+ * ```ts
+ * isExpectedAbort('user_aborted');                    // => true
+ * isExpectedAbort(new DOMException('x', 'AbortError')); // => true
+ * isExpectedAbort(new TypeError('bad response'));      // => false
+ * ```
+ * @source
+ */
+function isExpectedAbort(error: unknown): boolean {
+  if (isAbortError(error)) return true;
+  return Object.values<string>(SEARCH_ABORT_REASON).includes(String(error));
 }
 
 /**
@@ -224,7 +246,7 @@ export class SupplierFactory<P extends Product> {
       fuzzScorerOverride,
       doNotCacheEmptyResults = false,
       cacheTtlMinutes = 0,
-      noCacheStatusCodes = [429],
+      noCacheStatusCodes = [HttpStatus.TOO_MANY_REQUESTS],
       supplierSearchTimeBudgetSec,
       fuzzyFilteringDisabled = false,
       location,
@@ -583,7 +605,7 @@ export class SupplierFactory<P extends Product> {
             }
           }
         } catch (e) {
-          this.logger.error('Error executing supplier', { error: e, supplier });
+          this.logSupplierFailure(e, supplier);
           incrementParseError(supplier.supplierName);
           if (!isAbortError(e)) errors.push({ error: e, supplier });
         } finally {
@@ -667,7 +689,7 @@ export class SupplierFactory<P extends Product> {
             }
           }
         } catch (e) {
-          this.logger.error('Error executing supplier', { error: e, supplier });
+          this.logSupplierFailure(e, supplier);
           incrementParseError(supplier.supplierName);
           if (!isAbortError(e)) errors.push({ error: e, supplier });
         } finally {
@@ -689,6 +711,28 @@ export class SupplierFactory<P extends Product> {
     // All suppliers have settled; partial results were already streamed, so record
     // (rather than throw) any failures as one AggregateError for bug reports.
     this.reportExecutionErrors(errors);
+  }
+
+  /**
+   * Logs why a supplier's `execute()` threw. A deliberate stop (the user pressing Stop) is
+   * expected and logged at `debug`; anything else is a real failure and logged at `error`.
+   * Only the supplier's name is logged, not the whole instance.
+   * @param error - The value the supplier threw.
+   * @param supplier - The supplier that threw it.
+   * @example
+   * ```ts
+   * this.logSupplierFailure('user_aborted', supplier); // debug: 'Supplier stopped by abort'
+   * this.logSupplierFailure(new TypeError('bad'), supplier); // error: 'Error executing supplier'
+   * ```
+   * @source
+   */
+  private logSupplierFailure(error: unknown, supplier: SupplierBase<unknown, P>): void {
+    const detail = { error, supplier: supplier.supplierName };
+    if (isExpectedAbort(error)) {
+      this.logger.debug('Supplier stopped by abort', detail);
+      return;
+    }
+    this.logger.error('Error executing supplier', detail);
   }
 
   /**

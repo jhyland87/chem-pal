@@ -4,8 +4,11 @@ import { SUPPLIER_CLASS_NAMES } from '@/constants/suppliers';
 import { findCountryByIso2 } from '@/helpers/country';
 import { looksLikeSmiles } from '@/helpers/smiles';
 import { addActualValueToIssues } from '@/helpers/utils';
+import { Logger, REMOTE_LOG_LEVELS } from '@/utils/Logger';
 //import { currencies } from "price-parser";
 import * as v from 'valibot';
+
+const logger = new Logger('typeGuards.common');
 
 /**
  * @categoryDescription Typeguards
@@ -295,7 +298,7 @@ export function checkMissingMinimalProductFields(product: unknown): string[] {
   const result = Object.entries(requiredProps).reduce(
     (acc: string[], [key, expectedType]: [string, string]) => {
       if (key in record === false) {
-        console.debug('checkMissingMinimalProductFields| No value found in product', {
+        logger.debug('checkMissingMinimalProductFields| No value found in product', {
           product,
           key,
         });
@@ -303,7 +306,7 @@ export function checkMissingMinimalProductFields(product: unknown): string[] {
       }
 
       if (typeof record[key] !== expectedType) {
-        console.debug('checkMissingMinimalProductFields| Property not the correct type', {
+        logger.debug('checkMissingMinimalProductFields| Property not the correct type', {
           product,
           key,
           expectedType,
@@ -317,7 +320,7 @@ export function checkMissingMinimalProductFields(product: unknown): string[] {
     [],
   );
   if (result.length > 0) {
-    console.warn('checkMissingMinimalProductFields| Results for product is', { product, result });
+    logger.warn('checkMissingMinimalProductFields| Results for product is', { product, result });
   }
   return result;
 }
@@ -367,7 +370,7 @@ export function isMinimalProduct(product: unknown): product is RequiredProductFi
   try {
     const missingFields = checkMissingMinimalProductFields(product);
     if (missingFields.length > 0) {
-      console.debug('isMinimalProduct| Product is missing minimal fields', {
+      logger.debug('isMinimalProduct| Product is missing minimal fields', {
         product,
         missingFields,
       });
@@ -375,7 +378,7 @@ export function isMinimalProduct(product: unknown): product is RequiredProductFi
     }
     return true;
   } catch (error) {
-    console.warn('isMinimalProduct| The product is invalid', { product, error });
+    logger.warn('isMinimalProduct| The product is invalid', { product, error });
     return false;
   }
 }
@@ -417,12 +420,12 @@ export function checkCompleteProductFields(product: unknown): string[] {
   const result = Object.entries(requiredProps).reduce(
     (acc: string[], [key, expectedType]: [string, string]) => {
       if (key in record === false) {
-        console.debug('checkCompleteProductFields| No value found in product', { product, key });
+        logger.debug('checkCompleteProductFields| No value found in product', { product, key });
         return [...acc, key];
       }
 
       if (typeof record[key] !== expectedType) {
-        console.debug('checkCompleteProductFields| Property not the correct type', {
+        logger.debug('checkCompleteProductFields| Property not the correct type', {
           product,
           key,
           expectedType,
@@ -436,7 +439,7 @@ export function checkCompleteProductFields(product: unknown): string[] {
     [],
   );
   if (result.length > 0) {
-    console.warn('checkCompleteProductFields| Results for product is', { product, result });
+    logger.warn('checkCompleteProductFields| Results for product is', { product, result });
   }
   return result;
 }
@@ -517,7 +520,7 @@ export function isProduct(product: unknown): product is Product {
     assertCompleteProductFields(product);
     return true;
   } catch (error) {
-    console.warn('isProduct| The product is invalid', { product, error });
+    logger.warn('isProduct| The product is invalid', { product, error });
     return false;
   }
 }
@@ -942,6 +945,7 @@ function buildUserSettingsSchema() {
       }),
     ),
     fuzzScorerOverride: v.optional(v.string()),
+    remoteLogLevels: v.optional(v.array(v.picklist(REMOTE_LOG_LEVELS))),
   });
 }
 function getUserSettingsSchema() {
@@ -968,7 +972,7 @@ function getUserSettingsSchema() {
 export function isValidUserSettings(settings: unknown): settings is UserSettings {
   const check = v.safeParse(getUserSettingsSchema(), settings);
   if (!check.success) {
-    console.warn('isValidUserSettings| The user settings are invalid', {
+    logger.warn('isValidUserSettings| The user settings are invalid', {
       settings,
       issues: addActualValueToIssues(check.issues, settings),
     });

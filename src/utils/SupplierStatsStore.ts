@@ -25,6 +25,9 @@ import {
   deleteSupplierStatsEntries,
   clearSupplierStats as idbClearSupplierStats,
 } from '@/utils/idbCache';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('SupplierStatsStore');
 
 const RETENTION_DAYS = 30;
 const FLUSH_DELAY_MS = 500;
@@ -112,7 +115,7 @@ async function flushToStorage(): Promise<void> {
     // Prune old entries
     await pruneOldEntries();
   } catch (error) {
-    console.warn('Failed to flush supplier stats:', error);
+    logger.warn('Failed to flush supplier stats:', error);
     for (const [key, delta] of batch) {
       pendingIncrements.set(key, (pendingIncrements.get(key) ?? 0) + delta);
     }
@@ -130,7 +133,7 @@ async function pruneOldEntries(): Promise<void> {
       await deleteSupplierStatsEntries(keysToRemove);
     }
   } catch (err) {
-    console.warn('Failed to prune old supplier stats:', err);
+    logger.warn('Failed to prune old supplier stats:', err);
   }
 }
 
@@ -187,7 +190,7 @@ export async function getStats(): Promise<SupplierStatsData> {
   try {
     return await getAllSupplierStats();
   } catch (error) {
-    console.warn('Failed to read supplier stats:', error);
+    logger.warn('Failed to read supplier stats:', error);
     return {};
   }
 }
@@ -229,6 +232,6 @@ export async function clearStats(): Promise<void> {
   try {
     await idbClearSupplierStats();
   } catch (error) {
-    console.warn('Failed to clear supplier stats:', error);
+    logger.warn('Failed to clear supplier stats:', error);
   }
 }

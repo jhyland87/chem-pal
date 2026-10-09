@@ -1,6 +1,7 @@
 import { parseQuantity } from '@/helpers/quantity';
 import { ProductBuilder } from '@/utils/ProductBuilder';
 import { SupplierBaseShopify } from './SupplierBaseShopify';
+import { HttpStatus } from '@/constants/httpStatus';
 
 /** Storefront tag prefix (capital "C") marking a product as a specific chemical, e.g. `Chemical_Sodium Iodide`. */
 const CHEMICAL_TAG_PREFIX = 'Chemical_';
@@ -138,7 +139,7 @@ export class SupplierTheLabStockroom extends SupplierBaseShopify implements ISup
         method: 'HEAD',
         headers: { 'content-type': 'application/json' },
       });
-      if (response.status === 200) {
+      if (response.status === HttpStatus.OK) {
         builder.setSDSUrl(sdsUrl);
       } else {
         this.logger.debug('No SDS document at probed URL', { sdsUrl, status: response.status });

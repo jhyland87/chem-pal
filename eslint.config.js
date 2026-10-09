@@ -150,6 +150,8 @@ export default tseslint.config(
         },
       ],
       "@typescript-eslint/no-unused-expressions": "error",
+      // Log through `Logger` (src/utils/Logger.ts) so output can also reach PostHog Logs.
+      "no-console": "error",
     },
     plugins: {
       "react-hooks": reactHooks,
@@ -163,6 +165,26 @@ export default tseslint.config(
     files: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx", "**/__tests__/**"],
     rules: {
       "@typescript-eslint/naming-convention": "off",
+    },
+  },
+  {
+    // The Logger itself, the user-facing dev-console helpers, and the test support
+    // files legitimately write to the console.
+    files: [
+      "src/utils/Logger.ts",
+      "src/utils/debugConsole.ts",
+      "src/utils/fuzzScorerLab.ts",
+      "src/helpers/responseAggregate.ts",
+      "**/__fixtures__/**",
+      "**/*[Mm]ock*",
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "**/*.spec.ts",
+      "**/*.spec.tsx",
+      "**/__tests__/**",
+    ],
+    rules: {
+      "no-console": "off",
     },
   },
 );

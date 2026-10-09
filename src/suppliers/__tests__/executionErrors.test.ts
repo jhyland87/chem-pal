@@ -13,6 +13,11 @@ const { SupplierFactory } = await import('../SupplierFactory');
 /** Reaches the private aggregation helper for direct testing. */
 type FactoryInternals = {
   reportExecutionErrors: (errors: { error: unknown; supplier: { supplierName: string } }[]) => void;
+  logSupplierFailure: (error: unknown, supplier: { supplierName: string }) => void;
+  logger: {
+    debug: (message: string, detail: { supplier: string }) => void;
+    error: (message: string, detail: { supplier: string }) => void;
+  };
 };
 
 const makeFactory = () =>
@@ -47,5 +52,52 @@ describe('SupplierFactory execution-error aggregation', () => {
     (factory as unknown as FactoryInternals).reportExecutionErrors([]);
     expect(factory.executionErrors).toEqual([]);
     expect(recordException).not.toHaveBeenCalled();
+  });
+});
+
+describe('SupplierFactory supplier-failure logging', () => {
+  const supplier = { supplierName: 'AlphaChem', secretField: 'must not be logged' };
+
+  /** Runs the logging helper and reports which levels were used. */
+  const logFailure = (error: unknown) => {
+    const factory = makeFactory();
+    const internals = factory as unknown as FactoryInternals;
+    const debug = vi.spyOn(internals.logger, 'debug').mockImplementation(() => undefined);
+    const logError = vi.spyOn(internals.logger, 'error').mockImplementation(() => undefined);
+    internals.logSupplierFailure(error, supplier);
+    return { debug, error: logError };
+  };
+
+  it.each([
+    ['the user stopping the search', 'user_aborted'],
+    ['the time budget elapsing', 'time_budget_exceeded'],
+    ['an AbortError', new DOMException('stop', 'AbortError')],
+  ])('logs %s at debug, not error', (_label, thrown) => {
+    const { debug, error } = logFailure(thrown);
+
+    expect(debug).toHaveBeenCalledWith(
+      'Supplier stopped by abort',
+      expect.objectContaining({ supplier: 'AlphaChem' }),
+    );
+    expect(error).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['a real error', new TypeError('bad response')],
+    ['an unrelated string', 'something else went wrong'],
+    ['undefined', undefined],
+  ])('logs %s at error', (_label, thrown) => {
+    const { debug, error } = logFailure(thrown);
+
+    expect(error).toHaveBeenCalledWith('Error executing supplier', expect.any(Object));
+    expect(debug).not.toHaveBeenCalled();
+  });
+
+  it('logs only the supplier name, not the whole instance', () => {
+    const { error } = logFailure(new Error('boom'));
+
+    const detail = error.mock.calls[0][1];
+    expect(detail.supplier).toBe('AlphaChem');
+    expect(JSON.stringify(detail)).not.toContain('must not be logged');
   });
 });

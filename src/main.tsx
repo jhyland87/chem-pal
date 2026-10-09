@@ -27,10 +27,14 @@ import { showCrashReport } from './components/crashReport';
 import { trackRenderError } from './helpers/analytics';
 import { formatErrorChain, installErrorCapture, recordError } from './helpers/errorBuffer';
 import { i18n } from './helpers/i18n';
+import { initRemoteLogs } from './helpers/remoteLogs';
 import './main.scss';
 import { isTabView } from './utils/displayContext';
 import { IS_DEV_BUILD } from './utils/isDevBuild';
 import { initThemeAwareToolbarIcon } from './utils/themeIcon';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('main');
 
 // Capture uncaught errors and unhandled rejections into the shared ring buffer,
 // so a later bug report can include recent exceptions.
@@ -60,7 +64,7 @@ if (IS_DEV_BUILD) {
 
   createRoot(document.getElementById('root')!, {
     onUncaughtError: (error, errorInfo) => {
-      console.error('Uncaught error:', error, errorInfo);
+      logger.error('Uncaught error:', error, errorInfo);
       void recordError({
         source: 'react',
         message: error instanceof Error ? error.message : String(error),
@@ -77,7 +81,7 @@ if (IS_DEV_BUILD) {
       });
     },
     onCaughtError: (error, errorInfo) => {
-      console.error('Caught error:', error, errorInfo);
+      logger.error('Caught error:', error, errorInfo);
       void recordError({
         source: 'react',
         message: error instanceof Error ? error.message : String(error),
@@ -92,4 +96,7 @@ if (IS_DEV_BUILD) {
       </BrowserRouter>
     </StrictMode>,
   );
+
+  // After first render: forward Logger output to PostHog Logs (respects the usage-sharing opt-out).
+  void initRemoteLogs();
 })();

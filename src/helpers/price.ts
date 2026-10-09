@@ -8,6 +8,9 @@
 import { display } from '@/../config.json';
 import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
 import { formatUomForDisplay, toCostBaseQuantity } from '@/helpers/quantity';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('price');
 
 /** The product/variant price fields {@link formatDisplayPrice} needs to format a value. */
 type PriceFields = Pick<Variant, 'price' | 'usdPrice' | 'currencyCode'>;
@@ -89,7 +92,7 @@ export function formatDisplayPrice(
   // Non-USD product without a USD anchor: we can't convert into the user's
   // chosen currency, so render the native price as-is.
   if (currencyCode !== 'USD' && usdPrice === undefined) {
-    console.error('Non-USD product is missing USD price', { product });
+    logger.error('Non-USD product is missing USD price', { product });
     const fallbackCurrency = currencyCode ?? 'USD';
     return formatWithSymbol(fallbackCurrency, Number(rawPrice));
   }

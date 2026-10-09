@@ -178,7 +178,7 @@ describe('useHotkeys', () => {
 
     expect(() => dispatchKey({ key: '?', shiftKey: true })).not.toThrow();
     expect(console.error).toHaveBeenCalledWith(
-      'Hotkey handler "showHotkeyHelp" threw',
+      expect.stringContaining('Hotkey handler "showHotkeyHelp" threw'),
       expect.objectContaining({ error: expect.any(Error) }),
     );
   });
@@ -194,7 +194,7 @@ describe('useHotkeys', () => {
     await Promise.resolve();
 
     expect(console.error).toHaveBeenCalledWith(
-      'Hotkey handler "showHotkeyHelp" failed',
+      expect.stringContaining('Hotkey handler "showHotkeyHelp" failed'),
       expect.objectContaining({ error: rejection }),
     );
   });

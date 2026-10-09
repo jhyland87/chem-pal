@@ -15,6 +15,9 @@
 
 import { CACHE } from '@/constants/common';
 import { cstorage } from '@/utils/storage';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('reviewStats');
 
 /** Milliseconds in a day, for install-age and snooze math. */
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -99,7 +102,7 @@ export async function getReviewPromptState(): Promise<ReviewPromptState> {
     const stored = (await cstorage.local.get([CACHE.REVIEW_PROMPT]))[CACHE.REVIEW_PROMPT];
     return isRecord(stored) ? normalize(stored) : { ...DEFAULT_STATE };
   } catch (error) {
-    console.error('Failed to read review-prompt state:', { error });
+    logger.error('Failed to read review-prompt state:', { error });
     return { ...DEFAULT_STATE };
   }
 }

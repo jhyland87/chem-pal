@@ -1,6 +1,6 @@
 # ChemPal — Privacy Policy
 
-**Effective date:** August 16, 2026
+**Effective date:** October 8, 2026
 
 ChemPal ("the extension") is a browser extension that lets you search and compare
 laboratory chemical product listings across supported supplier websites. This
@@ -9,7 +9,7 @@ policy explains what data the extension handles, where it goes, and why.
 **Short version:** ChemPal has no backend server of its own, shows no ads, and
 never sells your data. It does use PostHog, an independent product‑analytics
 service, to collect basic usage and
-error statistics — which searches are run, how many results they return, when the
+error statistics, plus short diagnostic logs from the extension's own code — which searches are run, how many results they return, when the
 extension is installed or updated, and when it hits an error — associated with an
 identifier derived from a few basic characteristics of your device (never your
 name or an account), plus a short‑lived identifier grouping activity within one
@@ -80,7 +80,7 @@ the page URL) to provide context for opening product pages, search selections, a
 related links. This information is used only at the moment you take an action and
 is not logged or transmitted to the developer.
 
-### 2.6 Usage and error analytics (sent to PostHog)
+### 2.6 Usage, error and diagnostic‑log analytics (sent to PostHog)
 
 ChemPal uses PostHog, an independent product‑analytics service, to understand how
 the extension is used, so the developer can prioritize fixes and improvements. It
@@ -91,11 +91,30 @@ sends an event to PostHog when you:
 - **stop a search early** — when you cancel a search, or it runs out of time,
   including why it ended along with the same details as above;
 - **encounter an error** — including the extension version, the error type, and a
-  short, truncated error message (no stack traces); and
+  short, truncated error message and a technical stack trace (code locations inside
+  ChemPal itself, not personal data); and
 - **install or update the extension** — including the version installed, and the
   version you upgraded from when it is an update.
 
-These events are associated with two identifiers, neither of which is your name,
+ChemPal also sends **diagnostic logs** to PostHog's logging service: short messages
+written by the extension's own code about warnings and errors (for example, that a
+supplier site did not respond, or that reading the local cache failed). A log holds
+the message (cut to a few hundred characters), the name of the part of the
+extension that wrote it, the extension version, and any details attached to it —
+such as an error type, a short error message, a truncated technical stack trace
+(locations inside ChemPal's own code), and brief excerpts of the data the code was
+handling, which can include a supplier name, a product page address, or a search
+term. Logs are not meant to contain personal information, and ChemPal removes
+what it can recognize before sending: email addresses, IP addresses, passwords,
+tokens and other credentials, personal details such as names, contact details, and
+your location setting, user names in file paths, and the query strings and
+credentials in web addresses. By default, informational, warning, and error logs are sent; in the
+**Advanced** settings you can choose which levels are sent, including verbose
+debug logs. Logs are sent only from ChemPal's own pages (the popup, the full‑tab
+view, and the options page), not from its background process. Both the events
+above and these logs stop when you turn off **Share usage data** in Settings.
+
+These events and logs are associated with two identifiers, neither of which is your name,
 email, or account:
 
 - A **device identifier**, computed from a handful of basic, common technical
@@ -152,7 +171,7 @@ may send requests to:
 - **GitHub** (`api.github.com`) — to check whether a newer version of the
   extension is available. No personal data is sent.
 - **PostHog** (`us.i.posthog.com`) — to collect the usage and
-  error statistics described in section 2.6, tied to the device and session
+  error statistics and diagnostic logs described in section 2.6, tied to the device and session
   identifiers described there.
 - **GitHub or Google Forms** — only if you choose to submit a bug report
   (section 2.7), and only with the details you review and send yourself.
@@ -166,8 +185,8 @@ practices of these independent services.
 ## 4. What the extension does NOT do
 
 - It does **not** run its own server or transmit your data to a developer‑operated
-  backend (there is none); the usage and error statistics in section 2.6 go to
-  PostHog.
+  backend (there is none); the usage and error statistics and diagnostic logs in
+  section 2.6 go to PostHog.
 - It does **not** show advertising, use advertising or cross‑site tracking SDKs,
   or sell or share your data for advertising or any unrelated purpose.
 - It does **not** collect personal information such as your name, email address,

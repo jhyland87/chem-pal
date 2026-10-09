@@ -296,6 +296,34 @@ describe('getLanguageName', () => {
   it('falls back to the raw code for an unknown language', () => {
     expect(getLanguageName('zz')).toBe('zz');
   });
+
+  // The native names the language dropdown has always shown, one per shipped locale.
+  it.each([
+    ['en', 'English'],
+    ['de', 'Deutsch'],
+    ['es', 'Español'],
+    ['fi', 'Suomi'],
+    ['hi', 'हिन्दी'],
+    ['nl', 'Nederlands'],
+    ['pl', 'Polski'],
+    ['ru', 'Русский'],
+  ])('names %s in its own language as %s', (code, expected) => {
+    expect(getLanguageName(code)).toBe(expected);
+  });
+
+  it.each([
+    ['a region subtag', 'de-AT', 'Deutsch'],
+    ['upper-case input', 'PL', 'Polski'],
+  ])('handles %s', (_label, input, expected) => {
+    expect(getLanguageName(input)).toBe(expected);
+  });
+
+  it.each([['1!'], ['not a code'], ['x_y']])(
+    'returns the raw input for malformed "%s"',
+    (input) => {
+      expect(getLanguageName(input)).toBe(input);
+    },
+  );
 });
 
 describe('stripHTML', () => {

@@ -12,7 +12,12 @@
  */
 
 import { updatePrompt } from '@/../config.json';
-import semver from 'semver';
+import semverValid from 'semver/functions/valid';
+import semverPrerelease from 'semver/functions/prerelease';
+import semverGt from 'semver/functions/gt';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('updates');
 
 /**
  * How long to wait between GitHub release polls on the manual-install path.
@@ -200,7 +205,7 @@ function isGithubRelease(value: unknown): value is GithubRelease {
  * @source
  */
 export function normalizeTag(tag: string): string | undefined {
-  return semver.valid(tag.replace(/^[vV]/, '')) ?? undefined;
+  return semverValid(tag.replace(/^[vV]/, '')) ?? undefined;
 }
 
 /**
@@ -298,7 +303,7 @@ async function fetchRelease(endpoint: string): Promise<GithubRelease | undefined
     const data: unknown = await response.json();
     return isGithubRelease(data) ? data : undefined;
   } catch (error) {
-    console.error('Failed to fetch release:', { endpoint, error });
+    logger.error('Failed to fetch release:', { endpoint, error });
     return undefined;
   }
 }
@@ -345,8 +350,8 @@ export async function getAvailableUpdate(): Promise<UpdateInfo | undefined> {
   if (!release || release.draft || release.prerelease) return undefined;
 
   const version = normalizeTag(release.tag_name);
-  if (!version || semver.prerelease(version) !== null) return undefined;
-  if (!semver.gt(version, __APP_VERSION__)) return undefined;
+  if (!version || semverPrerelease(version) !== null) return undefined;
+  if (!semverGt(version, __APP_VERSION__)) return undefined;
 
   return {
     version,
