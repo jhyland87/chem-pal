@@ -105,22 +105,6 @@ export const APP_ACTION = {
 export type AppActionType = (typeof APP_ACTION)[keyof typeof APP_ACTION];
 
 /**
- * Searchanise API hosts a storefront may point at. A scraped host is only used if it is listed here
- * (and in `host_permissions`), since it comes from a third-party page.
- * @source
- */
-export const SEARCHANISE_API_HOSTS: readonly string[] = [
-  'searchserverapi.com',
-  'searchserverapi1.com',
-];
-
-/**
- * Searchanise API host used until (or unless) a storefront names an allow-listed one.
- * @source
- */
-export const SEARCHANISE_DEFAULT_API_HOST = 'searchserverapi.com';
-
-/**
  * Keys used for storing and retrieving data in chrome.storage.session.
  * @source
  */

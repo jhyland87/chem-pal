@@ -1,4 +1,3 @@
-import { SEARCHANISE_API_HOSTS } from '@/constants/common';
 import * as v from 'valibot';
 
 const validSearchResponseSchema = v.object({
@@ -183,16 +182,13 @@ export function isValidSearchaniseApiObject(data: unknown): data is SearchaniseA
 
 const searchaniseCredentialsSchema = v.object({
   apiKey: v.pipe(v.string(), v.regex(/^[A-Za-z0-9]{10}$/)),
-  host: v.pipe(
-    v.string(),
-    v.check((host) => SEARCHANISE_API_HOSTS.includes(host)),
-  ),
+  host: v.pipe(v.string(), v.minLength(1)),
 });
 
 /**
  * Type guard for cached Searchanise credentials. Requires a 10-character alphanumeric `apiKey`
- * and a `host` on the Searchanise API allow-list, so a corrupted or tampered stored record is
- * never used to send requests.
+ * and a non-empty `host` string. It checks shape only; the supplier separately checks the host
+ * against its allow-list before using it.
  * @category Typeguards
  * @group Suppliers
  * @param data - The value to validate (typically read back from extension storage)
@@ -200,7 +196,7 @@ const searchaniseCredentialsSchema = v.object({
  * @example
  * ```typescript
  * isSearchaniseCredentials({ apiKey: '4p4M0R6q0N', host: 'searchserverapi1.com' }); // true
- * isSearchaniseCredentials({ apiKey: '4p4M0R6q0N', host: 'evil.example.com' });     // false
+ * isSearchaniseCredentials({ apiKey: 'short', host: 'searchserverapi1.com' });       // false
  * ```
  * @source
  */

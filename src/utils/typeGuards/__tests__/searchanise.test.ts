@@ -310,17 +310,14 @@ describe('Searchanise TypeGuards', () => {
   describe('isSearchaniseCredentials', () => {
     const valid = { apiKey: '4p4M0R6q0N', host: 'searchserverapi1.com' };
 
-    it.each(['searchserverapi.com', 'searchserverapi1.com'])(
-      'accepts allow-listed host %s',
-      (host) => {
-        expect(isSearchaniseCredentials({ ...valid, host })).toBe(true);
-      },
-    );
+    it('accepts a well-formed record', () => {
+      expect(isSearchaniseCredentials(valid)).toBe(true);
+    });
 
     it.each([
-      ['an unknown host', { ...valid, host: 'evil.example.com' }],
-      ['a host with a scheme', { ...valid, host: 'https://searchserverapi.com' }],
       ['a short key', { ...valid, apiKey: 'abc' }],
+      ['a non-alphanumeric key', { ...valid, apiKey: '4p4M0R6q0-' }],
+      ['an empty host', { ...valid, host: '' }],
       ['a missing key', { host: valid.host }],
       ['a missing host', { apiKey: valid.apiKey }],
       ['the scraped-page shape', { api_key: valid.apiKey, host: valid.host }],

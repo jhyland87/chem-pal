@@ -1,4 +1,4 @@
-import { CACHE, SEARCHANISE_API_HOSTS, SEARCHANISE_DEFAULT_API_HOST } from '@/constants/common';
+import { CACHE } from '@/constants/common';
 import { findCAS } from '@/helpers/cas';
 import { HttpError, getErrorMessage, isExpectedAbort } from '@/helpers/exceptions';
 import { parseQuantity } from '@/helpers/quantity';
@@ -13,6 +13,22 @@ import {
   isValidSearchResponse,
 } from '@/utils/typeGuards/searchanise';
 import { SupplierBase } from './SupplierBase';
+
+/**
+ * Searchanise API hosts a storefront may point at. A scraped or stored host is only used if it is
+ * listed here (and in `host_permissions`), since it comes from a third-party page.
+ * @source
+ */
+export const SEARCHANISE_API_HOSTS: readonly string[] = [
+  'searchserverapi.com',
+  'searchserverapi1.com',
+];
+
+/**
+ * Searchanise API host used until (or unless) a storefront names an allow-listed one.
+ * @source
+ */
+export const SEARCHANISE_DEFAULT_API_HOST = 'searchserverapi.com';
 
 /**
  * Outcome of one `/getresults` request.
@@ -670,7 +686,11 @@ export abstract class SupplierBaseSearchanise
     try {
       const stored = await cstorage.local.get([storageKey]);
       const credentials: unknown = stored[storageKey];
-      return isSearchaniseCredentials(credentials) ? credentials : undefined;
+      if (!isSearchaniseCredentials(credentials)) {
+        return undefined;
+      }
+      // A stored host must still be allow-listed, in case the list shrank or the record was altered.
+      return SEARCHANISE_API_HOSTS.includes(credentials.host) ? credentials : undefined;
     } catch (error) {
       this.logger.warn(`Failed to read stored api key: ${getErrorMessage(error)}`, { error });
       return undefined;
