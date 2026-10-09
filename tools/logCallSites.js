@@ -20,9 +20,9 @@
  * location, which the sender treats as normal.
  */
 
-import MagicString from "magic-string";
-import path from "node:path";
-import ts from "typescript";
+import MagicString from 'magic-string';
+import path from 'node:path';
+import ts from 'typescript';
 
 /** Receivers recognised as a `Logger` instance: `logger`, `_logger`, `this.logger`. */
 const RECEIVER = /^(?:this\.)?_?logger$/;
@@ -49,7 +49,7 @@ function enclosingName(node) {
       ts.isGetAccessorDeclaration(current) ||
       ts.isSetAccessorDeclaration(current)
     ) {
-      const name = ts.isConstructorDeclaration(current) ? "constructor" : current.name.getText();
+      const name = ts.isConstructorDeclaration(current) ? 'constructor' : current.name.getText();
       let owner = current.parent;
       while (owner && !ts.isClassLike(owner)) owner = owner.parent;
       return owner?.name ? `${owner.name.text}.${name}` : name;
@@ -81,7 +81,7 @@ function enclosingName(node) {
  * toPosix("C:\\repo\\src/a.ts"); // => "C:/repo/src/a.ts" (on Windows)
  */
 function toPosix(file) {
-  return file.split(path.sep).join("/");
+  return file.split(path.sep).join('/');
 }
 
 /**
@@ -100,7 +100,7 @@ export function isInstrumentable(file, srcRoot) {
   const posixRoot = toPosix(srcRoot);
   if (!posixFile.startsWith(`${posixRoot}/`)) return false;
   if (!/\.tsx?$/.test(posixFile) || SKIPPED_FILE.test(posixFile)) return false;
-  return path.posix.relative(posixRoot, posixFile) !== "utils/Logger.ts";
+  return path.posix.relative(posixRoot, posixFile) !== 'utils/Logger.ts';
 }
 
 /**
@@ -117,14 +117,14 @@ export function isInstrumentable(file, srcRoot) {
  * injectCallSites('this.logger.warn("x");', "/repo/src/a.ts", { srcRoot: "/repo/src" });
  * // => { code: 'this.logger.warnAt("a.ts:1", "x");', map: {...} }
  */
-export function injectCallSites(code, file, { levels = ["warn", "error"], srcRoot }) {
+export function injectCallSites(code, file, { levels = ['warn', 'error'], srcRoot }) {
   const wanted = new Set(levels);
   const source = ts.createSourceFile(
     file,
     code,
     ts.ScriptTarget.Latest,
     true,
-    file.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+    file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
   );
   const relativePath = path.posix.relative(toPosix(srcRoot), toPosix(file));
   const rewritten = new MagicString(code);
@@ -144,12 +144,12 @@ export function injectCallSites(code, file, { levels = ["warn", "error"], srcRoo
     ) {
       const name = node.expression.name;
       const nameStart = name.getStart(source);
-      const open = code.indexOf("(", name.getEnd());
+      const open = code.indexOf('(', name.getEnd());
       if (open !== -1) {
         const line = source.getLineAndCharacterOfPosition(nameStart).line + 1;
         const fn = enclosingName(node);
-        const location = JSON.stringify(`${relativePath}:${line}${fn ? `#${fn}` : ""}`);
-        rewritten.appendLeft(name.getEnd(), "At");
+        const location = JSON.stringify(`${relativePath}:${line}${fn ? `#${fn}` : ''}`);
+        rewritten.appendLeft(name.getEnd(), 'At');
         rewritten.appendLeft(open + 1, node.arguments.length > 0 ? `${location}, ` : location);
         count += 1;
       }
@@ -161,7 +161,7 @@ export function injectCallSites(code, file, { levels = ["warn", "error"], srcRoo
   if (count === 0) return undefined;
   return {
     code: rewritten.toString(),
-    map: rewritten.generateMap({ hires: "boundary", source: file }),
+    map: rewritten.generateMap({ hires: 'boundary', source: file }),
   };
 }
 
@@ -175,17 +175,17 @@ export function injectCallSites(code, file, { levels = ["warn", "error"], srcRoo
  * @example
  * plugins: [logCallSitesPlugin({ levels: ["warn", "error"], root: __dirname })]
  */
-export function logCallSitesPlugin({ levels = ["warn", "error"], root = process.cwd() } = {}) {
-  const srcRoot = path.resolve(root, "src");
-  const hint = new RegExp(`\\.(?:${levels.join("|")})\\s*\\(`);
+export function logCallSitesPlugin({ levels = ['warn', 'error'], root = process.cwd() } = {}) {
+  const srcRoot = path.resolve(root, 'src');
+  const hint = new RegExp(`\\.(?:${levels.join('|')})\\s*\\(`);
   return {
-    name: "chem-pal-log-call-sites",
-    enforce: "pre",
+    name: 'chem-pal-log-call-sites',
+    enforce: 'pre',
     transform(code, id) {
-      const file = id.split("?")[0];
+      const file = id.split('?')[0];
       if (!isInstrumentable(file, srcRoot)) return undefined;
       // Cheap checks first: most modules never mention a logger.
-      if (!code.includes("ogger") || !hint.test(code)) return undefined;
+      if (!code.includes('ogger') || !hint.test(code)) return undefined;
       return injectCallSites(code, file, { levels, srcRoot });
     },
   };
