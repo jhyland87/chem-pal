@@ -157,7 +157,7 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
 
     const cards: Element[] = this.parseSearchCards(firstPage);
     const totalPages = Math.min(this.parseTotalPages(firstPage), this.httpRequestHardLimit);
-    this.logger.info('Search pagination', { query, totalPages });
+    this.logger.debug('Search pagination', { query, totalPages });
 
     for (let page = 2; page <= totalPages && this.fuzzyFilterAst(cards).length < limit; page++) {
       const pageResponse = await this.httpGetHtml({
@@ -177,7 +177,10 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
     }
 
     const fuzzResults = this.fuzzyFilterAst(cards);
-    this.logger.info('fuzzResults:', { query, count: fuzzResults.length });
+    this.logger.debug('Applied fuzzy filter to search results', {
+      query,
+      count: fuzzResults.length,
+    });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));
   }

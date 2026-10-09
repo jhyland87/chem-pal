@@ -6,9 +6,11 @@ import { defineConfig, loadEnv, normalizePath, build as viteBuild, type Plugin }
 import analyzer from 'vite-bundle-analyzer';
 import graphqlLoader from 'vite-plugin-graphql-loader';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import config from './config.json' with { type: 'json' };
 import pkg from './package.json' with { type: 'json' };
 import { buildDefines } from './tools/buildDefines.js';
 import { buildManifest } from './tools/buildManifest.js';
+import { logCallSitesPlugin } from './tools/logCallSites.js';
 
 // https://vite.dev/config/
 
@@ -199,6 +201,9 @@ export default ({ mode }: { mode: string }) => {
       },
     },
     plugins: [
+      // Records each warn/error call's source file, line and function so remote logs can
+      // report where they came from (the minified bundle can't).
+      logCallSitesPlugin({ levels: config.analytics.logs.callSiteLevels, root: __dirname }),
       stripLocaleDescriptionsPlugin(),
       react(),
       graphqlLoader(),

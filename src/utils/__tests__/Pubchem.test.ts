@@ -36,7 +36,7 @@ describe('Pubchem', () => {
       expect(result).toBeUndefined();
       expect(console.error).toHaveBeenCalledWith(
         expect.stringContaining('Error fetching compound:'),
-        expect.any(Error),
+        expect.objectContaining({ error: expect.any(Error) }),
       );
     });
 
@@ -83,7 +83,7 @@ describe('Pubchem', () => {
       expect(result).toBeUndefined();
       expect(console.error).toHaveBeenCalledWith(
         expect.stringContaining('Error fetching CID:'),
-        expect.any(Error),
+        expect.objectContaining({ error: expect.any(Error) }),
       );
     });
 
@@ -124,7 +124,7 @@ describe('Pubchem', () => {
       expect(result).toBeUndefined();
       expect(console.error).toHaveBeenCalledWith(
         expect.stringContaining('Error querying SDQ agent:'),
-        expect.any(Error),
+        expect.objectContaining({ error: expect.any(Error) }),
       );
     });
 

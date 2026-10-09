@@ -329,7 +329,12 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
     const products = Object.values(searchRequest.list).map((item) => item[0]);
 
     const fuzzFiltered = this.fuzzyFilterAst<MacklinProductVariant>(products);
-    this.logger.debug('fuzzFiltered:', { query, searchRequest, products, fuzzFiltered });
+    this.logger.debug('Applied fuzzy filter to products', {
+      query,
+      searchRequest,
+      products,
+      fuzzFiltered,
+    });
     const processed = fuzzFiltered.slice(0, limit);
     return this.initProductBuilders(processed);
   }
@@ -388,7 +393,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
       // broken on every later search. `void` skips the cache write and lets the
       // next search retry.
       if (variants.length === 0) {
-        this.logger.warn('No in-stock product/list variants for product:', itemCode);
+        this.logger.warn('No in-stock product/list variants for product', { itemCode });
         return undefined;
       }
 
@@ -708,18 +713,20 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
         .join('&') + `&salt=${this.SALT}`;
 
     // Debug logging to match api-client.js
-    this.logger.debug('Headers for signing:', headers);
-    this.logger.debug('Params for signing:', params);
-    this.logger.debug('Header string:', headerString.toLowerCase());
-    this.logger.debug('Param string:', paramString.toLowerCase());
+    this.logger.debug('Headers for signing', { headers });
+    this.logger.debug('Params for signing', { params });
+    this.logger.debug('Built header string for signing', {
+      headerString: headerString.toLowerCase(),
+    });
+    this.logger.debug('Built param string for signing', { paramString: paramString.toLowerCase() });
 
     const headerHash = md5(headerString.toLowerCase());
     const paramHash = md5(paramString.toLowerCase());
     const finalSignature = headerHash + paramHash;
 
-    this.logger.debug('Header hash:', headerHash);
-    this.logger.debug('Param hash:', paramHash);
-    this.logger.debug('Final signature:', finalSignature);
+    this.logger.debug('Hashed header string for signing', { headerHash });
+    this.logger.debug('Hashed param string for signing', { paramHash });
+    this.logger.debug('Computed request signature', { finalSignature });
 
     return finalSignature;
   }
@@ -802,10 +809,10 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
       this.lastSignature = signature;
 
       // Debug logging to match api-client.js
-      this.logger.debug('Full request URL:', this.href(path, params, this.apiURL));
-      this.logger.debug('Request headers:', headers);
-      this.logger.debug('Request params:', params);
-      this.logger.debug('Request body:', body);
+      this.logger.debug('Full request URL', { url: this.href(path, params, this.apiURL) });
+      this.logger.debug('Sending request with headers', { headers });
+      this.logger.debug('Sending request with params', { params });
+      this.logger.debug('Sending request with body', { body });
 
       // GET endpoints carry everything in the query string; POST/PUT/DELETE
       // send a JSON body. Dispatch to the matching HTTP method. Use the
@@ -934,7 +941,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
       throw new MacklinApiError('Invalid API response format');
     }
 
-    this.logger.debug('serverTimestamp response:', response);
+    this.logger.debug('Received server timestamp response', { response });
 
     const clientTime = Math.round(Date.now() / 1000);
     const timestampData: TimestampStorage = {

@@ -152,6 +152,42 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-expressions": "error",
       // Log through `Logger` (src/utils/Logger.ts) so output can also reach PostHog Logs.
       "no-console": "error",
+      // Logger calls take a message and at most one details object, so every log has the
+      // same shape. Put a caught error under the `error` key and its text in the message:
+      //   logger.warn(`Failed to load: ${getErrorMessage(error)}`, { error });
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector:
+            "CallExpression[callee.property.name=/^(trace|debug|info|log|warn|error|fatal)$/]:matches([callee.object.name=/^_?logger$/], [callee.object.property.name=/^_?logger$/])[arguments.length>2]",
+          message:
+            "Logger calls take a message and at most one details object: logger.warn('msg', { a, b }).",
+        },
+        {
+          selector:
+            "CallExpression[callee.property.name=/^(trace|debug|info|log|warn|error|fatal)$/]:matches([callee.object.name=/^_?logger$/], [callee.object.property.name=/^_?logger$/])[arguments.1][arguments.1.type!='ObjectExpression']",
+          message:
+            "Pass logger details as an object: logger.warn('msg', { value }), and a caught error as { error }.",
+        },
+        // A lone word ("results", "fuzzResults") says nothing in a log list; describe the event.
+        {
+          selector:
+            "CallExpression[callee.property.name=/^(trace|debug|info|log|warn|error|fatal)$/]:matches([callee.object.name=/^_?logger$/], [callee.object.property.name=/^_?logger$/]) > Literal.arguments[value=/^\\S+$/]",
+          message:
+            "Write a short phrase describing what happened ('Received search response'), not a single word or variable name.",
+        },
+        // Details live in the object, so a message ending in ':' just reads as cut off.
+        {
+          selector:
+            "CallExpression[callee.property.name=/^(trace|debug|info|log|warn|error|fatal)$/]:matches([callee.object.name=/^_?logger$/], [callee.object.property.name=/^_?logger$/]) > Literal.arguments[value=/:\\s*$/]",
+          message: "End a logger message without a colon: the details go in the object argument.",
+        },
+        {
+          selector:
+            "CallExpression[callee.property.name=/^(trace|debug|info|log|warn|error|fatal)$/]:matches([callee.object.name=/^_?logger$/], [callee.object.property.name=/^_?logger$/]) > TemplateLiteral.arguments > TemplateElement[tail=true][value.raw=/:\\s*$/]",
+          message: "End a logger message without a colon: the details go in the object argument.",
+        },
+      ],
     },
     plugins: {
       "react-hooks": reactHooks,

@@ -6,6 +6,7 @@ import { ProductBuilder } from '@/utils/ProductBuilder';
 import { isCurrencyCode } from '@/utils/typeGuards/common';
 import { WRatio } from 'fuzzball';
 import { SupplierBase } from './SupplierBase';
+import { getErrorMessage, isExpectedAbort } from '@/helpers/exceptions';
 /**
  * Supplier implementation for S3 Chemicals, a German based chemical supplier
  * (shop.es-drei.de) built on the Shopware 5 platform.
@@ -160,14 +161,23 @@ export class SupplierS3Chemicals
       return;
     }
 
-    this.logger.log('Received search response', { query, searchRequest });
+    this.logger.debug('Received search response', { query, searchRequest });
 
     const fuzzResults = this.fuzzHtmlResponse(query, searchRequest);
 
-    this.logger.info('fuzzResults:', { query, searchRequest, fuzzResults });
+    this.logger.debug('Applied fuzzy filter to search results', {
+      query,
+      searchRequest,
+      fuzzResults,
+    });
 
     const builders = this.initProductBuilders(fuzzResults.slice(0, limit));
-    this.logger.info('builders:', { query, searchRequest, fuzzResults, builders });
+    this.logger.debug('Created product builders from search results', {
+      query,
+      searchRequest,
+      fuzzResults,
+      builders,
+    });
     return builders;
   }
 
@@ -225,7 +235,7 @@ export class SupplierS3Chemicals
    * @source
    */
   protected initProductBuilders(elements: Element[]): ProductBuilder<Product>[] {
-    this.logger.info('initProductBuilders elements:', { elements });
+    this.logger.debug('Building products from elements', { elements });
     return mapDefined(elements, (element: Element) => {
       const builder = new ProductBuilder<Product>(this.baseURL);
 
@@ -523,7 +533,14 @@ export class SupplierS3Chemicals
           params: { template: 'ajax' },
         });
       } catch (error) {
-        this.logger.warn('S3 detail fetch failed; keeping search-listing data', { error, builder });
+        if (isExpectedAbort(error)) {
+          this.logger.debug(`S3 detail fetch aborted; keeping search-listing data`, { error });
+          return builder;
+        }
+        this.logger.warn(
+          `S3 detail fetch failed; keeping search-listing data: ${getErrorMessage(error)}`,
+          { error, builder },
+        );
         return builder;
       }
 
@@ -657,7 +674,7 @@ export class SupplierS3Chemicals
         builder.setVariants(variants);
       }
 
-      this.logger.debug('product', builder);
+      this.logger.debug('Built product details', { builder });
       return builder;
     });
   }

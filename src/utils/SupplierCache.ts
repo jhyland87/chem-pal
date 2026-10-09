@@ -9,6 +9,7 @@ import {
   putSupplierQueryCacheEntry,
 } from '@/utils/idbCache';
 import { getProductIdentityKey } from '@/helpers/productIdentity';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 /**
  * Utility class for managing supplier data caching in IndexedDB.
@@ -105,7 +106,7 @@ export class SupplierCache {
    */
   generateCacheKey(query: string): string {
     const data = `${query || ''}:${this.supplierName}`;
-    this.logger.debug('Generating cache key with:', {
+    this.logger.debug('Generating cache key', {
       query,
       supplierName: this.supplierName,
       data,
@@ -113,14 +114,14 @@ export class SupplierCache {
     try {
       // Try browser's btoa first
       const key = btoa(data);
-      this.logger.debug('Generated cache key:', key);
+      this.logger.debug('Generated cache key', { key });
       return key;
     } catch {
       try {
         // Fallback to Node's Buffer if available
         if (typeof Buffer !== 'undefined') {
           const key = Buffer.from(data).toString('base64');
-          this.logger.debug('Generated cache key (Buffer):', { key });
+          this.logger.debug('Generated cache key (Buffer)', { key });
           return key;
         }
         // If neither is available, use a simple hash function
@@ -131,13 +132,13 @@ export class SupplierCache {
           hash = hash & hash; // Convert to 32bit integer
         }
         const key = hash.toString(36);
-        this.logger.debug('Generated cache key (hash):', { key });
+        this.logger.debug('Generated cache key (hash)', { key });
         return key;
       } catch (error) {
-        this.logger.error('Error generating cache key:', error);
+        this.logger.error(`Error generating cache key: ${getErrorMessage(error)}`, { error });
         // Fallback to a simple string if all else fails
         const key = data.replace(/[^a-zA-Z0-9]/g, '_');
-        this.logger.debug('Generated cache key (fallback):', { key });
+        this.logger.debug('Generated cache key (fallback)', { key });
         return key;
       }
     }
@@ -201,7 +202,9 @@ export class SupplierCache {
 
       await putSupplierQueryCacheEntry(key, entry);
     } catch (error) {
-      this.logger.error('Error storing query results in cache:', { error });
+      this.logger.error(`Error storing query results in cache: ${getErrorMessage(error)}`, {
+        error,
+      });
     }
   }
 
@@ -225,7 +228,9 @@ export class SupplierCache {
       }
       return undefined;
     } catch (error) {
-      this.logger.error('Error retrieving product data from cache:', { error });
+      this.logger.error(`Error retrieving product data from cache: ${getErrorMessage(error)}`, {
+        error,
+      });
       return undefined;
     }
   }
@@ -244,7 +249,9 @@ export class SupplierCache {
         timestamp: Date.now(),
       });
     } catch (error) {
-      this.logger.error('Error storing product data in cache:', { error });
+      this.logger.error(`Error storing product data in cache: ${getErrorMessage(error)}`, {
+        error,
+      });
     }
   }
 
@@ -280,7 +287,7 @@ export class SupplierCache {
       }
       return cached;
     } catch (error) {
-      this.logger.error('Error retrieving query cache entry:', { error });
+      this.logger.error(`Error retrieving query cache entry: ${getErrorMessage(error)}`, { error });
       return undefined;
     }
   }

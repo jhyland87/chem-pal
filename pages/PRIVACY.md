@@ -100,7 +100,10 @@ ChemPal also sends **diagnostic logs** to PostHog's logging service: short messa
 written by the extension's own code about warnings and errors (for example, that a
 supplier site did not respond, or that reading the local cache failed). A log holds
 the message (cut to a few hundred characters), the name of the part of the
-extension that wrote it, the extension version, and any details attached to it —
+extension that wrote it, the extension version, a random identifier shared by the logs
+of one search (it contains nothing about you or the query), for warnings and errors the
+source file, line, and function in ChemPal's own code that wrote it, and any
+details attached to it —
 such as an error type, a short error message, a truncated technical stack trace
 (locations inside ChemPal's own code), and brief excerpts of the data the code was
 handling, which can include a supplier name, a product page address, or a search
@@ -108,9 +111,9 @@ term. Logs are not meant to contain personal information, and ChemPal removes
 what it can recognize before sending: email addresses, IP addresses, passwords,
 tokens and other credentials, personal details such as names, contact details, and
 your location setting, user names in file paths, and the query strings and
-credentials in web addresses. By default, informational, warning, and error logs are sent; in the
-**Advanced** settings you can choose which levels are sent, including verbose
-debug logs. Logs are sent only from ChemPal's own pages (the popup, the full‑tab
+credentials in web addresses. By default, informational, warning, error, and fatal (the app could not continue)
+logs are sent; in the **Advanced** settings you can choose which levels are sent,
+including the verbose debug and trace levels. Logs are sent only from ChemPal's own pages (the popup, the full‑tab
 view, and the options page), not from its background process. Both the events
 above and these logs stop when you turn off **Share usage data** in Settings.
 

@@ -44,6 +44,7 @@ import { i18n, setLocale, useLocale } from './helpers/i18n';
 import { appReducer, initialAppState, type AppState } from './state/appReducer';
 import { resolveInitialPanel } from './state/resolveInitialPanel';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('App');
 
@@ -236,7 +237,7 @@ function App() {
         const rate = await getCurrencyRate('USD', selectedCurrency);
         if (!cancelled) dispatch({ type: APP_ACTION.SET_CURRENCY_RATE, rate });
       } catch (error) {
-        logger.error('Failed to get currency rate:', { error });
+        logger.error(`Failed to get currency rate: ${getErrorMessage(error)}`, { error });
       }
     };
     void loadRate();
@@ -290,7 +291,7 @@ function App() {
         dispatch({ type: APP_ACTION.LOAD_FROM_STORAGE, data: loadedData });
       }
     } catch (error) {
-      logger.error('Failed to load from Chrome storage:', { error });
+      logger.error(`Failed to load from Chrome storage: ${getErrorMessage(error)}`, { error });
     }
   }, [dispatch]);
 
@@ -307,7 +308,7 @@ function App() {
         }
         await seedVersionIfUnset();
       } catch (error) {
-        logger.error('Migration check failed:', { error });
+        logger.error(`Migration check failed: ${getErrorMessage(error)}`, { error });
       }
       await loadFromStorage();
     };
@@ -324,7 +325,7 @@ function App() {
       setMigrationSteps([]);
       await loadFromStorage();
     } catch (error) {
-      logger.error('Failed to apply migrations:', { error });
+      logger.error(`Failed to apply migrations: ${getErrorMessage(error)}`, { error });
       setMigrationError(i18n('migration_error'));
       setMigrationBusy(false);
     }
@@ -337,7 +338,7 @@ function App() {
     try {
       await resetToCurrentVersion();
     } catch (error) {
-      logger.error('Failed to reset caches:', { error });
+      logger.error(`Failed to reset caches: ${getErrorMessage(error)}`, { error });
     }
     setMigrationSteps([]);
     setMigrationBusy(false);
@@ -405,7 +406,7 @@ function App() {
         setPendingSearchQuery(query);
         dispatch({ type: APP_ACTION.SET_PANEL, panel: PANEL.RESULTS });
       } catch (error) {
-        logger.warn('Failed to handle context-menu search', { error });
+        logger.warn(`Failed to handle context-menu search: ${getErrorMessage(error)}`, { error });
       }
     };
 

@@ -101,7 +101,7 @@ export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> im
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    this.logger.log('queryProducts:', { query, limit });
+    this.logger.log('Starting product search', { query, limit });
     localStorage.setItem('display', 'list');
 
     // Loudwolf's storefront only does keyword search and can't understand a CAS/formula/
@@ -121,10 +121,12 @@ export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> im
       return;
     }
 
-    this.logger.debug('searchResponse:', { searchResponse });
+    this.logger.debug('Received search response', { searchResponse });
 
     const $fuzzResults = this.fuzzHtmlResponse(query, searchResponse);
-    this.logger.debug('fuzzResults:', { fuzzResults: Array.from($fuzzResults) });
+    this.logger.debug('Applied fuzzy filter to search results', {
+      fuzzResults: Array.from($fuzzResults),
+    });
 
     return this.initProductBuilders($fuzzResults.slice(0, limit));
   }
@@ -200,7 +202,7 @@ export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> im
       const price = parsePrice(priceElem?.textContent?.trim() || '');
 
       if (price === undefined) {
-        this.logger.error('No price for product', element);
+        this.logger.error('No price for product', { element });
         return;
       }
 
@@ -264,7 +266,7 @@ export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> im
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     return this.getProductDataWithCache(product, async (builder) => {
-      this.logger.debug('Querying data for partialproduct:', builder);
+      this.logger.debug('Querying data for partialproduct', { builder });
 
       if (typeof builder === 'undefined') {
         this.logger.error('No products to get data for');
@@ -280,7 +282,7 @@ export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> im
         return;
       }
 
-      this.logger.debug('productResponse:', { productResponse });
+      this.logger.debug('Received product response', { productResponse });
 
       const parser = new DOMParser();
       const parsedHTML = parser.parseFromString(productResponse, 'text/html');

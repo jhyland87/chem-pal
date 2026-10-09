@@ -1,5 +1,6 @@
 // ProductBuilder must load before SupplierBase/SupplierFactory to avoid the module-init cycle.
 import '@/utils/ProductBuilder';
+import { HttpError } from '@/helpers/exceptions';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const recordException = vi.fn();
@@ -17,6 +18,7 @@ type FactoryInternals = {
   logger: {
     debug: (message: string, detail: { supplier: string }) => void;
     error: (message: string, detail: { supplier: string }) => void;
+    warn: (message: string, detail: { supplier: string }) => void;
   };
 };
 
@@ -64,8 +66,9 @@ describe('SupplierFactory supplier-failure logging', () => {
     const internals = factory as unknown as FactoryInternals;
     const debug = vi.spyOn(internals.logger, 'debug').mockImplementation(() => undefined);
     const logError = vi.spyOn(internals.logger, 'error').mockImplementation(() => undefined);
+    const warn = vi.spyOn(internals.logger, 'warn').mockImplementation(() => undefined);
     internals.logSupplierFailure(error, supplier);
-    return { debug, error: logError };
+    return { debug, error: logError, warn };
   };
 
   it.each([
@@ -76,7 +79,7 @@ describe('SupplierFactory supplier-failure logging', () => {
     const { debug, error } = logFailure(thrown);
 
     expect(debug).toHaveBeenCalledWith(
-      'Supplier stopped by abort',
+      expect.stringContaining('Supplier stopped by abort'),
       expect.objectContaining({ supplier: 'AlphaChem' }),
     );
     expect(error).not.toHaveBeenCalled();
@@ -89,7 +92,21 @@ describe('SupplierFactory supplier-failure logging', () => {
   ])('logs %s at error', (_label, thrown) => {
     const { debug, error } = logFailure(thrown);
 
-    expect(error).toHaveBeenCalledWith('Error executing supplier', expect.any(Object));
+    expect(error).toHaveBeenCalledWith(
+      expect.stringContaining('Error executing supplier'),
+      expect.any(Object),
+    );
+    expect(debug).not.toHaveBeenCalled();
+  });
+
+  it('logs a supplier that is rate limiting us as a warning, not an error', () => {
+    const { debug, error, warn } = logFailure(new HttpError(429, 'Too Many Requests'));
+
+    expect(warn).toHaveBeenCalledWith(
+      'Supplier is rate limiting: HTTP Error: 429 Too Many Requests',
+      expect.objectContaining({ supplier: 'AlphaChem' }),
+    );
+    expect(error).not.toHaveBeenCalled();
     expect(debug).not.toHaveBeenCalled();
   });
 

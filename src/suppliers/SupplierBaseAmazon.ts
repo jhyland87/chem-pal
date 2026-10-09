@@ -6,6 +6,7 @@ import { createDOM } from '@/helpers/request';
 import { getUserLocation, mapDefined, tryParseJson } from '@/helpers/utils';
 import { ProductBuilder } from '@/utils/ProductBuilder';
 import { SupplierBase } from './SupplierBase';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 export interface SearchItem {
   id: string;
@@ -151,17 +152,17 @@ export abstract class SupplierBaseAmazon
         },
       });
       if (!response) {
-        this.logger.error('Invalid response:', { response });
+        this.logger.error('Search request returned no response', { response });
         return;
       }
 
       const responseText = await response.text();
-      this.logger.debug('responseText BEFORE length:', {
+      this.logger.debug('Search response length before removing the search term', {
         length: responseText.length,
         responseText,
       });
       const responseTextWithoutSearchTerm = responseText.replaceAll(paginationQuery, '');
-      this.logger.debug('responseText AFTER length:', {
+      this.logger.debug('Search response length after removing the search term', {
         length: responseTextWithoutSearchTerm.length,
         responseTextWithoutSearchTerm,
       });
@@ -174,7 +175,7 @@ export abstract class SupplierBaseAmazon
       ),
     );
 
-    this.logger.debug('resultPages:', { query, resultPages });
+    this.logger.debug('Fetched search result pages', { query, resultPages });
     if (!resultPages || !Array.isArray(resultPages) || resultPages.length === 0) {
       throw new Error('Result pages not found');
     }
@@ -221,10 +222,10 @@ export abstract class SupplierBaseAmazon
       return [];
     });
 
-    this.logger.debug('Parsed results', { query, results });
+    this.logger.debug('Parsed search results', { query, results });
 
     const fuzzedResults = this.fuzzyFilterAst(results, 40);
-    this.logger.debug('fuzzedResults', { query, results, fuzzedResults });
+    this.logger.debug('Applied fuzzy filter to search results', { query, results, fuzzedResults });
 
     return this.initProductBuilders(fuzzedResults);
   }
@@ -275,7 +276,7 @@ export abstract class SupplierBaseAmazon
       this.logger.warn('No QID found', { doc });
       return;
     }
-    this.logger.debug('Found QID:', link.href.split('qid=').at(1));
+    this.logger.debug('Found QID in listing link', { qid: link.href.split('qid=').at(1) });
     return link.href.split('qid=').at(1);
   }
 
@@ -310,7 +311,7 @@ export abstract class SupplierBaseAmazon
       }
 
       const listingDocument = createDOM(`<html><body>${raw}</body></html>`);
-      this.logger.debug('listingDocument', { raw, listingDocument });
+      this.logger.debug('Parsed product listing document', { raw, listingDocument });
 
       const documentBody = listingDocument.body;
       const productElement = documentBody.querySelector('[data-asin]');
@@ -326,13 +327,19 @@ export abstract class SupplierBaseAmazon
         return;
       }
 
-      this.logger.debug('documentBody', { raw, documentBody, productElement, asin, productId });
+      this.logger.debug('Extracted product page body', {
+        raw,
+        documentBody,
+        productElement,
+        asin,
+        productId,
+      });
 
       const qid = this.findQID(listingDocument);
       if (!qid) {
         this.logger.warn('No QID found', { raw, listingDocument });
       } else {
-        this.logger.debug('qid', { raw, listingDocument, qid });
+        this.logger.debug('Resolved listing QID', { raw, listingDocument, qid });
       }
 
       // Check if the listing meets the requirements. Use textContent because many of the hyperlinks
@@ -347,7 +354,7 @@ export abstract class SupplierBaseAmazon
 
       const stockElement = findElementWithText(documentBody, 'left in stock', 'span');
       if (stockElement) {
-        this.logger.debug('stockElement', { stockElement });
+        this.logger.debug('Found stock availability element', { stockElement });
       }
 
       // Extracting the title
@@ -385,7 +392,7 @@ export abstract class SupplierBaseAmazon
       // const sku = productElement ? productElement.getAttribute("data-asin") : null;
       // const productId = productElement ? productElement.getAttribute("data-uuid") : null;
 
-      this.logger.debug('matches', {
+      this.logger.debug('Matched product details from listing', {
         productElement,
         productId,
         asin,
@@ -427,7 +434,11 @@ export abstract class SupplierBaseAmazon
         price: Number(price),
       };
     } catch (error) {
-      this.logger.error('Error parsing search result', { error, raw, amazonBase });
+      this.logger.error(`Error parsing search result: ${getErrorMessage(error)}`, {
+        error,
+        raw,
+        amazonBase,
+      });
       return;
     }
   }

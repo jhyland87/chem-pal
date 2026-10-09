@@ -3,7 +3,7 @@ import { IS_DEV_BUILD } from '@/utils/isDevBuild';
 
 /**
  * Available logging levels in ascending order of severity:
- * DEBUG → INFO → WARN → ERROR
+ * TRACE → DEBUG → INFO → WARN → ERROR → FATAL
  *
  * @category Utils
  * @example
@@ -14,6 +14,8 @@ import { IS_DEV_BUILD } from '@/utils/isDevBuild';
  * @source
  */
 export enum LogLevel {
+  /** Finer-grained detail than debug, such as each step of a request or stream */
+  TRACE = 'trace',
   /** Detailed information for debugging purposes */
   DEBUG = 'debug',
   /** General information about program execution */
@@ -22,6 +24,8 @@ export enum LogLevel {
   WARN = 'warn',
   /** Error conditions that affect program execution */
   ERROR = 'error',
+  /** The app or a whole page can't continue, e.g. an uncaught exception or a crashed UI */
+  FATAL = 'fatal',
 }
 
 /**
@@ -35,7 +39,7 @@ export enum LogLevel {
  * ```
  * @source
  */
-export const REMOTE_LOG_LEVELS = ['debug', 'log', 'warn', 'error'] as const;
+export const REMOTE_LOG_LEVELS = ['trace', 'debug', 'log', 'warn', 'error', 'fatal'] as const;
 
 /**
  * A severity bucket a remote log sink can opt into.
@@ -72,6 +76,10 @@ export function isRemoteLogLevel(value: unknown): value is RemoteLogLevel {
  * - `prefix` - The emitting logger's prefix (includes any `sub()` segments).
  * - `message` - The message passed to the logger, before any formatting.
  * - `args` - The extra arguments passed to the logger, unsanitized.
+ * - `location` - Where the call lives in the source, as `path:line#function`, when the build
+ *   recorded it (see `tools/logCallSites.js`); otherwise `undefined`.
+ * - `context` - Key/value pairs describing what the app was doing when the call was made, such
+ *   as the active search query (see {@link Logger.setContext}); `undefined` when there are none.
  * @category Utils
  * @group Types
  * @example
@@ -81,6 +89,7 @@ export function isRemoteLogLevel(value: unknown): value is RemoteLogLevel {
  *   prefix: 'SupplierBase|fetch',
  *   message: 'Request failed',
  *   args: [new Error('timeout')],
+ *   location: 'suppliers/SupplierBase.ts:1431#SupplierBase.fetch',
  * };
  * ```
  * @source
@@ -90,6 +99,8 @@ export interface RemoteLogRecord {
   prefix: string;
   message: string;
   args: readonly unknown[];
+  location?: string;
+  context?: Readonly<Record<string, string>>;
 }
 
 /**
@@ -169,14 +180,16 @@ export class Logger {
    * Higher numbers indicate higher priority levels.
    * Used internally to determine if a message should be logged based on the current log level.
    *
-   * Priority: DEBUG=0, INFO=1, WARN=2, ERROR=3
+   * Priority: TRACE=0, DEBUG=1, INFO=2, WARN=3, ERROR=4, FATAL=5
    * @source
    */
   private static readonly logLevelPriority: Record<LogLevel, number> = {
-    [LogLevel.DEBUG]: 0,
-    [LogLevel.INFO]: 1,
-    [LogLevel.WARN]: 2,
-    [LogLevel.ERROR]: 3,
+    [LogLevel.TRACE]: 0,
+    [LogLevel.DEBUG]: 1,
+    [LogLevel.INFO]: 2,
+    [LogLevel.WARN]: 3,
+    [LogLevel.ERROR]: 4,
+    [LogLevel.FATAL]: 5,
   };
 
   /**
@@ -184,11 +197,44 @@ export class Logger {
    * @source
    */
   private static readonly levelColors: Record<LogLevel, string> = {
+    [LogLevel.TRACE]: '#b8bcc2',
     [LogLevel.DEBUG]: '#9aa0a6',
     [LogLevel.INFO]: '#4d7df2',
     [LogLevel.WARN]: '#f5a623',
     [LogLevel.ERROR]: '#e5484d',
+    [LogLevel.FATAL]: '#b3141b',
   };
+
+  /**
+   * How each public level method maps to its internal level, its remote bucket, and the console
+   * method that prints it. `log` and `info` are both INFO and both send as the remote `log` level;
+   * `trace` prints through `console.debug` and `fatal` through `console.error`, since the console
+   * has no equivalents (and `console.trace` would add a stack to every call).
+   * @source
+   */
+  private static readonly methodLevels: Record<
+    'trace' | 'debug' | 'info' | 'log' | 'warn' | 'error' | 'fatal',
+    {
+      level: LogLevel;
+      remote: RemoteLogLevel;
+      console: 'debug' | 'info' | 'log' | 'warn' | 'error';
+    }
+  > = {
+    trace: { level: LogLevel.TRACE, remote: 'trace', console: 'debug' },
+    debug: { level: LogLevel.DEBUG, remote: 'debug', console: 'debug' },
+    info: { level: LogLevel.INFO, remote: 'log', console: 'info' },
+    log: { level: LogLevel.INFO, remote: 'log', console: 'log' },
+    warn: { level: LogLevel.WARN, remote: 'warn', console: 'warn' },
+    error: { level: LogLevel.ERROR, remote: 'error', console: 'error' },
+    fatal: { level: LogLevel.FATAL, remote: 'fatal', console: 'error' },
+  };
+
+  /**
+   * Context shared by every logger (e.g. the active search query), merged into the record each
+   * remote log carries. Unset when nothing is in progress.
+   * @source
+   */
+  private static globalContext?: Readonly<Record<string, string>>;
 
   /**
    * The registered remote sink, shared by every logger instance. Unset by default, in
@@ -203,6 +249,13 @@ export class Logger {
    * @source
    */
   private counters: Record<string, number> = {};
+
+  /**
+   * Context for this logger only, merged over the global context. Used where an object always
+   * belongs to one search (a supplier instance), so its late logs keep the right query.
+   * @source
+   */
+  private context?: Readonly<Record<string, string>>;
 
   /**
    * Stores active timers for the `time()`, `timeEnd()`, and `timeLog()` methods.
@@ -303,6 +356,38 @@ export class Logger {
   }
 
   /**
+   * Sets (or clears) the context every logger attaches to its remote logs, such as the query of
+   * the search in progress. Console output is unchanged.
+   *
+   * @param context - Key/value pairs to attach, or `undefined` to clear
+   * @example
+   * ```typescript
+   * Logger.setContext({ search_query: 'acetone' });
+   * new Logger('Any').warn('Slow response'); // remote log carries search_query: 'acetone'
+   * Logger.setContext(undefined);
+   * ```
+   * @source
+   */
+  public static setContext(context?: Readonly<Record<string, string>>): void {
+    Logger.globalContext = context;
+  }
+
+  /**
+   * Reads the current global context.
+   *
+   * @returns The context set by {@link Logger.setContext}, or `undefined` when none is set
+   * @example
+   * ```typescript
+   * Logger.setContext({ search_query: 'acetone' });
+   * Logger.getContext(); // { search_query: 'acetone' }
+   * ```
+   * @source
+   */
+  public static getContext(): Readonly<Record<string, string>> | undefined {
+    return Logger.globalContext;
+  }
+
+  /**
    * The identifier prefix that will be included in all log messages from this instance.
    * Used to distinguish logs from different parts of the application.
    * @source
@@ -387,6 +472,22 @@ export class Logger {
    */
   public setColor(color?: string): void {
     this.color = color;
+  }
+
+  /**
+   * Sets (or clears) context attached to this logger's remote logs only. It is merged over, and
+   * wins against, the global context from {@link Logger.setContext}.
+   *
+   * @param context - Key/value pairs to attach, or `undefined` to clear
+   * @example
+   * ```typescript
+   * const logger = new Logger('SupplierBase');
+   * logger.setContext({ search_query: 'acetone' });
+   * ```
+   * @source
+   */
+  public setContext(context?: Readonly<Record<string, string>>): void {
+    this.context = context;
   }
 
   /**
@@ -584,23 +685,59 @@ export class Logger {
    * @param level - The remote severity bucket of the call
    * @param message - The message passed to the logger
    * @param args - The extra arguments passed to the logger
+   * @param location - Where the call lives in the source (`path:line#function`), if known
    * @example
    * ```typescript
-   * this.forwardRemote('warn', 'Request failed', [error]);
+   * this.forwardRemote('warn', 'Request failed', [error], 'suppliers/Foo.ts:12#Foo.fetch');
    * ```
    * @source
    */
-  private forwardRemote(level: RemoteLogLevel, message: string, args: readonly unknown[]): void {
+  private forwardRemote(
+    level: RemoteLogLevel,
+    message: string,
+    args: readonly unknown[],
+    location?: string,
+  ): void {
     const sink = Logger.remoteSink;
     if (sink === undefined || !sink.isEnabled(level)) {
       return;
     }
     try {
-      sink.emit({ level, prefix: this.prefix, message, args });
+      const context =
+        Logger.globalContext || this.context
+          ? { ...Logger.globalContext, ...this.context }
+          : undefined;
+      sink.emit({ level, prefix: this.prefix, message, args, location, context });
     } catch (err) {
       // A broken sink must never break the caller's logging.
       console.debug('Remote log sink failed:', err);
     }
+  }
+
+  /**
+   * Shared body of every level method: hands the call to the remote sink (independent of the
+   * console level), then writes it to the console if the logger's level allows.
+   *
+   * @param method - The public level method that was called
+   * @param location - Where the call lives in the source (`path:line#function`), if known
+   * @param message - The message passed to the logger
+   * @param args - The extra arguments passed to the logger
+   * @example
+   * ```typescript
+   * this.write('warn', undefined, 'Request failed', [error]);
+   * ```
+   * @source
+   */
+  private write(
+    method: keyof typeof Logger.methodLevels,
+    location: string | undefined,
+    message: string,
+    args: readonly unknown[],
+  ): void {
+    const { level, remote, console: consoleMethod } = Logger.methodLevels[method];
+    this.forwardRemote(remote, message, args, location);
+    if (!this.shouldLog(level)) return;
+    console[consoleMethod](...this.formatArgs(level, message), ...args);
   }
 
   /**
@@ -619,9 +756,7 @@ export class Logger {
    * @source
    */
   public debug(message: string, ...args: unknown[]): void {
-    this.forwardRemote('debug', message, args);
-    if (!this.shouldLog(LogLevel.DEBUG)) return;
-    console.debug(...this.formatArgs(LogLevel.DEBUG, message), ...args);
+    this.write('debug', undefined, message, args);
   }
 
   /**
@@ -640,9 +775,7 @@ export class Logger {
    * @source
    */
   public info(message: string, ...args: unknown[]): void {
-    this.forwardRemote('log', message, args);
-    if (!this.shouldLog(LogLevel.INFO)) return;
-    console.info(...this.formatArgs(LogLevel.INFO, message), ...args);
+    this.write('info', undefined, message, args);
   }
 
   /**
@@ -661,9 +794,7 @@ export class Logger {
    * @source
    */
   public warn(message: string, ...args: unknown[]): void {
-    this.forwardRemote('warn', message, args);
-    if (!this.shouldLog(LogLevel.WARN)) return;
-    console.warn(...this.formatArgs(LogLevel.WARN, message), ...args);
+    this.write('warn', undefined, message, args);
   }
 
   /**
@@ -681,23 +812,22 @@ export class Logger {
    * logger.error('Failed to connect to database');
    * // Output: [2024-01-01T00:00:00.000Z] [ERROR] [MyApp] Failed to connect to database
    *
-   * // Error with additional details
+   * // Convention: put the cause in the message and pass details as one object, with the
+   * // caught error under the `error` key (remote logs read the stack from it)
    * try {
    *   throw new Error('Connection timeout');
-   * } catch (err) {
-   *   logger.error('Database error:', err);
-   *   // Output: [2024-01-01T00:00:00.000Z] [ERROR] [MyApp] Database error: Error: Connection timeout
+   * } catch (error) {
+   *   logger.error(`Database error: ${getErrorMessage(error)}`, { error });
+   *   // Output: [2024-01-01T00:00:00.000Z] [ERROR] [MyApp] Database error: Connection timeout { error: ... }
    * }
    *
-   * // Multiple arguments
-   * logger.error('Operation failed', { code: 500, reason: 'Timeout' }, 'at endpoint: /api/data');
+   * // More details go in the same object
+   * logger.error('Operation failed', { code: 500, reason: 'Timeout', endpoint: '/api/data' });
    * ```
    * @source
    */
   public error(message: string, ...args: unknown[]): void {
-    this.forwardRemote('error', message, args);
-    if (!this.shouldLog(LogLevel.ERROR)) return;
-    console.error(...this.formatArgs(LogLevel.ERROR, message), ...args);
+    this.write('error', undefined, message, args);
   }
 
   /**
@@ -726,9 +856,163 @@ export class Logger {
    * @source
    */
   public log(message: string, ...args: unknown[]): void {
-    this.forwardRemote('log', message, args);
-    if (!this.shouldLog(LogLevel.INFO)) return;
-    console.log(...this.formatArgs(LogLevel.INFO, message), ...args);
+    this.write('log', undefined, message, args);
+  }
+
+  /**
+   * Logs a debug message with its source location. Identical to `debug()` except the first argument is the call's source location.
+   * The build rewrites `logger.debug(...)` calls to this form (see `tools/logCallSites.js`) so
+   * remote logs can report the file, line and function; write plain `debug()` in source.
+   *
+   * @param location - Where the call lives, as `path:line#function`
+   * @param message - The message to log
+   * @param args - Additional arguments
+   * @example
+   * ```typescript
+   * logger.debugAt('suppliers/Foo.ts:12#Foo.fetch', 'Request failed', { status: 503 });
+   * ```
+   * @source
+   */
+  public debugAt(location: string, message: string, ...args: unknown[]): void {
+    this.write('debug', location, message, args);
+  }
+
+  /**
+   * Logs an info message with its source location. Identical to `info()` except the first argument is the call's source location.
+   * The build rewrites `logger.info(...)` calls to this form (see `tools/logCallSites.js`) so
+   * remote logs can report the file, line and function; write plain `info()` in source.
+   *
+   * @param location - Where the call lives, as `path:line#function`
+   * @param message - The message to log
+   * @param args - Additional arguments
+   * @example
+   * ```typescript
+   * logger.infoAt('suppliers/Foo.ts:12#Foo.fetch', 'Request failed', { status: 503 });
+   * ```
+   * @source
+   */
+  public infoAt(location: string, message: string, ...args: unknown[]): void {
+    this.write('info', location, message, args);
+  }
+
+  /**
+   * Logs a general message (INFO level) with its source location. Identical to `log()` except the first argument is the call's source location.
+   * The build rewrites `logger.log(...)` calls to this form (see `tools/logCallSites.js`) so
+   * remote logs can report the file, line and function; write plain `log()` in source.
+   *
+   * @param location - Where the call lives, as `path:line#function`
+   * @param message - The message to log
+   * @param args - Additional arguments
+   * @example
+   * ```typescript
+   * logger.logAt('suppliers/Foo.ts:12#Foo.fetch', 'Request failed', { status: 503 });
+   * ```
+   * @source
+   */
+  public logAt(location: string, message: string, ...args: unknown[]): void {
+    this.write('log', location, message, args);
+  }
+
+  /**
+   * Logs a warning with its source location. Identical to `warn()` except the first argument is the call's source location.
+   * The build rewrites `logger.warn(...)` calls to this form (see `tools/logCallSites.js`) so
+   * remote logs can report the file, line and function; write plain `warn()` in source.
+   *
+   * @param location - Where the call lives, as `path:line#function`
+   * @param message - The message to log
+   * @param args - Additional arguments
+   * @example
+   * ```typescript
+   * logger.warnAt('suppliers/Foo.ts:12#Foo.fetch', 'Request failed', { status: 503 });
+   * ```
+   * @source
+   */
+  public warnAt(location: string, message: string, ...args: unknown[]): void {
+    this.write('warn', location, message, args);
+  }
+
+  /**
+   * Logs an error with its source location. Identical to `error()` except the first argument is the call's source location.
+   * The build rewrites `logger.error(...)` calls to this form (see `tools/logCallSites.js`) so
+   * remote logs can report the file, line and function; write plain `error()` in source.
+   *
+   * @param location - Where the call lives, as `path:line#function`
+   * @param message - The message to log
+   * @param args - Additional arguments
+   * @example
+   * ```typescript
+   * logger.errorAt('suppliers/Foo.ts:12#Foo.fetch', 'Request failed', { status: 503 });
+   * ```
+   * @source
+   */
+  public errorAt(location: string, message: string, ...args: unknown[]): void {
+    this.write('error', location, message, args);
+  }
+
+  /**
+   * Logs a trace message: very fine-grained detail, such as each step of a request. Hidden from the console unless the level is `TRACE`, and sent remotely only when `trace` is selected.
+   *
+   * @param message - The message to log
+   * @param args - Additional details, passed as one object
+   * @example
+   * ```typescript
+   * logger.trace('Received product from stream', { detail: 1 });
+   * ```
+   * @source
+   */
+  public trace(message: string, ...args: unknown[]): void {
+    this.write('trace', undefined, message, args);
+  }
+
+  /**
+   * Logs a trace message: very fine-grained detail, such as each step of a request. Hidden from the console unless the level is `TRACE`, and sent remotely only when `trace` is selected with its source location. Identical to `trace()` except the first
+   * argument is the call's location; the build rewrites `logger.trace(...)` to this form, so
+   * write plain `trace()` in source.
+   *
+   * @param location - Where the call lives, as `path:line#function`
+   * @param message - The message to log
+   * @param args - Additional details
+   * @example
+   * ```typescript
+   * logger.traceAt('suppliers/Foo.ts:12#Foo.fetch', 'Received product from stream', { detail: 1 });
+   * ```
+   * @source
+   */
+  public traceAt(location: string, message: string, ...args: unknown[]): void {
+    this.write('trace', location, message, args);
+  }
+
+  /**
+   * Logs a fatal error: the app or a whole page cannot continue, such as an uncaught exception or a crashed UI. Always shown in the console.
+   *
+   * @param message - The message to log
+   * @param args - Additional details, passed as one object
+   * @example
+   * ```typescript
+   * logger.fatal('Uncaught exception', { detail: 1 });
+   * ```
+   * @source
+   */
+  public fatal(message: string, ...args: unknown[]): void {
+    this.write('fatal', undefined, message, args);
+  }
+
+  /**
+   * Logs a fatal error: the app or a whole page cannot continue, such as an uncaught exception or a crashed UI. Always shown in the console with its source location. Identical to `fatal()` except the first
+   * argument is the call's location; the build rewrites `logger.fatal(...)` to this form, so
+   * write plain `fatal()` in source.
+   *
+   * @param location - Where the call lives, as `path:line#function`
+   * @param message - The message to log
+   * @param args - Additional details
+   * @example
+   * ```typescript
+   * logger.fatalAt('suppliers/Foo.ts:12#Foo.fetch', 'Uncaught exception', { detail: 1 });
+   * ```
+   * @source
+   */
+  public fatalAt(location: string, message: string, ...args: unknown[]): void {
+    this.write('fatal', location, message, args);
   }
 
   /**
@@ -910,45 +1194,6 @@ export class Logger {
     if (this.groupDepth > 0) {
       this.groupDepth--;
     }
-  }
-
-  /**
-   * Outputs a stack trace to the console.
-   * Uses `DEBUG` level.
-   *
-   * @param message - Optional message to include
-   *
-   * @example
-   * ```typescript
-   * const logger = new Logger('MyApp', LogLevel.DEBUG);
-   *
-   * // Basic trace
-   * logger.trace();
-   * // Output: [2024-01-01T00:00:00.000Z] [DEBUG] [MyApp]
-   * //    at Function.method (/path/to/file.ts:10:10)
-   * //    at Object.<anonymous> (/path/to/file.ts:5:5)
-   *
-   * // Trace with message
-   * logger.trace('User authentication failed');
-   * // Output: [2024-01-01T00:00:00.000Z] [DEBUG] [MyApp] User authentication failed
-   * //    at Function.authenticate (/path/to/auth.ts:15:10)
-   * //    at Object.<anonymous> (/path/to/handler.ts:8:5)
-   *
-   * // In error handling
-   * try {
-   *   throw new Error('Something went wrong');
-   * } catch (error) {
-   *   logger.trace('Error caught:');
-   * }
-   * ```
-   * @source
-   */
-  public trace(message?: string): void {
-    if (!this.shouldLog(LogLevel.DEBUG)) return;
-    const err = new Error();
-    const stack = err.stack?.split('\n').slice(2).join('\n') || '';
-    const traceMessage = message ? `${message}\n${stack}` : stack;
-    console.debug(this.formatMessage(LogLevel.DEBUG, traceMessage));
   }
 
   /**

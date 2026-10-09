@@ -8,6 +8,7 @@ import { cstorage } from '@/utils/storage';
 import { isValidUserSettings } from '@/utils/typeGuards/common';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('useUserSettings');
 
@@ -65,7 +66,7 @@ export function useUserSettings(): UseUserSettings {
           setSettingsState({ ...DEFAULT_SETTINGS, ...stored });
         }
       } catch (error) {
-        logger.error('Failed to load user settings:', { error });
+        logger.error(`Failed to load user settings: ${getErrorMessage(error)}`, { error });
       }
     };
     void load();
@@ -83,7 +84,7 @@ export function useUserSettings(): UseUserSettings {
       try {
         await cstorage.local.set({ [CACHE.USER_SETTINGS]: newSettings });
       } catch (error) {
-        logger.error('Failed to save user settings:', { error });
+        logger.error(`Failed to save user settings: ${getErrorMessage(error)}`, { error });
       }
     })();
   }, []);
@@ -112,7 +113,7 @@ export function useUserSettings(): UseUserSettings {
         setSettingsState(updated);
         await cstorage.local.set({ [CACHE.USER_SETTINGS]: updated });
       } catch (error) {
-        logger.error('Failed to get currency rate:', { error });
+        logger.error(`Failed to get currency rate: ${getErrorMessage(error)}`, { error });
       }
     };
     void loadRate();

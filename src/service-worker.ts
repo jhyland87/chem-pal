@@ -19,6 +19,7 @@ import { CACHE, MESSAGE_TYPE } from '@/constants/common';
 import { trackInstallOrUpgrade } from '@/helpers/analytics';
 import { installErrorCapture } from '@/helpers/errorBuffer';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('service-worker');
 
@@ -199,7 +200,7 @@ async function readOpenInTab(): Promise<boolean> {
       ? Boolean(display.openInTab)
       : DEFAULT_OPEN_IN_TAB;
   } catch (error) {
-    logger.warn('Failed to read openInTab setting:', error);
+    logger.warn(`Failed to read openInTab setting: ${getErrorMessage(error)}`, { error });
     return DEFAULT_OPEN_IN_TAB;
   }
 }

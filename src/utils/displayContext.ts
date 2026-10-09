@@ -10,6 +10,7 @@
  */
 
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('displayContext');
 
@@ -79,7 +80,7 @@ export async function openExtensionTab(): Promise<void> {
       }
     }
   } catch (error) {
-    logger.error('Failed to open extension tab:', { error });
+    logger.error(`Failed to open extension tab: ${getErrorMessage(error)}`, { error });
   }
   window.close();
 }

@@ -1,9 +1,17 @@
 import { search } from '@/../config.json';
 import { SEARCH_ABORT_REASON, UOM } from '@/constants/common';
 import { FUZZ_SCORERS, isFuzzScorerName, type FuzzScorerFn } from '@/constants/fuzzScorers';
+import { HttpStatus } from '@/constants/httpStatus';
+import { supplierClassNameFor } from '@/constants/supplierMeta';
 import { backgroundFetch, type BackgroundFetchInit } from '@/helpers/backgroundFetch';
 import { setCookie } from '@/helpers/cookies';
-import { EmptyResponseError, HttpError } from '@/helpers/exceptions';
+import {
+  EmptyResponseError,
+  HttpError,
+  getErrorMessage,
+  isExpectedAbort,
+  isRateLimited,
+} from '@/helpers/exceptions';
 import {
   countExcludedProductsForSupplier,
   loadExcludedProductKeys,
@@ -14,8 +22,6 @@ import { pickBroadestName } from '@/helpers/science';
 import { shipsToCountry } from '@/helpers/shipping';
 import type { ResolvedStructure } from '@/helpers/smiles';
 import { sleep } from '@/helpers/utils';
-import { supplierClassNameFor } from '@/constants/supplierMeta';
-import { HttpStatus } from '@/constants/httpStatus';
 import { getSupplierColor } from '@/theme/colors';
 import { deleteSupplierQueryCacheEntry } from '@/utils/idbCache';
 import { IS_DEV_BUILD } from '@/utils/isDevBuild';
@@ -732,6 +738,8 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     this.limit = limit;
     this.controller = controller ?? new AbortController();
     this.logger = new Logger(this.stableClassName, undefined, this.color);
+    // Snapshot the active search's context (its trace id) so logs made after it ends keep it.
+    this.logger.setContext({ ...Logger.getContext(), search_query: query });
   }
 
   /**
@@ -794,7 +802,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * @source
    */
   public setFuzzScorerOverride(name: string | undefined): void {
-    this.logger.debug('setFuzzScorerOverride', { name });
+    this.logger.debug('Setting fuzz scorer override', { name });
     if (isFuzzScorerName(name)) {
       this.fuzzScorerOverride = FUZZ_SCORERS[name];
     } else {
@@ -1114,14 +1122,13 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       const httpResponse = await this.fetch(requestObj);
       return Object.fromEntries(httpResponse.headers.entries()) satisfies HeadersInit;
     } catch (error: unknown) {
-      if (error instanceof Error && error.name === 'AbortError') {
+      if (isExpectedAbort(error)) {
         this.logger.debug('Request was aborted', { reason: this.controller.signal.reason });
         this.controller.abort('Abort signal detected');
+      } else if (isRateLimited(error)) {
+        this.logger.warn(`Rate limited during fetch: ${getErrorMessage(error)}`, { error });
       } else {
-        this.logger.error('Error received during fetch:', {
-          error,
-          signal: this.controller.signal,
-        });
+        this.logger.error(`Error received during fetch: ${getErrorMessage(error)}`, { error });
       }
       return;
     }
@@ -1189,7 +1196,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     params,
     headers,
   }: RequestOptions): Promise<Maybe<Response>> {
-    this.logger.log('httpPost| Requesting:', {
+    this.logger.debug('httpPost| Sending POST request', {
       path,
       host,
       body,
@@ -1233,7 +1240,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
 
     if (!isHttpResponse(httpResponse) || !httpResponse.ok) {
       const badResponse = await httpResponse.text();
-      this.logger.error('Invalid POST response: ', badResponse);
+      this.logger.error('Invalid POST response', { badResponse });
       throw new TypeError(`Invalid POST response: ${String(httpResponse)}`);
     }
 
@@ -1278,10 +1285,10 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     const httpResponse = await this.httpPost({ path, host, body: formData, params, headers });
     if (!isHttpResponse(httpResponse) || !httpResponse.ok) {
       const badResponse = await httpResponse?.text();
-      this.logger.error('Invalid POST response: ', badResponse);
+      this.logger.error('Invalid POST response', { badResponse });
       throw new TypeError(`Invalid POST response: ${String(httpResponse)}`);
     }
-    this.logger.log('httpPostFormData| Successfully sent POST request to:', path);
+    this.logger.debug('httpPostFormData| Successfully sent POST request', { path });
     return httpResponse;
   }
   /**
@@ -1326,7 +1333,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   }: RequestOptions): Promise<Maybe<JsonValue>> {
     const httpResponse = await this.httpPost({ path, host, body, params, headers });
     if (!isJsonResponse(httpResponse) || !httpResponse.ok) {
-      this.logger.error('httpPostJson| Invalid POST response: ', {
+      this.logger.error('httpPostJson| Invalid POST response', {
         httpResponse,
         path,
         host,
@@ -1463,26 +1470,31 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     });
 
     try {
+      this.logger.trace('Fetching URL', { url: requestObj.url });
       // Fetch the goods
       const httpResponse = await this.fetch(requestObj.url, requestObj);
+      this.logger.trace('Received response', { url: requestObj.url, status: httpResponse.status });
 
       const responseHeaders = Object.fromEntries(
         httpResponse.headers.entries(),
       ) satisfies HeadersInit;
-      this.logger.debug('responseHeaders:', responseHeaders);
-      this.logger.debug('responseHeaders.location:', responseHeaders.location);
+      this.logger.debug('Received response headers', { responseHeaders });
+      this.logger.debug('Read redirect location from response headers', {
+        location: responseHeaders.location,
+      });
 
       return httpResponse;
     } catch (error: unknown) {
-      if (error instanceof Error && error.name === 'AbortError') {
+      if (isExpectedAbort(error)) {
         this.logger.debug('Request was aborted', { reason: this.controller.signal.reason });
         this.controller.abort('Abort signal detected');
         return;
       }
-      this.logger.error('Error received during fetch:', {
-        error,
-        signal: this.controller.signal,
-      });
+      if (isRateLimited(error)) {
+        this.logger.warn(`Rate limited during fetch: ${getErrorMessage(error)}`, { error });
+      } else {
+        this.logger.error(`Error received during fetch: ${getErrorMessage(error)}`, { error });
+      }
       // Opt-in: surface the failure (e.g. an HttpError 429) so the caller can apply
       // status-aware retry/backoff. Default behavior remains swallow-and-return-undefined.
       if (rethrowErrors) {
@@ -1657,7 +1669,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       return acc;
     }, []);
 
-    this.logger.debug('[fuzzyFilter]', {
+    this.logger.debug('[fuzzyFilter] Filtered results by fuzzy match', {
       supplierName: this.supplierName,
       query,
       minMatchPercentage,
@@ -1989,6 +2001,14 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   }: RequestOptions): Promise<Maybe<string>> {
     const httpResponse = await this.httpGet({ path, params, headers, host });
     if (!isHtmlResponse(httpResponse)) {
+      // A request cancelled by the search being stopped or timing out yields no response; report
+      // that as the abort it is, not as a malformed response.
+      if (this.controller.signal.aborted) {
+        throw new DOMException(
+          `httpGetHtml| Search aborted: ${String(this.controller.signal.reason)}`,
+          'AbortError',
+        );
+      }
       throw new TypeError(`httpGetHtml| Invalid GET response: ${httpResponse}`);
     }
     return await httpResponse.text();
@@ -2060,8 +2080,20 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     const httpRequest = await this.httpGet({ path, params, headers, host });
 
     if (!isJsonResponse(httpRequest)) {
+      if (this.controller.signal.aborted) {
+        this.logger.debug('No JSON response because the search was aborted', { path, host });
+        return;
+      }
+      // httpGet already logged why (a failed fetch), so don't report the same failure again. Tested
+      // on a widened copy: isJsonResponse's predicate over-narrows, and testing httpRequest itself
+      // would make the rest of this block look unreachable to the compiler.
+      const rawResponse: unknown = httpRequest;
+      if (rawResponse === undefined) {
+        this.logger.debug('No JSON response because the request failed', { path, host });
+        return;
+      }
       const badResponse = isHttpResponse(httpRequest) ? await httpRequest.text() : undefined;
-      this.logger.error('Invalid HTTP GET JSON response:', {
+      this.logger.error('Invalid HTTP GET JSON response', {
         badResponse,
         httpRequest,
         path,
@@ -2111,17 +2143,14 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     limit: number = this.limit,
   ): Promise<ProductBuilder<T>[] | void> {
     // Check cache first (processed product data)
-    this.logger.debug(
-      'queryProductsWithCache: called for',
-      this.supplierName,
-      'query:',
+    this.logger.debug('queryProductsWithCache: called', {
+      supplierName: this.supplierName,
       query,
-      'limit:',
       limit,
-    );
+    });
     const key = this.cache.generateCacheKey(query);
     const cached = await this.cache.getCachedQueryEntry(key);
-    this.logger.debug('queryProductsWithCache: cache hit:', !!cached, 'key:', key);
+    this.logger.debug('queryProductsWithCache: cache lookup', { cacheHit: !!cached, key });
     if (cached) {
       const cachedLimit = cached.__cacheMetadata.limit;
       const insufficientLimit = typeof cachedLimit === 'number' && cachedLimit < limit;
@@ -2230,6 +2259,9 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * search settles so the timer doesn't leak.
    *
    * @param sentinel - Unique symbol the returned promise resolves to on timeout.
+   * @param getProgress - Reads how many products the search has found and fully finished so far,
+   * so the timeout warning can say how many results are being returned. Called when the budget
+   * elapses; defaults to no progress.
    * @returns `{ promise, handle }`; both `undefined` when no budget is set (`supplierSearchTimeBudgetSec <= 0`).
    * @example
    * ```typescript
@@ -2246,6 +2278,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    */
   private armSearchTimeout<S extends symbol>(
     sentinel: S,
+    getProgress: () => { found: number; completed: number } = () => ({ found: 0, completed: 0 }),
   ): { promise?: Promise<S>; handle?: ReturnType<typeof setTimeout> } {
     if (this.supplierSearchTimeBudgetSec <= 0) {
       return {};
@@ -2253,10 +2286,19 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     let handle: ReturnType<typeof setTimeout> | undefined;
     const promise = new Promise<S>((resolve) => {
       handle = setTimeout(() => {
+        // Every product found is still returned: finished ones in full, the rest with the basic
+        // data from the search listing.
+        const { found, completed } = getProgress();
         this.logger.warn(
           `Search exceeded supplierSearchTimeBudgetSec (${this.supplierSearchTimeBudgetSec}s); ` +
-            `aborting outstanding requests and returning collected results`,
-          { supplier: this.supplierName },
+            `aborting outstanding requests and returning ${found} collected ` +
+            `result${found === 1 ? '' : 's'}`,
+          {
+            supplier: this.supplierName,
+            resultsFound: found,
+            resultsCompleted: completed,
+            resultsBasicOnly: found - completed,
+          },
         );
         // The seconds are already in the warning above; the reason string stays a
         // known constant so the terminal search event can classify it.
@@ -2300,13 +2342,17 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     // Optional per-supplier search-time budget; see armSearchTimeout. When it elapses the
     // race below wins via SEARCH_TIMEOUT and flushes any not-yet-yielded products.
     const SEARCH_TIMEOUT = Symbol('searchTimeout');
-    const { promise: timeoutPromise, handle: timeoutHandle } =
-      this.armSearchTimeout(SEARCH_TIMEOUT);
+    // Kept current below so the budget warning can report how many results there are.
+    const progress = { found: 0, completed: 0 };
+    const { promise: timeoutPromise, handle: timeoutHandle } = this.armSearchTimeout(
+      SEARCH_TIMEOUT,
+      () => progress,
+    );
 
     try {
       const results = await this.queryProductsWithCache(this.query, fetchLimit);
       if (!results || results.length === 0) {
-        this.logger.log(`No query results found`);
+        this.logger.debug('No query results found');
         return;
       }
       // Drop any products the user has ignored, then slice back down to the
@@ -2325,6 +2371,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
         survivors.push(builder);
       }
       this.products = survivors;
+      progress.found = survivors.length;
       const queue = new Queue(this.maxConcurrentRequests, this.minConcurrentCycle);
 
       // Each task fetches a product's detail data and finishes it, tagged with its index so the
@@ -2343,8 +2390,21 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
               const builder = await this.getProductData(product);
               const finished = builder ? await this.finishProduct(builder) : undefined;
               return { index, finished };
-            } catch (e: unknown) {
-              this.logger.error('Error processing product', { error: e, product });
+            } catch (error: unknown) {
+              if (isRateLimited(error)) {
+                // The supplier is throttling us, so this product just lacks its details.
+                this.logger.warn(
+                  `Product skipped, supplier is rate limiting: ${getErrorMessage(error)}`,
+                  {
+                    error,
+                  },
+                );
+              } else {
+                this.logger.error(`Error processing product: ${getErrorMessage(error)}`, {
+                  error,
+                  product,
+                });
+              }
               incrementParseError(this.supplierName);
               return { index, finished: undefined };
             }
@@ -2377,6 +2437,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
 
         pending.delete(result.index);
         yielded.add(result.index);
+        progress.completed = yielded.size;
         if (result.finished) {
           yield result.finished;
         }
@@ -2807,7 +2868,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   protected async getProductData(product: ProductBuilder<T>): Promise<ProductBuilder<T> | void> {
     const url = product.get('url');
     if (typeof url !== 'string') {
-      this.logger.error('[SupplierBase > getProductData] Invalid URL in product:', { url });
+      this.logger.error('[SupplierBase > getProductData] Invalid URL in product', { url });
       return undefined;
     }
     // Skip products the user has ignored (matched by identity key).
@@ -2822,7 +2883,8 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     // the builder at parse time. Absent only if a supplier failed to stamp one,
     // in which case this product simply isn't cached.
     const cacheKey = this.productIdentityKey(product);
-    this.logger.debug('[SupplierBase > getProductData] Product detail cache key:', cacheKey, {
+    this.logger.debug('[SupplierBase > getProductData] Product detail cache key', {
+      cacheKey,
       url,
     });
     try {
@@ -2839,8 +2901,18 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       let resultBuilder: ProductBuilder<T> | void = undefined;
       try {
         resultBuilder = await this.getProductDataWithCache(product, this.getProductData);
-      } catch (err: unknown) {
-        this.logger.error('[SupplierBase > getProductData] Error in product detail fetcher:', err);
+      } catch (error: unknown) {
+        if (isExpectedAbort(error)) {
+          this.logger.debug(
+            `[SupplierBase > getProductData] Product detail fetch aborted: ${getErrorMessage(error)}`,
+            { error },
+          );
+        } else {
+          this.logger.error(
+            `[SupplierBase > getProductData] Error in product detail fetcher: ${getErrorMessage(error)}`,
+            { error },
+          );
+        }
         incrementParseError(this.supplierName);
         return undefined;
       }
@@ -2856,10 +2928,10 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
         await this.cache.cacheProductData(cacheKey, resultBuilder.dump());
       }
       return resultBuilder;
-    } catch (outerErr: unknown) {
+    } catch (error: unknown) {
       this.logger.error(
-        '[SupplierBase > getProductData] Error in getProductDataWithCache:',
-        outerErr,
+        `[SupplierBase > getProductData] Error in getProductDataWithCache: ${getErrorMessage(error)}`,
+        { error },
       );
       incrementParseError(this.supplierName);
       return undefined;
@@ -2895,7 +2967,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   ): Promise<ProductBuilder<T> | void> {
     const url = product.get('url');
     if (typeof url !== 'string') {
-      this.logger.error('[SupplierBase > getProductDataWithCache] Invalid URL in product:', {
+      this.logger.error('[SupplierBase > getProductDataWithCache] Invalid URL in product', {
         url,
       });
       return undefined;
@@ -2913,13 +2985,10 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     // time. Absent only if a supplier failed to stamp one, in which case this
     // product simply isn't cached.
     const cacheKey = this.productIdentityKey(product);
-    this.logger.debug(
-      '[SupplierBase > getProductDataWithCache] Product detail cache key:',
+    this.logger.debug('[SupplierBase > getProductDataWithCache] Product detail cache key', {
       cacheKey,
-      {
-        url,
-      },
-    );
+      url,
+    });
     try {
       if (!this.skipProductDetailCache && cacheKey) {
         const cachedData = await this.cache.getCachedProductData(cacheKey);
@@ -2934,11 +3003,18 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       let resultBuilder: ProductBuilder<T> | void = undefined;
       try {
         resultBuilder = await fetcher(product);
-      } catch (err: unknown) {
-        this.logger.error(
-          '[SupplierBase > getProductDataWithCache] Error in product detail fetcher:',
-          err,
-        );
+      } catch (error: unknown) {
+        if (isExpectedAbort(error)) {
+          this.logger.debug(
+            `[SupplierBase > getProductDataWithCache] Product detail fetch aborted: ${getErrorMessage(error)}`,
+            { error },
+          );
+        } else {
+          this.logger.error(
+            `[SupplierBase > getProductDataWithCache] Error in product detail fetcher: ${getErrorMessage(error)}`,
+            { error },
+          );
+        }
         incrementParseError(this.supplierName);
         return undefined;
       }
@@ -2956,10 +3032,10 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
         }
       }
       return resultBuilder;
-    } catch (outerErr: unknown) {
+    } catch (error: unknown) {
       this.logger.error(
-        '[SupplierBase > getProductDataWithCache] Error in getProductDataWithCache:',
-        outerErr,
+        `[SupplierBase > getProductDataWithCache] Error in getProductDataWithCache: ${getErrorMessage(error)}`,
+        { error },
       );
       incrementParseError(this.supplierName);
       return undefined;
@@ -3045,7 +3121,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       .map((item) => {
         const title = this.titleSelector(item);
         if (!title) {
-          this.logger.error('No title found in product:', { item });
+          this.logger.error('No title found in product', { item });
           return undefined;
         }
         const groupId = stripQuantityFromString(title.replace(/(?<=\d{1,3})\s(?=\d{3})/g, ''));
@@ -3156,7 +3232,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       try {
         const response = await fetchDecorator(...args);
         this.logger.debug(`Response Status: ${response.status}`);
-        this.logger.debug('response hash:', response.requestHash);
+        this.logger.debug('Computed response request hash', { requestHash: response.requestHash });
         if (typeof response.data === 'string' && response.data?.length === 0) {
           throw new EmptyResponseError(`Invalid response: ${response.data}`);
         }

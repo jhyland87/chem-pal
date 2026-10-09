@@ -11,6 +11,7 @@
  * @module themeIcon
  */
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('themeIcon');
 
@@ -49,7 +50,7 @@ async function applyToolbarIcon(scheme: ColorScheme): Promise<void> {
   try {
     await chrome.action.setIcon({ path: THEME_ICON_PATHS[scheme] });
   } catch (error) {
-    logger.warn(`Failed to set the ${scheme} toolbar icon`, error);
+    logger.warn(`Failed to set the ${scheme} toolbar icon: ${getErrorMessage(error)}`, { error });
   }
 }
 

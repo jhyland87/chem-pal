@@ -2,6 +2,7 @@ import { AppContext } from '@/context';
 import { cstorage } from '@/utils/storage';
 import { use } from 'react';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('useContext');
 
@@ -81,7 +82,7 @@ export function useChromeStorageEnhanced<T>(
           try {
             return serializer.deserialize(rawValue);
           } catch (error) {
-            logger.warn(`Failed to deserialize ${key}:`, error);
+            logger.warn(`Failed to deserialize ${key}: ${getErrorMessage(error)}`, { error });
             return defaultValue;
           }
         }
@@ -89,7 +90,9 @@ export function useChromeStorageEnhanced<T>(
         // chrome.storage returns untyped data; narrow to the caller's generic T.
         return rawValue as T;
       } catch (error) {
-        logger.error(`Failed to load ${key} from Chrome storage:`, error);
+        logger.error(`Failed to load ${key} from Chrome storage: ${getErrorMessage(error)}`, {
+          error,
+        });
         return defaultValue;
       }
     })(),
@@ -100,7 +103,7 @@ export function useChromeStorageEnhanced<T>(
       const valueToStore = serializer ? serializer.serialize(value) : value;
       await storage.set({ [key]: valueToStore });
     } catch (error) {
-      logger.error(`Failed to save ${key} to Chrome storage:`, error);
+      logger.error(`Failed to save ${key} to Chrome storage: ${getErrorMessage(error)}`, { error });
       throw error;
     }
   };
@@ -109,7 +112,9 @@ export function useChromeStorageEnhanced<T>(
     try {
       await storage.remove([key]);
     } catch (error) {
-      logger.error(`Failed to remove ${key} from Chrome storage:`, error);
+      logger.error(`Failed to remove ${key} from Chrome storage: ${getErrorMessage(error)}`, {
+        error,
+      });
       throw error;
     }
   };

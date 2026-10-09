@@ -116,7 +116,7 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
       });
 
       if (searchResponse === undefined) {
-        this.logger.error('Bad search response:', searchResponse);
+        this.logger.error('Bad search response', { searchResponse });
         return;
       }
 
@@ -130,7 +130,7 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
       const $fuzzResults = await queryProductPage(query, offset);
 
       if (!$fuzzResults) {
-        this.logger.log('No results for page:', offset);
+        this.logger.debug('No results for page', { offset });
         break;
       }
 
@@ -141,7 +141,7 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
       }
     }
 
-    this.logger.log('results:', results);
+    this.logger.debug('Parsed search results', { results });
 
     return this.initProductBuilders(results);
   }
@@ -253,7 +253,7 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
       result.currencySymbol = 'zł';
     }
 
-    this.logger.log('result:', result);
+    this.logger.debug('Parsed result item', { result });
     return result;
   }
 
@@ -336,7 +336,7 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
       return product;
     });
 
-    this.logger.log('parsedResults:', parsedResults);
+    this.logger.debug('Parsed product results', { parsedResults });
 
     return parsedResults;
   }

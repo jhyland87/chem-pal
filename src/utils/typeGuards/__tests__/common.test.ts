@@ -276,6 +276,17 @@ describe('Common TypeGuards', () => {
       console.warn = originalWarn;
     });
 
+    it.each([
+      ['every remote log level', ['trace', 'debug', 'log', 'warn', 'error', 'fatal'], true],
+      ['the default selection', ['log', 'warn', 'error', 'fatal'], true],
+      ['an empty selection', [], true],
+      ['a level Logger does not send remotely', ['info'], false],
+      ['an unknown level', ['verbose'], false],
+      ['a bare string instead of a list', 'warn', false],
+    ])('validates remoteLogLevels with %s', (_label, remoteLogLevels, valid) => {
+      expect(isValidUserSettings({ remoteLogLevels })).toBe(valid);
+    });
+
     it('accepts an empty object (all fields are optional)', () => {
       expect(isValidUserSettings({})).toBe(true);
     });

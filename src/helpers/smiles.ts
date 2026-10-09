@@ -2,6 +2,7 @@ import { isCAS } from '@/utils/typeGuards/common';
 import { executeSDQSearch } from '@/helpers/pubchem';
 import { Cactus } from '@/utils/Cactus';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('smiles');
 
@@ -266,7 +267,7 @@ export async function resolveSmiles(smiles: string): Promise<ResolvedStructure |
     }
     return undefined;
   } catch (error) {
-    logger.error('Error resolving SMILES:', error);
+    logger.error(`Error resolving SMILES: ${getErrorMessage(error)}`, { error });
     return undefined;
   }
 }

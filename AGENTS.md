@@ -104,6 +104,23 @@ Project invariants beyond style, all of which have bitten before:
   setters stay strictly typed.
 - Named imports from `react` (`import { useState } from "react"`), not the default
   namespace import.
+- **Logger calls are `(message, { details })`**: a message plus at most one details object, never
+  a bare value as the second argument (ESLint `no-restricted-syntax` enforces it). For a caught
+  error, put its text in the message and the error itself under `error`, and name the catch
+  variable `error`, not `err`/`e`:
+  `` logger.warn(`Failed to load: ${getErrorMessage(error)}`, { error }) ``. `getErrorMessage`
+  is in `src/helpers/exceptions.ts` (a `catch` variable is `unknown`, so `error.message` doesn't
+  compile). Remote logs read the stack trace from the `{ error }` property. Don't end a message
+  with `:` (the details are in the object, so it just reads as cut off) and don't use a lone word or
+  variable name (`'results'`); write a short phrase saying what happened (`'Received search
+  response'`). Lint enforces both.
+  Remote logs made during a search automatically carry a `search_query` attribute and a random
+  per-search `trace_id` (also sent as the OpenTelemetry trace id), so logs can be grouped by query or
+  by run. `useSearch` sets `Logger.setContext`; supplier and factory loggers snapshot it at
+  construction. Don't add the query to the message. Per-step tracing (`Received search response`, per-request messages) belongs at
+  `debug` or `trace`: the default remote levels are `log`/`warn`/`error`/`fatal`. Use `fatal`
+  only when a whole page or the app can't continue (an uncaught exception, a crashed UI); `trace`
+  is for very fine detail (each request or streamed product) and is off unless selected.
 
 ### Tests that don't run
 

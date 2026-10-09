@@ -20,6 +20,7 @@ import {
   SearchPanelHomeTopBar,
 } from './StyledComponents';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('SearchPanelHome');
 
@@ -57,7 +58,9 @@ const SearchPanelHome: FC = () => {
             setResultCount(0);
           }
         } catch (error) {
-          logger.warn('Failed to load search results from IndexedDB:', { error });
+          logger.warn(`Failed to load search results from IndexedDB: ${getErrorMessage(error)}`, {
+            error,
+          });
         }
       };
       loadStoredResults();

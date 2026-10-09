@@ -2,6 +2,7 @@ import { wikidata as wikidataConfig } from '@/../config.json';
 import { withTtlCache } from '@/helpers/requestCache';
 import { isCAS, isPopulatedObject } from '@/utils/typeGuards/common';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('wikidata');
 
@@ -56,7 +57,7 @@ async function queryWikidata(params: Record<string, string>): Promise<unknown> {
     }
     return await response.json();
   } catch (error) {
-    logger.error('Error querying Wikidata:', error);
+    logger.error(`Error querying Wikidata: ${getErrorMessage(error)}`, { error });
     return undefined;
   }
 }

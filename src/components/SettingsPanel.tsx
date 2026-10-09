@@ -74,6 +74,7 @@ import {
   useState,
 } from 'react';
 import styles from './SettingsPanel.module.scss';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('SettingsPanel');
 
@@ -120,7 +121,7 @@ async function getStorageUsageScale(jsonTotalBytes: number): Promise<number> {
     const usage = (await navigator.storage?.estimate?.())?.usage;
     if (usage && usage > 0) return usage / jsonTotalBytes;
   } catch (error) {
-    logger.warn('Failed to read storage estimate:', error);
+    logger.warn(`Failed to read storage estimate: ${getErrorMessage(error)}`, { error });
   }
   return 1;
 }
@@ -208,7 +209,7 @@ export default function SettingsPanel() {
         try {
           appContext.setUserSettings(newSettings);
         } catch (error) {
-          logger.error('Failed to update settings:', error);
+          logger.error(`Failed to update settings: ${getErrorMessage(error)}`, { error });
         }
       });
       return newSettings;
@@ -285,7 +286,7 @@ export default function SettingsPanel() {
         const map = await loadExcludedProducts();
         setExcludedProducts(map);
       } catch (error) {
-        logger.warn('Failed to load excluded products:', error);
+        logger.warn(`Failed to load excluded products: ${getErrorMessage(error)}`, { error });
       }
     };
     load();
@@ -317,7 +318,7 @@ export default function SettingsPanel() {
         bytes: Math.round(breakdown.byStore[IDB_STORE.PRICE_HISTORY].bytes * scale),
       });
     } catch (error) {
-      logger.warn('Failed to load storage stats:', error);
+      logger.warn(`Failed to load storage stats: ${getErrorMessage(error)}`, { error });
     }
   };
 
@@ -334,7 +335,7 @@ export default function SettingsPanel() {
         return next;
       });
     } catch (error) {
-      logger.warn('Failed to remove excluded product:', error);
+      logger.warn(`Failed to remove excluded product: ${getErrorMessage(error)}`, { error });
     }
   };
 
@@ -343,7 +344,7 @@ export default function SettingsPanel() {
       await clearExcludedProducts();
       setExcludedProducts({});
     } catch (error) {
-      logger.warn('Failed to clear excluded products:', error);
+      logger.warn(`Failed to clear excluded products: ${getErrorMessage(error)}`, { error });
     }
   };
 
@@ -353,7 +354,7 @@ export default function SettingsPanel() {
       setPriceHistoryCleared(true);
       await loadStorageStats();
     } catch (error) {
-      logger.warn('Failed to clear price history:', error);
+      logger.warn(`Failed to clear price history: ${getErrorMessage(error)}`, { error });
     }
   };
 
@@ -365,7 +366,7 @@ export default function SettingsPanel() {
       setCacheCleared(true);
       await loadStorageStats();
     } catch (error) {
-      logger.warn('Failed to clear cache:', error);
+      logger.warn(`Failed to clear cache: ${getErrorMessage(error)}`, { error });
     }
   };
 
@@ -380,7 +381,7 @@ export default function SettingsPanel() {
       await cstorage.local.clear();
       reloadPage();
     } catch (error) {
-      logger.warn('Failed to perform full reset:', error);
+      logger.warn(`Failed to perform full reset: ${getErrorMessage(error)}`, { error });
     }
   };
 
@@ -451,7 +452,9 @@ export default function SettingsPanel() {
         const rate = await getCurrencyRate('USD', selectedCurrency);
         if (!cancelled) setDisplayRate(rate);
       } catch (error) {
-        logger.error('Failed to fetch currency rate for display', { error });
+        logger.error(`Failed to fetch currency rate for display: ${getErrorMessage(error)}`, {
+          error,
+        });
         if (!cancelled) setDisplayRate(undefined);
       }
     };

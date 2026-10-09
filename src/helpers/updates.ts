@@ -16,6 +16,7 @@ import semverValid from 'semver/functions/valid';
 import semverPrerelease from 'semver/functions/prerelease';
 import semverGt from 'semver/functions/gt';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('updates');
 
@@ -303,7 +304,7 @@ async function fetchRelease(endpoint: string): Promise<GithubRelease | undefined
     const data: unknown = await response.json();
     return isGithubRelease(data) ? data : undefined;
   } catch (error) {
-    logger.error('Failed to fetch release:', { endpoint, error });
+    logger.error(`Failed to fetch release: ${getErrorMessage(error)}`, { endpoint, error });
     return undefined;
   }
 }

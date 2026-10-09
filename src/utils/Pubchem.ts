@@ -8,6 +8,7 @@
  */
 
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('Pubchem');
 function assertIsCIDResponse(data: unknown): asserts data is CIDResponse {
@@ -131,7 +132,7 @@ export class Pubchem {
       assertIsCompoundResponseResponse(data);
       return data.dictionary_terms.compound[0];
     } catch (error) {
-      logger.error('Error fetching compound:', error);
+      logger.error(`Error fetching compound: ${getErrorMessage(error)}`, { error });
     }
   }
 
@@ -158,7 +159,7 @@ export class Pubchem {
       assertIsCIDResponse(data);
       return data.ConceptsAndCIDs.CID[0];
     } catch (error) {
-      logger.error('Error fetching CID:', error);
+      logger.error(`Error fetching CID: ${getErrorMessage(error)}`, { error });
     }
   }
 
@@ -198,7 +199,7 @@ export class Pubchem {
       assertIsSdqAgentResponse(data);
       return data;
     } catch (error) {
-      logger.error('Error querying SDQ agent:', error);
+      logger.error(`Error querying SDQ agent: ${getErrorMessage(error)}`, { error });
     }
   }
 
@@ -221,7 +222,7 @@ export class Pubchem {
       if (!data) return undefined;
       return data.SDQOutputSet[0].rows[0].cmpdname;
     } catch (error) {
-      logger.error('Error fetching simple name:', error);
+      logger.error(`Error fetching simple name: ${getErrorMessage(error)}`, { error });
     }
   }
 
@@ -241,7 +242,7 @@ export class Pubchem {
       if (!data) return undefined;
       return data.SDQOutputSet[0].rows[0].cmpdname;
     } catch (error) {
-      logger.error('Error fetching compound name from alias:', error);
+      logger.error(`Error fetching compound name from alias: ${getErrorMessage(error)}`, { error });
     }
   }
 }

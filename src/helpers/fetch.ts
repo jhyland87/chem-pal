@@ -193,7 +193,7 @@ export async function fetchDecorator(
       data = await clonedResponse.clone().blob();
     }
   } catch {
-    logger.debug('clonedResponse:', clonedResponse);
+    logger.debug('Could not read response as a blob; falling back to text', { clonedResponse });
     data = await clonedResponse.clone().text();
   }
 

@@ -113,7 +113,9 @@
     "https://www.labproservices.com/*",
     "https://hyperfuels.com/*",
     "https://hyper-fuels.myshopify.com/*",
-    "https://diychemicals.com/*"
+    "https://diychemicals.com/*",
+    "https://alliancechemical.com/*",
+    "https://alliance-chemical-store.myshopify.com/*"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"

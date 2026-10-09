@@ -9,6 +9,7 @@ import {
 } from '@/utils/reviewStats';
 import { useCallback, useEffect, useState } from 'react';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('useReviewPrompt');
 
@@ -109,7 +110,7 @@ export function useReviewPrompt(): UseReviewPrompt {
 
         setNotice({ days, searches: state.searchCount, products: state.totalResults });
       } catch (error) {
-        logger.error('Failed to evaluate the review prompt:', { error });
+        logger.error(`Failed to evaluate the review prompt: ${getErrorMessage(error)}`, { error });
       }
     };
 

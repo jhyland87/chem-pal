@@ -23,6 +23,7 @@ import { initRemoteLogs } from './helpers/remoteLogs';
 import './main.scss';
 import { initThemeAwareToolbarIcon } from './utils/themeIcon';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('options');
 
@@ -36,10 +37,10 @@ if (!rootEl) throw new Error('Options page root element (#root) not found');
 
 createRoot(rootEl, {
   onUncaughtError: (error, errorInfo) => {
-    logger.error('Uncaught error:', error, errorInfo);
+    logger.fatal(`Uncaught error: ${getErrorMessage(error)}`, { error, errorInfo });
   },
   onCaughtError: (error, errorInfo) => {
-    logger.error('Caught error:', error, errorInfo);
+    logger.error(`Caught error: ${getErrorMessage(error)}`, { error, errorInfo });
   },
 }).render(
   <StrictMode>

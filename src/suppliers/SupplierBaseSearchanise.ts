@@ -162,7 +162,7 @@ export abstract class SupplierBaseSearchanise
         Number(item.quantity) > 0,
     );
     const fuzzResults = this.fuzzyFilterAst<ItemListing>(validItems);
-    this.logger.info('fuzzResults', { fuzzResults });
+    this.logger.debug('Applied fuzzy filter to search results', { fuzzResults });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));
   }
@@ -245,7 +245,7 @@ export abstract class SupplierBaseSearchanise
 
         builder.setQuantity(quantity.quantity, quantity.uom);
 
-        this.logger.debug('item.shopify_variants', { item });
+        this.logger.debug('Found Shopify variants for item', { item });
         if ('shopify_variants' in item && Array.isArray(item.shopify_variants)) {
           item.shopify_variants.forEach((variant) => {
             if (!isSearchaniseVariant(variant)) return;
@@ -256,7 +256,7 @@ export abstract class SupplierBaseSearchanise
               variant.sku,
             ]);
 
-            this.logger.debug('variantQuantity', { variantQuantity, item });
+            this.logger.debug('Parsed variant quantity', { variantQuantity, item });
 
             builder.addVariant({
               id: variant.variant_id,

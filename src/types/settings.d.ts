@@ -259,11 +259,11 @@ declare global {
 
     /**
      * Which diagnostic log levels are sent to PostHog Logs while `shareUsageData` is on.
-     * Defaults to `['log', 'warn', 'error']`; add `'debug'` for verbose output. Only
+     * Defaults to `['log', 'warn', 'error', 'fatal']`; add `'debug'` or `'trace'` for verbose output. Only
      * editable from the Advanced settings section. An empty array sends no logs.
      * @example ['log', 'warn', 'error']
      */
-    remoteLogLevels?: Array<'debug' | 'log' | 'warn' | 'error'>;
+    remoteLogLevels?: Array<'trace' | 'debug' | 'log' | 'warn' | 'error' | 'fatal'>;
 
     /**
      * Supplier deny-list and limits. `disabled` names are excluded from every

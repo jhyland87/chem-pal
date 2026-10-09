@@ -26,6 +26,7 @@ import {
   clearSupplierStats as idbClearSupplierStats,
 } from '@/utils/idbCache';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('SupplierStatsStore');
 
@@ -115,7 +116,7 @@ async function flushToStorage(): Promise<void> {
     // Prune old entries
     await pruneOldEntries();
   } catch (error) {
-    logger.warn('Failed to flush supplier stats:', error);
+    logger.warn(`Failed to flush supplier stats: ${getErrorMessage(error)}`, { error });
     for (const [key, delta] of batch) {
       pendingIncrements.set(key, (pendingIncrements.get(key) ?? 0) + delta);
     }
@@ -132,8 +133,8 @@ async function pruneOldEntries(): Promise<void> {
     if (keysToRemove.length > 0) {
       await deleteSupplierStatsEntries(keysToRemove);
     }
-  } catch (err) {
-    logger.warn('Failed to prune old supplier stats:', err);
+  } catch (error) {
+    logger.warn(`Failed to prune old supplier stats: ${getErrorMessage(error)}`, { error });
   }
 }
 
@@ -190,7 +191,7 @@ export async function getStats(): Promise<SupplierStatsData> {
   try {
     return await getAllSupplierStats();
   } catch (error) {
-    logger.warn('Failed to read supplier stats:', error);
+    logger.warn(`Failed to read supplier stats: ${getErrorMessage(error)}`, { error });
     return {};
   }
 }
@@ -232,6 +233,6 @@ export async function clearStats(): Promise<void> {
   try {
     await idbClearSupplierStats();
   } catch (error) {
-    logger.warn('Failed to clear supplier stats:', error);
+    logger.warn(`Failed to clear supplier stats: ${getErrorMessage(error)}`, { error });
   }
 }

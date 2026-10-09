@@ -33,6 +33,7 @@ import { isTabView } from './utils/displayContext';
 import { IS_DEV_BUILD } from './utils/isDevBuild';
 import { initThemeAwareToolbarIcon } from './utils/themeIcon';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('main');
 
@@ -64,7 +65,7 @@ if (IS_DEV_BUILD) {
 
   createRoot(document.getElementById('root')!, {
     onUncaughtError: (error, errorInfo) => {
-      logger.error('Uncaught error:', error, errorInfo);
+      logger.fatal(`Uncaught error: ${getErrorMessage(error)}`, { error, errorInfo });
       void recordError({
         source: 'react',
         message: error instanceof Error ? error.message : String(error),
@@ -81,7 +82,7 @@ if (IS_DEV_BUILD) {
       });
     },
     onCaughtError: (error, errorInfo) => {
-      logger.error('Caught error:', error, errorInfo);
+      logger.error(`Caught error: ${getErrorMessage(error)}`, { error, errorInfo });
       void recordError({
         source: 'react',
         message: error instanceof Error ? error.message : String(error),

@@ -5,6 +5,7 @@ import { getLocalizedNames } from '@/helpers/wikidata';
 import { ProductBuilder } from '@/utils/ProductBuilder';
 import { isCAS, isPopulatedObject } from '@/utils/typeGuards/common';
 import { SupplierBase } from './SupplierBase';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 /**
  * One product parsed from a LabStuff search response: the title from the result markup joined
@@ -236,7 +237,7 @@ export class SupplierLabStuff extends SupplierBase<Partial<Product>, Product> im
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    this.logger.log('queryProducts:', { query, limit });
+    this.logger.log('Starting product search', { query, limit });
 
     const rows = new Map<string, LabStuffRow>();
     let anyResponse = false;
@@ -428,7 +429,7 @@ export class SupplierLabStuff extends SupplierBase<Partial<Product>, Product> im
       try {
         return (await this.httpGetHtml({ path })) ?? undefined;
       } catch (error) {
-        this.logger.warn('Category page fetch failed', { path, error });
+        this.logger.warn(`Category page fetch failed: ${getErrorMessage(error)}`, { path, error });
         return undefined;
       }
     })();
@@ -470,7 +471,7 @@ export class SupplierLabStuff extends SupplierBase<Partial<Product>, Product> im
         sku = ld[0].sku;
       }
     } catch (error) {
-      this.logger.warn('Product JSON-LD parse failed', { id, error });
+      this.logger.warn(`Product JSON-LD parse failed: ${getErrorMessage(error)}`, { id, error });
     }
 
     const optionScript = block.querySelector(`#ProductOptions-${id} script`)?.textContent ?? '';
@@ -585,7 +586,7 @@ export class SupplierLabStuff extends SupplierBase<Partial<Product>, Product> im
         const response = await this.httpGet({ path: `/contents/prpgmap/${file}` });
         return response ? this.parsePageMap(await response.text()) : undefined;
       } catch (error) {
-        this.logger.warn('Page map fetch failed', { file, error });
+        this.logger.warn(`Page map fetch failed: ${getErrorMessage(error)}`, { file, error });
         return undefined;
       }
     })();
@@ -609,7 +610,7 @@ export class SupplierLabStuff extends SupplierBase<Partial<Product>, Product> im
       const parsed: unknown = JSON.parse(text.trim().replace(/([{,])\s*(-?\d+)\s*:/g, '$1"$2":'));
       return isPopulatedObject(parsed) ? parsed : undefined;
     } catch (error) {
-      this.logger.warn('Page map parse failed', { error });
+      this.logger.warn(`Page map parse failed: ${getErrorMessage(error)}`, { error });
       return undefined;
     }
   }

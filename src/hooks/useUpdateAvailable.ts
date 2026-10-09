@@ -12,6 +12,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import semverValid from 'semver/functions/valid';
 import semverGt from 'semver/functions/gt';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('useUpdateAvailable');
 
@@ -336,7 +337,7 @@ export function useUpdateAvailable(): UseUpdateAvailable {
           setNotice({ ...update, source: 'manual' });
         }
       } catch (error) {
-        logger.error('Failed to check for updates:', { error });
+        logger.error(`Failed to check for updates: ${getErrorMessage(error)}`, { error });
       }
     };
 
@@ -371,7 +372,7 @@ export function useUpdateAvailable(): UseUpdateAvailable {
       try {
         await persistSuppression({ dismissedVersion: dismissed });
       } catch (error) {
-        logger.error('Failed to record update dismissal:', { error });
+        logger.error(`Failed to record update dismissal: ${getErrorMessage(error)}`, { error });
       }
     })();
   }, [notice]);
@@ -386,7 +387,7 @@ export function useUpdateAvailable(): UseUpdateAvailable {
       try {
         await persistSuppression({ snoozedVersion: snoozed, snoozedUntil });
       } catch (error) {
-        logger.error('Failed to record update snooze:', { error });
+        logger.error(`Failed to record update snooze: ${getErrorMessage(error)}`, { error });
       }
     })();
   }, [notice]);

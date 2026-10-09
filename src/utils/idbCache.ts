@@ -4,6 +4,7 @@ import type { ExcludedProductsMap } from '@/helpers/excludedProducts';
 import type { ChemicalDbRecord, OshaChemical } from '@/helpers/oshaChemicalDb';
 import { Logger } from '@/utils/Logger';
 import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 /**
  * Custom event name dispatched when search results are cleared.
@@ -249,7 +250,9 @@ export async function getSearchResults(): Promise<Product[]> {
     const record = await db.get(IDB_STORE.SEARCH_RESULTS, 'current');
     return record?.data ?? [];
   } catch (error) {
-    logger.error('Failed to get search results from IndexedDB', { error });
+    logger.error(`Failed to get search results from IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
     return [];
   }
 }
@@ -274,7 +277,9 @@ export async function getSearchResultsRecord(): Promise<{ data: Product[]; query
     const record = await db.get(IDB_STORE.SEARCH_RESULTS, 'current');
     return { data: record?.data ?? [], query: record?.query };
   } catch (error) {
-    logger.error('Failed to get search results record from IndexedDB', { error });
+    logger.error(`Failed to get search results record from IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
     return { data: [] };
   }
 }
@@ -364,7 +369,7 @@ export async function setSearchResults(results: Product[], query?: string): Prom
       emitSearchResultsCleared();
     }
   } catch (error) {
-    logger.error('Failed to set search results in IndexedDB', { error });
+    logger.error(`Failed to set search results in IndexedDB: ${getErrorMessage(error)}`, { error });
   }
 }
 
@@ -394,7 +399,9 @@ export async function clearSearchResults(options: { notify?: boolean } = {}): Pr
       emitSearchResultsCleared();
     }
   } catch (error) {
-    logger.error('Failed to clear search results from IndexedDB', { error });
+    logger.error(`Failed to clear search results from IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
   }
 }
 
@@ -419,7 +426,9 @@ export async function getSearchHistory(): Promise<SearchHistoryEntry[]> {
     // Return sorted newest-first
     return all.sort((a, b) => b.timestamp - a.timestamp);
   } catch (error) {
-    logger.error('Failed to get search history from IndexedDB', { error });
+    logger.error(`Failed to get search history from IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
     return [];
   }
 }
@@ -459,7 +468,9 @@ export async function addSearchHistoryEntry(entry: SearchHistoryEntry): Promise<
 
     await tx.done;
   } catch (error) {
-    logger.error('Failed to add search history entry to IndexedDB', { error });
+    logger.error(`Failed to add search history entry to IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
   }
 }
 
@@ -492,7 +503,10 @@ export async function updateSearchHistoryResultCount(
     }
     await tx.done;
   } catch (error) {
-    logger.error('Failed to update search history result count in IndexedDB', { error });
+    logger.error(
+      `Failed to update search history result count in IndexedDB: ${getErrorMessage(error)}`,
+      { error },
+    );
   }
 }
 
@@ -511,7 +525,9 @@ export async function clearSearchHistory(): Promise<void> {
     const db = await getDB();
     await db.clear(IDB_STORE.SEARCH_HISTORY);
   } catch (error) {
-    logger.error('Failed to clear search history from IndexedDB', { error });
+    logger.error(`Failed to clear search history from IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
   }
 }
 
@@ -544,7 +560,10 @@ export async function getSupplierQueryCacheEntry(
       __cacheMetadata: record.__cacheMetadata,
     };
   } catch (error) {
-    logger.error('Failed to get supplier query cache entry from IndexedDB', { error });
+    logger.error(
+      `Failed to get supplier query cache entry from IndexedDB: ${getErrorMessage(error)}`,
+      { error },
+    );
     return undefined;
   }
 }
@@ -595,7 +614,10 @@ export async function putSupplierQueryCacheEntry(
 
     await tx.done;
   } catch (error) {
-    logger.error('Failed to put supplier query cache entry in IndexedDB', { error });
+    logger.error(
+      `Failed to put supplier query cache entry in IndexedDB: ${getErrorMessage(error)}`,
+      { error },
+    );
   }
 }
 
@@ -615,7 +637,10 @@ export async function deleteSupplierQueryCacheEntry(cacheKey: string): Promise<v
     const db = await getDB();
     await db.delete(IDB_STORE.SUPPLIER_QUERY_CACHE, cacheKey);
   } catch (error) {
-    logger.error('Failed to delete supplier query cache entry from IndexedDB', { error });
+    logger.error(
+      `Failed to delete supplier query cache entry from IndexedDB: ${getErrorMessage(error)}`,
+      { error },
+    );
   }
 }
 
@@ -652,7 +677,10 @@ export async function getAllSupplierQueryCacheEntries(): Promise<
     const db = await getDB();
     return await db.getAll(IDB_STORE.SUPPLIER_QUERY_CACHE);
   } catch (error) {
-    logger.error('Failed to get all supplier query cache entries from IndexedDB', { error });
+    logger.error(
+      `Failed to get all supplier query cache entries from IndexedDB: ${getErrorMessage(error)}`,
+      { error },
+    );
     return [];
   }
 }
@@ -672,7 +700,9 @@ export async function clearSupplierQueryCache(): Promise<void> {
     const db = await getDB();
     await db.clear(IDB_STORE.SUPPLIER_QUERY_CACHE);
   } catch (error) {
-    logger.error('Failed to clear supplier query cache from IndexedDB', { error });
+    logger.error(`Failed to clear supplier query cache from IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
   }
 }
 
@@ -705,7 +735,10 @@ export async function getSupplierProductDataCacheEntry(
       timestamp: record.timestamp,
     };
   } catch (error) {
-    logger.error('Failed to get supplier product data cache entry from IndexedDB', { error });
+    logger.error(
+      `Failed to get supplier product data cache entry from IndexedDB: ${getErrorMessage(error)}`,
+      { error },
+    );
     return undefined;
   }
 }
@@ -750,7 +783,10 @@ export async function putSupplierProductDataCacheEntry(
 
     await tx.done;
   } catch (error) {
-    logger.error('Failed to put supplier product data cache entry in IndexedDB', { error });
+    logger.error(
+      `Failed to put supplier product data cache entry in IndexedDB: ${getErrorMessage(error)}`,
+      { error },
+    );
   }
 }
 
@@ -772,7 +808,10 @@ export async function deleteSupplierProductDataCacheEntry(cacheKey: string): Pro
     const db = await getDB();
     await db.delete(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE, cacheKey);
   } catch (error) {
-    logger.error('Failed to delete supplier product data cache entry from IndexedDB', { error });
+    logger.error(
+      `Failed to delete supplier product data cache entry from IndexedDB: ${getErrorMessage(error)}`,
+      { error },
+    );
   }
 }
 
@@ -797,7 +836,10 @@ export async function getAllSupplierProductDataCacheEntries(): Promise<
     const db = await getDB();
     return await db.getAll(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE);
   } catch (error) {
-    logger.error('Failed to get all supplier product data cache entries from IndexedDB', { error });
+    logger.error(
+      `Failed to get all supplier product data cache entries from IndexedDB: ${getErrorMessage(error)}`,
+      { error },
+    );
     return [];
   }
 }
@@ -817,7 +859,10 @@ export async function clearSupplierProductDataCache(): Promise<void> {
     const db = await getDB();
     await db.clear(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE);
   } catch (error) {
-    logger.error('Failed to clear supplier product data cache from IndexedDB', { error });
+    logger.error(
+      `Failed to clear supplier product data cache from IndexedDB: ${getErrorMessage(error)}`,
+      { error },
+    );
   }
 }
 
@@ -845,7 +890,9 @@ export async function getSupplierStatsEntry(
     const record = await db.get(IDB_STORE.SUPPLIER_STATS, dateKey);
     return record?.suppliers;
   } catch (error) {
-    logger.error('Failed to get supplier stats entry from IndexedDB', { error });
+    logger.error(`Failed to get supplier stats entry from IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
     return undefined;
   }
 }
@@ -872,7 +919,9 @@ export async function putSupplierStatsEntry(
     await db.put(IDB_STORE.SUPPLIER_STATS, { dateKey, suppliers });
     emitSupplierStatsUpdated();
   } catch (error) {
-    logger.error('Failed to put supplier stats entry in IndexedDB', { error });
+    logger.error(`Failed to put supplier stats entry in IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
   }
 }
 
@@ -897,7 +946,9 @@ export async function getAllSupplierStats(): Promise<SupplierStatsData> {
     }
     return result;
   } catch (error) {
-    logger.error('Failed to get all supplier stats from IndexedDB', { error });
+    logger.error(`Failed to get all supplier stats from IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
     return {};
   }
 }
@@ -923,7 +974,10 @@ export async function deleteSupplierStatsEntries(dateKeys: string[]): Promise<vo
     }
     await tx.done;
   } catch (error) {
-    logger.error('Failed to delete supplier stats entries from IndexedDB', { error });
+    logger.error(
+      `Failed to delete supplier stats entries from IndexedDB: ${getErrorMessage(error)}`,
+      { error },
+    );
   }
 }
 
@@ -942,7 +996,9 @@ export async function clearSupplierStats(): Promise<void> {
     const db = await getDB();
     await db.clear(IDB_STORE.SUPPLIER_STATS);
   } catch (error) {
-    logger.error('Failed to clear supplier stats from IndexedDB', { error });
+    logger.error(`Failed to clear supplier stats from IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
   }
 }
 
@@ -975,7 +1031,9 @@ export async function getExcludedProducts(): Promise<ExcludedProductsMap> {
     const record = await db.get(IDB_STORE.EXCLUDED_PRODUCTS, 'current');
     return record?.map ?? {};
   } catch (error) {
-    logger.error('Failed to get excluded products from IndexedDB', { error });
+    logger.error(`Failed to get excluded products from IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
     return {};
   }
 }
@@ -1001,7 +1059,9 @@ export async function putExcludedProducts(map: ExcludedProductsMap): Promise<voi
     const db = await getDB();
     await db.put(IDB_STORE.EXCLUDED_PRODUCTS, { id: 'current', map });
   } catch (error) {
-    logger.error('Failed to put excluded products in IndexedDB', { error });
+    logger.error(`Failed to put excluded products in IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
   }
 }
 
@@ -1023,7 +1083,9 @@ export async function clearExcludedProducts(): Promise<void> {
     const db = await getDB();
     await db.delete(IDB_STORE.EXCLUDED_PRODUCTS, 'current');
   } catch (error) {
-    logger.error('Failed to clear excluded products from IndexedDB', { error });
+    logger.error(`Failed to clear excluded products from IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
   }
 }
 
@@ -1051,7 +1113,7 @@ export async function getPriceSeries(id: string): Promise<PriceHistoryEntry | un
     const db = await getDB();
     return await db.get(IDB_STORE.PRICE_HISTORY, id);
   } catch (error) {
-    logger.error('Failed to get price series from IndexedDB', { error });
+    logger.error(`Failed to get price series from IndexedDB: ${getErrorMessage(error)}`, { error });
     return undefined;
   }
 }
@@ -1079,7 +1141,7 @@ export async function putPriceSeries(entry: PriceHistoryEntry): Promise<void> {
     const db = await getDB();
     await db.put(IDB_STORE.PRICE_HISTORY, entry);
   } catch (error) {
-    logger.error('Failed to put price series in IndexedDB', { error });
+    logger.error(`Failed to put price series in IndexedDB: ${getErrorMessage(error)}`, { error });
   }
 }
 
@@ -1103,7 +1165,10 @@ export async function getPriceSeriesByProduct(productKey: string): Promise<Price
     const db = await getDB();
     return await db.getAllFromIndex(IDB_STORE.PRICE_HISTORY, 'productKey', productKey);
   } catch (error) {
-    logger.error('Failed to get price series by product from IndexedDB', { error });
+    logger.error(
+      `Failed to get price series by product from IndexedDB: ${getErrorMessage(error)}`,
+      { error },
+    );
     return [];
   }
 }
@@ -1126,7 +1191,9 @@ export async function getAllPriceSeries(): Promise<PriceHistoryEntry[]> {
     const db = await getDB();
     return await db.getAll(IDB_STORE.PRICE_HISTORY);
   } catch (error) {
-    logger.error('Failed to get all price series from IndexedDB', { error });
+    logger.error(`Failed to get all price series from IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
     return [];
   }
 }
@@ -1149,7 +1216,9 @@ export async function clearPriceHistory(): Promise<void> {
     const db = await getDB();
     await db.clear(IDB_STORE.PRICE_HISTORY);
   } catch (error) {
-    logger.error('Failed to clear price history from IndexedDB', { error });
+    logger.error(`Failed to clear price history from IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
   }
 }
 
@@ -1176,7 +1245,9 @@ export async function getStoredAppVersion(): Promise<string | undefined> {
     const record = await db.get(IDB_STORE.APP_META, APP_META_KEY);
     return record?.appVersion;
   } catch (error) {
-    logger.error('Failed to get stored app version from IndexedDB', { error });
+    logger.error(`Failed to get stored app version from IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
     return undefined;
   }
 }
@@ -1205,7 +1276,9 @@ export async function setStoredAppVersion(appVersion: string): Promise<void> {
       updatedAt: Date.now(),
     });
   } catch (error) {
-    logger.error('Failed to set stored app version in IndexedDB', { error });
+    logger.error(`Failed to set stored app version in IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
   }
 }
 
@@ -1274,7 +1347,7 @@ export async function putExport(record: ExportRecord): Promise<void> {
     await tx.done;
     emitExportsUpdated();
   } catch (error) {
-    logger.error('Failed to put export in IndexedDB', { error });
+    logger.error(`Failed to put export in IndexedDB: ${getErrorMessage(error)}`, { error });
   }
 }
 
@@ -1295,7 +1368,7 @@ export async function getAllExports(): Promise<ExportRecord[]> {
     const all = await db.getAll(IDB_STORE.EXPORTS);
     return all.sort((a, b) => b.createdAt - a.createdAt);
   } catch (error) {
-    logger.error('Failed to get exports from IndexedDB', { error });
+    logger.error(`Failed to get exports from IndexedDB: ${getErrorMessage(error)}`, { error });
     return [];
   }
 }
@@ -1317,7 +1390,7 @@ export async function deleteExport(id: string): Promise<void> {
     await db.delete(IDB_STORE.EXPORTS, id);
     emitExportsUpdated();
   } catch (error) {
-    logger.error('Failed to delete export from IndexedDB', { error });
+    logger.error(`Failed to delete export from IndexedDB: ${getErrorMessage(error)}`, { error });
   }
 }
 
@@ -1337,7 +1410,7 @@ export async function clearExports(): Promise<void> {
     await db.clear(IDB_STORE.EXPORTS);
     emitExportsUpdated();
   } catch (error) {
-    logger.error('Failed to clear exports from IndexedDB', { error });
+    logger.error(`Failed to clear exports from IndexedDB: ${getErrorMessage(error)}`, { error });
   }
 }
 
@@ -1407,7 +1480,9 @@ export async function getIdbStorageBreakdown(): Promise<IdbStorageBreakdown> {
       byStore[store] = { count: entries.length, bytes };
     }
   } catch (error) {
-    logger.error('Failed to compute IndexedDB storage breakdown', { error });
+    logger.error(`Failed to compute IndexedDB storage breakdown: ${getErrorMessage(error)}`, {
+      error,
+    });
   }
   const totalBytes = Object.values(byStore).reduce((sum, entry) => sum + entry.bytes, 0);
   return { byStore, totalBytes };
@@ -1456,7 +1531,7 @@ export async function clearAllCaches(): Promise<void> {
     ]);
     emitSearchResultsCleared();
   } catch (error) {
-    logger.error('Failed to clear all IndexedDB caches', { error });
+    logger.error(`Failed to clear all IndexedDB caches: ${getErrorMessage(error)}`, { error });
   }
 }
 
@@ -1480,7 +1555,7 @@ export async function getChemicalDb(): Promise<ChemicalDbRecord | undefined> {
     const db = await getDB();
     return await db.get(IDB_STORE.CHEMICAL_DB, CHEMICAL_DB_KEY);
   } catch (error) {
-    logger.error('Failed to read chemical DB from IndexedDB', { error });
+    logger.error(`Failed to read chemical DB from IndexedDB: ${getErrorMessage(error)}`, { error });
     return undefined;
   }
 }
@@ -1502,6 +1577,6 @@ export async function putChemicalDb(chemicals: OshaChemical[], fetchedAt: number
     const db = await getDB();
     await db.put(IDB_STORE.CHEMICAL_DB, { id: CHEMICAL_DB_KEY, fetchedAt, chemicals });
   } catch (error) {
-    logger.error('Failed to write chemical DB to IndexedDB', { error });
+    logger.error(`Failed to write chemical DB to IndexedDB: ${getErrorMessage(error)}`, { error });
   }
 }

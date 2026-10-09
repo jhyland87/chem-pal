@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { matches, normalizeKey, parseBinding, parseSequence, resolveBinding } from './matcher';
 import type { HotkeyConfig, HotkeyHandlers, ParsedBinding } from './types';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('useHotkeys');
 
@@ -116,11 +117,13 @@ function invokeHandler(
       const result = handler();
       if (result instanceof Promise) {
         result.catch((error) => {
-          logger.error(`Hotkey handler "${config.id}" failed`, { error });
+          logger.error(`Hotkey handler "${config.id}" failed: ${getErrorMessage(error)}`, {
+            error,
+          });
         });
       }
     } catch (error) {
-      logger.error(`Hotkey handler "${config.id}" threw`, { error });
+      logger.error(`Hotkey handler "${config.id}" threw: ${getErrorMessage(error)}`, { error });
       return;
     }
   }

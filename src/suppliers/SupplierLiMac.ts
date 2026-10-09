@@ -8,6 +8,7 @@ import { translateAstToFreefind } from '@/utils/search-query/translators/transla
 import { isCurrencyCode } from '@/utils/typeGuards/common';
 import { extract } from 'fuzzball';
 import { SupplierBase } from './SupplierBase';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 /**
  * Supplier implementation for LiMac Science, a chemical supplier based in
@@ -128,7 +129,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    this.logger.log('queryProducts:', { query, limit });
+    this.logger.log('Starting product search', { query, limit });
 
     // For an advanced query, hand FreeFind its own refined-search syntax.
     const parsed = this.getAst();
@@ -152,13 +153,15 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
       return;
     }
 
-    this.logger.debug('searchResponse:', { searchResponse });
+    this.logger.debug('Received search response', { searchResponse });
 
     // Hand the result anchors to initProductBuilders (rather than building the
     // ProductBuilders inline) so each one gets its title, supplier, and ID set
     // via setBasicInfo — the same flow every other supplier follows.
     const productElements = this.getSearchResultElements(searchResponse);
-    this.logger.debug('productElements:', { count: productElements.length });
+    this.logger.debug('Found product elements in search response', {
+      count: productElements.length,
+    });
 
     return this.initProductBuilders(productElements).slice(0, limit);
   }
@@ -208,7 +211,12 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
     const startResult = Number(resultCountMatch.groups?.from ?? '0');
     const endResult = Number(resultCountMatch.groups?.to ?? '0');
 
-    this.logger.log('Found results', { response, totalResults, startResult, endResult });
+    this.logger.debug('Found search results on page', {
+      response,
+      totalResults,
+      startResult,
+      endResult,
+    });
 
     return Array.from(parsedHTML.querySelectorAll('font.search-results > a'));
   }
@@ -270,7 +278,12 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
     const startResult = Number(resultCountMatch.groups?.from ?? '0');
     const endResult = Number(resultCountMatch.groups?.to ?? '0');
 
-    this.logger.log('Found results', { query, totalResults, startResult, endResult });
+    this.logger.debug('Found search results on page', {
+      query,
+      totalResults,
+      startResult,
+      endResult,
+    });
 
     const links = parsedHTML.querySelectorAll('font.search-results > a');
 
@@ -301,7 +314,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
       return acc;
     }, []);
 
-    this.logger.debug('fuzzHtmlResponse results:', {
+    this.logger.debug('Applied fuzzy filter to search results', {
       supplierName: this.supplierName,
       query,
       minMatchPercentage,
@@ -651,7 +664,10 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
         .replace(/,(\s*[}\]])/g, '$1');
       return JSON.parse(normalised);
     } catch (error) {
-      this.logger.error(`Failed to parse ${name} literal`, { error, literal });
+      this.logger.error(`Failed to parse ${name} literal: ${getErrorMessage(error)}`, {
+        error,
+        literal,
+      });
       return undefined;
     }
   }

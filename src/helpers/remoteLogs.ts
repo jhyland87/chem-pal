@@ -10,6 +10,7 @@ import {
   type RemoteLogSink,
 } from '@/utils/Logger';
 import { cstorage } from '@/utils/storage';
+import { isTraceId } from '@/utils/traceId';
 import type { CaptureLogOptions, LogSeverityLevel, PostHog } from 'posthog-js';
 
 /**
@@ -32,10 +33,12 @@ const LOG_CONFIG = analyticsConfig.logs;
 
 /** Maps a remote level to the PostHog severity it is sent as. */
 const SEVERITY_BY_LEVEL: Record<RemoteLogLevel, LogSeverityLevel> = {
+  trace: 'trace',
   debug: 'debug',
   log: 'info',
   warn: 'warn',
   error: 'error',
+  fatal: 'fatal',
 };
 
 /**
@@ -133,9 +136,44 @@ function stringifyArg(arg: unknown): string {
 }
 
 /**
+ * Separates an `Error` from a logger argument. A bare `Error` is taken whole; for a plain
+ * object, the first top-level property holding an `Error` is taken (the `{ error }` style
+ * every warn/error call uses) and the rest of the object is returned.
+ *
+ * @param arg - One logger argument
+ * @returns The `Error` found (if any) and whatever is left of the argument to log as-is
+ * @example
+ * ```typescript
+ * splitError(new Error('boom'));                  // { error: Error('boom'), rest: undefined }
+ * splitError({ error: new Error('x'), id: 7 });   // { error: Error('x'), rest: { id: 7 } }
+ * splitError({ id: 7 });                          // { rest: { id: 7 } }
+ * ```
+ * @source
+ */
+function splitError(arg: unknown): { error?: Error; rest: unknown } {
+  if (arg instanceof Error) {
+    return { error: arg, rest: undefined };
+  }
+  const plain =
+    typeof arg === 'object' &&
+    arg !== null &&
+    (Object.getPrototypeOf(arg) === Object.prototype || Object.getPrototypeOf(arg) === null);
+  if (!plain) {
+    return { rest: arg };
+  }
+  const entries = Object.entries(arg);
+  const found = entries.find(([, value]) => value instanceof Error);
+  if (!found || !(found[1] instanceof Error)) {
+    return { rest: arg };
+  }
+  const rest = Object.fromEntries(entries.filter(([key]) => key !== found[0]));
+  return { error: found[1], rest: Object.keys(rest).length > 0 ? rest : undefined };
+}
+
+/**
  * Flattens a logger call's extra arguments into bounded, scrubbed log attributes. The first
- * `Error` becomes `error_name`/`error_message`/`error_stack`; the rest become `arg_0`,
- * `arg_1`, ...
+ * `Error`, whether passed bare or as a property of an object argument (`{ error }`), becomes
+ * `error_name`/`error_message`/`error_stack`; everything else becomes `arg_0`, `arg_1`, ...
  *
  * @param args - The extra arguments passed to the logger
  * @returns Attributes that are all strings (plus an omitted-count when args were dropped)
@@ -143,20 +181,29 @@ function stringifyArg(arg: unknown): string {
  * ```typescript
  * describeArgs([new Error('boom'), { id: 7 }]);
  * // { error_name: 'Error', error_message: 'boom', error_stack: '...', arg_0: '{"id":7}' }
+ * describeArgs([{ error: new Error('boom'), id: 7 }]);
+ * // { error_name: 'Error', error_message: 'boom', error_stack: '...', arg_0: '{"id":7}' }
  * ```
  * @source
  */
 function describeArgs(args: readonly unknown[]): Record<string, string | number> {
   const attributes: Record<string, string | number> = {};
   let index = 0;
-  for (const arg of args.slice(0, LOG_CONFIG.maxArgs)) {
-    if (arg instanceof Error && attributes.error_name === undefined) {
-      attributes.error_name = arg.name;
-      attributes.error_message = truncate(scrubText(arg.message), LOG_CONFIG.maxArgChars);
-      if (arg.stack) {
-        attributes.error_stack = truncate(scrubText(arg.stack), LOG_CONFIG.maxStackChars);
+  for (const original of args.slice(0, LOG_CONFIG.maxArgs)) {
+    let arg = original;
+    if (attributes.error_name === undefined) {
+      const { error, rest } = splitError(original);
+      if (error) {
+        attributes.error_name = error.name;
+        attributes.error_message = truncate(scrubText(error.message), LOG_CONFIG.maxArgChars);
+        if (error.stack) {
+          attributes.error_stack = truncate(scrubText(error.stack), LOG_CONFIG.maxStackChars);
+        }
+        if (rest === undefined) {
+          continue;
+        }
+        arg = rest;
       }
-      continue;
     }
     attributes[`arg_${index}`] = stringifyArg(arg);
     index += 1;
@@ -165,6 +212,58 @@ function describeArgs(args: readonly unknown[]): Record<string, string | number>
     attributes.args_omitted = args.length - LOG_CONFIG.maxArgs;
   }
   return attributes;
+}
+
+/**
+ * Turns a log's context (e.g. the active search query) into bounded, scrubbed attributes.
+ *
+ * @param context - The context the logger carried when the call was made, if any
+ * @returns One attribute per context entry; empty when there is no context
+ * @example
+ * ```typescript
+ * contextAttributes({ search_query: 'acetone' }); // { search_query: 'acetone' }
+ * contextAttributes(undefined);                   // {}
+ * ```
+ * @source
+ */
+function contextAttributes(context?: Readonly<Record<string, string>>): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(context ?? {}).map(([key, value]) => [
+      key,
+      truncate(scrubText(value), LOG_CONFIG.maxArgChars),
+    ]),
+  );
+}
+
+/** Matches a build-injected call location: `path:line` with an optional `#function`. */
+const LOCATION_PATTERN = /^(.+?):(\d+)(?:#(.+))?$/;
+
+/**
+ * Converts a call location recorded at build time into OpenTelemetry source attributes.
+ *
+ * @param location - `path:line#function` as injected by `tools/logCallSites.js`, if any
+ * @returns `code.filepath`, `code.lineno` and (when known) `code.function`; empty when the
+ * call wasn't instrumented or the value is malformed
+ * @example
+ * ```typescript
+ * locationAttributes('suppliers/SupplierBase.ts:1431#SupplierBase.fetch');
+ * // { 'code.filepath': 'suppliers/SupplierBase.ts', 'code.lineno': 1431,
+ * //   'code.function': 'SupplierBase.fetch' }
+ * locationAttributes(undefined); // {}
+ * ```
+ * @source
+ */
+function locationAttributes(location?: string): Record<string, string | number> {
+  const match = location === undefined ? null : LOCATION_PATTERN.exec(location);
+  if (!match) {
+    return {};
+  }
+  const [, filepath, line, fn] = match;
+  return {
+    'code.filepath': filepath,
+    'code.lineno': Number(line),
+    ...(fn ? { 'code.function': fn } : {}),
+  };
 }
 
 /**
@@ -196,13 +295,19 @@ function pageContext(): string {
  * @source
  */
 function toCaptureLog(record: RemoteLogRecord): CaptureLogOptions {
+  const traceId = record.context?.trace_id;
   return {
+    // The OpenTelemetry trace id lets PostHog group a search's logs; it is also kept as an
+    // attribute (below) so it's visible and filterable in the log details.
+    ...(isTraceId(traceId) ? { trace_id: traceId } : {}),
     body: truncate(scrubText(record.message), LOG_CONFIG.maxMessageChars),
     level: SEVERITY_BY_LEVEL[record.level],
     attributes: {
       logger: record.prefix,
       context: pageContext(),
       app_version: __APP_VERSION__,
+      ...contextAttributes(record.context),
+      ...locationAttributes(record.location),
       ...describeArgs(record.args),
     },
   };

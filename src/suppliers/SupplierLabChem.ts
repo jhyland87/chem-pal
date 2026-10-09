@@ -21,6 +21,7 @@ import {
 } from '@/utils/typeGuards/labchem';
 import { type JsonValue } from 'type-fest';
 import { SupplierBase } from './SupplierBase';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 /** ePages catalog-search endpoint (relative to `baseURL`). */
 const SEARCH_PATH = '/api/v2/search';
@@ -174,7 +175,7 @@ export class SupplierLabChem
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    this.logger.debug('queryProducts', { query, limit });
+    this.logger.debug('Starting product search', { query, limit });
     const catalog = (await this.loadCatalog()).filter((product) => product.isVisible !== false);
     if (catalog.length === 0) {
       this.logger.warn('LabChem: catalog is empty');
@@ -275,7 +276,10 @@ export class SupplierLabChem
       }
       return response;
     } catch (error: unknown) {
-      this.logger.warn('LabChem: catalog page request failed', { page, error });
+      this.logger.warn(`LabChem: catalog page request failed: ${getErrorMessage(error)}`, {
+        page,
+        error,
+      });
       return undefined;
     }
   }
@@ -293,7 +297,9 @@ export class SupplierLabChem
         return entry.products;
       }
     } catch (error: unknown) {
-      this.logger.warn('LabChem: failed to read catalog cache', { error });
+      this.logger.warn(`LabChem: failed to read catalog cache: ${getErrorMessage(error)}`, {
+        error,
+      });
     }
     return undefined;
   }
@@ -309,7 +315,9 @@ export class SupplierLabChem
       const entry: CatalogCacheEntry = { cachedAt: Date.now(), products };
       await cstorage.local.set({ [CACHE.LABCHEM_CATALOG]: entry });
     } catch (error: unknown) {
-      this.logger.warn('LabChem: failed to write catalog cache', { error });
+      this.logger.warn(`LabChem: failed to write catalog cache: ${getErrorMessage(error)}`, {
+        error,
+      });
     }
   }
 
@@ -514,7 +522,7 @@ export class SupplierLabChem
     try {
       return await this.httpGetJson({ path: url });
     } catch (error: unknown) {
-      this.logger.warn('LabChem: GET failed', { url, error });
+      this.logger.warn(`LabChem: GET failed: ${getErrorMessage(error)}`, { url, error });
       return undefined;
     }
   }

@@ -1,6 +1,6 @@
 import { CACHE } from '@/constants/common';
 import { HttpStatus } from '@/constants/httpStatus';
-import { HttpError } from '@/helpers/exceptions';
+import { HttpError, getErrorMessage } from '@/helpers/exceptions';
 import { parseQuantity } from '@/helpers/quantity';
 import { parseChemicalSpecs, parseGrade, parsePurity } from '@/helpers/science';
 import { mapDefined } from '@/helpers/utils';
@@ -142,7 +142,7 @@ export class SupplierChemsavers
       credentials: 'include',
     });
 
-    this.logger.debug('getHomePageReq:', { getHomePageReq });
+    this.logger.debug('Fetched home page for API key extraction', { getHomePageReq });
 
     const getHomePage = await getHomePageReq.text();
     if (!getHomePage) {
@@ -193,7 +193,7 @@ export class SupplierChemsavers
     }
 
     if (this.apiKey === apiKeyMatch.groups.apiKey) {
-      this.logger.info('API key is already rehydrated:', { apiKey: this.apiKey });
+      this.logger.debug('API key is already rehydrated', { apiKey: this.apiKey });
       return;
     }
 
@@ -234,7 +234,7 @@ export class SupplierChemsavers
       searchRequest = await this.searchTypesense(body);
     } catch (error) {
       if (!this.isUnauthorized(error)) {
-        this.logger.error('Error querying products:', error);
+        this.logger.error(`Error querying products: ${getErrorMessage(error)}`, { error });
         return;
       }
 
@@ -248,7 +248,7 @@ export class SupplierChemsavers
     }
 
     try {
-      this.logger.debug('Query response:', searchRequest);
+      this.logger.debug('Received search response', { searchRequest });
 
       assertValidSearchResponse(searchRequest);
 
@@ -259,16 +259,21 @@ export class SupplierChemsavers
         .map((hit) => hit.document)
         .filter((p) => p.inventory_tracking === 'none' || p.inventoryLevel > 0);
 
-      this.logger.debug('Mapped response objects:', products);
+      this.logger.debug('Mapped search hits to products', { products });
 
       const fuzzResults = this.fuzzyFilterAst<ChemsaversProductObject>(products);
 
-      this.logger.debug('fuzzResults:', { query, searchRequest, products, fuzzResults });
+      this.logger.debug('Applied fuzzy filter to products', {
+        query,
+        searchRequest,
+        products,
+        fuzzResults,
+      });
       const grouped = this.groupVariants<ChemsaversProductObject>(fuzzResults);
       // Initialize product builders from filtered results
       return this.initProductBuilders(grouped.slice(0, limit));
     } catch (error) {
-      this.logger.error('Error querying products:', error);
+      this.logger.error(`Error querying products: ${getErrorMessage(error)}`, { error });
       return;
     }
   }
@@ -329,7 +334,7 @@ export class SupplierChemsavers
         this.apiKey = key;
       }
     } catch (error) {
-      this.logger.warn('Failed to read stored API key', { error });
+      this.logger.warn(`Failed to read stored API key: ${getErrorMessage(error)}`, { error });
     }
   }
 
@@ -348,7 +353,7 @@ export class SupplierChemsavers
     try {
       await cstorage.local.set({ [CACHE.CHEMSAVERS_API_KEY]: key });
     } catch (error) {
-      this.logger.warn('Failed to persist API key', { error });
+      this.logger.warn(`Failed to persist API key: ${getErrorMessage(error)}`, { error });
     }
   }
 
@@ -366,7 +371,7 @@ export class SupplierChemsavers
     try {
       await cstorage.local.remove(CACHE.CHEMSAVERS_API_KEY);
     } catch (error) {
-      this.logger.warn('Failed to remove stored API key', { error });
+      this.logger.warn(`Failed to remove stored API key: ${getErrorMessage(error)}`, { error });
     }
   }
 

@@ -9,6 +9,7 @@
  */
 
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('advancedMode');
 
@@ -41,6 +42,6 @@ export async function playAdvancedModeSound(enabled: boolean): Promise<void> {
     audio.volume = VOLUME;
     await audio.play();
   } catch (error) {
-    logger.warn('Failed to play the advanced-mode sound', { error });
+    logger.warn(`Failed to play the advanced-mode sound: ${getErrorMessage(error)}`, { error });
   }
 }

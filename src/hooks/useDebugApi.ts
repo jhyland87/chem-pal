@@ -1,6 +1,7 @@
 import { IS_DEV_BUILD } from '@/utils/isDevBuild';
 import { useEffect } from 'react';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('useDebugApi');
 
@@ -35,7 +36,7 @@ export function useDebugApi(enabled: boolean): void {
         const { exposeDebugApi } = await import('@/utils/debugConsole');
         if (!cancelled) exposeDebugApi();
       } catch (error) {
-        logger.error('Failed to expose the debug helpers:', { error });
+        logger.error(`Failed to expose the debug helpers: ${getErrorMessage(error)}`, { error });
       }
     })();
 
@@ -46,7 +47,7 @@ export function useDebugApi(enabled: boolean): void {
           const { removeDebugApi } = await import('@/utils/debugConsole');
           removeDebugApi();
         } catch (error) {
-          logger.error('Failed to remove the debug helpers:', { error });
+          logger.error(`Failed to remove the debug helpers: ${getErrorMessage(error)}`, { error });
         }
       })();
     };

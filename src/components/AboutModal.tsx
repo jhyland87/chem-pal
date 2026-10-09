@@ -24,6 +24,7 @@ import {
   AboutModalLinkContainer,
 } from './StyledComponents';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('AboutModal');
 
@@ -78,7 +79,7 @@ export default function AboutModal({
           ),
         );
       } catch (error) {
-        logger.error('Failed to check for updates:', { error });
+        logger.error(`Failed to check for updates: ${getErrorMessage(error)}`, { error });
         setUpdateIcon(
           <SignalWifiConnectedNoInternet4Icon sx={{ fontSize: 16, color: 'error.main' }} />,
         );

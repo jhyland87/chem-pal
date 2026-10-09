@@ -4,6 +4,7 @@ import { resolveMolecule } from '@/utils/molecule/resolveMolecule';
 import { stripHydrogens, type Molecule } from '@/utils/molecule/sdf';
 import type { MoleculeSceneHandle } from '@/utils/molecule/scene';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('MoleculeSpinner');
 
@@ -193,7 +194,9 @@ export const MoleculeSpinner = memo(function MoleculeSpinner(props: MoleculeSpin
         // WebGL can be unavailable entirely (blocklisted GPU, too many live contexts,
         // a non-rendering test environment). Drop back to the caller's fallback rather
         // than leaving an empty canvas or an unhandled rejection.
-        logger.error('Could not render molecule; falling back:', error);
+        logger.error(`Could not render molecule; falling back: ${getErrorMessage(error)}`, {
+          error,
+        });
         if (cancelled) return;
         setSceneFailed(true);
         statusRef.current?.({ state: 'unavailable' });

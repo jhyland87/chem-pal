@@ -101,7 +101,7 @@ export function withTtlCache<Args extends unknown[], Result>(
         return entry.value;
       }
     } catch (error) {
-      logger.debug(`Cache read failed for "${storageKey}"; querying source`, error);
+      logger.debug(`Cache read failed for "${storageKey}"; querying source`, { error });
     }
 
     const result = await fn(...args);
@@ -111,7 +111,7 @@ export function withTtlCache<Args extends unknown[], Result>(
       try {
         await cstorage.local.set({ [storageKey]: { cachedAt: Date.now(), value: result } });
       } catch (error) {
-        logger.debug(`Cache write failed for "${storageKey}"`, error);
+        logger.debug(`Cache write failed for "${storageKey}"`, { error });
       }
     }
 

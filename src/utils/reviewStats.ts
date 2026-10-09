@@ -16,6 +16,7 @@
 import { CACHE } from '@/constants/common';
 import { cstorage } from '@/utils/storage';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('reviewStats');
 
@@ -102,7 +103,7 @@ export async function getReviewPromptState(): Promise<ReviewPromptState> {
     const stored = (await cstorage.local.get([CACHE.REVIEW_PROMPT]))[CACHE.REVIEW_PROMPT];
     return isRecord(stored) ? normalize(stored) : { ...DEFAULT_STATE };
   } catch (error) {
-    logger.error('Failed to read review-prompt state:', { error });
+    logger.error(`Failed to read review-prompt state: ${getErrorMessage(error)}`, { error });
     return { ...DEFAULT_STATE };
   }
 }

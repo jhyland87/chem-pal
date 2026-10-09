@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 
 import { i18n as i18nConfig } from '@/../config.json';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 /** A single translated message plus its optional positional placeholders. */
 interface MessageEntry {
@@ -195,7 +196,7 @@ export async function setLocale(locale: string): Promise<void> {
       messageTables[next] = await localeLoaders[next]();
     } catch (error) {
       // A locale that can't load leaves the UI in its current language.
-      logger.warn(`Failed to load locale "${next}":`, error);
+      logger.warn(`Failed to load locale "${next}": ${getErrorMessage(error)}`, { error });
       return;
     }
   }

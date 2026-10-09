@@ -11,6 +11,7 @@ import semverGt from 'semver/functions/gt';
 import semverLte from 'semver/functions/lte';
 import semverNeq from 'semver/functions/neq';
 import type { Migration } from './types';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('migrations');
 
@@ -198,7 +199,9 @@ export async function getMigrationStatus(): Promise<MigrationStatus> {
 export async function runMigrations(steps: Migration[]): Promise<void> {
   if (steps.length === 0) return;
   const db = await getMigrationDb();
-  logger.info('Running migrations', { steps: steps.map((s) => `${s.from} → ${s.to}`).join(', ') });
+  logger.info('Running pending cache migrations', {
+    steps: steps.map((s) => `${s.from} → ${s.to}`).join(', '),
+  });
   try {
     for (const migration of steps) {
       const _logger = logger.sub(`${migration.from} → ${migration.to}`);
@@ -208,7 +211,7 @@ export async function runMigrations(steps: Migration[]): Promise<void> {
         _logger.info('Migration step applied successfully');
         await setStoredAppVersion(migration.to);
       } catch (error) {
-        _logger.error('Migration step failed', {
+        _logger.error(`Migration step failed: ${getErrorMessage(error)}`, {
           error,
           reason: error instanceof Error ? error.message : 'Unknown error',
         });
@@ -216,7 +219,7 @@ export async function runMigrations(steps: Migration[]): Promise<void> {
       }
     }
   } catch (error) {
-    logger.error('Migrations failed', {
+    logger.error(`Migrations failed: ${getErrorMessage(error)}`, {
       error,
       reason: error instanceof Error ? error.message : 'Unknown error',
     });

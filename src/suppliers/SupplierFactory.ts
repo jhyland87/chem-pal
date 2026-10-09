@@ -1,5 +1,4 @@
 import { search } from '@/../config.json';
-import { SEARCH_ABORT_REASON } from '@/constants/common';
 import {
   supplierDisplayNames,
   supplierShippingMeta,
@@ -25,6 +24,12 @@ import { incrementParseError } from '@/utils/SupplierStatsStore';
 import { Queue } from 'async-await-queue';
 import * as suppliers from '.';
 import { SupplierBase } from './SupplierBase';
+import {
+  getErrorMessage,
+  isAbortError,
+  isExpectedAbort,
+  isRateLimited,
+} from '@/helpers/exceptions';
 
 /** Constructor signature for supplier classes used by the factory */
 type SupplierConstructor<P extends Product> = new (
@@ -32,41 +37,6 @@ type SupplierConstructor<P extends Product> = new (
   limit: number,
   controller: AbortController,
 ) => SupplierBase<unknown, P>;
-
-/**
- * True for an `AbortError` — a user-initiated stop or a search-budget timeout,
- * which is expected and must not be aggregated as a supplier failure.
- * @param error - The error thrown by a supplier's `execute()`.
- * @returns `true` when the error represents an abort.
- * @example
- * ```ts
- * isAbortError(new DOMException("stop", "AbortError")); // => true
- * ```
- * @source
- */
-function isAbortError(error: unknown): boolean {
-  return error instanceof Error && error.name === 'AbortError';
-}
-
-/**
- * True when a supplier stopped because the search was deliberately aborted. That covers an
- * `AbortError`, and the bare reason strings (`SEARCH_ABORT_REASON`) that a fetch rejects
- * with when `controller.abort(reason)` is given a string. Used only to choose a log level;
- * whether the error is aggregated as a failure is still decided by {@link isAbortError}.
- * @param error - The value a supplier's `execute()` threw.
- * @returns `true` when the error is an expected stop rather than a failure.
- * @example
- * ```ts
- * isExpectedAbort('user_aborted');                    // => true
- * isExpectedAbort(new DOMException('x', 'AbortError')); // => true
- * isExpectedAbort(new TypeError('bad response'));      // => false
- * ```
- * @source
- */
-function isExpectedAbort(error: unknown): boolean {
-  if (isAbortError(error)) return true;
-  return Object.values<string>(SEARCH_ABORT_REASON).includes(String(error));
-}
 
 /**
  * Options for constructing a {@link SupplierFactory}. `controller` is required; every other field
@@ -256,7 +226,8 @@ export class SupplierFactory<P extends Product> {
     } = options;
 
     this.logger = new Logger('SupplierFactory');
-    this.logger.debug('initialized', {
+    this.logger.setContext({ ...Logger.getContext(), search_query: query });
+    this.logger.debug('SupplierFactory initialized', {
       query,
       limit,
       controller,
@@ -424,10 +395,10 @@ export class SupplierFactory<P extends Product> {
             });
           }
           return { instance, granted };
-        } catch (e) {
-          this.logger.error('Permission check failed for supplier', {
+        } catch (error) {
+          this.logger.error(`Permission check failed for supplier: ${getErrorMessage(error)}`, {
             supplier: instance.supplierName,
-            error: e,
+            error: error,
           });
           return { instance, granted: false };
         }
@@ -529,7 +500,10 @@ export class SupplierFactory<P extends Product> {
           }
         }
       } catch (error) {
-        this.logger.warn('Failed to resolve identifier term; skipping', { term, error });
+        this.logger.warn(`Failed to resolve identifier term; skipping: ${getErrorMessage(error)}`, {
+          term,
+          error,
+        });
       }
     }
 
@@ -562,7 +536,7 @@ export class SupplierFactory<P extends Product> {
         if (this.disabledSuppliers.includes(supplierClassName)) return;
         if (!(this.suppliers.length === 0 || this.suppliers.includes(supplierClassName))) return;
 
-        this.logger.debug('Initializing supplier class:', supplierClassName);
+        this.logger.debug('Initializing supplier class', { supplierClassName });
         // Trusted static supplier classes; the union of concrete constructors
         // isn't structurally assignable to the generic SupplierConstructor<P>.
         const ConcreteSupplierClass = supplierClass as unknown as SupplierConstructor<P>;
@@ -597,6 +571,7 @@ export class SupplierFactory<P extends Product> {
 
     const tasks = permittedInstances.map((supplier) =>
       queue.run(async () => {
+        this.logger.trace('Starting supplier', { supplier: supplier.supplierName });
         try {
           for await (const product of supplier.execute()) {
             const filtered = this.applyRestrictionFilter(product);
@@ -680,6 +655,7 @@ export class SupplierFactory<P extends Product> {
 
     permittedInstances.forEach((supplier) => {
       queue.run(async () => {
+        this.logger.trace('Starting supplier', { supplier: supplier.supplierName });
         try {
           const iterator = supplier.execute();
           for await (const product of iterator) {
@@ -727,12 +703,25 @@ export class SupplierFactory<P extends Product> {
    * @source
    */
   private logSupplierFailure(error: unknown, supplier: SupplierBase<unknown, P>): void {
-    const detail = { error, supplier: supplier.supplierName };
+    const supplierName = supplier.supplierName;
     if (isExpectedAbort(error)) {
-      this.logger.debug('Supplier stopped by abort', detail);
+      this.logger.debug(`Supplier stopped by abort: ${getErrorMessage(error)}`, {
+        error,
+        supplier: supplierName,
+      });
       return;
     }
-    this.logger.error('Error executing supplier', detail);
+    if (isRateLimited(error)) {
+      this.logger.warn(`Supplier is rate limiting: ${getErrorMessage(error)}`, {
+        error,
+        supplier: supplierName,
+      });
+      return;
+    }
+    this.logger.error(`Error executing supplier: ${getErrorMessage(error)}`, {
+      error,
+      supplier: supplierName,
+    });
   }
 
   /**

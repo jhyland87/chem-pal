@@ -7,6 +7,7 @@ import { addActualValueToIssues } from '@/helpers/utils';
 import { Logger, REMOTE_LOG_LEVELS } from '@/utils/Logger';
 //import { currencies } from "price-parser";
 import * as v from 'valibot';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('typeGuards.common');
 
@@ -320,7 +321,10 @@ export function checkMissingMinimalProductFields(product: unknown): string[] {
     [],
   );
   if (result.length > 0) {
-    logger.warn('checkMissingMinimalProductFields| Results for product is', { product, result });
+    logger.warn('checkMissingMinimalProductFields| Product is missing required fields', {
+      product,
+      result,
+    });
   }
   return result;
 }
@@ -378,7 +382,10 @@ export function isMinimalProduct(product: unknown): product is RequiredProductFi
     }
     return true;
   } catch (error) {
-    logger.warn('isMinimalProduct| The product is invalid', { product, error });
+    logger.warn(`isMinimalProduct| The product is invalid: ${getErrorMessage(error)}`, {
+      product,
+      error,
+    });
     return false;
   }
 }
@@ -439,7 +446,10 @@ export function checkCompleteProductFields(product: unknown): string[] {
     [],
   );
   if (result.length > 0) {
-    logger.warn('checkCompleteProductFields| Results for product is', { product, result });
+    logger.warn('checkCompleteProductFields| Product has missing or invalid fields', {
+      product,
+      result,
+    });
   }
   return result;
 }
@@ -520,7 +530,7 @@ export function isProduct(product: unknown): product is Product {
     assertCompleteProductFields(product);
     return true;
   } catch (error) {
-    logger.warn('isProduct| The product is invalid', { product, error });
+    logger.warn(`isProduct| The product is invalid: ${getErrorMessage(error)}`, { product, error });
     return false;
   }
 }

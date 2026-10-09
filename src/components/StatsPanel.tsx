@@ -36,6 +36,7 @@ import { FC, ReactNode, useEffect, useMemo, useState } from 'react';
 import styles from './StatsPanel.module.scss';
 import { BackButton } from './StyledComponents';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('StatsPanel');
 
@@ -103,7 +104,7 @@ const StatsPanel: FC = () => {
         const data = await getStats();
         setStats(data);
       } catch (error) {
-        logger.warn('Failed to load supplier stats:', error);
+        logger.warn(`Failed to load supplier stats: ${getErrorMessage(error)}`, { error });
       }
     };
     loadStats();
@@ -118,7 +119,7 @@ const StatsPanel: FC = () => {
       await clearStats();
       setStats({});
     } catch (error) {
-      logger.warn('Failed to clear supplier stats:', error);
+      logger.warn(`Failed to clear supplier stats: ${getErrorMessage(error)}`, { error });
     }
   };
 

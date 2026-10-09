@@ -32,6 +32,7 @@ import { dump as yamlDump } from 'js-yaml';
 import { useEffect, useRef, useState } from 'react';
 import styles from './ContextMenu.module.scss';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('ContextMenu');
 
@@ -267,8 +268,8 @@ export default function ContextMenu({
     try {
       await navigator.clipboard.writeText(product.title || 'Unknown Product');
       logger.debug('Product title copied to clipboard');
-    } catch (err) {
-      logger.error('Failed to copy product title:', err);
+    } catch (error) {
+      logger.error(`Failed to copy product title: ${getErrorMessage(error)}`, { error });
     }
     onClose();
   };
@@ -283,8 +284,8 @@ export default function ContextMenu({
       try {
         await navigator.clipboard.writeText(openUrl);
         logger.debug('Product URL copied to clipboard');
-      } catch (err) {
-        logger.error('Failed to copy product URL:', err);
+      } catch (error) {
+        logger.error(`Failed to copy product URL: ${getErrorMessage(error)}`, { error });
       }
     }
     onClose();
@@ -396,7 +397,7 @@ export default function ContextMenu({
         flashStatusText(i18n('bookmark_created', [FOLDER_NAME]));
       }
     } catch (error) {
-      logger.error('Failed to create bookmark:', { error, product });
+      logger.error(`Failed to create bookmark: ${getErrorMessage(error)}`, { error, product });
     }
 
     onClose();
@@ -416,7 +417,9 @@ export default function ContextMenu({
           url: openUrl,
         });
       } catch (error) {
-        logger.error('Share failed, falling back to clipboard', { error });
+        logger.error(`Share failed, falling back to clipboard: ${getErrorMessage(error)}`, {
+          error,
+        });
         await handleCopyUrl();
       }
     } else {
@@ -459,7 +462,7 @@ export default function ContextMenu({
     try {
       await onExcludeProduct?.(product);
     } catch (error) {
-      logger.warn('Failed to ignore product:', { error });
+      logger.warn(`Failed to ignore product: ${getErrorMessage(error)}`, { error });
     }
     onClose();
   };
@@ -484,7 +487,10 @@ export default function ContextMenu({
       await deleteSupplierProductDataCacheEntry(cacheKey);
       flashStatusText(i18n('context_menu_removed_from_cache', [product.title]));
     } catch (error) {
-      logger.error('Failed to remove product from cache:', { error, product });
+      logger.error(`Failed to remove product from cache: ${getErrorMessage(error)}`, {
+        error,
+        product,
+      });
     }
 
     onClose();
@@ -498,7 +504,11 @@ export default function ContextMenu({
       await navigator.clipboard.writeText(productInfo);
       logger.debug('JSON product info copied to clipboard', { productInfoObj, productInfo });
     } catch (error) {
-      logger.error('Failed to copy JSON product info', { productInfoObj, productInfo, error });
+      logger.error(`Failed to copy JSON product info: ${getErrorMessage(error)}`, {
+        productInfoObj,
+        productInfo,
+        error,
+      });
     }
     onClose();
   };
@@ -519,7 +529,11 @@ export default function ContextMenu({
         productInfoObj,
       });
     } catch (error) {
-      logger.error('Failed to copy YAML product info', { productInfoObj, productInfo, error });
+      logger.error(`Failed to copy YAML product info: ${getErrorMessage(error)}`, {
+        productInfoObj,
+        productInfo,
+        error,
+      });
     }
     onClose();
   };
@@ -605,7 +619,7 @@ export default function ContextMenu({
       downloadBlob(blob, filename);
       flashStatusText(i18n('export_success', [String(groups.length)]));
     } catch (error) {
-      logger.error('Failed to export results', { error });
+      logger.error(`Failed to export results: ${getErrorMessage(error)}`, { error });
       flashStatusText(i18n('export_failed'));
     }
     onClose();

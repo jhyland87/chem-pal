@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import semverValid from 'semver/functions/valid';
 import semverGt from 'semver/functions/gt';
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('useJustUpdated');
 
@@ -85,7 +86,9 @@ export function useJustUpdated(): UseJustUpdated {
 
         setNotice({ version: to, previousVersion: from, notes });
       } catch (error) {
-        logger.error('Failed to check for a just-installed update:', { error });
+        logger.error(`Failed to check for a just-installed update: ${getErrorMessage(error)}`, {
+          error,
+        });
       }
     };
 
