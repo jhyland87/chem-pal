@@ -19,9 +19,6 @@ export class SupplierLaballey extends SupplierBaseSearchanise implements ISuppli
   // The country code of the supplier.
   public static readonly country: CountryCode = 'US';
 
-  // API key for Typesense search API
-  protected apiKey: string = '8B7o0X1o7c';
-
   // The payment methods accepted by the supplier.
   public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 

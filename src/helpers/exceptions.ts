@@ -26,6 +26,7 @@ export class EmptyResponseError extends Error {
  * @category Exceptions
  * @param status - The HTTP status code (e.g. 403)
  * @param statusText - The HTTP status text (e.g. "Forbidden")
+ * @param body - The (truncated) response body, when it could be read
  * @returns The HttpError instance
  * @example
  * ```typescript
@@ -35,6 +36,9 @@ export class EmptyResponseError extends Error {
  *   if (error instanceof HttpError && error.status === 403) {
  *     // retry the request
  *   }
+ *   if (error instanceof HttpError && error.body?.includes('INVALID_API_KEY')) {
+ *     // the API told us why it refused the request
+ *   }
  * }
  * ```
  * @source
@@ -42,11 +46,13 @@ export class EmptyResponseError extends Error {
 export class HttpError extends Error {
   public readonly status: number;
   public readonly statusText: string;
-  constructor(status: number, statusText: string) {
+  public readonly body?: string;
+  constructor(status: number, statusText: string, body?: string) {
     super(statusText ? `HTTP Error: ${status} ${statusText}` : `HTTP Error: ${status}`);
     this.name = 'HttpError';
     this.status = status;
     this.statusText = statusText;
+    this.body = body;
   }
 }
 

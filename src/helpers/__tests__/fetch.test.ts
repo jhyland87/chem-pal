@@ -1,3 +1,4 @@
+import { HttpError } from '@/helpers/exceptions';
 import { fetchDecorator, generateRequestHash, generateSimpleHash } from '@/helpers/fetch';
 import type { Mock } from 'vitest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -155,6 +156,56 @@ describe('fetchDecorator', () => {
     await expect(fetchDecorator('https://api.example.com/data')).rejects.toThrow(
       'HTTP Error: 404 Not Found',
     );
+  });
+
+  it('should attach the response body to the HttpError', async () => {
+    const mockResponse = {
+      ok: false,
+      status: 400,
+      statusText: 'Bad Request',
+      headers: new Headers(),
+      text: () => Promise.resolve('INVALID_API_KEY'),
+      clone: () => mockResponse,
+    };
+
+    (global.fetch as Mock).mockResolvedValueOnce(mockResponse);
+
+    const error = await fetchDecorator('https://api.example.com/data').catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(HttpError);
+    expect(error).toMatchObject({ status: 400, body: 'INVALID_API_KEY' });
+  });
+
+  it('should truncate very long HttpError bodies', async () => {
+    const mockResponse = {
+      ok: false,
+      status: 500,
+      statusText: 'Server Error',
+      headers: new Headers(),
+      text: () => Promise.resolve('x'.repeat(5000)),
+      clone: () => mockResponse,
+    };
+
+    (global.fetch as Mock).mockResolvedValueOnce(mockResponse);
+
+    const error = await fetchDecorator('https://api.example.com/data').catch((e: unknown) => e);
+    expect((error as HttpError).body).toHaveLength(1000);
+  });
+
+  it('should leave the HttpError body undefined when it cannot be read', async () => {
+    const mockResponse = {
+      ok: false,
+      status: 502,
+      statusText: 'Bad Gateway',
+      headers: new Headers(),
+      text: () => Promise.reject(new Error('stream closed')),
+      clone: () => mockResponse,
+    };
+
+    (global.fetch as Mock).mockResolvedValueOnce(mockResponse);
+
+    const error = await fetchDecorator('https://api.example.com/data').catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(HttpError);
+    expect((error as HttpError).body).toBeUndefined();
   });
 
   it('should handle fetch errors', async () => {

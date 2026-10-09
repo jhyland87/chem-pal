@@ -17,6 +17,28 @@ if (typeof __RESPONSE_AGGREGATE__ !== 'undefined' && __RESPONSE_AGGREGATE__) {
   initConsoleApi();
 }
 
+/** Maximum number of characters of an error response body kept on an {@link HttpError}. */
+const MAX_ERROR_BODY_LENGTH = 1000;
+
+/**
+ * Reads the text of a failed response so callers can see why the server refused the request.
+ * @param response - The non-OK response (a clone, so the original stays readable)
+ * @returns The body truncated to `MAX_ERROR_BODY_LENGTH` characters, or `undefined` if unreadable
+ * @example
+ * ```typescript
+ * await readErrorBody(new Response('INVALID_API_KEY', { status: 400 })); // 'INVALID_API_KEY'
+ * ```
+ * @source
+ */
+async function readErrorBody(response: Response): Promise<string | undefined> {
+  try {
+    const text = await response.clone().text();
+    return text.slice(0, MAX_ERROR_BODY_LENGTH);
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * Generates a simple hash from a string using the djb2 algorithm.
  * This is a non-cryptographic hash function suitable for request identification.
@@ -178,7 +200,11 @@ export async function fetchDecorator(
     if (aggregateRequestClone && aggregateResponseClone) {
       await addCapturedResponse(aggregateRequestClone, aggregateResponseClone);
     }
-    throw new HttpError(clonedResponse.status, clonedResponse.statusText);
+    throw new HttpError(
+      clonedResponse.status,
+      clonedResponse.statusText,
+      await readErrorBody(clonedResponse),
+    );
   }
 
   const contentType = clonedResponse.headers.get('content-type') || '';

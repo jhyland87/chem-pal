@@ -38,9 +38,6 @@ export class SupplierAsesChem2 extends SupplierBaseSearchanise implements ISuppl
     currencySymbol: '₹',
   };
 
-  // API key for Typesense search API
-  protected apiKey: string = '0B7C9N9u3h';
-
   // Base search parameters for Typesense search API
   protected baseSearchParams: QueryParams = {
     tab: 'products',

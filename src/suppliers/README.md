@@ -104,7 +104,7 @@ subclass is usually just identity fields — the difference between a 35-line fi
 | --- | --- | --- |
 | `cdn.shopify.com`, `*.myshopify.com`, `/products.json` | `SupplierBaseShopify` | identity + `apiURL` |
 | `/wp-json/wc/`, WooCommerce markup | `SupplierBaseWoocommerce` | identity |
-| `searchserverapi.com` requests | `SupplierBaseSearchanise` | identity + API key |
+| `searchserverapi.com` requests | `SupplierBaseSearchanise` | identity (the API key is scraped from the homepage and cached) |
 | `wixstatic.com`, `_api/wix-ecommerce` | `SupplierBaseWix` | identity |
 | `/rest/V1/` or `/graphql`, Magento markup | `SupplierBaseMagento2` | identity |
 | Amazon storefront | `SupplierBaseAmazon` | identity + storefront id |

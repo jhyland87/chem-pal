@@ -338,10 +338,10 @@ declare global {
 
     /**
      * Name of the product vendor or manufacturer.
-     * Used for filtering and display.
+     * Used for filtering and display. Absent on some storefronts.
      * @example "ChemSupplier Inc."
      */
-    vendor: string;
+    vendor?: string;
 
     /**
      * Discount information for the product.
@@ -375,7 +375,7 @@ declare global {
      * Array of product variants.
      * Contains detailed variant information.
      */
-    shopify_variants: SearchaniseProductVariant[];
+    shopify_variants?: SearchaniseProductVariant[];
 
     /**
      * Array of product image URLs.
@@ -672,6 +672,29 @@ declare global {
       /** Additional dynamic option key-value pairs */
       [key: string]: unknown;
     };
+  }
+
+  /** A Searchanise engine API key: 10 alphanumeric characters (e.g. `4p4M0R6q0N`). */
+  type SearchaniseApiKey = string;
+
+  /**
+   * The subset of a storefront's `window.Searchanise` object that ChemPal reads.
+   * - `host` - The Searchanise API origin the storefront uses (e.g. `https://searchserverapi1.com`).
+   * - `api_key` - The storefront's engine API key.
+   */
+  interface SearchaniseApiObject {
+    host: string;
+    api_key: SearchaniseApiKey;
+  }
+
+  /**
+   * The Searchanise credentials ChemPal caches per supplier.
+   * - `apiKey` - The storefront's engine API key.
+   * - `host` - The API hostname (no scheme) requests are sent to; always an allow-listed host.
+   */
+  interface SearchaniseCredentials {
+    apiKey: SearchaniseApiKey;
+    host: string;
   }
 }
 

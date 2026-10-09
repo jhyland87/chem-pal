@@ -31,6 +31,9 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 - Alliance Chemical results now appear. Its website was missing from the extension's list of
   permitted sites, so the supplier was silently skipped on every search.
+- Laballey results now appear again. Its search service had replaced the access key ChemPal used,
+  so searches came back empty. ChemPal now looks the key up from the Laballey site itself and
+  refreshes it automatically if it changes again.
 
 ## [1.16.0] - 2026-10-07
 

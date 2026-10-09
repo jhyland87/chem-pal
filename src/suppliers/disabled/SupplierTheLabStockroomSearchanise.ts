@@ -39,9 +39,6 @@ export class SupplierTheLabStockroomSearchanise
   // getProductData is a passthrough, so there's no per-product detail to cache.
   protected readonly skipProductDetailCache: boolean = true;
 
-  // API key for Typesense search API
-  protected apiKey: string = '2H3i9C5v0m';
-
   // Base search parameters for Typesense search API
   protected baseSearchParams: QueryParams = {
     tab: 'products',

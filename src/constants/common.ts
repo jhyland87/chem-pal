@@ -105,6 +105,22 @@ export const APP_ACTION = {
 export type AppActionType = (typeof APP_ACTION)[keyof typeof APP_ACTION];
 
 /**
+ * Searchanise API hosts a storefront may point at. A scraped host is only used if it is listed here
+ * (and in `host_permissions`), since it comes from a third-party page.
+ * @source
+ */
+export const SEARCHANISE_API_HOSTS: readonly string[] = [
+  'searchserverapi.com',
+  'searchserverapi1.com',
+];
+
+/**
+ * Searchanise API host used until (or unless) a storefront names an allow-listed one.
+ * @source
+ */
+export const SEARCHANISE_DEFAULT_API_HOST = 'searchserverapi.com';
+
+/**
  * Keys used for storing and retrieving data in chrome.storage.session.
  * @source
  */
@@ -129,6 +145,8 @@ export const CACHE = {
   BOOKMARKS_FOLDER_ID: 'bookmarks_folder_id',
   /** Rehydrated Chemsavers Typesense API key (overrides the hardcoded default when present) */
   CHEMSAVERS_API_KEY: 'chemsavers_api_key',
+  /** Scraped Searchanise `{ apiKey, host }`, stored per supplier as `<prefix>:<supplierName>` */
+  SEARCHANISE_CREDENTIALS: 'searchanise_credentials',
   /** LabChem full product catalog snapshot, cached for 24h (empty-query search) */
   LABCHEM_CATALOG: 'labchem_catalog',
   /** UI-owned update bookkeeping: GitHub poll throttle and per-version dismissal */

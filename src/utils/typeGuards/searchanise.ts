@@ -1,3 +1,4 @@
+import { SEARCHANISE_API_HOSTS } from '@/constants/common';
 import * as v from 'valibot';
 
 const validSearchResponseSchema = v.object({
@@ -103,8 +104,9 @@ const itemListingSchema = v.object({
   product_id: v.string(),
   product_code: v.string(),
   quantity: v.string(),
-  shopify_variants: v.array(searchaniseVariantSchema),
-  vendor: v.string(),
+  // Absent on non-Shopify storefronts (e.g. Laballey's Magento catalog).
+  shopify_variants: v.optional(v.array(searchaniseVariantSchema)),
+  vendor: v.optional(v.string()),
   original_product_id: v.string(),
   list_price: v.string(),
 });
@@ -151,4 +153,57 @@ const itemListingSchema = v.object({
  */
 export function isItemListing(item: unknown): item is ItemListing {
   return v.safeParse(itemListingSchema, item).success;
+}
+
+const searchaniseApiObjectSchema = v.object({
+  host: v.pipe(v.string(), v.minLength(1)),
+  api_key: v.pipe(v.string(), v.regex(/^[A-Za-z0-9]{10}$/)),
+});
+
+/**
+ * Type guard for the `window.Searchanise` object that Searchanise-powered storefronts embed in
+ * their pages. Requires a non-empty `host` string and a 10-character alphanumeric `api_key`;
+ * other fields are ignored.
+ * @category Typeguards
+ * @group Suppliers
+ * @param data - The value to validate (typically parsed from the storefront's homepage)
+ * @returns Type predicate indicating whether the value carries a usable `host` and `api_key`
+ * @example
+ * ```typescript
+ * isValidSearchaniseApiObject({ host: 'https://searchserverapi1.com', api_key: '4p4M0R6q0N' });
+ * // true
+ * isValidSearchaniseApiObject({ host: 'https://searchserverapi1.com', api_key: 'short' });
+ * // false
+ * ```
+ * @source
+ */
+export function isValidSearchaniseApiObject(data: unknown): data is SearchaniseApiObject {
+  return v.safeParse(searchaniseApiObjectSchema, data).success;
+}
+
+const searchaniseCredentialsSchema = v.object({
+  apiKey: v.pipe(v.string(), v.regex(/^[A-Za-z0-9]{10}$/)),
+  host: v.pipe(
+    v.string(),
+    v.check((host) => SEARCHANISE_API_HOSTS.includes(host)),
+  ),
+});
+
+/**
+ * Type guard for cached Searchanise credentials. Requires a 10-character alphanumeric `apiKey`
+ * and a `host` on the Searchanise API allow-list, so a corrupted or tampered stored record is
+ * never used to send requests.
+ * @category Typeguards
+ * @group Suppliers
+ * @param data - The value to validate (typically read back from extension storage)
+ * @returns Type predicate indicating whether the value is usable credentials
+ * @example
+ * ```typescript
+ * isSearchaniseCredentials({ apiKey: '4p4M0R6q0N', host: 'searchserverapi1.com' }); // true
+ * isSearchaniseCredentials({ apiKey: '4p4M0R6q0N', host: 'evil.example.com' });     // false
+ * ```
+ * @source
+ */
+export function isSearchaniseCredentials(data: unknown): data is SearchaniseCredentials {
+  return v.safeParse(searchaniseCredentialsSchema, data).success;
 }

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { isItemListing, isSearchaniseVariant, isValidSearchResponse } from '../searchanise';
+import {
+  isItemListing,
+  isSearchaniseCredentials,
+  isSearchaniseVariant,
+  isValidSearchaniseApiObject,
+  isValidSearchResponse,
+} from '../searchanise';
 
 describe('Searchanise TypeGuards', () => {
   describe('isValidSearchResponse', () => {
@@ -194,10 +200,34 @@ describe('Searchanise TypeGuards', () => {
       const missingTitle = { ...validItem };
       delete (missingTitle as any).title;
       expect(isItemListing(missingTitle)).toBe(false);
+    });
 
-      const missingVariants = { ...validItem };
-      delete (missingVariants as any).shopify_variants;
-      expect(isItemListing(missingVariants)).toBe(false);
+    it('accepts items without vendor or shopify_variants (non-Shopify storefronts)', () => {
+      // Shape of a live Laballey item.
+      const laballeyItem = {
+        product_id: '10741',
+        original_product_id: '10741',
+        title: 'Sulfuric Acid 5% Solution',
+        description: '',
+        link: 'https://www.laballey.com/products/sulfuric-acid-5',
+        price: '55.1700',
+        list_price: '604.0600',
+        quantity: '1',
+        product_code: 'SUAL5',
+        image_link: 'https://www.laballey.com/media/catalog/product/s/u/sulfuric.jpg',
+        cas: '7664-93-9',
+        molecular_formula: 'H2SO4',
+      };
+      expect(isItemListing(laballeyItem)).toBe(true);
+      expect(
+        isValidSearchResponse({
+          totalItems: 1,
+          startIndex: 0,
+          itemsPerPage: 16,
+          currentItemCount: 1,
+          items: [laballeyItem],
+        }),
+      ).toBe(true);
     });
 
     it('should return false for wrong property types', () => {
@@ -229,6 +259,77 @@ describe('Searchanise TypeGuards', () => {
         ],
       };
       expect(isItemListing(invalidVariants)).toBe(false);
+    });
+  });
+
+  describe('isValidSearchaniseApiObject', () => {
+    // Shape of `window.Searchanise` on a live storefront.
+    const validObject = {
+      host: 'https://searchserverapi1.com',
+      api_key: '4p4M0R6q0N',
+      SearchInput: '#search,form input[name="q"]',
+      options: { ResultsDiv: '#snize_results' },
+      forceUseExternalJQuery: true,
+    };
+
+    it('accepts a real-shaped object, including extra fields', () => {
+      expect(isValidSearchaniseApiObject(validObject)).toBe(true);
+    });
+
+    it.each([
+      ['a bare host name', { ...validObject, host: 'searchserverapi.com' }],
+      ['a different host', { ...validObject, host: 'https://searchserverapi.com' }],
+    ])('does not constrain the host (%s)', (_label, data) => {
+      expect(isValidSearchaniseApiObject(data)).toBe(true);
+    });
+
+    it.each([
+      ['too short', '4p4M0R6q0'],
+      ['too long', '4p4M0R6q0NX'],
+      ['non-alphanumeric', '4p4M0R6q0-'],
+      ['empty', ''],
+      ['a number', 4040404040],
+      ['undefined', undefined],
+    ])('rejects an api_key that is %s', (_label, api_key) => {
+      expect(isValidSearchaniseApiObject({ ...validObject, api_key })).toBe(false);
+    });
+
+    it.each([
+      ['missing', undefined],
+      ['empty', ''],
+      ['not a string', 42],
+    ])('rejects a host that is %s', (_label, host) => {
+      expect(isValidSearchaniseApiObject({ ...validObject, host })).toBe(false);
+    });
+
+    it.each([null, undefined, 'string', 42, [], {}])('rejects %j', (data) => {
+      expect(isValidSearchaniseApiObject(data)).toBe(false);
+    });
+  });
+
+  describe('isSearchaniseCredentials', () => {
+    const valid = { apiKey: '4p4M0R6q0N', host: 'searchserverapi1.com' };
+
+    it.each(['searchserverapi.com', 'searchserverapi1.com'])(
+      'accepts allow-listed host %s',
+      (host) => {
+        expect(isSearchaniseCredentials({ ...valid, host })).toBe(true);
+      },
+    );
+
+    it.each([
+      ['an unknown host', { ...valid, host: 'evil.example.com' }],
+      ['a host with a scheme', { ...valid, host: 'https://searchserverapi.com' }],
+      ['a short key', { ...valid, apiKey: 'abc' }],
+      ['a missing key', { host: valid.host }],
+      ['a missing host', { apiKey: valid.apiKey }],
+      ['the scraped-page shape', { api_key: valid.apiKey, host: valid.host }],
+    ])('rejects %s', (_label, data) => {
+      expect(isSearchaniseCredentials(data)).toBe(false);
+    });
+
+    it.each([null, undefined, 'string', 42, []])('rejects %j', (data) => {
+      expect(isSearchaniseCredentials(data)).toBe(false);
     });
   });
 });
