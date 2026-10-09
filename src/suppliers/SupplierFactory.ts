@@ -580,8 +580,7 @@ export class SupplierFactory<P extends Product> {
             }
           }
         } catch (e) {
-          this.logSupplierFailure(e, supplier);
-          incrementParseError(supplier.supplierName);
+          this.recordSupplierFailure(e, supplier);
           if (!isAbortError(e)) errors.push({ error: e, supplier });
         } finally {
           this.suppliersCompleted++;
@@ -665,8 +664,7 @@ export class SupplierFactory<P extends Product> {
             }
           }
         } catch (e) {
-          this.logSupplierFailure(e, supplier);
-          incrementParseError(supplier.supplierName);
+          this.recordSupplierFailure(e, supplier);
           if (!isAbortError(e)) errors.push({ error: e, supplier });
         } finally {
           doneCount++;
@@ -687,6 +685,26 @@ export class SupplierFactory<P extends Product> {
     // All suppliers have settled; partial results were already streamed, so record
     // (rather than throw) any failures as one AggregateError for bug reports.
     this.reportExecutionErrors(errors);
+  }
+
+  /**
+   * Records a supplier's failed `execute()`: logs it and counts it as a parse error in the supplier
+   * stats. A deliberate stop (the user pressing Stop, the time budget elapsing) is logged but not
+   * counted, since it isn't a fault of the supplier.
+   * @param error - The value the supplier threw.
+   * @param supplier - The supplier that threw it.
+   * @example
+   * ```ts
+   * this.recordSupplierFailure(new TypeError('bad'), supplier); // logged and counted
+   * this.recordSupplierFailure('user_aborted', supplier);       // logged only
+   * ```
+   * @source
+   */
+  private recordSupplierFailure(error: unknown, supplier: SupplierBase<unknown, P>): void {
+    this.logSupplierFailure(error, supplier);
+    if (!isExpectedAbort(error)) {
+      incrementParseError(supplier.supplierName);
+    }
   }
 
   /**

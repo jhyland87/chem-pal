@@ -664,6 +664,13 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   protected noCacheStatusCodes: number[] = [HttpStatus.TOO_MANY_REQUESTS];
 
   /**
+   * How many requests this supplier answered `429 Too Many Requests` during this search. Only the
+   * first is logged as a warning (see {@link noteRateLimited}); the total is reported once when
+   * the supplier finishes, instead of one warning per request.
+   */
+  private rateLimitedRequests = 0;
+
+  /**
    * Maps a product's fetch key (permalink, falling back to its processing URL) to the HTTP
    * status of its last failed detail fetch. Populated by subclasses via {@link recordFetchFailure}
    * and consulted by {@link shouldCacheProductData}. Per-search, since the factory builds a fresh
@@ -1126,7 +1133,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
         this.logger.debug('Request was aborted', { reason: this.controller.signal.reason });
         this.controller.abort('Abort signal detected');
       } else if (isRateLimited(error)) {
-        this.logger.warn(`Rate limited during fetch: ${getErrorMessage(error)}`, { error });
+        this.noteRateLimited(error);
       } else {
         this.logger.error(`Error received during fetch: ${getErrorMessage(error)}`, { error });
       }
@@ -1491,7 +1498,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
         return;
       }
       if (isRateLimited(error)) {
-        this.logger.warn(`Rate limited during fetch: ${getErrorMessage(error)}`, { error });
+        this.noteRateLimited(error);
       } else {
         this.logger.error(`Error received during fetch: ${getErrorMessage(error)}`, { error });
       }
@@ -2391,13 +2398,19 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
               const finished = builder ? await this.finishProduct(builder) : undefined;
               return { index, finished };
             } catch (error: unknown) {
+              if (isExpectedAbort(error)) {
+                // A stopped search isn't a failure of this supplier, so it isn't counted as one.
+                this.logger.debug(`Product processing aborted: ${getErrorMessage(error)}`, {
+                  error,
+                });
+                return { index, finished: undefined };
+              }
               if (isRateLimited(error)) {
-                // The supplier is throttling us, so this product just lacks its details.
-                this.logger.warn(
+                // The supplier is throttling us, so this product just lacks its details. The throttling
+                // itself is reported once per search (see noteRateLimited and the summary in execute).
+                this.logger.debug(
                   `Product skipped, supplier is rate limiting: ${getErrorMessage(error)}`,
-                  {
-                    error,
-                  },
+                  { error },
                 );
               } else {
                 this.logger.error(`Error processing product: ${getErrorMessage(error)}`, {
@@ -2446,7 +2459,35 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       if (timeoutHandle !== undefined) {
         clearTimeout(timeoutHandle);
       }
+      if (this.rateLimitedRequests > 1) {
+        this.logger.warn(`Supplier rate limited ${this.rateLimitedRequests} requests`, {
+          supplier: this.supplierName,
+          rateLimitedRequests: this.rateLimitedRequests,
+        });
+      }
     }
+  }
+
+  /**
+   * Counts a request the supplier answered with `429 Too Many Requests`. The first one in a search
+   * is logged as a warning so the throttling is visible; the rest are logged at `debug`, and
+   * {@link execute} reports the total once the supplier finishes.
+   * @param error - The `HttpError` thrown for the 429 response
+   * @example
+   * ```typescript
+   * this.noteRateLimited(new HttpError(429, 'Too Many Requests')); // first: warn
+   * this.noteRateLimited(new HttpError(429, 'Too Many Requests')); // later: debug
+   * ```
+   * @source
+   */
+  private noteRateLimited(error: unknown): void {
+    this.rateLimitedRequests += 1;
+    const message = `Rate limited during fetch: ${getErrorMessage(error)}`;
+    if (this.rateLimitedRequests === 1) {
+      this.logger.warn(message, { error });
+      return;
+    }
+    this.logger.debug(message, { error });
   }
 
   /**
@@ -2587,7 +2628,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    */
   protected async finishProduct(product: ProductBuilder<T>): Promise<Maybe<T>> {
     if (!isMinimalProduct(product.dump())) {
-      this.logger.warn('Unable to finish product - Minimum data not set', { product });
+      this.logger.debug('Unable to finish product - Minimum data not set', { product });
       return;
     }
 
@@ -2912,8 +2953,8 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
             `[SupplierBase > getProductData] Error in product detail fetcher: ${getErrorMessage(error)}`,
             { error },
           );
+          incrementParseError(this.supplierName);
         }
-        incrementParseError(this.supplierName);
         return undefined;
       }
       // Don't cache data gathered after the search was aborted (e.g. supplierSearchTimeBudgetSec): the
@@ -3014,8 +3055,8 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
             `[SupplierBase > getProductDataWithCache] Error in product detail fetcher: ${getErrorMessage(error)}`,
             { error },
           );
+          incrementParseError(this.supplierName);
         }
-        incrementParseError(this.supplierName);
         return undefined;
       }
       if (resultBuilder) {

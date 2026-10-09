@@ -9,12 +9,19 @@ vi.mock('@/helpers/errorBuffer', async (importOriginal) => {
   return { ...actual, recordException: (...args: unknown[]) => recordException(...args) };
 });
 
+const incrementParseError = vi.fn();
+vi.mock('@/utils/SupplierStatsStore', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/utils/SupplierStatsStore')>();
+  return { ...actual, incrementParseError: (...args: unknown[]) => incrementParseError(...args) };
+});
+
 const { SupplierFactory } = await import('../SupplierFactory');
 
 /** Reaches the private aggregation helper for direct testing. */
 type FactoryInternals = {
   reportExecutionErrors: (errors: { error: unknown; supplier: { supplierName: string } }[]) => void;
   logSupplierFailure: (error: unknown, supplier: { supplierName: string }) => void;
+  recordSupplierFailure: (error: unknown, supplier: { supplierName: string }) => void;
   logger: {
     debug: (message: string, detail: { supplier: string }) => void;
     error: (message: string, detail: { supplier: string }) => void;
@@ -116,5 +123,39 @@ describe('SupplierFactory supplier-failure logging', () => {
     const detail = error.mock.calls[0][1];
     expect(detail.supplier).toBe('AlphaChem');
     expect(JSON.stringify(detail)).not.toContain('must not be logged');
+  });
+});
+
+describe('SupplierFactory supplier-failure counting', () => {
+  const supplier = { supplierName: 'AlphaChem' };
+
+  /** Records a failure with logging silenced. */
+  const record = (error: unknown) => {
+    const internals = makeFactory() as unknown as FactoryInternals;
+    for (const level of ['debug', 'error', 'warn'] as const) {
+      vi.spyOn(internals.logger, level).mockImplementation(() => undefined);
+    }
+    internals.recordSupplierFailure(error, supplier);
+  };
+
+  beforeEach(() => {
+    incrementParseError.mockReset();
+  });
+
+  it.each([
+    ['a real error', new TypeError('bad response')],
+    ['a rate limit', new HttpError(429, 'Too Many Requests')],
+  ])('counts %s against the supplier', (_label, thrown) => {
+    record(thrown);
+    expect(incrementParseError).toHaveBeenCalledWith('AlphaChem');
+  });
+
+  it.each([
+    ['the user stopping the search', 'user_aborted'],
+    ['the time budget elapsing', 'time_budget_exceeded'],
+    ['an AbortError', new DOMException('stop', 'AbortError')],
+  ])('does not count %s', (_label, thrown) => {
+    record(thrown);
+    expect(incrementParseError).not.toHaveBeenCalled();
   });
 });

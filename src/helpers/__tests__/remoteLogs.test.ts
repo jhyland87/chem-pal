@@ -189,6 +189,71 @@ describe('remoteLogs', () => {
     });
   });
 
+  describe('load shedding', () => {
+    const { maxLogsPerInterval, lowPriorityShare, flushIntervalMs } = LOG_CONFIG;
+    const limit = Math.floor(maxLogsPerInterval * lowPriorityShare);
+
+    /** Initializes the module and returns posthog's `beforeSend` hook. */
+    async function setup() {
+      const { initRemoteLogs } = await load();
+      await initRemoteLogs();
+      return fakePosthog.init.mock.calls[0][1].logs.beforeSend as (
+        log: Record<string, unknown>,
+      ) => { attributes?: Record<string, unknown> } | null;
+    }
+
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(1_000_000);
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('drops trace and debug once the window is mostly full, but keeps the rest', async () => {
+      const beforeSend = await setup();
+      for (let i = 0; i < limit; i += 1) {
+        expect(beforeSend({ body: 'x', level: 'info' })).not.toBeNull();
+      }
+
+      expect(beforeSend({ body: 'x', level: 'debug' })).toBeNull();
+      expect(beforeSend({ body: 'x', level: 'trace' })).toBeNull();
+      for (const level of ['info', 'warn', 'error', 'fatal']) {
+        expect(beforeSend({ body: 'x', level })).not.toBeNull();
+      }
+    });
+
+    it('keeps trace and debug while the window has room', async () => {
+      const beforeSend = await setup();
+      for (let i = 0; i < limit - 1; i += 1) {
+        expect(beforeSend({ body: 'x', level: 'debug' })).not.toBeNull();
+      }
+    });
+
+    it('reports how many were shed on the next log that is sent', async () => {
+      const beforeSend = await setup();
+      for (let i = 0; i < limit; i += 1) beforeSend({ body: 'x', level: 'info' });
+      beforeSend({ body: 'x', level: 'debug' });
+      beforeSend({ body: 'x', level: 'debug' });
+
+      expect(beforeSend({ body: 'x', level: 'warn' })?.attributes?.logs_shed_before).toBe(2);
+      expect(beforeSend({ body: 'x', level: 'warn' })?.attributes).not.toHaveProperty(
+        'logs_shed_before',
+      );
+    });
+
+    it('starts a fresh window after the flush interval', async () => {
+      const beforeSend = await setup();
+      for (let i = 0; i < limit; i += 1) beforeSend({ body: 'x', level: 'info' });
+      expect(beforeSend({ body: 'x', level: 'debug' })).toBeNull();
+
+      vi.setSystemTime(1_000_000 + flushIntervalMs);
+
+      expect(beforeSend({ body: 'x', level: 'debug' })).not.toBeNull();
+    });
+  });
+
   describe('sanitizing', () => {
     it('truncates long messages and arguments', async () => {
       const { initRemoteLogs, Logger } = await load();

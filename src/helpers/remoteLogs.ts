@@ -31,6 +31,13 @@ import type { CaptureLogOptions, LogSeverityLevel, PostHog } from 'posthog-js';
 /** Log-capture settings from `config.json` (`analytics.logs`). */
 const LOG_CONFIG = analyticsConfig.logs;
 
+/**
+ * How many logs a rate window lets through before `trace` and `debug` start being dropped. The rest
+ * of `maxLogsPerInterval` is kept for `log`, `warn`, `error` and `fatal`, so a burst of detail can't
+ * crowd out the logs that matter (posthog-js itself drops whatever exceeds the window's cap).
+ */
+const LOW_PRIORITY_LIMIT = Math.floor(LOG_CONFIG.maxLogsPerInterval * LOG_CONFIG.lowPriorityShare);
+
 /** Maps a remote level to the PostHog severity it is sent as. */
 const SEVERITY_BY_LEVEL: Record<RemoteLogLevel, LogSeverityLevel> = {
   trace: 'trace',
@@ -78,6 +85,15 @@ let pending: CaptureLogOptions[] = [];
 
 /** Identity attached to every record at send time. */
 let identity: { distinctId: string; sessionId: string } | undefined;
+
+/** Start (ms since epoch) of the current rate window. */
+let windowStart = 0;
+
+/** Logs let through in the current rate window. */
+let windowCount = 0;
+
+/** Low-priority logs dropped since the last log that was sent, reported on that next log. */
+let shedCount = 0;
 
 /** Guards `applySettings` against overlapping runs. */
 let applying = false;
@@ -355,8 +371,10 @@ async function readConfiguredLevels(): Promise<ReadonlySet<RemoteLogLevel>> {
 }
 
 /**
- * Pre-send filter: drops everything while sending is switched off, and stamps the shared
- * analytics identity on what remains. Runs before PostHog adds its own context.
+ * Pre-send filter: drops everything while sending is switched off, sheds `trace` and `debug`
+ * when a rate window is nearly full (reporting how many on the next log as `logs_shed_before`),
+ * and stamps the shared analytics identity on what remains. Runs before PostHog adds its own
+ * context.
  *
  * @param log - The record about to be queued
  * @returns The record with identity attributes, or `null` to drop it
@@ -370,12 +388,26 @@ function beforeSend(log: CaptureLogOptions): CaptureLogOptions | null {
   if (!active || !identity) {
     return null;
   }
+  const now = Date.now();
+  if (now - windowStart >= LOG_CONFIG.flushIntervalMs) {
+    windowStart = now;
+    windowCount = 0;
+  }
+  // Once the window is mostly full, shed the lowest-priority logs so the rest are never dropped.
+  if ((log.level === 'trace' || log.level === 'debug') && windowCount >= LOW_PRIORITY_LIMIT) {
+    shedCount += 1;
+    return null;
+  }
+  windowCount += 1;
+  const shed = shedCount;
+  shedCount = 0;
   return {
     ...log,
     attributes: {
       ...log.attributes,
       distinct_id: identity.distinctId,
       session_id: identity.sessionId,
+      ...(shed > 0 ? { logs_shed_before: shed } : {}),
     },
   };
 }
@@ -441,6 +473,9 @@ async function startClient(): Promise<void> {
  */
 function stopSending(): void {
   active = false;
+  windowStart = 0;
+  windowCount = 0;
+  shedCount = 0;
   Logger.setRemoteSink(undefined);
   pending = [];
   if (client) {
