@@ -13,6 +13,25 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+### Changed
+
+- ChemPal opens faster: the startup bundle is about 40% smaller. The interface now loads only the
+  language you've selected (the other translations load on demand), and several unused pieces of
+  third-party code were trimmed from startup.
+
+### Added
+
+- ChemPal now sends short diagnostic logs of warnings and errors to PostHog, the same service that
+  receives the existing usage statistics, so problems like a supplier site changing its layout can
+  be spotted and fixed sooner. Turning off **Share usage data** in Settings stops them. In
+  Advanced settings you can choose which log levels are sent, including verbose debug and trace logs. See
+  the Privacy Policy for exactly what a log can contain.
+
+### Fixed
+
+- Alliance Chemical results now appear. Its website was missing from the extension's list of
+  permitted sites, so the supplier was silently skipped on every search.
+
 ## [1.16.0] - 2026-10-07
 
 ### Added

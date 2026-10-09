@@ -3,8 +3,8 @@ import {
   restoreConsoleMock,
   setupConsoleMock,
 } from '@/suppliers/__tests__/helpers/consoleTestUtils';
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Logger, LogLevel } from '../Logger';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { Logger, LogLevel, type RemoteLogLevel } from '../Logger';
 
 // Define the extended Window interface
 interface ExtendedWindow extends Window {
@@ -533,27 +533,58 @@ describe('Logger', () => {
       });
     });
 
-    describe('trace', () => {
-      it('should log stack trace', () => {
-        logger.setLogLevel(LogLevel.DEBUG);
-        logger.trace();
+    describe('trace and fatal levels', () => {
+      it('prints a trace message through console.debug once the level allows it', () => {
+        logger.setLogLevel(LogLevel.TRACE);
+        logger.trace('Received product from stream', { id: 1 });
         expect(consoleSpies.debug).toHaveBeenCalledWith(
-          expect.stringMatching(/\[.*\] \[DEBUG\] \[Test\] .*at.*/),
+          '[2024-01-01T00:00:00.000Z] [TRACE] [Test] Received product from stream',
+          { id: 1 },
         );
       });
 
-      it('should include message with stack trace', () => {
-        logger.setLogLevel(LogLevel.DEBUG);
-        logger.trace('Error occurred');
-        expect(consoleSpies.debug).toHaveBeenCalledWith(
-          expect.stringMatching(/\[.*\] \[DEBUG\] \[Test\] Error occurred\n.*at.*/),
-        );
-      });
-
-      it('should not log when level is above DEBUG', () => {
-        logger.setLogLevel(LogLevel.INFO);
-        logger.trace('Test');
+      it.each([
+        ['DEBUG', LogLevel.DEBUG],
+        ['INFO', LogLevel.INFO],
+        ['ERROR', LogLevel.ERROR],
+      ])('hides trace messages when the level is %s', (_label, level) => {
+        logger.setLogLevel(level);
+        logger.trace('Too detailed');
         expect(consoleSpies.debug).not.toHaveBeenCalled();
+      });
+
+      it('shows debug messages but not trace ones at the DEBUG level', () => {
+        logger.setLogLevel(LogLevel.DEBUG);
+        logger.trace('hidden');
+        logger.debug('shown');
+        expect(consoleSpies.debug).toHaveBeenCalledTimes(1);
+      });
+
+      it.each([
+        ['TRACE', LogLevel.TRACE],
+        ['WARN', LogLevel.WARN],
+        ['ERROR', LogLevel.ERROR],
+        ['FATAL', LogLevel.FATAL],
+      ])('prints a fatal message through console.error at the %s level', (_label, level) => {
+        logger.setLogLevel(level);
+        logger.fatal('Uncaught exception', { code: 1 });
+        expect(consoleSpies.error).toHaveBeenCalledWith(
+          '[2024-01-01T00:00:00.000Z] [FATAL] [Test] Uncaught exception',
+          { code: 1 },
+        );
+      });
+
+      it('ranks FATAL above ERROR, so an ERROR level still shows fatal but not the reverse', () => {
+        logger.setLogLevel(LogLevel.FATAL);
+        logger.error('not shown');
+        expect(consoleSpies.error).not.toHaveBeenCalled();
+      });
+
+      it('accepts trace and fatal as LOG_LEVEL values', () => {
+        process.env.LOG_LEVEL = 'trace';
+        expect(new Logger('Env').getLogLevel()).toBe(LogLevel.TRACE);
+        process.env.LOG_LEVEL = 'fatal';
+        expect(new Logger('Env').getLogLevel()).toBe(LogLevel.FATAL);
       });
     });
 
@@ -729,5 +760,256 @@ describe('Logger', () => {
         expect(new Logger('Fresh').getLogLevel()).toBe(LogLevel.ERROR);
       });
     });
+  });
+});
+
+describe('Logger remote sink', () => {
+  const emit = vi.fn();
+  const isEnabled = vi.fn<(level: RemoteLogLevel) => boolean>();
+
+  beforeEach(() => {
+    emit.mockReset();
+    isEnabled.mockReset().mockReturnValue(true);
+    Logger.setRemoteSink({ isEnabled, emit });
+    // An earlier suite may have left a level in the environment.
+    delete (window as ExtendedWindow).LOG_LEVEL;
+    delete process.env.LOG_LEVEL;
+  });
+
+  afterEach(() => {
+    Logger.setRemoteSink(undefined);
+  });
+
+  it.each([
+    ['trace', 'trace'],
+    ['debug', 'debug'],
+    ['info', 'log'],
+    ['log', 'log'],
+    ['warn', 'warn'],
+    ['error', 'error'],
+    ['fatal', 'fatal'],
+  ] as const)('forwards %s() to the sink as level %s', (method, level) => {
+    const err = new Error('boom');
+    new Logger('Remote')[method]('hello', 1, err);
+
+    expect(isEnabled).toHaveBeenCalledWith(level);
+    expect(emit).toHaveBeenCalledExactlyOnceWith({
+      level,
+      prefix: 'Remote',
+      message: 'hello',
+      args: [1, err],
+    });
+  });
+
+  it('does not emit when the sink does not want the level', () => {
+    isEnabled.mockReturnValue(false);
+    new Logger('Remote').error('nope');
+
+    expect(isEnabled).toHaveBeenCalledWith('error');
+    expect(emit).not.toHaveBeenCalled();
+  });
+
+  it('forwards independently of the console log level', () => {
+    const consoleDebug = vi.spyOn(console, 'debug').mockImplementation(() => undefined);
+    new Logger('Remote', LogLevel.ERROR).debug('quiet locally');
+
+    expect(consoleDebug).not.toHaveBeenCalled();
+    expect(emit).toHaveBeenCalledWith(expect.objectContaining({ level: 'debug' }));
+    consoleDebug.mockRestore();
+  });
+
+  it('forwards sub() loggers with the combined prefix', () => {
+    new Logger('Parent').sub('child').warn('nested');
+
+    expect(emit).toHaveBeenCalledWith(expect.objectContaining({ prefix: 'Parent|child' }));
+  });
+
+  it('keeps logging when the sink throws', () => {
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const consoleDebug = vi.spyOn(console, 'debug').mockImplementation(() => undefined);
+    emit.mockImplementation(() => {
+      throw new Error('sink down');
+    });
+
+    expect(() => new Logger('Remote').warn('still works')).not.toThrow();
+    expect(consoleDebug).toHaveBeenCalledWith('Remote log sink failed:', expect.any(Error));
+    expect(consoleWarn).toHaveBeenCalled();
+    consoleWarn.mockRestore();
+    consoleDebug.mockRestore();
+  });
+
+  it('is console-only once the sink is cleared', () => {
+    Logger.setRemoteSink(undefined);
+    new Logger('Remote').warn('local only');
+
+    expect(isEnabled).not.toHaveBeenCalled();
+    expect(emit).not.toHaveBeenCalled();
+  });
+});
+
+describe('Logger location-aware methods', () => {
+  const emit = vi.fn();
+  const isEnabled = vi.fn<(level: RemoteLogLevel) => boolean>();
+  const LOCATION = 'suppliers/Foo.ts:12#Foo.fetch';
+
+  beforeEach(() => {
+    emit.mockReset();
+    isEnabled.mockReset().mockReturnValue(true);
+    Logger.setRemoteSink({ isEnabled, emit });
+    delete (window as ExtendedWindow).LOG_LEVEL;
+    delete process.env.LOG_LEVEL;
+  });
+
+  afterEach(() => {
+    Logger.setRemoteSink(undefined);
+    vi.restoreAllMocks();
+  });
+
+  it.each([
+    ['traceAt', 'debug', 'trace'],
+    ['debugAt', 'debug', 'debug'],
+    ['infoAt', 'info', 'log'],
+    ['logAt', 'log', 'log'],
+    ['warnAt', 'warn', 'warn'],
+    ['errorAt', 'error', 'error'],
+    ['fatalAt', 'error', 'fatal'],
+  ] as const)(
+    '%s forwards its location to the sink as level %s',
+    (method, consoleMethod, level) => {
+      vi.spyOn(console, consoleMethod).mockImplementation(() => undefined);
+      new Logger('Where')[method](LOCATION, 'hello', 1);
+
+      expect(emit).toHaveBeenCalledExactlyOnceWith({
+        level,
+        prefix: 'Where',
+        message: 'hello',
+        args: [1],
+        location: LOCATION,
+      });
+    },
+  );
+
+  it.each([
+    ['debugAt', 'debug'],
+    ['infoAt', 'info'],
+    ['logAt', 'log'],
+    ['warnAt', 'warn'],
+    ['errorAt', 'error'],
+  ] as const)(
+    '%s writes the same console line as the plain method, without the location',
+    (method, consoleMethod) => {
+      const spy = vi.spyOn(console, consoleMethod).mockImplementation(() => undefined);
+      const logger = new Logger('Where', LogLevel.DEBUG);
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2024-01-01T00:00:00.000Z'));
+      logger[consoleMethod]('hello', 1);
+      logger[method](LOCATION, 'hello', 1);
+      vi.useRealTimers();
+
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy.mock.calls[1]).toEqual(spy.mock.calls[0]);
+      expect(JSON.stringify(spy.mock.calls[1])).not.toContain('Foo.ts');
+    },
+  );
+
+  it('leaves the location undefined for the plain methods', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    new Logger('Where').warn('plain');
+
+    expect(emit).toHaveBeenCalledWith(expect.objectContaining({ location: undefined }));
+  });
+
+  it('applies the same console and remote gating as the plain methods', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    new Logger('Where', LogLevel.ERROR).warnAt(LOCATION, 'quiet locally');
+
+    expect(warn).not.toHaveBeenCalled();
+    expect(emit).toHaveBeenCalledWith(
+      expect.objectContaining({ level: 'warn', location: LOCATION }),
+    );
+
+    emit.mockClear();
+    isEnabled.mockReturnValue(false);
+    new Logger('Where').errorAt(LOCATION, 'not wanted remotely');
+    expect(emit).not.toHaveBeenCalled();
+  });
+});
+
+describe('Logger context', () => {
+  const emit = vi.fn();
+
+  beforeEach(() => {
+    emit.mockReset();
+    Logger.setRemoteSink({ isEnabled: () => true, emit });
+    Logger.setContext(undefined);
+    delete (window as ExtendedWindow).LOG_LEVEL;
+    delete process.env.LOG_LEVEL;
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    Logger.setRemoteSink(undefined);
+    Logger.setContext(undefined);
+    vi.restoreAllMocks();
+  });
+
+  it('attaches nothing when no context is set', () => {
+    new Logger('Ctx').warn('plain');
+
+    expect(emit).toHaveBeenCalledWith(expect.objectContaining({ context: undefined }));
+  });
+
+  it('attaches the global context to every logger', () => {
+    Logger.setContext({ search_query: 'acetone' });
+    new Logger('One').warn('a');
+    new Logger('Two').warn('b');
+
+    expect(emit.mock.calls.map(([record]) => record.context)).toEqual([
+      { search_query: 'acetone' },
+      { search_query: 'acetone' },
+    ]);
+  });
+
+  it('attaches an instance context to that logger only', () => {
+    const scoped = new Logger('Scoped');
+    scoped.setContext({ search_query: 'ethanol' });
+    scoped.warn('mine');
+    new Logger('Other').warn('not mine');
+
+    expect(emit.mock.calls[0][0].context).toEqual({ search_query: 'ethanol' });
+    expect(emit.mock.calls[1][0].context).toBeUndefined();
+  });
+
+  it('lets the instance context win over the global one, and keeps the rest', () => {
+    Logger.setContext({ search_query: 'global', other: 'kept' });
+    const scoped = new Logger('Scoped');
+    scoped.setContext({ search_query: 'instance' });
+    scoped.warn('merged');
+
+    expect(emit.mock.calls[0][0].context).toEqual({ search_query: 'instance', other: 'kept' });
+  });
+
+  it('stops attaching a context once it is cleared', () => {
+    Logger.setContext({ search_query: 'acetone' });
+    const logger = new Logger('Ctx');
+    logger.setContext({ search_query: 'acetone' });
+    Logger.setContext(undefined);
+    logger.setContext(undefined);
+    logger.warn('after');
+
+    expect(emit.mock.calls[0][0].context).toBeUndefined();
+    expect(Logger.getContext()).toBeUndefined();
+  });
+
+  it('also reaches the location-aware methods and leaves console output alone', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    Logger.setContext({ search_query: 'acetone' });
+    new Logger('Ctx').warnAt('a/b.ts:1', 'at');
+
+    expect(emit.mock.calls[0][0]).toMatchObject({
+      location: 'a/b.ts:1',
+      context: { search_query: 'acetone' },
+    });
+    expect(JSON.stringify(warn.mock.calls)).not.toContain('acetone');
   });
 });

@@ -2,6 +2,10 @@ import { SearchEvent, onSearchEvent } from '@/events/searchEvents';
 import { BadgeAnimator } from '@/utils/BadgeAnimator';
 import { IDB_SEARCH_RESULTS_CLEARED } from '@/utils/idbCache';
 import { useEffect } from 'react';
+import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
+
+const logger = new Logger('badgeController');
 
 /**
  * The single place that decides what the extension toolbar badge shows and when.
@@ -181,7 +185,7 @@ async function applyBadgeOutput(output: BadgeOutput): Promise<void> {
   try {
     current = await chrome.action.getBadgeText({});
   } catch (error) {
-    console.warn('Failed to read current badge text:', { error });
+    logger.warn(`Failed to read current badge text: ${getErrorMessage(error)}`, { error });
   }
 
   if (!shouldApplyToBadge(current, output)) return;

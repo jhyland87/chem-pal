@@ -160,7 +160,7 @@ export abstract class SupplierBaseWix
       searchRequest.data.catalog.category.productsWithMetaData.list,
     );
 
-    this.logger.info('fuzzResults', {
+    this.logger.debug('Applied fuzzy filter to product results', {
       query,
       productResults: searchRequest.data.catalog.category.productsWithMetaData.list,
       fuzzResults,
@@ -212,7 +212,7 @@ export abstract class SupplierBaseWix
       for (const option of product.options ?? []) {
         for (const selection of option.selections ?? []) {
           if (!isProductSelection(selection)) {
-            this.logger.warn('Invalid product selection:', { selection });
+            this.logger.warn('Invalid product selection', { selection });
             continue;
           }
           const parsed = parseQuantity(selection.value);
@@ -228,7 +228,7 @@ export abstract class SupplierBaseWix
       // Resolve explicit productItems first.
       const productVariants = mapDefined(product.productItems, (item: ProductItem) => {
         if (!isProductItem(item)) {
-          this.logger.warn('Invalid product item:', { item });
+          this.logger.warn('Invalid product item', { item });
           return;
         }
 

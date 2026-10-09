@@ -5,6 +5,7 @@ import { addExcludedProduct } from '@/helpers/excludedProducts';
 import { i18n } from '@/helpers/i18n';
 import { recordSearch } from '@/utils/reviewStats';
 import { HotkeyEvent } from '@/hotkeys';
+import { Logger } from '@/utils/Logger';
 import { cstorage } from '@/utils/storage';
 import {
   IDB_SEARCH_RESULTS_CLEARED,
@@ -28,6 +29,8 @@ const factory = vi.hoisted(() => ({
   /** Produces the stream for the next search. */
   stream: undefined as undefined | (() => AsyncIterable<unknown>),
   shippingExcludedAll: false,
+  /** What the factory reports as failed suppliers after the stream drains. */
+  executionErrors: [] as Array<{ supplier: { supplierName: string }; error: unknown }>,
 }));
 
 vi.mock('@/suppliers/SupplierFactory', () => ({
@@ -35,6 +38,7 @@ vi.mock('@/suppliers/SupplierFactory', () => ({
     suppliersQueried = 4;
     suppliersCompleted = 3;
     shippingExcludedAll = factory.shippingExcludedAll;
+    executionErrors = factory.executionErrors;
     constructor(query: string, options: Record<string, unknown>) {
       factory.calls.push({ query, options });
     }
@@ -138,6 +142,7 @@ describe('useSearch hook', () => {
     factory.calls.length = 0;
     factory.stream = undefined;
     factory.shippingExcludedAll = false;
+    factory.executionErrors = [];
     ctx.userSettings = {} as UserSettings;
     ctx.selectedSuppliers = [];
     ctx.searchFilters = { titleQuery: '', availability: [], country: [], shippingType: [] };
@@ -249,6 +254,54 @@ describe('useSearch hook', () => {
       expect(recordSearch).toHaveBeenCalledWith(2);
       expect(clearSearchResults).toHaveBeenCalledWith({ notify: false });
       expect(idbSetSearchResults).toHaveBeenCalled();
+    });
+
+    it('tags logs with the search query while it runs and stops once it settles', async () => {
+      let during: Readonly<Record<string, string>> | undefined;
+      factory.stream = () =>
+        (async function* () {
+          during = Logger.getContext();
+          yield product(1);
+        })();
+      const hook = await mount();
+      await search(hook, '  acetone ');
+
+      expect(during).toEqual({
+        search_query: 'acetone',
+        trace_id: expect.stringMatching(/^[0-9a-f]{32}$/),
+      });
+      expect(Logger.getContext()).toBeUndefined();
+    });
+
+    it('gives each search its own trace id, even for the same query', async () => {
+      const seen: Array<string | undefined> = [];
+      factory.stream = () =>
+        (async function* () {
+          seen.push(Logger.getContext()?.trace_id);
+          yield product(1);
+        })();
+      const hook = await mount();
+      await search(hook, 'acetone');
+      events.length = 0;
+      await search(hook, 'acetone');
+
+      expect(seen).toHaveLength(2);
+      expect(seen[0]).toMatch(/^[0-9a-f]{32}$/);
+      expect(seen[1]).toMatch(/^[0-9a-f]{32}$/);
+      expect(seen[0]).not.toBe(seen[1]);
+    });
+
+    it('stops tagging logs when the search fails', async () => {
+      factory.stream = () =>
+        (async function* () {
+          yield* [];
+          throw new Error('stream broke');
+        })();
+      const hook = await mount();
+      act(() => hook.result.current.executeSearch('acetone'));
+      await waitFor(() => expect(eventTypes()).toContain(SearchEvent.FAILED));
+
+      expect(Logger.getContext()).toBeUndefined();
     });
 
     it('passes settings through to the supplier factory', async () => {
@@ -427,6 +480,67 @@ describe('useSearch hook', () => {
     });
   });
 
+  describe('end-of-search summary log', () => {
+    it('reports how many suppliers had results, had none, and the totals', async () => {
+      const log = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+      factory.stream = streamOf([
+        product(1, { supplier: 'A' }),
+        product(2, { supplier: 'A' }),
+        product(3, { supplier: 'B' }),
+      ]);
+      const hook = await mount();
+      await search(hook);
+
+      expect(log).toHaveBeenCalledWith(
+        'Search completed',
+        expect.objectContaining({
+          resultCount: 3,
+          suppliersQueried: 4,
+          suppliersCompleted: 3,
+          suppliersWithResults: 2,
+          suppliersNoResults: 1,
+          suppliersFailed: 0,
+          failedSuppliers: [],
+        }),
+      );
+    });
+
+    it('names the suppliers that failed and does not count them as empty', async () => {
+      const log = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+      factory.executionErrors = [{ supplier: { supplierName: 'Broken' }, error: new Error('x') }];
+      factory.stream = streamOf([product(1, { supplier: 'A' })]);
+      const hook = await mount();
+      await search(hook);
+
+      expect(log).toHaveBeenCalledWith(
+        'Search completed',
+        expect.objectContaining({
+          suppliersWithResults: 1,
+          suppliersFailed: 1,
+          failedSuppliers: ['Broken'],
+          suppliersNoResults: 1,
+        }),
+      );
+    });
+
+    it('logs a failed search as an error with its cause', async () => {
+      const error = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+      factory.stream = () =>
+        (async function* () {
+          yield* [];
+          throw new Error('stream broke');
+        })();
+      const hook = await mount();
+      act(() => hook.result.current.executeSearch('acetone'));
+      await waitFor(() => expect(eventTypes()).toContain(SearchEvent.FAILED));
+
+      expect(error).toHaveBeenCalledWith(
+        'Search failed: stream broke',
+        expect.objectContaining({ error: expect.any(Error), resultCount: 0 }),
+      );
+    });
+  });
+
   describe('stopping a search', () => {
     /** Starts a search that blocks until released, so it can be aborted mid-stream. */
     async function startBlocked() {
@@ -454,6 +568,20 @@ describe('useSearch hook', () => {
       expect(events.find((e) => e.type === SearchEvent.COMPLETED)?.detail).toMatchObject({
         abortReason: SEARCH_ABORT_REASON.USER,
       });
+    });
+
+    it('logs a summary that says the search was cut short, with the abort reason', async () => {
+      const log = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+      const { hook, release } = await startBlocked();
+
+      act(() => hook.result.current.handleStopSearch());
+      release();
+      await waitFor(() => expect(hook.result.current.isLoading).toBe(false));
+
+      expect(log).toHaveBeenCalledWith(
+        'Search cut short',
+        expect.objectContaining({ abortReason: SEARCH_ABORT_REASON.USER }),
+      );
     });
 
     it('aborts on the global abort hotkey event', async () => {

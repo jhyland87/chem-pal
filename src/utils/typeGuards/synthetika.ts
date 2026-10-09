@@ -1,4 +1,7 @@
 import * as v from 'valibot';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('typeGuards.synthetika');
 
 const synthetikaSearchResponseSchema = v.object({
   count: v.number(),
@@ -25,7 +28,7 @@ const synthetikaSearchResponseSchema = v.object({
 export function isSynthetikaSearchResponse(data: unknown): data is SynthetikaSearchResponse {
   const check = v.safeParse(synthetikaSearchResponseSchema, data);
   if (!check.success) {
-    console.warn('isSynthetikaSearchResponse: data is not a SynthetikaSearchResponse', {
+    logger.warn('isSynthetikaSearchResponse: data is not a SynthetikaSearchResponse', {
       data,
       check,
       issues: check.issues,
@@ -126,7 +129,7 @@ const synthetikaProductResponseSchema = v.object({
 export function isSynthetikaProduct(data: unknown): data is SynthetikaProduct {
   const check = v.safeParse(synthetikaProductResponseSchema, data);
   if (!check.success) {
-    console.warn('isSynthetikaProduct: data is not a SynthetikaProduct', {
+    logger.warn('isSynthetikaProduct: data is not a SynthetikaProduct', {
       data,
       check,
       issues: check.issues,
@@ -173,12 +176,12 @@ export function assertIsSynthetikaProductPrice(
   data: unknown,
 ): asserts data is SynthetikaProductPrice {
   if (!data || typeof data !== 'object') {
-    console.log('isSynthetikaProductPrice: data is falsey or not an object');
+    logger.debug('isSynthetikaProductPrice: data is falsey or not an object');
     throw new Error('isSynthetikaProductPrice: data is falsey or not an object');
   }
 
   if (!isSynthetikaProductPrice(data)) {
-    console.log('isSynthetikaProductPrice: data is missing base or final');
+    logger.debug('isSynthetikaProductPrice: data is missing base or final');
     throw new Error('isSynthetikaProductPrice: data is missing base or final');
   }
 }

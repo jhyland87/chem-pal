@@ -1,5 +1,8 @@
 import { HttpError } from '@/helpers/exceptions';
 import { addCapturedResponse, initConsoleApi } from '@/helpers/responseAggregate';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('fetch');
 
 /**
  * Response type that extends the standard Response with additional properties
@@ -147,7 +150,7 @@ export async function fetchDecorator(
   init?: RequestInit,
 ): Promise<FetchDecoratorResponse> {
   const requestHash = await generateRequestHash(input, init);
-  console.debug(`Request Hash: ${requestHash}`);
+  logger.debug(`Request Hash: ${requestHash}`);
 
   // Clone the request for aggregate capture BEFORE fetch() consumes it.
   // For POST requests, fetch() reads the request body, making it impossible
@@ -190,7 +193,7 @@ export async function fetchDecorator(
       data = await clonedResponse.clone().blob();
     }
   } catch {
-    console.debug('clonedResponse:', clonedResponse);
+    logger.debug('Could not read response as a blob; falling back to text', { clonedResponse });
     data = await clonedResponse.clone().text();
   }
 

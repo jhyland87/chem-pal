@@ -193,7 +193,7 @@ export class SupplierLaboratoriumDiscounter
   ): Promise<ProductBuilder<Product>[] | void> {
     const params = this.makeQueryParams();
     if (!isValidSearchParams(params)) {
-      this.logger.warn('Invalid search parameters:', { params });
+      this.logger.warn('Invalid search parameters', { params });
       return;
     }
 
@@ -203,7 +203,7 @@ export class SupplierLaboratoriumDiscounter
     });
 
     if (!isSearchResponseOk(searchRequest)) {
-      this.logger.warn('Bad search response:', { searchRequest });
+      this.logger.warn('Bad search response', { searchRequest });
       return;
     }
 
@@ -215,9 +215,14 @@ export class SupplierLaboratoriumDiscounter
     const rawSearchResults = Object.values(searchRequest.collection.products);
 
     const fuzzFiltered = this.fuzzyFilterAst<SearchResponseProduct>(rawSearchResults);
-    this.logger.debug('fuzzFiltered:', { query, searchRequest, rawSearchResults, fuzzFiltered });
+    this.logger.debug('Applied fuzzy filter to search results', {
+      query,
+      searchRequest,
+      rawSearchResults,
+      fuzzFiltered,
+    });
     const grouped = this.groupVariants<SearchResponseProduct>(fuzzFiltered);
-    this.logger.debug('grouped:', {
+    this.logger.debug('Grouped fuzzy-filtered results by variant', {
       query,
       searchRequest,
       rawSearchResults,
@@ -444,7 +449,7 @@ export class SupplierLaboratoriumDiscounter
     }
     builder.setVariants(variants);
 
-    this.logger.debug('getProductDataFromHTML', { builder });
+    this.logger.debug('Parsing product data from HTML', { builder });
     return builder;
   }
 
@@ -473,7 +478,7 @@ export class SupplierLaboratoriumDiscounter
     });
 
     if (!productResponse || !isProductObject(productResponse)) {
-      this.logger.warn('Invalid JSON product data - did not pass typeguard:', {
+      this.logger.warn('Invalid JSON product data - did not pass typeguard', {
         path,
         productResponse,
       });
@@ -673,7 +678,7 @@ export class SupplierLaboratoriumDiscounter
         builder,
       });
       const htmlResponse = await this.getProductDataFromHTML(builder);
-      this.logger.debug('getProductDataFromHTML result:', { htmlResponse });
+      this.logger.debug('Parsed product data from HTML', { htmlResponse });
       return htmlResponse;
     });
   }

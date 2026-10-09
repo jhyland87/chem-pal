@@ -9,6 +9,7 @@ import { ProductBuilder } from '@/utils/ProductBuilder';
 import { isHttpResponse } from '@/utils/typeGuards/common';
 import { isScienceLabAttributeResponse } from '@/utils/typeGuards/sciencelab';
 import { SupplierBase } from './SupplierBase';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 // --- Slug → name recovery -------------------------------------------------
 // ScienceLab has no usable search API, so the catalog is pulled from the XML
@@ -439,7 +440,7 @@ export class SupplierScienceLab extends SupplierBase<ScienceLabItem, Product> im
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    this.logger.log('queryProducts:', { query, limit });
+    this.logger.log('Starting product search', { query, limit });
 
     const catalog = await this.fetchCatalog();
     if (catalog.length === 0) {
@@ -466,7 +467,7 @@ export class SupplierScienceLab extends SupplierBase<ScienceLabItem, Product> im
     matches.sort((a, b) => (b.matchPercentage ?? 0) - (a.matchPercentage ?? 0));
     // Scored per item via `fuzzyScoreAst`, so the base `fuzzyFilter` scorer
     // comparison table never fires — log the ranked head instead for visibility.
-    this.logger.debug('queryProducts ranked:', {
+    this.logger.debug('Ranked search results by relevance', {
       query,
       matched: matches.length,
       top: matches.slice(0, 10).map((m) => ({ score: m.matchPercentage, name: m.name })),
@@ -934,7 +935,12 @@ export class SupplierScienceLab extends SupplierBase<ScienceLabItem, Product> im
       const value = response.data?.price?.without_tax?.value;
       return typeof value === 'number' ? value : undefined;
     } catch (error) {
-      this.logger.warn('Variant price fetch failed', { productId, attributeId, valueId, error });
+      this.logger.warn(`Variant price fetch failed: ${getErrorMessage(error)}`, {
+        productId,
+        attributeId,
+        valueId,
+        error,
+      });
       return undefined;
     }
   }

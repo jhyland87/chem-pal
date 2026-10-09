@@ -26,6 +26,8 @@ export const ACTION_TYPE = {
   PRICE_TRACKING_CHANGE: 'PRICE_TRACKING_CHANGE',
   /** Cache config changed; replaces the nested `caching` object */
   CACHE_CHANGE: 'CACHE_CHANGE',
+  /** Diagnostic log levels changed; replaces the `remoteLogLevels` list */
+  REMOTE_LOG_LEVELS_CHANGE: 'REMOTE_LOG_LEVELS_CHANGE',
   /** Resets the settings to their defaults */
   RESTORE_DEFAULTS: 'RESTORE_DEFAULTS',
 } as const;

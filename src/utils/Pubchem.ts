@@ -6,6 +6,11 @@
  * @param data - The data to validate
  * @source
  */
+
+import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
+
+const logger = new Logger('Pubchem');
 function assertIsCIDResponse(data: unknown): asserts data is CIDResponse {
   if (typeof data !== 'object' || data === null) {
     throw new Error('data is not an object');
@@ -127,7 +132,7 @@ export class Pubchem {
       assertIsCompoundResponseResponse(data);
       return data.dictionary_terms.compound[0];
     } catch (error) {
-      console.error('Error fetching compound:', error);
+      logger.error(`Error fetching compound: ${getErrorMessage(error)}`, { error });
     }
   }
 
@@ -154,7 +159,7 @@ export class Pubchem {
       assertIsCIDResponse(data);
       return data.ConceptsAndCIDs.CID[0];
     } catch (error) {
-      console.error('Error fetching CID:', error);
+      logger.error(`Error fetching CID: ${getErrorMessage(error)}`, { error });
     }
   }
 
@@ -181,10 +186,10 @@ export class Pubchem {
         width: 1000000,
         listids: 0,
       };
-      console.debug({ sdqAgentQuery });
+      logger.debug('SDQ agent query', { sdqAgentQuery });
       const queryURL = JSON.stringify(sdqAgentQuery).replace(/"/g, '%22').replace(/ /g, '%20');
 
-      console.debug(
+      logger.debug(
         `Querying URL: ${this.baseURL}/sdq/sdqagent.cgi?infmt=json&outfmt=json&query=${queryURL}`,
       );
       const response = await fetch(
@@ -194,7 +199,7 @@ export class Pubchem {
       assertIsSdqAgentResponse(data);
       return data;
     } catch (error) {
-      console.error('Error querying SDQ agent:', error);
+      logger.error(`Error querying SDQ agent: ${getErrorMessage(error)}`, { error });
     }
   }
 
@@ -217,7 +222,7 @@ export class Pubchem {
       if (!data) return undefined;
       return data.SDQOutputSet[0].rows[0].cmpdname;
     } catch (error) {
-      console.error('Error fetching simple name:', error);
+      logger.error(`Error fetching simple name: ${getErrorMessage(error)}`, { error });
     }
   }
 
@@ -237,7 +242,7 @@ export class Pubchem {
       if (!data) return undefined;
       return data.SDQOutputSet[0].rows[0].cmpdname;
     } catch (error) {
-      console.error('Error fetching compound name from alias:', error);
+      logger.error(`Error fetching compound name from alias: ${getErrorMessage(error)}`, { error });
     }
   }
 }

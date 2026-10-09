@@ -3,7 +3,7 @@
  * @see https://pubchem.ncbi.nlm.nih.gov/sdq/sdqagent.cgi
  * @see https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest#section=Operation
  */
-import { StatusCodes } from 'http-status-codes';
+import type { HttpStatus } from '@/constants/httpStatus';
 export {};
 
 declare global {
@@ -188,7 +188,7 @@ declare global {
     /** Status information about the API response */
     status: {
       /** HTTP status code */
-      code: StatusCodes;
+      code: HttpStatus;
     };
     /** Total number of results found */
     total: number;

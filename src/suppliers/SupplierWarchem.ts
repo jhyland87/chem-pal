@@ -142,14 +142,23 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
       return;
     }
 
-    this.logger.log('Received search response', { query, searchRequest });
+    this.logger.debug('Received search response', { query, searchRequest });
 
     const fuzzResults = this.fuzzHtmlResponse(query, searchRequest);
 
-    this.logger.info('fuzzResults:', { query, searchRequest, fuzzResults });
+    this.logger.debug('Applied fuzzy filter to search results', {
+      query,
+      searchRequest,
+      fuzzResults,
+    });
 
     const builders = this.initProductBuilders(fuzzResults.slice(0, limit));
-    this.logger.info('builders:', { query, searchRequest, fuzzResults, builders });
+    this.logger.debug('Created product builders from search results', {
+      query,
+      searchRequest,
+      fuzzResults,
+      builders,
+    });
     return builders;
   }
 
@@ -227,9 +236,9 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
    * @source
    */
   protected initProductBuilders(elements: Element[]): ProductBuilder<Product>[] {
-    this.logger.info('initProductBuilders elements:', { elements });
+    this.logger.debug('Building products from elements', { elements });
     return mapDefined(elements, (element: Element) => {
-      this.logger.info('initProductBuilders mapping element:', { element });
+      this.logger.debug('initProductBuilders mapping element', { element });
       const builder = new ProductBuilder<Product>(this.baseURL);
 
       const productId = element.getAttribute('id');
@@ -270,7 +279,7 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
       //   return;
       // }
 
-      this.logger.info('initProductBuilders setting basic info', {
+      this.logger.debug('initProductBuilders setting basic info', {
         productName,
         productUrl,
         builder,
@@ -343,7 +352,7 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
         return;
       }
 
-      this.logger.debug('productResponse', { builder, productResponse });
+      this.logger.debug('Received product response', { builder, productResponse });
 
       const parsedHTML = createDOM(productResponse);
       const metaTags = parsedHTML.getElementsByTagName('meta');
@@ -356,7 +365,7 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
         return acc;
       }, {});
 
-      this.logger.debug('productMeta', { builder, productMeta });
+      this.logger.debug('Parsed product metadata', { builder, productMeta });
 
       // @todo The typing on this seems to be incorrect, will require a global type override
       const priceParsed = priceParser.parseFirst(
@@ -401,7 +410,12 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
       // their prices live in the inline `opcje` script + radio inputs.
       const variants = this.parseVariants(productResponse, parsedHTML);
       if (variants.length > 0) {
-        this.logger.info('variants found', { builder, productResponse, parsedHTML, variants });
+        this.logger.debug('Found product variants', {
+          builder,
+          productResponse,
+          parsedHTML,
+          variants,
+        });
         product.setVariants(variants);
       } else {
         this.logger.warn('No variants found', { builder, productResponse, parsedHTML });
@@ -411,7 +425,7 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
       // reliable CAS, formula, and molar mass for the product.
       this.applyDataTable(product, parsedHTML);
 
-      this.logger.debug('product', product);
+      this.logger.debug('Built product details', { product });
       return product;
     });
   }

@@ -19,8 +19,13 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { OptionsApp } from './OptionsApp';
 import { i18n } from './helpers/i18n';
+import { initRemoteLogs } from './helpers/remoteLogs';
 import './main.scss';
 import { initThemeAwareToolbarIcon } from './utils/themeIcon';
+import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
+
+const logger = new Logger('options');
 
 document.title = i18n('app_title');
 
@@ -32,13 +37,16 @@ if (!rootEl) throw new Error('Options page root element (#root) not found');
 
 createRoot(rootEl, {
   onUncaughtError: (error, errorInfo) => {
-    console.error('Uncaught error:', error, errorInfo);
+    logger.fatal(`Uncaught error: ${getErrorMessage(error)}`, { error, errorInfo });
   },
   onCaughtError: (error, errorInfo) => {
-    console.error('Caught error:', error, errorInfo);
+    logger.error(`Caught error: ${getErrorMessage(error)}`, { error, errorInfo });
   },
 }).render(
   <StrictMode>
     <OptionsApp />
   </StrictMode>,
 );
+
+// After first render: forward Logger output to PostHog Logs (respects the usage-sharing opt-out).
+void initRemoteLogs();

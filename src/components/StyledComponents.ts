@@ -22,6 +22,23 @@ import TableRow from '@mui/material/TableRow';
 import { createElement } from 'react';
 import { designTokens } from '../themes';
 
+// === ERROR BOUNDARY ===
+
+// "Report" button shown under the crash fallback. The ErrorBoundary renders above the app's
+// ThemeProvider, so this uses no theme values (MUI's `styled` falls back to its default theme and
+// these are plain CSS), and it inherits the page's font and colour instead.
+export const ErrorReportButton = styled('button')({
+  display: 'block',
+  margin: '8px auto',
+  padding: '6px 14px',
+  font: 'inherit',
+  cursor: 'pointer',
+  borderRadius: 6,
+  border: '1px solid currentColor',
+  background: 'transparent',
+  color: 'inherit',
+});
+
 // === STATUS BAR ===
 
 // Fixed bottom-left status bar (e.g. URL preview on link hover)

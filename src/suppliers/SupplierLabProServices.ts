@@ -147,7 +147,7 @@ export class SupplierLabProServices extends SupplierBaseMagento2 implements ISup
       },
     });
 
-    this.logger.debug('searchRequest', { searchRequest });
+    this.logger.debug('Received search response', { searchRequest });
     if (!isValidMagento2SearchResponse(searchRequest)) {
       this.logger.error('Invalid LabPro search response', { response: searchRequest });
       throw new Error('Invalid LabPro search response', {
@@ -165,7 +165,7 @@ export class SupplierLabProServices extends SupplierBaseMagento2 implements ISup
     this.logger.debug(`Query returned ${items.length} products`, { items });
 
     const fuzzResults = this.fuzzyFilterAst<Magento2ProductItem>(items);
-    this.logger.debug('fuzzResults', { query, items, fuzzResults });
+    this.logger.debug('Applied fuzzy filter to search items', { query, items, fuzzResults });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));
   }

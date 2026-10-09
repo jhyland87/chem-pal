@@ -11,6 +11,10 @@ import styles from './SearchForm.module.scss';
 import HighlightedSearchInput from './SearchPanel/HighlightedSearchInput';
 import { useDelayedError } from './SearchPanel/useDelayedError.hook';
 import { SearchFormDivider, SearchFormPaper } from './StyledComponents';
+import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
+
+const logger = new Logger('SearchForm');
 
 /**
  * Props for {@link SearchForm}. Controls submit handling, the advanced-options
@@ -89,7 +93,9 @@ export const SearchForm: FC<SearchFormProps> = ({
           setSearchFilters({ ...searchFilters, titleQuery: stored });
         }
       } catch (error) {
-        console.warn('Failed to load search input from session storage:', { error });
+        logger.warn(`Failed to load search input from session storage: ${getErrorMessage(error)}`, {
+          error,
+        });
       }
     };
     loadSearchInput();
@@ -101,7 +107,9 @@ export const SearchForm: FC<SearchFormProps> = ({
     try {
       await cstorage.session.set({ [CACHE.SEARCH_INPUT]: value });
     } catch (error) {
-      console.warn('Failed to persist search input to session storage:', { error });
+      logger.warn(`Failed to persist search input to session storage: ${getErrorMessage(error)}`, {
+        error,
+      });
     }
   };
 

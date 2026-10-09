@@ -2,6 +2,10 @@ import { isCAS } from '@/utils/typeGuards/common';
 import { withTtlCache } from '@/helpers/requestCache';
 import { isPubChemCID } from '@/utils/typeGuards/common';
 import { hasAdvancedSyntax } from '@/utils/search-query/parseSearchQuery';
+import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
+
+const logger = new Logger('pubchem');
 
 /**
  * SDQ (Structure Data Query) agent from PubChem API
@@ -191,7 +195,7 @@ async function getCidsByCasUncached(cas: CAS<string>): Promise<PubChemCID[] | un
     const valid = cids.filter(isPubChemCID);
     return valid.length > 0 ? valid : undefined;
   } catch (error) {
-    console.error('Error fetching PubChem CIDs by CAS:', error);
+    logger.error(`Error fetching PubChem CIDs by CAS: ${getErrorMessage(error)}`, { error });
     return undefined;
   }
 }
@@ -233,7 +237,7 @@ async function getCidByNameUncached(name: string): Promise<PubChemCID | undefine
     const first = extractCids(data)?.[0];
     return isPubChemCID(first) ? first : undefined;
   } catch (error) {
-    console.error('Error fetching PubChem CID by name:', error);
+    logger.error(`Error fetching PubChem CID by name: ${getErrorMessage(error)}`, { error });
     return undefined;
   }
 }
@@ -276,7 +280,7 @@ async function getCidByFormulaUncached(formula: string): Promise<PubChemCID | un
     const first = extractCids(data)?.[0];
     return isPubChemCID(first) ? first : undefined;
   } catch (error) {
-    console.error('Error fetching PubChem CID by formula:', error);
+    logger.error(`Error fetching PubChem CID by formula: ${getErrorMessage(error)}`, { error });
     return undefined;
   }
 }
@@ -318,7 +322,7 @@ async function getCidBySmilesUncached(smiles: string): Promise<PubChemCID | unde
     const first = extractCids(data)?.[0];
     return isPubChemCID(first) ? first : undefined;
   } catch (error) {
-    console.error('Error fetching PubChem CID by SMILES:', error);
+    logger.error(`Error fetching PubChem CID by SMILES: ${getErrorMessage(error)}`, { error });
     return undefined;
   }
 }
@@ -380,7 +384,9 @@ async function getStructureSdfUncached(cid: PubChemCID): Promise<StructureRecord
       if (sdf.trim() === '') continue;
       return { sdf, recordType };
     } catch (error) {
-      console.error(`Error fetching PubChem ${recordType} SDF:`, error);
+      logger.error(`Error fetching PubChem ${recordType} SDF: ${getErrorMessage(error)}`, {
+        error,
+      });
     }
   }
   return undefined;
@@ -524,7 +530,9 @@ async function getCompoundPropertiesUncached(
     const data = await response.json();
     return extractProperties(data);
   } catch (error) {
-    console.error('Error fetching PubChem compound properties:', error);
+    logger.error(`Error fetching PubChem compound properties: ${getErrorMessage(error)}`, {
+      error,
+    });
     return undefined;
   }
 }
@@ -563,7 +571,7 @@ async function getSynonymsByCidUncached(cid: PubChemCID): Promise<string[] | und
     const data = await response.json();
     return extractSynonyms(data);
   } catch (error) {
-    console.error('Error fetching PubChem synonyms by CID:', error);
+    logger.error(`Error fetching PubChem synonyms by CID: ${getErrorMessage(error)}`, { error });
     return undefined;
   }
 }
@@ -602,7 +610,7 @@ async function getCompoundDescriptionUncached(
     const data = await response.json();
     return extractDescription(data);
   } catch (error) {
-    console.error('Error fetching PubChem description:', error);
+    logger.error(`Error fetching PubChem description: ${getErrorMessage(error)}`, { error });
     return undefined;
   }
 }
@@ -752,7 +760,7 @@ async function getGhsClassificationUncached(cid: PubChemCID): Promise<PubChemGhs
     if (!response.ok) return undefined;
     return extractGhs(await response.json());
   } catch (error) {
-    console.error('Error fetching PubChem GHS classification:', error);
+    logger.error(`Error fetching PubChem GHS classification: ${getErrorMessage(error)}`, { error });
     return undefined;
   }
 }
@@ -804,7 +812,7 @@ async function getSolubilityUncached(cid: PubChemCID): Promise<string[] | undefi
     if (!response.ok) return undefined;
     return extractSolubility(await response.json());
   } catch (error) {
-    console.error('Error fetching PubChem solubility:', error);
+    logger.error(`Error fetching PubChem solubility: ${getErrorMessage(error)}`, { error });
     return undefined;
   }
 }
@@ -932,7 +940,7 @@ async function executeSDQSearchUncached({
       where: { ands: [where] },
     };
 
-    console.debug('pubchemQuery', pubchemQuery);
+    logger.debug('Built PubChem SDQ query', { pubchemQuery });
     const queryURLString = JSON.stringify(pubchemQuery);
 
     const response = await fetch(
@@ -946,22 +954,23 @@ async function executeSDQSearchUncached({
     }
 
     if (outputSets[0].status.code !== 0) {
-      console.warn(
-        `SDQ agent returned a non-zero status code: ${outputSets[0].status.code}`,
-        { where, select, limit },
-        { response: data },
-      );
+      logger.warn(`SDQ agent returned a non-zero status code: ${outputSets[0].status.code}`, {
+        where,
+        select,
+        limit,
+        response: data,
+      });
       return undefined;
     }
 
     if (outputSets[0].totalCount === 0 || outputSets[0]?.rows?.length === 0) {
-      console.debug(`SDQ agent returned no results`, { where, select, limit }, { response: data });
+      logger.debug(`SDQ agent returned no results`, { where, select, limit, response: data });
       return undefined;
     }
 
     return outputSets[0].rows;
   } catch (error) {
-    console.error('Error querying SDQ agent:', error);
+    logger.error(`Error querying SDQ agent: ${getErrorMessage(error)}`, { error });
   }
 }
 
@@ -1052,7 +1061,7 @@ async function getRankedNamesByNameUncached(name: string): Promise<string[] | un
     const data = await response.json();
     return extractSynonyms(data);
   } catch (error) {
-    console.error('Error fetching PubChem synonyms:', error);
+    logger.error(`Error fetching PubChem synonyms: ${getErrorMessage(error)}`, { error });
     return undefined;
   }
 }

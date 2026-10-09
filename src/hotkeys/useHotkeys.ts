@@ -2,6 +2,10 @@ import { hotkeys as hotkeysConfig } from '@/../config.json';
 import { useEffect, useMemo, useRef } from 'react';
 import { matches, normalizeKey, parseBinding, parseSequence, resolveBinding } from './matcher';
 import type { HotkeyConfig, HotkeyHandlers, ParsedBinding } from './types';
+import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
+
+const logger = new Logger('useHotkeys');
 
 /**
  * Idle window (ms) after which an in-progress key sequence is abandoned.
@@ -103,7 +107,7 @@ function invokeHandler(
   handlers: HotkeyHandlers,
   onTriggered?: (config: HotkeyConfig) => void,
 ): void {
-  console.log(`Hotkey triggered: "${config.id}"`, {
+  logger.debug(`Hotkey triggered: "${config.id}"`, {
     keys: config.keys,
     description: config.description,
   });
@@ -113,11 +117,13 @@ function invokeHandler(
       const result = handler();
       if (result instanceof Promise) {
         result.catch((error) => {
-          console.error(`Hotkey handler "${config.id}" failed`, { error });
+          logger.error(`Hotkey handler "${config.id}" failed: ${getErrorMessage(error)}`, {
+            error,
+          });
         });
       }
     } catch (error) {
-      console.error(`Hotkey handler "${config.id}" threw`, { error });
+      logger.error(`Hotkey handler "${config.id}" threw: ${getErrorMessage(error)}`, { error });
       return;
     }
   }

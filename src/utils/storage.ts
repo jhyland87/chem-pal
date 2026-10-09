@@ -1,6 +1,7 @@
 import { storage as storageConfig } from '@/../config.json';
 import { Logger } from '@/utils/Logger';
 import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 /**
  * Transparent lz-string compression layer for chrome.storage.
@@ -72,7 +73,7 @@ export function encodeValue(value: unknown): LzEnvelope | unknown {
     }
     return { __lz: LZ_VERSION, d: compressToUTF16(json) };
   } catch (error) {
-    logger.error('Failed to encode value, storing raw', { error });
+    logger.error(`Failed to encode value, storing raw: ${getErrorMessage(error)}`, { error });
     return value;
   }
 }
@@ -96,7 +97,7 @@ export function decodeValue(value: unknown): unknown {
     }
     return JSON.parse(json);
   } catch (error) {
-    logger.error('Failed to decode envelope, returning raw', { error });
+    logger.error(`Failed to decode envelope, returning raw: ${getErrorMessage(error)}`, { error });
     return value;
   }
 }
@@ -265,7 +266,9 @@ async function decodeCache(key: string, area: 'session' | 'local' = 'session'): 
     //console.log(`%c_decodeCache("${key}", "${area}"):`, "color: #4fc3f7; font-weight: bold", value);
     return value;
   } catch (error) {
-    console.error(`Failed to decode cache key "${key}" from ${area}:`, error);
+    logger.error(`Failed to decode cache key "${key}" from ${area}: ${getErrorMessage(error)}`, {
+      error,
+    });
     return undefined;
   }
 }

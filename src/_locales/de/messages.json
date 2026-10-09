@@ -735,6 +735,14 @@
     "message": "Überschreibt den Standard-Scorer jedes Anbieters",
     "description": "Helper text (dev)."
   },
+  "settings_remote_log_levels": {
+    "message": "Diagnoseprotokoll-Stufen",
+    "description": "Label for the advanced multi-select of log levels sent as diagnostic logs."
+  },
+  "settings_remote_log_levels_helper": {
+    "message": "Welche Protokollstufen gesendet werden, wenn das Teilen von Nutzungsdaten aktiv ist",
+    "description": "Helper text under the diagnostic log levels select."
+  },
   "settings_fuzz_scorer_default": {
     "message": "Standard (pro Anbieter)",
     "description": "Default scorer option (dev)."
@@ -803,7 +811,7 @@
   "offline_title": { "message": "Keine Internetverbindung", "description": "Title of the full-screen offline overlay." },
   "offline_message": { "message": "Es gab ein Problem mit der Netzwerkverbindung. Diese Meldung verschwindet, sobald die Verbindung wiederhergestellt ist.", "description": "Body of the offline overlay." },
   "settings_share_usage_data": { "message": "Nutzungsdaten teilen", "description": "Settings toggle label: opt in/out of usage analytics." },
-  "settings_share_usage_data_desc": { "message": "Nutzungs- und Fehlerstatistiken (Suchen, Ergebnisanzahl, Installationen, Updates, Abstürze) senden, um ChemPal zu verbessern – verknüpft mit einer Gerätekennung, nicht mit deinem Namen oder Konto.", "description": "Description under the usage-data toggle." },
+  "settings_share_usage_data_desc": { "message": "Nutzungs- und Fehlerstatistiken (Suchen, Ergebnisanzahl, Installationen, Updates, Abstürze) sowie Diagnoseprotokolle senden, um ChemPal zu verbessern – verknüpft mit einer Gerätekennung, nicht mit deinem Namen oder Konto.", "description": "Description under the usage-data toggle." },
   "speed_dial_aria": {
     "message": "SpeedDial-Menü",
     "description": "Accessible label for the speed dial."

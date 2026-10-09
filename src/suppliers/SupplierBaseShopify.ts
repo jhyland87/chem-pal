@@ -118,13 +118,13 @@ export abstract class SupplierBaseShopify
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    this.logger.info('queryProducts', { query, limit });
+    this.logger.info('Starting product search', { query, limit });
     // The .gql import is a parsed DocumentNode (vite-plugin-graphql-loader); the Shopify endpoint
     // wants the raw query text, so print it and pass the variables alongside. The `first` over-fetch
     // (200) gives the fuzzy filter a wide candidate pool before slicing back down to `limit`.
     const graphQLQuery = print(searchProductsQuery);
     const graphQLVariables = this.getGraphQLVariables(query, 200);
-    this.logger.debug('querying for products', {
+    this.logger.debug('Sending Shopify GraphQL product query', {
       query,
       limit,
       graphQLQuery,
@@ -141,7 +141,7 @@ export abstract class SupplierBaseShopify
       },
     });
 
-    this.logger.debug('searchRequest', { searchRequest });
+    this.logger.debug('Received search response', { searchRequest });
     if (!isValidShopifySearchResponse(searchRequest)) {
       this.logger.error('Invalid Shopify search response', { response: searchRequest });
       throw new Error('Invalid Shopify search response', { cause: { searchRequest } });
@@ -151,7 +151,7 @@ export abstract class SupplierBaseShopify
     const products = searchRequest.data.products.edges.map((edge) => edge.node);
 
     if (products.length === 0) {
-      this.logger.warn('Shopify search returned no products', { query });
+      this.logger.debug('Shopify search returned no products', { query });
       return;
     }
 
@@ -159,7 +159,7 @@ export abstract class SupplierBaseShopify
 
     const fuzzResults = this.fuzzyFilterAst<ShopifyProductNode>(products);
     const filteredResults = this.filterProducts(fuzzResults);
-    this.logger.debug('fuzzResults', {
+    this.logger.debug('Applied fuzzy filter to search results', {
       query,
       searchRequest,
       products,
@@ -239,7 +239,7 @@ export abstract class SupplierBaseShopify
           : product.variants.edges[0]?.node;
 
       if (!primaryVariant) return;
-      this.logger.debug('primaryVariant', { primaryVariant });
+      this.logger.debug('Selected primary variant', { primaryVariant });
 
       const parsedPrice = parsePrice(`$${primaryVariant.price.amount}`);
       if (!parsedPrice) return;
@@ -285,7 +285,7 @@ export abstract class SupplierBaseShopify
       // so it's only a fallback — and it's read from the structured weight fields
       // rather than a parsed string to preserve sub-1 values (e.g. 0.3 lb).
       const parseableQuantityStrings = [product.title, primaryVariant.sku ?? '', descriptionText];
-      this.logger.debug('parseableQuantityStrings', { parseableQuantityStrings });
+      this.logger.debug('Collected strings to parse for quantity', { parseableQuantityStrings });
       const quantity =
         firstMap(parseQuantity, parseableQuantityStrings) ??
         this.weightQuantity(primaryVariant.weight, primaryVariant.weightUnit);

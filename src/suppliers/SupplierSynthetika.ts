@@ -406,10 +406,10 @@ export class SupplierSynthetika
   protected async getProductData(
     product: ProductBuilder<Product & { variants?: Variant[] }>,
   ): Promise<ProductBuilder<Product> | void> {
-    console.log('[synthetika] getProductData init', { product });
+    this.logger.debug('[synthetika] getProductData init', { product });
     return this.getProductDataWithCache(product, async (builder) => {
       if (builder instanceof ProductBuilder === false) {
-        this.logger.warn('Invalid product object - Expected ProductBuilder instance:', {
+        this.logger.warn('Invalid product object - Expected ProductBuilder instance', {
           builder,
           product,
         });
@@ -421,7 +421,7 @@ export class SupplierSynthetika
         path: productURL,
       });
 
-      console.log('[synthetika] productResponse', {
+      this.logger.debug('[synthetika] Received product response', {
         builder,
         product,
         productURL,
@@ -430,7 +430,7 @@ export class SupplierSynthetika
 
       // Run the minimal check first, so if that fails we can bail early.
       if (!isSynthetikaProduct(productResponse)) {
-        this.logger.warn('Product Response body did not satisfy product typeguard:', {
+        this.logger.warn('Product Response body did not satisfy product typeguard', {
           productResponse,
           builder,
           product,
@@ -449,7 +449,9 @@ export class SupplierSynthetika
         )
           .sort((a, b) => (a?.quantity ?? 0) - (b?.quantity ?? 0))
           .at(0);
-        console.log('[synthetika] quantityObject (from configurationOptions', { quantityObject });
+        this.logger.debug('[synthetika] quantityObject (from configurationOptions', {
+          quantityObject,
+        });
       }
 
       if (!quantityObject) {
@@ -538,7 +540,7 @@ export class SupplierSynthetika
       //   builder.setVariants(variants);
       // }
 
-      console.log('[synthetika] builder', { builder, product });
+      this.logger.debug('[synthetika] Built product builder', { builder, product });
 
       return builder;
     });

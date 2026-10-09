@@ -19,6 +19,10 @@ import {
   SearchPanelHomeSettingsButton,
   SearchPanelHomeTopBar,
 } from './StyledComponents';
+import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
+
+const logger = new Logger('SearchPanelHome');
 
 /**
  * The popup's home panel. Shows the search entry point and, when a previous
@@ -54,7 +58,9 @@ const SearchPanelHome: FC = () => {
             setResultCount(0);
           }
         } catch (error) {
-          console.warn('Failed to load search results from IndexedDB:', { error });
+          logger.warn(`Failed to load search results from IndexedDB: ${getErrorMessage(error)}`, {
+            error,
+          });
         }
       };
       loadStoredResults();

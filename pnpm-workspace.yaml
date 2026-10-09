@@ -1,5 +1,6 @@
 allowBuilds:
   '@posthog/cli': true
   '@swc/core': true
+  core-js: false
   esbuild: true
   msw: true

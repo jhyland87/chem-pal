@@ -1,8 +1,8 @@
-import { StatusCodes } from 'http-status-codes';
+import { HttpStatus } from '@/constants/httpStatus';
 import * as v from 'valibot';
 
 const responseOkSchema = v.object({
-  responseStatusCode: v.literal(StatusCodes.OK),
+  responseStatusCode: v.literal(HttpStatus.OK),
   '@type': v.string(),
   contents: v.record(v.string(), v.unknown()),
 });
@@ -67,7 +67,7 @@ export function isResponseOk(response: unknown): response is CarolinaSearchRespo
 }
 
 const validSearchResponseSchema = v.object({
-  responseStatusCode: v.literal(StatusCodes.OK),
+  responseStatusCode: v.literal(HttpStatus.OK),
   '@type': v.string(),
   contents: v.object({
     ContentFolderZone: v.pipe(
@@ -93,7 +93,7 @@ const validSearchResponseSchema = v.object({
  * ```typescript
  * // Valid search response
  * const validResponse = {
- *   responseStatusCode: StatusCodes.OK,
+ *   responseStatusCode: HttpStatus.OK,
  *   "@type": "SearchResponse",
  *   contents: {
  *     ContentFolderZone: [

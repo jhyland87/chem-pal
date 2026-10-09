@@ -4,6 +4,7 @@ import {
   supplierShippingMeta,
   supplierShipsTo,
 } from '@/constants/supplierMeta';
+import { HttpStatus } from '@/constants/httpStatus';
 import { recordException } from '@/helpers/errorBuffer';
 import { resolveIdentifierNames } from '@/helpers/pubchem';
 import { filterRestrictedProduct } from '@/helpers/purchaseRestriction';
@@ -23,6 +24,12 @@ import { incrementParseError } from '@/utils/SupplierStatsStore';
 import { Queue } from 'async-await-queue';
 import * as suppliers from '.';
 import { SupplierBase } from './SupplierBase';
+import {
+  getErrorMessage,
+  isAbortError,
+  isExpectedAbort,
+  isRateLimited,
+} from '@/helpers/exceptions';
 
 /** Constructor signature for supplier classes used by the factory */
 type SupplierConstructor<P extends Product> = new (
@@ -30,21 +37,6 @@ type SupplierConstructor<P extends Product> = new (
   limit: number,
   controller: AbortController,
 ) => SupplierBase<unknown, P>;
-
-/**
- * True for an `AbortError` — a user-initiated stop or a search-budget timeout,
- * which is expected and must not be aggregated as a supplier failure.
- * @param error - The error thrown by a supplier's `execute()`.
- * @returns `true` when the error represents an abort.
- * @example
- * ```ts
- * isAbortError(new DOMException("stop", "AbortError")); // => true
- * ```
- * @source
- */
-function isAbortError(error: unknown): boolean {
-  return error instanceof Error && error.name === 'AbortError';
-}
 
 /**
  * Options for constructing a {@link SupplierFactory}. `controller` is required; every other field
@@ -224,7 +216,7 @@ export class SupplierFactory<P extends Product> {
       fuzzScorerOverride,
       doNotCacheEmptyResults = false,
       cacheTtlMinutes = 0,
-      noCacheStatusCodes = [429],
+      noCacheStatusCodes = [HttpStatus.TOO_MANY_REQUESTS],
       supplierSearchTimeBudgetSec,
       fuzzyFilteringDisabled = false,
       location,
@@ -234,7 +226,8 @@ export class SupplierFactory<P extends Product> {
     } = options;
 
     this.logger = new Logger('SupplierFactory');
-    this.logger.debug('initialized', {
+    this.logger.setContext({ ...Logger.getContext(), search_query: query });
+    this.logger.debug('SupplierFactory initialized', {
       query,
       limit,
       controller,
@@ -402,10 +395,10 @@ export class SupplierFactory<P extends Product> {
             });
           }
           return { instance, granted };
-        } catch (e) {
-          this.logger.error('Permission check failed for supplier', {
+        } catch (error) {
+          this.logger.error(`Permission check failed for supplier: ${getErrorMessage(error)}`, {
             supplier: instance.supplierName,
-            error: e,
+            error: error,
           });
           return { instance, granted: false };
         }
@@ -507,7 +500,10 @@ export class SupplierFactory<P extends Product> {
           }
         }
       } catch (error) {
-        this.logger.warn('Failed to resolve identifier term; skipping', { term, error });
+        this.logger.warn(`Failed to resolve identifier term; skipping: ${getErrorMessage(error)}`, {
+          term,
+          error,
+        });
       }
     }
 
@@ -540,7 +536,7 @@ export class SupplierFactory<P extends Product> {
         if (this.disabledSuppliers.includes(supplierClassName)) return;
         if (!(this.suppliers.length === 0 || this.suppliers.includes(supplierClassName))) return;
 
-        this.logger.debug('Initializing supplier class:', supplierClassName);
+        this.logger.debug('Initializing supplier class', { supplierClassName });
         // Trusted static supplier classes; the union of concrete constructors
         // isn't structurally assignable to the generic SupplierConstructor<P>.
         const ConcreteSupplierClass = supplierClass as unknown as SupplierConstructor<P>;
@@ -575,6 +571,7 @@ export class SupplierFactory<P extends Product> {
 
     const tasks = permittedInstances.map((supplier) =>
       queue.run(async () => {
+        this.logger.trace('Starting supplier', { supplier: supplier.supplierName });
         try {
           for await (const product of supplier.execute()) {
             const filtered = this.applyRestrictionFilter(product);
@@ -583,8 +580,7 @@ export class SupplierFactory<P extends Product> {
             }
           }
         } catch (e) {
-          this.logger.error('Error executing supplier', { error: e, supplier });
-          incrementParseError(supplier.supplierName);
+          this.recordSupplierFailure(e, supplier);
           if (!isAbortError(e)) errors.push({ error: e, supplier });
         } finally {
           this.suppliersCompleted++;
@@ -658,6 +654,7 @@ export class SupplierFactory<P extends Product> {
 
     permittedInstances.forEach((supplier) => {
       queue.run(async () => {
+        this.logger.trace('Starting supplier', { supplier: supplier.supplierName });
         try {
           const iterator = supplier.execute();
           for await (const product of iterator) {
@@ -667,8 +664,7 @@ export class SupplierFactory<P extends Product> {
             }
           }
         } catch (e) {
-          this.logger.error('Error executing supplier', { error: e, supplier });
-          incrementParseError(supplier.supplierName);
+          this.recordSupplierFailure(e, supplier);
           if (!isAbortError(e)) errors.push({ error: e, supplier });
         } finally {
           doneCount++;
@@ -689,6 +685,61 @@ export class SupplierFactory<P extends Product> {
     // All suppliers have settled; partial results were already streamed, so record
     // (rather than throw) any failures as one AggregateError for bug reports.
     this.reportExecutionErrors(errors);
+  }
+
+  /**
+   * Records a supplier's failed `execute()`: logs it and counts it as a parse error in the supplier
+   * stats. A deliberate stop (the user pressing Stop, the time budget elapsing) is logged but not
+   * counted, since it isn't a fault of the supplier.
+   * @param error - The value the supplier threw.
+   * @param supplier - The supplier that threw it.
+   * @example
+   * ```ts
+   * this.recordSupplierFailure(new TypeError('bad'), supplier); // logged and counted
+   * this.recordSupplierFailure('user_aborted', supplier);       // logged only
+   * ```
+   * @source
+   */
+  private recordSupplierFailure(error: unknown, supplier: SupplierBase<unknown, P>): void {
+    this.logSupplierFailure(error, supplier);
+    if (!isExpectedAbort(error)) {
+      incrementParseError(supplier.supplierName);
+    }
+  }
+
+  /**
+   * Logs why a supplier's `execute()` threw. A deliberate stop (the user pressing Stop) is
+   * expected and logged at `debug`; anything else is a real failure and logged at `error`.
+   * Only the supplier's name is logged, not the whole instance.
+   * @param error - The value the supplier threw.
+   * @param supplier - The supplier that threw it.
+   * @example
+   * ```ts
+   * this.logSupplierFailure('user_aborted', supplier); // debug: 'Supplier stopped by abort'
+   * this.logSupplierFailure(new TypeError('bad'), supplier); // error: 'Error executing supplier'
+   * ```
+   * @source
+   */
+  private logSupplierFailure(error: unknown, supplier: SupplierBase<unknown, P>): void {
+    const supplierName = supplier.supplierName;
+    if (isExpectedAbort(error)) {
+      this.logger.debug(`Supplier stopped by abort: ${getErrorMessage(error)}`, {
+        error,
+        supplier: supplierName,
+      });
+      return;
+    }
+    if (isRateLimited(error)) {
+      this.logger.warn(`Supplier is rate limiting: ${getErrorMessage(error)}`, {
+        error,
+        supplier: supplierName,
+      });
+      return;
+    }
+    this.logger.error(`Error executing supplier: ${getErrorMessage(error)}`, {
+      error,
+      supplier: supplierName,
+    });
   }
 
   /**

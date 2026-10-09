@@ -12,6 +12,7 @@ import {
   isVWRTokenResponse,
 } from '@/utils/typeGuards/vwr';
 import { SupplierBase } from './SupplierBase';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 /**
  * SupplierVWR - supplier implementation for VWR (Avantor Sciences).
@@ -474,7 +475,10 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
       const url = (await response.text()).trim();
       return url.startsWith('http') ? url : undefined;
     } catch (error: unknown) {
-      this.logger.warn('VWR canonical URL fetch failed', { baseProduct, error });
+      this.logger.warn(`VWR canonical URL fetch failed: ${getErrorMessage(error)}`, {
+        baseProduct,
+        error,
+      });
       return undefined;
     }
   }

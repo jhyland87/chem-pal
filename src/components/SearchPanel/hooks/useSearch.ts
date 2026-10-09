@@ -9,17 +9,17 @@ import { supplierShippingMeta } from '@/constants/supplierMeta';
 import { SUPPLIER_CLASS_NAMES, isSupplierClassName } from '@/constants/suppliers';
 import { useAppContext } from '@/context';
 import { SearchEvent, emitSearchEvent, type SearchOutcomeDetail } from '@/events/searchEvents';
+import { getErrorMessage } from '@/helpers/exceptions';
 import { addExcludedProduct } from '@/helpers/excludedProducts';
 import { i18n } from '@/helpers/i18n';
 import { flushPendingPriceHistory, recordProductPrices } from '@/helpers/priceHistory';
-import { recordSearch } from '@/utils/reviewStats';
 import { dedupeProducts, getProductDedupeKey } from '@/helpers/productIdentity';
+import { suggestAdvancedQuery, suggestAlternativeSearch } from '@/helpers/pubchem';
 import {
   resolveSupplierSelection,
   shippingCovers,
   suppliersExcludedBySearchFilters,
 } from '@/helpers/supplierFilters';
-import { suggestAdvancedQuery, suggestAlternativeSearch } from '@/helpers/pubchem';
 import { HotkeyEvent } from '@/hotkeys';
 import type { SupplierFactory } from '@/suppliers/SupplierFactory';
 import {
@@ -32,6 +32,8 @@ import {
   updateSearchHistoryResultCount as idbUpdateHistoryResultCount,
 } from '@/utils/idbCache';
 import { Logger } from '@/utils/Logger';
+import { generateTraceId } from '@/utils/traceId';
+import { recordSearch } from '@/utils/reviewStats';
 import { extractAllPositiveTerms } from '@/utils/search-query/extractPositiveTerms';
 import { hasAdvancedSyntax, parseSearchQuery } from '@/utils/search-query/parseSearchQuery';
 import { cstorage } from '@/utils/storage';
@@ -99,7 +101,7 @@ export async function saveResultsToSession(results: Product[], query?: string): 
   try {
     await idbSetSearchResults(results, query);
   } catch (error) {
-    logger.warn('Failed to save search results to IndexedDB:', { error });
+    logger.warn(`Failed to save search results to IndexedDB: ${getErrorMessage(error)}`, { error });
   }
 }
 
@@ -126,7 +128,7 @@ export async function createInitialHistoryEntry(
       excludeSelectedSuppliers,
     });
   } catch (error) {
-    logger.warn('Failed to save search history:', { error });
+    logger.warn(`Failed to save search history: ${getErrorMessage(error)}`, { error });
   }
 }
 
@@ -138,7 +140,9 @@ export async function updateHistoryResultCount(timestamp: number, count: number)
   try {
     await idbUpdateHistoryResultCount(timestamp, count);
   } catch (error) {
-    logger.warn('Failed to update search history result count:', { error });
+    logger.warn(`Failed to update search history result count: ${getErrorMessage(error)}`, {
+      error,
+    });
   }
 }
 
@@ -157,7 +161,9 @@ async function getZeroResultQueries(): Promise<Set<string>> {
       }
     }
   } catch (error) {
-    logger.warn('Failed to load search history for suggestions:', { error });
+    logger.warn(`Failed to load search history for suggestions: ${getErrorMessage(error)}`, {
+      error,
+    });
   }
   return failed;
 }
@@ -231,7 +237,9 @@ export async function buildNoResultsMessage(
       lines.push(i18n('search_suggest_cas', [cas]));
     }
   } catch (error) {
-    logger.warn('Failed to build alternative search suggestion:', { error });
+    logger.warn(`Failed to build alternative search suggestion: ${getErrorMessage(error)}`, {
+      error,
+    });
   }
 
   return lines.join('\n');
@@ -459,7 +467,10 @@ export function useSearch() {
           try {
             await cstorage.session.remove([String(CACHE.SEARCH_IS_NEW_SEARCH)]);
           } catch (error) {
-            logger.warn(`Failed to clear ${CACHE.SEARCH_IS_NEW_SEARCH} flag`, { error });
+            logger.warn(
+              `Failed to clear ${CACHE.SEARCH_IS_NEW_SEARCH} flag: ${getErrorMessage(error)}`,
+              { error },
+            );
           }
 
           logger.debug('executing search FROM USEFFECT', {
@@ -470,7 +481,9 @@ export function useSearch() {
           performSearch({ query: sessionData[CACHE.QUERY] });
         }
       } catch (error) {
-        logger.warn('Failed to load search data from session storage:', { error });
+        logger.warn(`Failed to load search data from session storage: ${getErrorMessage(error)}`, {
+          error,
+        });
       }
     };
     loadSearchData();
@@ -505,11 +518,15 @@ export function useSearch() {
         return;
       }
       inFlightQueryRef.current = normalizedQuery;
+      // Tag every remote log made while this search runs with its query, and with a trace id unique to
+      // this run, so logs can be grouped by query and told apart between repeated runs of it.
+      const traceId = generateTraceId();
+      Logger.setContext({ search_query: normalizedQuery, trace_id: traceId });
 
       const { searchFilters } = appContext;
       const filtersActive = hasActiveFilters(searchFilters, appContext.userSettings);
 
-      logger.debug('performSearch', {
+      logger.debug('Starting search', {
         query,
         supplierResultLimit,
         suppliers,
@@ -540,7 +557,18 @@ export function useSearch() {
       // Create a history entry immediately so it's recorded even if the search is cancelled or hangs.
       // The resultCount will be updated live as results stream in.
       const historyTimestamp = Date.now();
-      logger.log('Searching for', { query, suppliers, appContext });
+      // `suppliers` is the user's selection, which is empty for "no filter" (every supplier) and an
+      // exclusion list when inverted, so resolve it to the number actually being searched.
+      const invertSelection = appContext.userSettings.search?.invertSuppliersSelection ?? false;
+      const selection = resolveSupplierSelection(suppliers, invertSelection, SUPPLIER_CLASS_NAMES);
+      const supplierCount = selection.none
+        ? 0
+        : selection.suppliers.length || SUPPLIER_CLASS_NAMES.length;
+      logger.log(`Searching ${supplierCount} suppliers`, {
+        query,
+        selectedSuppliers: suppliers,
+        invertSelection,
+      });
       void createInitialHistoryEntry(
         query,
         historyTimestamp,
@@ -563,7 +591,7 @@ export function useSearch() {
       // When filters are active, fetch more results so there's enough after filtering.
       // The per-supplier limit is applied post-filter, so we ask each supplier for more.
       const fetchLimit = filtersActive ? userLimit * 5 : userLimit;
-      logger.debug('fetchLimit', {
+      logger.debug('Calculated per-supplier fetch limit', {
         fetchLimit,
         userLimit,
         filtersActive,
@@ -609,6 +637,9 @@ export function useSearch() {
       // Hoisted for the same reason — the catch branches read its supplier counters.
       let productQueryFactory: SupplierFactory<Product> | undefined;
 
+      // Suppliers that contributed at least one product, for the end-of-search summary log.
+      const suppliersWithResults = new Set<string>();
+
       /**
        * Snapshots what this search produced, for whichever terminal event fires.
        * @returns The outcome detail shared by COMPLETED, ABORTED, and FAILED.
@@ -619,6 +650,32 @@ export function useSearch() {
         suppliersQueried: productQueryFactory?.suppliersQueried ?? 0,
         suppliersCompleted: productQueryFactory?.suppliersCompleted ?? 0,
       });
+
+      /**
+       * Per-supplier tally for the end-of-search log: how many suppliers had results, none, or
+       * failed (and which failed). `suppliersNoResults` is derived, so it can be off by a supplier
+       * whose products were all removed by filters or de-duplication.
+       * @returns The search outcome plus the supplier breakdown.
+       */
+      const searchSummary = () => {
+        const outcome = searchOutcome();
+        const failedSuppliers = (productQueryFactory?.executionErrors ?? []).map(
+          ({ supplier }) => supplier.supplierName,
+        );
+        return {
+          resultCount: outcome.count,
+          durationMs: outcome.durationMs,
+          suppliersQueried: outcome.suppliersQueried,
+          suppliersCompleted: outcome.suppliersCompleted,
+          suppliersWithResults: suppliersWithResults.size,
+          suppliersNoResults: Math.max(
+            0,
+            outcome.suppliersCompleted - suppliersWithResults.size - failedSuppliers.length,
+          ),
+          suppliersFailed: failedSuppliers.length,
+          failedSuppliers,
+        };
+      };
 
       try {
         // Create the search factory object, which sets the query, supplier search limits,
@@ -708,6 +765,7 @@ export function useSearch() {
           const finalResults = limited.map((r, idx) => ({ ...r, _id: idx }));
           setSearchResults(finalResults);
           totalResults = finalResults.length;
+          for (const result of finalResults) suppliersWithResults.add(result.supplier);
 
           // Record USD price history for the final result set (fire-and-forget;
           // dedup means unchanged prices add nothing).
@@ -717,7 +775,7 @@ export function useSearch() {
           await saveResultsToSession(finalResults, query);
           await updateHistoryResultCount(historyTimestamp, finalResults.length);
 
-          logger.debug('Fetched results', {
+          logger.debug('Fetched and filtered search results', {
             allResults,
             filtered,
             finalResults,
@@ -757,6 +815,11 @@ export function useSearch() {
               ...result,
               _id: totalResults - 1,
             };
+            suppliersWithResults.add(result.supplier);
+            logger.trace('Received product from stream', {
+              supplier: result.supplier,
+              title: result.title,
+            });
 
             // Record USD price history for this streamed product (fire-and-forget;
             // done outside the state updater so it runs once per product, not per
@@ -804,7 +867,7 @@ export function useSearch() {
                 appContext.userSettings.search?.suggestAdvancedQuery ?? false,
               );
           setTableText(message);
-          logger.debug('setting table text', { tableText: message });
+          logger.debug('Setting results table message', { tableText: message });
         } else {
           // Clear any status text from a previous search.
           setTableText('');
@@ -821,6 +884,14 @@ export function useSearch() {
             ? { abortReason: classifyAbortReason(controller.signal.reason) }
             : {}),
         });
+        if (controller.signal.aborted) {
+          logger.log('Search cut short', {
+            ...searchSummary(),
+            abortReason: classifyAbortReason(controller.signal.reason),
+          });
+        } else {
+          logger.log('Search completed', { ...searchSummary() });
+        }
 
         // Tally this search toward the review prompt. Past the in-flight guard, so
         // retriggers of the same query don't double-count. Fire-and-forget.
@@ -847,6 +918,10 @@ export function useSearch() {
             ...searchOutcome(),
             reason: classifyAbortReason(controller.signal.reason),
           });
+          logger.log('Search aborted', {
+            ...searchSummary(),
+            reason: classifyAbortReason(controller.signal.reason),
+          });
           setState((prev) => ({
             ...prev,
             isLoading: false,
@@ -860,6 +935,7 @@ export function useSearch() {
             ...searchOutcome(),
             error: error instanceof Error ? error.message : i18n('search_error_failed'),
           });
+          logger.error(`Search failed: ${getErrorMessage(error)}`, { error, ...searchSummary() });
           setState((prev) => ({
             ...prev,
             isLoading: false,
@@ -871,6 +947,10 @@ export function useSearch() {
       } finally {
         // Release the guard so a later deliberate re-search of the same term runs.
         inFlightQueryRef.current = null;
+        // Stop tagging logs with this search, unless a newer search has already replaced it.
+        if (Logger.getContext()?.trace_id === traceId) {
+          Logger.setContext(undefined);
+        }
         // Recording runs in every mode, but the popup can be closed the instant
         // results are shown — flush now instead of waiting on the debounce timer.
         void flushPendingStats();
@@ -940,7 +1020,7 @@ export function useSearch() {
           url: product.url,
         });
       } catch (error) {
-        logger.warn('Failed to persist excluded product:', { error });
+        logger.warn(`Failed to persist excluded product: ${getErrorMessage(error)}`, { error });
       }
       // Persist the updated results so a reload doesn't resurrect the row. Keep the
       // current query so removing a row doesn't drop the header label.
@@ -950,7 +1030,7 @@ export function useSearch() {
   );
 
   const handleStopSearch = useCallback(() => {
-    logger.debug('triggering abort..');
+    logger.debug('Aborting the current search');
     // Signal the abort but keep the overlay up: requests already in flight will
     // keep streaming back until the supplier streams settle. Flip into the
     // "Aborting..." state now; performSearch resets isLoading/isAborting once the

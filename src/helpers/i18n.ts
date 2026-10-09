@@ -1,6 +1,8 @@
 import { useSyncExternalStore } from 'react';
 
 import { i18n as i18nConfig } from '@/../config.json';
+import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 /** A single translated message plus its optional positional placeholders. */
 interface MessageEntry {
@@ -11,28 +13,69 @@ interface MessageEntry {
 /** A locale's full key → entry table (the shape of a `messages.json`). */
 type MessageTable = Record<string, MessageEntry>;
 
-// Every `src/_locales/<code>/messages.json`, bundled at build time. Keys are the
-// matched paths (e.g. "/src/_locales/en/messages.json"); values are the parsed
-// tables. This lets us switch locale in-memory without a network fetch or a
-// browser restart — unlike `chrome.i18n`, which is fixed to the browser UI language.
-const rawTables = import.meta.glob<MessageTable>('/src/_locales/*/messages.json', {
+const logger = new Logger('i18n');
+
+// Locale used for the initial render and as the fallback when a key is missing;
+// sourced from `config.json` (i18n.defaultLocale). Its table is bundled eagerly (below).
+const DEFAULT_LOCALE = i18nConfig.defaultLocale;
+
+// The default locale's table, bundled with the app because every other locale falls
+// back to it and the first render needs it synchronously. `import.meta.glob` patterns
+// must be literals, so this names `en` directly; a unit test pins it to
+// `i18n.defaultLocale` in config.json.
+const defaultTables = import.meta.glob<MessageTable>('/src/_locales/en/messages.json', {
   eager: true,
   import: 'default',
 });
 
+// Every other `src/_locales/<code>/messages.json` as a lazy loader, so each locale is its
+// own chunk fetched from the extension package only when selected — instead of all of
+// them sitting in the startup bundle. Keys are the matched paths (e.g.
+// "/src/_locales/pl/messages.json"). Locale switching stays in-memory, unlike
+// `chrome.i18n`, which is fixed to the browser UI language.
+const lazyTables = import.meta.glob<MessageTable>(
+  ['/src/_locales/*/messages.json', '!/src/_locales/en/messages.json'],
+  { import: 'default' },
+);
+
+/**
+ * Extracts the locale code from a `_locales` glob path.
+ * @param path - A glob key such as `"/src/_locales/pl/messages.json"`.
+ * @returns The locale code (`"pl"`), or `undefined` if the path doesn't match.
+ * @example
+ * ```ts
+ * localeCodeFromPath('/src/_locales/pl/messages.json'); // => "pl"
+ * ```
+ * @source
+ */
+function localeCodeFromPath(path: string): string | undefined {
+  return /\/_locales\/([^/]+)\/messages\.json$/.exec(path)?.[1];
+}
+
+// Tables available synchronously: the default locale up front, others as they load.
 const messageTables: Record<string, MessageTable> = {};
-for (const [path, table] of Object.entries(rawTables)) {
-  const code = /\/_locales\/([^/]+)\/messages\.json$/.exec(path)?.[1];
+for (const [path, table] of Object.entries(defaultTables)) {
+  const code = localeCodeFromPath(path);
   if (code) messageTables[code] = table;
 }
 
-// Locale used for the initial render and as the fallback when a key is missing;
-// sourced from `config.json` (i18n.defaultLocale).
-const DEFAULT_LOCALE = i18nConfig.defaultLocale;
+// Loader per lazily-bundled locale code.
+const localeLoaders: Record<string, () => Promise<MessageTable>> = {};
+for (const [path, load] of Object.entries(lazyTables)) {
+  const code = localeCodeFromPath(path);
+  if (code) localeLoaders[code] = load;
+}
 
-let currentLocale = messageTables[DEFAULT_LOCALE]
-  ? DEFAULT_LOCALE
-  : (Object.keys(messageTables)[0] ?? DEFAULT_LOCALE);
+// Every shipped locale, loaded or not.
+const availableLocales = [
+  ...new Set([...Object.keys(messageTables), ...Object.keys(localeLoaders)]),
+].sort();
+
+let currentLocale = DEFAULT_LOCALE;
+
+// The most recent locale `setLocale` was asked for; lets a slow load be discarded when a
+// newer request has superseded it.
+let requestedLocale = DEFAULT_LOCALE;
 
 const listeners = new Set<() => void>();
 
@@ -113,7 +156,7 @@ export function i18n(key: string, substitutions?: string | string[]): string {
  * @source
  */
 export function getAvailableLocales(): string[] {
-  return Object.keys(messageTables).sort();
+  return [...availableLocales];
 }
 
 /**
@@ -132,19 +175,33 @@ export function getLocale(): string {
 
 /**
  * Switches the active UI locale and notifies subscribers so the React tree
- * re-renders with the new language. A locale without a bundled `messages.json`
- * falls back to the default; a no-op when the locale is unchanged.
+ * re-renders with the new language. A locale that doesn't ship a `messages.json`
+ * falls back to the default; a no-op when the locale is unchanged. Non-default locales
+ * are loaded on demand, so the switch happens once the table has loaded; if another
+ * `setLocale` call arrives meanwhile, the older one is dropped.
  * @category Helpers
  * @param locale - The target locale code (e.g. `"pl"`).
- * @returns Nothing.
+ * @returns A promise that resolves once the locale has been applied (or dropped).
  * @example
  * ```ts
- * setLocale("pl"); // UI re-renders in Polish
+ * await setLocale("pl"); // UI re-renders in Polish
  * ```
  * @source
  */
-export function setLocale(locale: string): void {
-  const next = messageTables[locale] ? locale : DEFAULT_LOCALE;
+export async function setLocale(locale: string): Promise<void> {
+  const next = availableLocales.includes(locale) ? locale : DEFAULT_LOCALE;
+  requestedLocale = next;
+  if (!messageTables[next]) {
+    try {
+      messageTables[next] = await localeLoaders[next]();
+    } catch (error) {
+      // A locale that can't load leaves the UI in its current language.
+      logger.warn(`Failed to load locale "${next}": ${getErrorMessage(error)}`, { error });
+      return;
+    }
+  }
+  // A newer setLocale call superseded this one while the table was loading.
+  if (requestedLocale !== next) return;
   if (next === currentLocale) return;
   currentLocale = next;
   for (const listener of listeners) listener();

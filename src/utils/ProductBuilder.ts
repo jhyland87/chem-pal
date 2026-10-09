@@ -258,7 +258,7 @@ export class ProductBuilder<T extends Product> {
   setTitle(title: unknown): ProductBuilder<T> {
     if (typeof title === 'string' && title.trim().length > 0) {
       this.product.title = title;
-    } else if (title != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(title)) {
       this.logger.warn('setTitle| Invalid title value', { title, builder: this });
     }
     return this;
@@ -277,7 +277,7 @@ export class ProductBuilder<T extends Product> {
   setSupplier(supplier: unknown): ProductBuilder<T> {
     if (typeof supplier === 'string' && supplier.trim().length > 0) {
       this.product.supplier = supplier;
-    } else if (supplier != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(supplier)) {
       this.logger.warn('setSupplier| Invalid supplier value', { supplier, builder: this });
     }
     return this;
@@ -297,7 +297,7 @@ export class ProductBuilder<T extends Product> {
     const href = this.resolveHref(url);
     if (href) {
       this.product.url = href;
-    } else if (url != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(url)) {
       this.logger.warn('setURL| Invalid URL', { url, builder: this });
     }
     return this;
@@ -317,7 +317,7 @@ export class ProductBuilder<T extends Product> {
     const href = this.resolveHref(permalink);
     if (href) {
       this.product.permalink = href;
-    } else if (permalink != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(permalink)) {
       this.logger.warn('setPermalink| Invalid permalink', { permalink, builder: this });
     }
     return this;
@@ -339,7 +339,7 @@ export class ProductBuilder<T extends Product> {
     const href = this.resolveHref(sdsUrl);
     if (href) {
       this.product.sdsUrl = href;
-    } else if (sdsUrl != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(sdsUrl)) {
       this.logger.warn('setSDSUrl| Invalid SDS URL', { sdsUrl, builder: this });
     }
     return this;
@@ -361,7 +361,7 @@ export class ProductBuilder<T extends Product> {
     const href = this.resolveHref(coaUrl);
     if (href) {
       this.product.coaUrl = href;
-    } else if (coaUrl != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(coaUrl)) {
       this.logger.warn('setCoaUrl| Invalid COA URL', { coaUrl, builder: this });
     }
     return this;
@@ -381,7 +381,7 @@ export class ProductBuilder<T extends Product> {
     const href = this.resolveHref(specSheetUrl);
     if (href) {
       this.product.specSheetUrl = href;
-    } else if (specSheetUrl != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(specSheetUrl)) {
       this.logger.warn('setSpecSheetUrl| Invalid spec sheet URL', { specSheetUrl, builder: this });
     }
     return this;
@@ -405,7 +405,7 @@ export class ProductBuilder<T extends Product> {
     const image = this.buildImage(imageURL, 'image', imageAltText);
     if (image) {
       this.setDefaultImage(image);
-    } else if (imageURL != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(imageURL)) {
       this.logger.warn('setImage| Invalid image URL', { imageURL, builder: this });
     }
     return this;
@@ -428,7 +428,7 @@ export class ProductBuilder<T extends Product> {
     const image = this.buildImage(thumbnail, 'thumbnail');
     if (image) {
       this.setDefaultImage(image);
-    } else if (thumbnail != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(thumbnail)) {
       this.logger.warn('setThumbnail| Invalid thumbnail URL', { thumbnail, builder: this });
     }
     return this;
@@ -450,7 +450,7 @@ export class ProductBuilder<T extends Product> {
     const image = this.buildImage(imageURL, 'image', imageAltText);
     if (image) {
       this.pushImage(image);
-    } else if (imageURL != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(imageURL)) {
       this.logger.warn('addImage| Invalid image URL', { imageURL, builder: this });
     }
     return this;
@@ -471,7 +471,7 @@ export class ProductBuilder<T extends Product> {
     const image = this.buildImage(thumbnail, 'thumbnail');
     if (image) {
       this.pushImage(image);
-    } else if (thumbnail != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(thumbnail)) {
       this.logger.warn('addThumbnail| Invalid thumbnail URL', { thumbnail, builder: this });
     }
     return this;
@@ -512,6 +512,29 @@ export class ProductBuilder<T extends Product> {
   addThumbnails(thumbnails: unknown): ProductBuilder<T> {
     this.addImageEntries(thumbnails, 'thumbnail');
     return this;
+  }
+
+  /**
+   * Whether an invalid value is worth a validation warning. Only in dev builds, and only when a
+   * value was actually supplied: `undefined`, `null` and blank strings mean "this supplier has no
+   * data for that field", which is normal and would otherwise flood the log (one warning per
+   * product per field).
+   *
+   * @param value - The value a setter rejected
+   * @returns `true` when the rejection should be logged
+   * @example
+   * ```typescript
+   * this.shouldWarn('');        // false (blank)
+   * this.shouldWarn(undefined); // false (absent)
+   * this.shouldWarn(42);        // true when a string was expected
+   * ```
+   * @source
+   */
+  private shouldWarn(value: unknown): boolean {
+    if (!this.showFailedValidation || value == null) {
+      return false;
+    }
+    return !(typeof value === 'string' && value.trim() === '');
   }
 
   /**
@@ -685,7 +708,7 @@ export class ProductBuilder<T extends Product> {
   setGrade(grade: unknown): ProductBuilder<T> {
     if (typeof grade === 'string' && grade.trim().length > 0) {
       this.product.grade = grade;
-    } else if (grade != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(grade)) {
       this.logger.warn('setGrade| Invalid grade value', { grade, builder: this });
     }
     return this;
@@ -705,7 +728,7 @@ export class ProductBuilder<T extends Product> {
   setPrice(price: unknown): ProductBuilder<T> {
     if (typeof price !== 'number' && typeof price !== 'string') {
       // A non-null, non-numeric value is a genuine misuse worth flagging; absent input is a quiet no-op.
-      if (price != null && this.showFailedValidation) {
+      if (this.shouldWarn(price)) {
         this.logger.warn('setPrice| Invalid price', {
           price,
           builder: this,
@@ -735,7 +758,7 @@ export class ProductBuilder<T extends Product> {
   setCurrencySymbol(sign: unknown): ProductBuilder<T> {
     if (isCurrencySymbol(sign)) {
       this.product.currencySymbol = sign;
-    } else if (sign != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(sign)) {
       this.logger.warn('setCurrencySymbol| Invalid currency symbol', {
         sign,
         builder: this,
@@ -758,7 +781,7 @@ export class ProductBuilder<T extends Product> {
   setCurrencyCode(code: unknown): ProductBuilder<T> {
     if (isCurrencyCode(code)) {
       this.product.currencyCode = code;
-    } else if (code != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(code)) {
       this.logger.warn('setCurrencyCode| Invalid currency code', {
         code,
         builder: this,
@@ -932,7 +955,7 @@ export class ProductBuilder<T extends Product> {
   setMoles(moles: unknown): ProductBuilder<T> {
     if (typeof moles === 'number' && !Number.isNaN(moles) && moles > 0) {
       this.product.moles = moles;
-    } else if (moles != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(moles)) {
       this.logger.warn('setMoles| Invalid moles', { moles, builder: this });
     }
     return this;
@@ -951,7 +974,7 @@ export class ProductBuilder<T extends Product> {
   setUOM(uom: unknown): ProductBuilder<T> {
     if (isUOM(uom)) {
       this.product.uom = uom;
-    } else if (uom != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(uom)) {
       this.logger.warn('setUOM| Invalid UOM', { uom, builder: this });
     }
     return this;
@@ -971,7 +994,7 @@ export class ProductBuilder<T extends Product> {
   setSupplierCountry(country: unknown): ProductBuilder<T> {
     if (isCountryCode(country)) {
       this.product.supplierCountry = country;
-    } else if (country != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(country)) {
       this.logger.warn('setSupplierCountry| Invalid country value', { country, builder: this });
     }
     return this;
@@ -991,7 +1014,7 @@ export class ProductBuilder<T extends Product> {
   setSupplierShipping(shipping: unknown): ProductBuilder<T> {
     if (isShippingRange(shipping)) {
       this.product.supplierShipping = shipping;
-    } else if (shipping != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(shipping)) {
       this.logger.warn('setSupplierShipping| Invalid shipping value', { shipping, builder: this });
     }
     return this;
@@ -1013,7 +1036,7 @@ export class ProductBuilder<T extends Product> {
     const valid = candidates.filter(isPaymentMethod);
     if (valid.length > 0) {
       this.product.paymentMethods = valid;
-    } else if (paymentMethods != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(paymentMethods)) {
       this.logger.warn('setSupplierPaymentMethods| Invalid payment methods', {
         paymentMethods,
         builder: this,
@@ -1063,7 +1086,7 @@ export class ProductBuilder<T extends Product> {
     const href = this.absoluteHttpURL(storeURL);
     if (href) {
       this.product.supplierEbayStoreURL = href;
-    } else if (storeURL != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(storeURL)) {
       this.logger.warn('setSupplierEbayStoreURL| Invalid eBay store URL', {
         storeURL,
         builder: this,
@@ -1088,7 +1111,7 @@ export class ProductBuilder<T extends Product> {
     const href = this.absoluteHttpURL(storeURL);
     if (href) {
       this.product.supplierAmazonStoreURL = href;
-    } else if (storeURL != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(storeURL)) {
       this.logger.warn('setSupplierAmazonStoreURL| Invalid Amazon store URL', {
         storeURL,
         builder: this,
@@ -1113,7 +1136,7 @@ export class ProductBuilder<T extends Product> {
   setDescription(description: unknown): ProductBuilder<T> {
     if (typeof description === 'string' && description.trim().length > 0) {
       this.product.description = htmlToAscii(description);
-    } else if (description != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(description)) {
       this.logger.warn('setDescription| Invalid description', { description, builder: this });
     }
     return this;
@@ -1132,7 +1155,7 @@ export class ProductBuilder<T extends Product> {
   setShortDescription(shortDescription: unknown): ProductBuilder<T> {
     if (typeof shortDescription === 'string' && shortDescription.trim().length > 0) {
       this.product.shortDescription = htmlToAscii(shortDescription);
-    } else if (shortDescription != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(shortDescription)) {
       this.logger.warn('setShortDescription| Invalid short description', {
         shortDescription,
         builder: this,
@@ -1157,7 +1180,7 @@ export class ProductBuilder<T extends Product> {
       if (!Number.isNaN(value)) {
         this.product.rating = value;
       }
-    } else if (rating != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(rating)) {
       this.logger.warn('setRating| Invalid rating', { rating, builder: this });
     }
     return this;
@@ -1237,7 +1260,7 @@ export class ProductBuilder<T extends Product> {
   setID(id: unknown): ProductBuilder<T> {
     if (typeof id === 'number' || typeof id === 'string') {
       this.product.id = id;
-    } else if (id != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(id)) {
       this.logger.warn('setID| Invalid ID value', { id, builder: this });
     }
     return this;
@@ -1257,7 +1280,7 @@ export class ProductBuilder<T extends Product> {
   setUUID(uuid: unknown): ProductBuilder<T> {
     if (typeof uuid === 'string' && uuid.trim().length > 0) {
       this.product.uuid = uuid;
-    } else if (uuid != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(uuid)) {
       this.logger.warn('setUUID| Invalid UUID value', { uuid, builder: this });
     }
     return this;
@@ -1277,7 +1300,7 @@ export class ProductBuilder<T extends Product> {
   setSku(sku: unknown): ProductBuilder<T> {
     if (typeof sku === 'string' && sku.trim().length > 0) {
       this.product.sku = sku;
-    } else if (sku != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(sku)) {
       this.logger.warn('setSku| Invalid SKU value', { sku, builder: this });
     }
     return this;
@@ -1302,7 +1325,7 @@ export class ProductBuilder<T extends Product> {
       this.product.cacheKey = cacheKey;
     } else if (typeof cacheKey === 'number' && Number.isFinite(cacheKey)) {
       this.product.cacheKey = String(cacheKey);
-    } else if (cacheKey != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(cacheKey)) {
       this.logger.warn('setCacheKey| Invalid cache key value', { cacheKey, builder: this });
     }
     return this;
@@ -1463,7 +1486,7 @@ export class ProductBuilder<T extends Product> {
   setVendor(vendor: unknown): ProductBuilder<T> {
     if (typeof vendor === 'string' && vendor.trim().length > 0) {
       this.product.vendor = vendor;
-    } else if (vendor != null && this.showFailedValidation) {
+    } else if (this.shouldWarn(vendor)) {
       this.logger.warn('setVendor| Invalid vendor value', { vendor, builder: this });
     }
     return this;
@@ -2187,7 +2210,7 @@ export class ProductBuilder<T extends Product> {
     }
 
     if (!isProduct(this.product)) {
-      this.logger.error(`ProductBuilder| Invalid product:`, {
+      this.logger.error(`ProductBuilder| Invalid product`, {
         product: this.product,
         builder: this,
       });
@@ -2198,7 +2221,7 @@ export class ProductBuilder<T extends Product> {
     // Human-facing permalink defaults to the processing URL when a supplier
     // didn't set one (the common case for scraped suppliers).
     this.product.permalink = this.href(this.product.permalink ?? this.product.url);
-    this.logger.debug('ProductBuilder| Built product:', { product: this.product, builder: this });
+    this.logger.debug('ProductBuilder| Built product', { product: this.product, builder: this });
     // isProduct() above narrows to the base Product; T is the caller's concrete subtype of Product.
     return this.product as T;
   }

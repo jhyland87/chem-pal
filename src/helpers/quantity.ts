@@ -1,5 +1,8 @@
 import { UOM, UOM_ALIASES, type Uom } from '@/constants/common';
 import { isUOM } from '@/utils/typeGuards/common';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('quantity');
 
 /**
  * Quantity parsing and unit conversion utilities for handling different units of measurement.
@@ -227,7 +230,7 @@ export function toBaseQuantity(quantity: number, unit: string): number {
       return quantity;
 
     default:
-      console.debug(`${quantity} ${unit} -> ${quantity} ${unit} (no conversion found)`);
+      logger.debug(`${quantity} ${unit} -> ${quantity} ${unit} (no conversion found)`);
       return quantity;
   }
 }

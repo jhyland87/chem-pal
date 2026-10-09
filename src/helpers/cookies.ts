@@ -1,4 +1,5 @@
 import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 /**
  * @category Cookies Helpers
@@ -53,7 +54,7 @@ export async function setCookie(details: chrome.cookies.SetDetails): Promise<voi
   try {
     await chrome.cookies.set(details);
   } catch (error: unknown) {
-    logger.warn('Failed to set cookie', { details, error });
+    logger.warn(`Failed to set cookie: ${getErrorMessage(error)}`, { details, error });
   }
 }
 
@@ -79,7 +80,7 @@ export async function getCookies(url: string): Promise<chrome.cookies.Cookie[]> 
   try {
     return await chrome.cookies.getAll({ url });
   } catch (error: unknown) {
-    logger.warn('Failed to read cookies', { url, error });
+    logger.warn(`Failed to read cookies: ${getErrorMessage(error)}`, { url, error });
     return [];
   }
 }
@@ -106,7 +107,7 @@ export async function getCookie(url: string, name: string): Promise<chrome.cooki
   try {
     return await chrome.cookies.get({ url, name });
   } catch (error: unknown) {
-    logger.warn('Failed to read cookie', { url, name, error });
+    logger.warn(`Failed to read cookie: ${getErrorMessage(error)}`, { url, name, error });
     return null;
   }
 }

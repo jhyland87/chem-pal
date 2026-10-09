@@ -933,6 +933,14 @@
     "message": "Zastępuje domyślny algorytm każdego dostawcy",
     "description": "Helper text (dev)."
   },
+  "settings_remote_log_levels": {
+    "message": "Poziomy dzienników diagnostycznych",
+    "description": "Label for the advanced multi-select of log levels sent as diagnostic logs."
+  },
+  "settings_remote_log_levels_helper": {
+    "message": "Które poziomy dziennika są wysyłane, gdy udostępnianie danych użycia jest włączone",
+    "description": "Helper text under the diagnostic log levels select."
+  },
   "settings_fuzz_scorer_default": {
     "message": "Domyślny (na dostawcę)",
     "description": "Default scorer option (dev)."
@@ -1012,7 +1020,7 @@
   "offline_title": { "message": "Brak połączenia z internetem", "description": "Title of the full-screen offline overlay." },
   "offline_message": { "message": "Wystąpił problem z połączeniem sieciowym. Ten komunikat zniknie po przywróceniu połączenia.", "description": "Body of the offline overlay." },
   "settings_share_usage_data": { "message": "Udostępniaj dane o użyciu", "description": "Settings toggle label: opt in/out of usage analytics." },
-  "settings_share_usage_data_desc": { "message": "Wysyłaj statystyki użycia i błędów (wyszukiwania, liczba wyników, instalacje, aktualizacje, awarie), aby ulepszać ChemPal. Dane są powiązane z identyfikatorem urządzenia, a nie z Twoim imieniem ani kontem.", "description": "Description under the usage-data toggle." },
+  "settings_share_usage_data_desc": { "message": "Wysyłaj statystyki użycia i błędów (wyszukiwania, liczba wyników, instalacje, aktualizacje, awarie) oraz dzienniki diagnostyczne, aby ulepszać ChemPal. Dane są powiązane z identyfikatorem urządzenia, a nie z Twoim imieniem ani kontem.", "description": "Description under the usage-data toggle." },
   "speed_dial_aria": {
     "message": "Menu SpeedDial",
     "description": "Accessible label for the speed dial."

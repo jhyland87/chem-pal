@@ -1,4 +1,4 @@
-import { StatusCodes } from 'http-status-codes';
+import type { HttpStatus } from '@/constants/httpStatus';
 import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from '@/constants/currency';
 
 declare global {
@@ -13,7 +13,7 @@ declare global {
   interface ExchangeRateResponse {
     /** HTTP status code of the response */
 
-    status_code: StatusCodes;
+    status_code: HttpStatus;
     /** Exchange rate data */
     data: {
       /** Base currency code */

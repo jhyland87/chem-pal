@@ -123,18 +123,18 @@ export abstract class SupplierBaseWoocommerce
     });
 
     if (!isSearchResponse(searchRequest)) {
-      this.logger.error('Invalid search response:', { query, searchRequest });
+      this.logger.error('Invalid search response', { query, searchRequest });
       return;
     }
 
-    this.logger.info('search request response:', { searchRequest });
+    this.logger.debug('Received search response', { searchRequest });
 
     const results: WooCommerceSearchResponseItem[] = this.stripInvalidResults(searchRequest);
 
-    this.logger.info('results:', { results });
+    this.logger.debug('Parsed valid search results', { results });
 
     const fuzzedResults = this.fuzzyFilterAst<WooCommerceSearchResponseItem>(results);
-    this.logger.info('fuzzedResults:', { query, results, fuzzedResults });
+    this.logger.debug('Applied fuzzy filter to search results', { query, results, fuzzedResults });
 
     const builders = this.initProductBuilders(fuzzedResults.slice(0, limit));
 
@@ -213,7 +213,7 @@ export abstract class SupplierBaseWoocommerce
         }
         const data = variantData.get(variant.id);
         if (!data) {
-          this.logger.warn('No variant data returned for variant:', { id: variant.id });
+          this.logger.warn('No variant data returned for variant', { id: variant.id });
           return;
         }
 
@@ -290,7 +290,7 @@ export abstract class SupplierBaseWoocommerce
       });
 
       if (!isSearchResponse(response)) {
-        this.logger.warn('Invalid variant batch response:', { chunk, response });
+        this.logger.warn('Invalid variant batch response', { chunk, response });
         continue;
       }
 
@@ -315,17 +315,17 @@ export abstract class SupplierBaseWoocommerce
   ): WooCommerceSearchResponseItem[] {
     return results.filter((productResult) => {
       if (productResult.is_purchasable === false) {
-        this.logger.debug('stripInvalidResults: skipping non-purchasable product:', {
+        this.logger.debug('stripInvalidResults: skipping non-purchasable product', {
           productResult,
         });
         return false;
       }
       if (productResult.is_in_stock === false) {
-        this.logger.debug('stripInvalidResults: skipping out-of-stock product:', { productResult });
+        this.logger.debug('stripInvalidResults: skipping out-of-stock product', { productResult });
         return false;
       }
       if (!productResult.prices.price && !productResult.price_html) {
-        this.logger.debug('stripInvalidResults: skipping product with no price objects to parse:', {
+        this.logger.debug('stripInvalidResults: skipping product with no price objects to parse', {
           productResult,
         });
         return false;
@@ -547,7 +547,7 @@ export abstract class SupplierBaseWoocommerce
         builder.setQuantity(quantity.quantity, quantity.uom);
       }
 
-      this.logger.debug('initProductBuilder product:', builder.dump());
+      this.logger.debug('Created product builder from product', { product: builder.dump() });
 
       return builder;
     });

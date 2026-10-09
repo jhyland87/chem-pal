@@ -35,6 +35,10 @@ import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { FC, ReactNode, useEffect, useMemo, useState } from 'react';
 import styles from './StatsPanel.module.scss';
 import { BackButton } from './StyledComponents';
+import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
+
+const logger = new Logger('StatsPanel');
 
 /** Center label for the pie chart */
 const StyledText = styled('text')(({ theme }) => ({
@@ -100,7 +104,7 @@ const StatsPanel: FC = () => {
         const data = await getStats();
         setStats(data);
       } catch (error) {
-        console.warn(error);
+        logger.warn(`Failed to load supplier stats: ${getErrorMessage(error)}`, { error });
       }
     };
     loadStats();
@@ -115,7 +119,7 @@ const StatsPanel: FC = () => {
       await clearStats();
       setStats({});
     } catch (error) {
-      console.warn(error);
+      logger.warn(`Failed to clear supplier stats: ${getErrorMessage(error)}`, { error });
     }
   };
 

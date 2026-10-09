@@ -48,6 +48,10 @@ import {
 } from '../StyledComponents';
 import styles from './PriceHistoryPanel.module.scss';
 import { buildPriceChangeRows, type PriceChangeRow } from './priceHistoryRows';
+import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
+
+const logger = new Logger('PriceHistoryPanel');
 
 /**
  * Stand-in for the `multiSelect`/`includeHierarchy`/`inNumberRangeHierarchy`
@@ -89,7 +93,7 @@ const PriceHistoryPanel: FC = () => {
         const entries = await getAllPriceSeries();
         setRows(buildPriceChangeRows(entries));
       } catch (error) {
-        console.warn('Failed to load price history', error);
+        logger.warn(`Failed to load price history: ${getErrorMessage(error)}`, { error });
       }
     };
     void loadRows();

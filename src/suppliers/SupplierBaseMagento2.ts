@@ -213,7 +213,7 @@ export abstract class SupplierBaseMagento2
       },
     });
 
-    this.logger.debug('searchRequest', { searchRequest });
+    this.logger.debug('Received search response', { searchRequest });
     if (!isValidMagento2SearchResponse(searchRequest)) {
       this.logger.error('Invalid Magento2 search response', { response: searchRequest });
       throw new Error('Invalid Magento2 search response', {
@@ -231,7 +231,7 @@ export abstract class SupplierBaseMagento2
     this.logger.debug(`Query returned ${items.length} products`, { items });
 
     const fuzzResults = this.fuzzyFilterAst<Magento2ProductItem>(items);
-    this.logger.debug('fuzzResults', { query, items, fuzzResults });
+    this.logger.debug('Applied fuzzy filter to search items', { query, items, fuzzResults });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));
   }

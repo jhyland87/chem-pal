@@ -28,6 +28,7 @@ import {
 } from '@/utils/typeGuards/ambeed';
 import type { JsonValue } from 'type-fest';
 import { SupplierBase } from './SupplierBase';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 // Decoder for ambeed's am-new2.woff cmap-substitution font.
 // Source codepoint -> visible character. Verified: "łÇÊ¶ÊÊ" -> "$10.00".
@@ -532,7 +533,10 @@ export class SupplierAmbeed
         },
       });
     } catch (error) {
-      this.logger.warn('Ambeed SDS request failed; continuing without SDS URLs', { error, amNos });
+      this.logger.warn(
+        `Ambeed SDS request failed; continuing without SDS URLs: ${getErrorMessage(error)}`,
+        { error, amNos },
+      );
       return {};
     }
 
@@ -1030,12 +1034,12 @@ export class SupplierAmbeed
 
       const productTitle = this.titleSelector(product);
       if (typeof product.priceList?.[0]?.pr_usd !== 'string') {
-        this.logger.warn(`Ambeed product ${productTitle} has no price`, product);
+        this.logger.warn(`Ambeed product ${productTitle} has no price`, { product });
         return;
       }
 
       if (typeof product.priceList?.[0]?.pr_size !== 'string') {
-        this.logger.warn(`Ambeed product ${productTitle} has no size`, product);
+        this.logger.warn(`Ambeed product ${productTitle} has no size`, { product });
         return;
       }
 
@@ -1047,11 +1051,10 @@ export class SupplierAmbeed
         const quantity = parseQuantity(variant.pr_size);
 
         if (!parsedPrice || !quantity) {
-          this.logger.warn(
-            `Failed to parse Ambeed product price for ${productTitle}`,
+          this.logger.warn(`Failed to parse Ambeed product price for ${productTitle}`, {
             product,
             variant,
-          );
+          });
           continue;
         }
 
@@ -1071,7 +1074,7 @@ export class SupplierAmbeed
       const mainVariant = productBuilder.getVariant(0);
 
       if (!mainVariant) {
-        this.logger.warn(`Ambeed product ${productTitle} has no main variant`, product);
+        this.logger.warn(`Ambeed product ${productTitle} has no main variant`, { product });
         return;
       }
 
@@ -1197,7 +1200,7 @@ export class SupplierAmbeed
     }
 
     const variants = this.getPriceVariants(productPriceResponse.value);
-    this.logger.log('Ambeed product price variants', variants);
+    this.logger.debug('Ambeed product price variants', { variants });
 
     const stock = await this.getProductStock(proid, String(product.get('sku')));
     if (stock) {
@@ -1242,11 +1245,14 @@ export class SupplierAmbeed
         }).toString(),
       });
     } catch (error) {
-      this.logger.warn('Ambeed stock request failed; continuing without stock', {
-        error,
-        proid,
-        bd,
-      });
+      this.logger.warn(
+        `Ambeed stock request failed; continuing without stock: ${getErrorMessage(error)}`,
+        {
+          error,
+          proid,
+          bd,
+        },
+      );
       return;
     }
 

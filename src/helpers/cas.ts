@@ -4,6 +4,10 @@ import { CAS_REGEX } from '@/constants/common';
 // this module, creating a common.ts -> smiles.ts -> cas.ts -> common.ts cycle
 // that Rollup could not split cleanly across chunks.
 import { isCAS } from '@/utils/typeGuards/common';
+import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
+
+const logger = new Logger('cas');
 
 /**
  * @category CAS Helpers
@@ -57,7 +61,7 @@ export async function getNamesByCAS(cas: CAS<string>): Promise<Maybe<string[]>> 
     if (!data) return;
     return data.split('\n').map((line: string) => line.trim());
   } catch (error) {
-    console.error(error);
+    logger.error(`Failed to look up names by CAS: ${getErrorMessage(error)}`, { error });
     return;
   }
 }
@@ -104,7 +108,7 @@ export async function getCASByName(name: string): Promise<Maybe<CAS<string>>> {
     const casList = data.split('\n').find((cas) => isCAS(cas));
     return casList;
   } catch (error) {
-    console.error(error);
+    logger.error(`Failed to look up CAS by name: ${getErrorMessage(error)}`, { error });
     return;
   }
 }

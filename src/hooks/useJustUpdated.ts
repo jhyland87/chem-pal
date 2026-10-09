@@ -3,7 +3,12 @@ import type { ReleaseSection } from '@/helpers/updates';
 import { parseReleaseNotes } from '@/helpers/updates';
 import { cstorage } from '@/utils/storage';
 import { useCallback, useEffect, useState } from 'react';
-import semver from 'semver';
+import semverValid from 'semver/functions/valid';
+import semverGt from 'semver/functions/gt';
+import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
+
+const logger = new Logger('useJustUpdated');
 
 /**
  * A release the user has just moved onto, with the notes that shipped in it.
@@ -71,9 +76,9 @@ export function useJustUpdated(): UseJustUpdated {
         // Fresh install: nothing to compare against, and no history to summarize.
         if (typeof previousVersion !== 'string') return;
 
-        const from = semver.valid(previousVersion);
-        const to = semver.valid(__APP_VERSION__);
-        if (!from || !to || !semver.gt(to, from)) return;
+        const from = semverValid(previousVersion);
+        const to = semverValid(__APP_VERSION__);
+        if (!from || !to || !semverGt(to, from)) return;
 
         const notes = parseReleaseNotes(__CHANGELOG_CURRENT__);
         // With no changelog section there is nothing worth interrupting for.
@@ -81,7 +86,9 @@ export function useJustUpdated(): UseJustUpdated {
 
         setNotice({ version: to, previousVersion: from, notes });
       } catch (error) {
-        console.error('Failed to check for a just-installed update:', { error });
+        logger.error(`Failed to check for a just-installed update: ${getErrorMessage(error)}`, {
+          error,
+        });
       }
     };
 

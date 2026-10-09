@@ -1,6 +1,10 @@
 import { errorBuffer as errorBufferConfig } from '@/../config.json';
 import { CACHE } from '@/constants/common';
+import { getErrorMessage, isExpectedAbort } from '@/helpers/exceptions';
+import { Logger } from '@/utils/Logger';
 import { cstorage } from '@/utils/storage';
+
+const logger = new Logger('errorBuffer');
 
 /**
  * A persistent, bounded ring buffer of the most recent runtime exceptions,
@@ -236,10 +240,23 @@ export function installErrorCapture(): void {
 
   self.addEventListener('error', (event: ErrorEvent) => {
     const described = event.error ? describeError(event.error) : { message: event.message };
+    // An exception nothing caught: this page's work stops, so it is fatal.
+    logger.fatal(`Uncaught exception: ${described.message}`, {
+      error: event.error,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    });
     void recordError({ source: 'window', ...described });
   });
 
   self.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+    // A stopped search rejects with its abort reason; that is expected, not a bug.
+    if (!isExpectedAbort(event.reason)) {
+      logger.error(`Unhandled promise rejection: ${getErrorMessage(event.reason)}`, {
+        error: event.reason,
+      });
+    }
     void recordError({ source: 'unhandledrejection', ...describeError(event.reason) });
   });
 }

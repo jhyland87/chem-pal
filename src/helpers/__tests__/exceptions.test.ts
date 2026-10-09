@@ -1,4 +1,10 @@
-import { EmptyResponseError, HttpError } from '@/helpers/exceptions';
+import {
+  EmptyResponseError,
+  HttpError,
+  isAbortError,
+  isExpectedAbort,
+  isRateLimited,
+} from '@/helpers/exceptions';
 import { describe, expect, it } from 'vitest';
 
 describe('EmptyResponseError', () => {
@@ -36,5 +42,56 @@ describe('HttpError', () => {
     } catch (error) {
       expect(error instanceof HttpError && error.status === 500).toBe(true);
     }
+  });
+});
+
+describe('HttpError message', () => {
+  it.each([
+    ['with a status text', 403, 'Forbidden', 'HTTP Error: 403 Forbidden'],
+    ['without a status text (no trailing space)', 403, '', 'HTTP Error: 403'],
+  ])('reads %s', (_label, status, statusText, expected) => {
+    expect(new HttpError(status, statusText).message).toBe(expected);
+  });
+});
+
+describe('isAbortError', () => {
+  it.each([
+    ['a DOMException AbortError', new DOMException('stop', 'AbortError'), true],
+    ['an Error named AbortError', Object.assign(new Error('x'), { name: 'AbortError' }), true],
+    ['a plain Error', new Error('boom'), false],
+    ['a TypeError', new TypeError('bad'), false],
+    ['a string reason', 'user_aborted', false],
+    ['undefined', undefined, false],
+  ])('%s -> %s', (_label, value, expected) => {
+    expect(isAbortError(value)).toBe(expected);
+  });
+});
+
+describe('isExpectedAbort', () => {
+  it.each([
+    ['an AbortError', new DOMException('stop', 'AbortError'), true],
+    ['the user-stop reason string', 'user_aborted', true],
+    ['the time-budget reason string', 'time_budget_exceeded', true],
+    ['an Error whose message is a reason string', new Error('user_aborted'), false],
+    ['an unrelated string', 'something else', false],
+    ['a real failure', new TypeError('bad response'), false],
+    ['null', null, false],
+    ['undefined', undefined, false],
+  ])('%s -> %s', (_label, value, expected) => {
+    expect(isExpectedAbort(value)).toBe(expected);
+  });
+});
+
+describe('isRateLimited', () => {
+  it.each([
+    ['an HttpError 429', new HttpError(429, 'Too Many Requests'), true],
+    ['an HttpError 429 with no status text', new HttpError(429, ''), true],
+    ['an HttpError 403', new HttpError(403, 'Forbidden'), false],
+    ['an HttpError 503', new HttpError(503, 'Service Unavailable'), false],
+    ['a plain Error that merely mentions 429', new Error('HTTP Error: 429'), false],
+    ['the number 429', 429, false],
+    ['undefined', undefined, false],
+  ])('%s -> %s', (_label, value, expected) => {
+    expect(isRateLimited(value)).toBe(expected);
   });
 });

@@ -6,6 +6,7 @@ import { ProductBuilder } from '@/utils/ProductBuilder';
 import { isValidSearchResponse, isProductDetail } from '@/utils/typeGuards/mysimplestore';
 import { isValidVariant } from '@/utils/typeGuards/productbuilder';
 import { SupplierBase } from './SupplierBase';
+import { getErrorMessage } from '@/helpers/exceptions';
 /**
  * Abstract base for suppliers running on the MySimpleStore / GoDaddy "Online Store"
  * platform (a Spree-based JSON storefront). The API lives at
@@ -160,7 +161,11 @@ export abstract class SupplierBaseMySimpleStore
 
     const fuzzResults = this.fuzzyFilterAst<MySimpleStoreListProduct>(searchResponse.products);
 
-    this.logger.info('fuzzResults', { query, products: searchResponse.products, fuzzResults });
+    this.logger.debug('Applied fuzzy filter to products', {
+      query,
+      products: searchResponse.products,
+      fuzzResults,
+    });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));
   }
@@ -321,10 +326,13 @@ export abstract class SupplierBaseMySimpleStore
           params: { app: 'vnext' },
         });
       } catch (error) {
-        this.logger.warn('[MySimpleStore] Detail fetch failed; keeping listing data', {
-          error,
-          slug,
-        });
+        this.logger.warn(
+          `[MySimpleStore] Detail fetch failed; keeping listing data: ${getErrorMessage(error)}`,
+          {
+            error,
+            slug,
+          },
+        );
         return builder;
       }
 

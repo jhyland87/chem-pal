@@ -1,5 +1,9 @@
 import { getProductIdentityKey } from '@/helpers/productIdentity';
 import { getExcludedProducts, putExcludedProducts } from '@/utils/idbCache';
+import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
+
+const logger = new Logger('excludedProducts');
 
 /**
  * Minimal metadata stored for each excluded product so the user can review
@@ -135,7 +139,9 @@ export async function addExcludedProduct(
     };
     await putExcludedProducts(map);
   } catch (error) {
-    console.warn('Failed to persist excluded product to IndexedDB:', { error });
+    logger.warn(`Failed to persist excluded product to IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
   }
   return key;
 }
@@ -165,6 +171,8 @@ export async function removeExcludedProduct(key: string): Promise<void> {
     delete map[key];
     await putExcludedProducts(map);
   } catch (error) {
-    console.warn('Failed to remove excluded product from IndexedDB:', { error });
+    logger.warn(`Failed to remove excluded product from IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
   }
 }

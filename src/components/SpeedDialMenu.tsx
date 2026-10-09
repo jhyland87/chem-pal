@@ -18,6 +18,10 @@ import { MouseEvent, useState } from 'react';
 import { useTheme } from '../themes';
 import AboutModal from './AboutModal';
 import HelpTooltip from './HelpTooltip';
+import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
+
+const logger = new Logger('SpeedDialMenu');
 
 /**
  * SpeedDialMenu component that provides quick access to various application actions.
@@ -53,10 +57,12 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
     try {
       await clearSearchResults();
     } catch (error) {
-      console.warn('Failed to clear search results from IndexedDB:', error);
+      logger.warn(`Failed to clear search results from IndexedDB: ${getErrorMessage(error)}`, {
+        error,
+      });
     }
 
-    console.debug('[handleClearResults] Setting userSettings to:', { ...appContext.userSettings });
+    logger.debug('[handleClearResults] Setting userSettings', { ...appContext.userSettings });
     appContext.setUserSettings({ ...appContext.userSettings });
 
     appContext.setSearchResults([]);
@@ -76,9 +82,9 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
 
     try {
       await SupplierCache.clearAll();
-      console.debug('Supplier cache cleared');
+      logger.debug('Supplier cache cleared');
     } catch (error) {
-      console.error('Failed to clear supplier cache:', { error });
+      logger.error(`Failed to clear supplier cache: ${getErrorMessage(error)}`, { error });
     }
   };
 

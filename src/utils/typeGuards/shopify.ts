@@ -1,4 +1,7 @@
 import * as v from 'valibot';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('typeGuards.shopify');
 
 const shopifyVariantNodeSchema = v.object({
   id: v.string(),
@@ -131,7 +134,7 @@ const shopifySearchResponseSchema = v.object({
 export function isValidShopifySearchResponse(response: unknown): response is ShopifySearchResponse {
   const parsed = v.safeParse(shopifySearchResponseSchema, response);
   if (!parsed.success) {
-    console.warn('isValidShopifySearchResponse: response is not a valid ShopifySearchResponse', {
+    logger.warn('isValidShopifySearchResponse: response is not a valid ShopifySearchResponse', {
       response,
       parsed,
       issues: parsed.issues,

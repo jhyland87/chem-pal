@@ -31,6 +31,7 @@
       ]
     },
     "shareUsageData": true,
+    "remoteLogLevels": ["log", "warn", "error", "fatal"],
     "suppliers": { "disabled": [], "excludeNonShipping": true }
   },
   "search": {
@@ -84,7 +85,20 @@
     "stacktraceLineLengthLimit": 1024,
     "maxCauseDepth": 4,
     "fingerprintVersion": 1,
-    "sessionMaxAgeMs": 82800000
+    "sessionMaxAgeMs": 82800000,
+    "logs": {
+      "serviceName": "chempal-extension",
+      "flushIntervalMs": 5000,
+      "maxBufferSize": 50,
+      "maxLogsPerInterval": 300,
+      "lowPriorityShare": 0.7,
+      "preInitBufferSize": 100,
+      "callSiteLevels": ["warn", "error", "fatal"],
+      "maxMessageChars": 500,
+      "maxArgChars": 300,
+      "maxArgs": 5,
+      "maxStackChars": 1000
+    }
   },
   "errorBuffer": {
     "maxErrors": 20,

@@ -1,6 +1,10 @@
 import { chemicalDb } from '@/../config.json';
 import { getChemicalDb, putChemicalDb } from '@/utils/idbCache';
 import { isCAS } from '@/utils/typeGuards/common';
+import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
+
+const logger = new Logger('oshaChemicalDb');
 
 /**
  * A slimmed OSHA OBIS chemical record. Only the fields the chemical-info dialog shows are kept;
@@ -248,7 +252,9 @@ function loadOshaIndex(): Promise<OshaIndex | undefined> {
       await putChemicalDb(chemicals, Date.now());
       return buildIndex(chemicals);
     } catch (error) {
-      console.error('Failed to download OSHA OBIS chemical DB:', error);
+      logger.error(`Failed to download OSHA OBIS chemical DB: ${getErrorMessage(error)}`, {
+        error,
+      });
       return cached === undefined ? undefined : buildIndex(cached.chemicals);
     }
   })();

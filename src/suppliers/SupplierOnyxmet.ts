@@ -114,7 +114,7 @@ export class SupplierOnyxmet
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    this.logger.log('query:', query);
+    this.logger.log('Starting product search', { query });
 
     const searchResponse = await this.httpGetHtml({
       path: 'index.php',
@@ -131,7 +131,7 @@ export class SupplierOnyxmet
 
     const data = JSON.parse(searchResponse);
 
-    this.logger.debug('all search results:', data);
+    this.logger.debug('Parsed all search results', { data });
 
     const fuzzResults = this.fuzzyFilterAst<OnyxMetSearchResultItem>(data);
 
@@ -169,7 +169,7 @@ export class SupplierOnyxmet
   protected initProductBuilders(data: OnyxMetSearchResultItem[]): ProductBuilder<Product>[] {
     return mapDefined(data, (item) => {
       if (!isSearchResultItem(item)) {
-        this.logger.warn('Invalid search result item:', item);
+        this.logger.warn('Invalid search result item', { item });
         return;
       }
 
@@ -221,7 +221,7 @@ export class SupplierOnyxmet
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     return this.getProductDataWithCache(product, async (builder) => {
-      this.logger.debug('Querying data for partialproduct:', { builder, product });
+      this.logger.debug('Querying data for partialproduct', { builder, product });
 
       const productResponse = await this.httpGetHtml({
         path: builder.get('url'),
@@ -235,7 +235,7 @@ export class SupplierOnyxmet
       const parser = new DOMParser();
       const parsedHTML = parser.parseFromString(productResponse, 'text/html');
       const content = parsedHTML.querySelector('#content');
-      this.logger.debug('Products parsedHTML:', parsedHTML);
+      this.logger.debug('Parsed product page HTML', { parsedHTML });
 
       if (!content) {
         this.logger.warn('No content for product', { builder });

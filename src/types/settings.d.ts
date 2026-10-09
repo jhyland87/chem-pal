@@ -92,6 +92,10 @@ declare global {
     | { type: typeof ACTION_TYPE.SUPPLIER_TOGGLE; value: Array<SupplierClassName> }
     | { type: typeof ACTION_TYPE.PRICE_TRACKING_CHANGE; value: PriceTracking }
     | { type: typeof ACTION_TYPE.CACHE_CHANGE; value: CacheSettings }
+    | {
+        type: typeof ACTION_TYPE.REMOTE_LOG_LEVELS_CHANGE;
+        value: NonNullable<UserSettings['remoteLogLevels']>;
+      }
     | { type: typeof ACTION_TYPE.RESTORE_DEFAULTS };
 
   /**
@@ -252,6 +256,14 @@ declare global {
      * @example true
      */
     shareUsageData?: boolean;
+
+    /**
+     * Which diagnostic log levels are sent to PostHog Logs while `shareUsageData` is on.
+     * Defaults to `['log', 'warn', 'error', 'fatal']`; add `'debug'` or `'trace'` for verbose output. Only
+     * editable from the Advanced settings section. An empty array sends no logs.
+     * @example ['log', 'warn', 'error']
+     */
+    remoteLogLevels?: Array<'trace' | 'debug' | 'log' | 'warn' | 'error' | 'fatal'>;
 
     /**
      * Supplier deny-list and limits. `disabled` names are excluded from every

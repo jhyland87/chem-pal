@@ -7,6 +7,10 @@ import { getUserLanguage, getUserLocation } from '@/helpers/utils';
 import { cstorage } from '@/utils/storage';
 import { isValidUserSettings } from '@/utils/typeGuards/common';
 import { startTransition } from 'react';
+import { Logger } from '@/utils/Logger';
+import { getErrorMessage } from '@/helpers/exceptions';
+
+const logger = new Logger('appReducer');
 
 /**
  * The consolidated App state managed by React's `useActionState`. Split out of
@@ -125,7 +129,7 @@ export function appReducer(currentState: Partial<AppState>, action: AppAction): 
           try {
             await cstorage.local.set({ [CACHE.USER_SETTINGS]: newSettings });
           } catch (error) {
-            console.error('Failed to update settings:', { error });
+            logger.error(`Failed to update settings: ${getErrorMessage(error)}`, { error });
           }
         })();
       });
@@ -150,7 +154,7 @@ export function appReducer(currentState: Partial<AppState>, action: AppAction): 
           try {
             await cstorage.local.set({ [CACHE.USER_SETTINGS]: updatedSettings });
           } catch (error) {
-            console.error('Failed to persist currency rate:', { error });
+            logger.error(`Failed to persist currency rate: ${getErrorMessage(error)}`, { error });
           }
         })();
       });
@@ -170,7 +174,7 @@ export function appReducer(currentState: Partial<AppState>, action: AppAction): 
           try {
             await cstorage.session.set({ [CACHE.PANEL]: action.panel });
           } catch (error) {
-            console.error('Failed to save panel:', { error });
+            logger.error(`Failed to save panel: ${getErrorMessage(error)}`, { error });
           }
         })();
       });
@@ -233,7 +237,7 @@ export function appReducer(currentState: Partial<AppState>, action: AppAction): 
               [CACHE.SELECTED_SUPPLIERS]: action.suppliers,
             });
           } catch (error) {
-            console.error('Failed to save selectedSuppliers:', { error });
+            logger.error(`Failed to save selectedSuppliers: ${getErrorMessage(error)}`, { error });
           }
         })();
       });
@@ -254,7 +258,7 @@ export function appReducer(currentState: Partial<AppState>, action: AppAction): 
               [CACHE.BOOKMARKS_FOLDER_ID]: action.id,
             });
           } catch (error) {
-            console.error('Failed to save bookmarksFolderId:', { error });
+            logger.error(`Failed to save bookmarksFolderId: ${getErrorMessage(error)}`, { error });
           }
         })();
       });

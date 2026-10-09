@@ -12,7 +12,9 @@ import { md5 } from 'js-md5';
  * the project API key (a public, write-only `phc_` key), exactly like a normal
  * PostHog snippet. Events are best-effort and fire-and-forget: failures never
  * throw, and nothing is sent until an API key is configured in `config.json`
- * (`analytics`).
+ * (`analytics`). The one exception to "no `posthog-js`" is diagnostic logging
+ * (`remoteLogs.ts`), which lazy-loads the no-external build for PostHog Logs only and
+ * reuses this module's opt-out gate and identifiers.
  *
  * `distinct_id` is derived from a small set of stable device signals (see
  * `getFingerprintDistinctId`) rather than a stored random id, so PostHog
@@ -469,7 +471,7 @@ let cachedFingerprint: string | undefined;
  * ```
  * @source
  */
-function getFingerprintDistinctId(): string {
+export function getFingerprintDistinctId(): string {
   if (cachedFingerprint) return cachedFingerprint;
 
   try {
@@ -579,7 +581,7 @@ let sessionWriteChain: Promise<string> = Promise.resolve('');
  * ```
  * @source
  */
-async function getSessionId(): Promise<string> {
+export async function getSessionId(): Promise<string> {
   const current = await readStoredSessionId();
   if (current && Date.now() - current.createdAt < SESSION_MAX_AGE_MS) {
     return current.id;
@@ -619,7 +621,7 @@ async function getSessionId(): Promise<string> {
  * @returns `true` if a capture request should be sent.
  * @source
  */
-async function canSendAnalytics(): Promise<boolean> {
+export async function canSendAnalytics(): Promise<boolean> {
   if (import.meta.env.MODE === 'test') return false;
   if (!analyticsConfig.apiKey) return false;
   return analyticsEnabled();

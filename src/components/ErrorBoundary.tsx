@@ -1,7 +1,12 @@
 import { captureOwnerStack, Component, ReactNode } from 'react';
 import { trackRenderError } from '@/helpers/analytics';
+import { getErrorMessage } from '@/helpers/exceptions';
 import { i18n } from '@/helpers/i18n';
 import { showReportDialog } from './ReportDialog';
+import { ErrorReportButton } from './StyledComponents';
+import { Logger } from '@/utils/Logger';
+
+const logger = new Logger('ErrorBoundary');
 
 /** Internal state: whether a descendant threw, and the captured error details. */
 interface ErrorBoundaryState {
@@ -62,17 +67,17 @@ class ErrorBoundary extends Component<
    * @source
    */
   componentDidCatch(error: Error, info: { componentStack: string }) {
-    console.error(
+    logger.fatal(`Component render error: ${getErrorMessage(error)}`, {
       error,
       // Example "componentStack":
       //   in ComponentThatThrows (created by App)
       //   in ErrorBoundary (created by App)
       //   in div (created by App)
       //   in App
-      info.componentStack,
+      componentStack: info.componentStack,
       // Warning: `captureOwnerStack` is not available in production.
-      captureOwnerStack(),
-    );
+      ownerStack: captureOwnerStack(),
+    });
     this.setState({ componentStack: info.componentStack });
     // Report the crash to PostHog, component stack included (non-PII, best-effort).
     void trackRenderError(error, {}, info.componentStack);
@@ -97,29 +102,18 @@ class ErrorBoundary extends Component<
    */
   render() {
     if (this.state.hasError) {
-      // Rendered above the app's ThemeProvider, so use a plain, self-contained
-      // button rather than a MUI component that would lack a theme here.
+      // Rendered above the app's ThemeProvider, so use a plain button that needs no theme rather
+      // than a themed MUI component (see ErrorReportButton).
       return (
         <>
           {this.props.fallback}
-          <button
+          <ErrorReportButton
             type="button"
             data-testid="error-boundary-report"
             onClick={this.handleReport}
-            style={{
-              display: 'block',
-              margin: '8px auto',
-              padding: '6px 14px',
-              font: 'inherit',
-              cursor: 'pointer',
-              borderRadius: 6,
-              border: '1px solid currentColor',
-              background: 'transparent',
-              color: 'inherit',
-            }}
           >
             {i18n('error_boundary_report')}
-          </button>
+          </ErrorReportButton>
         </>
       );
     }

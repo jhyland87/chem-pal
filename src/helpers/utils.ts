@@ -1,4 +1,3 @@
-import { languages as iso639Languages } from 'countries-list';
 import { md5 } from 'js-md5';
 import TurndownService from 'turndown';
 
@@ -585,9 +584,10 @@ export function getUserLanguage(): string {
 }
 
 /**
- * Resolves a locale code to a human-readable language name using the
- * `countries-list` language data. The native name is preferred (e.g. "Deutsch"),
- * falling back to the English name and finally the raw code.
+ * Resolves a locale code to a human-readable language name in that language itself
+ * (e.g. "Deutsch"), using the browser's built-in `Intl.DisplayNames`. The first letter
+ * is upper-cased, since `Intl` returns some names lower-case ("polski"). Falls back to
+ * the raw code when the language is unknown or the code is malformed.
  * @category Helpers
  * @param locale - A locale or language code, e.g. `"de-DE"` or `"de"`; undefined yields undefined
  * @returns The language's display name, or undefined when no locale is given
@@ -604,8 +604,16 @@ export function getLanguageName(locale?: string): string | undefined {
     return undefined;
   }
   const base = locale.split('-')[0].toLowerCase();
-  const entry = (iso639Languages as Record<string, { name: string; native: string }>)[base];
-  return entry?.native ?? entry?.name ?? locale;
+  try {
+    const name = new Intl.DisplayNames([base], { type: 'language' }).of(base);
+    // `of` echoes the code back for a language it doesn't know.
+    if (name && name.toLowerCase() !== base) {
+      return name.charAt(0).toLocaleUpperCase(base) + name.slice(1);
+    }
+  } catch {
+    // A malformed language code throws a RangeError; fall through to the raw code.
+  }
+  return locale;
 }
 
 /**

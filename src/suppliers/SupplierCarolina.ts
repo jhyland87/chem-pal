@@ -13,6 +13,7 @@ import {
   isValidSearchResponse,
 } from '@/utils/typeGuards/carolina';
 import { SupplierBase } from './SupplierBase';
+import { getErrorMessage } from '@/helpers/exceptions';
 
 /**
  * Implementation of the Carolina Biological Supply Company supplier.
@@ -139,14 +140,19 @@ export class SupplierCarolina
     });
 
     if (!isResponseOk(searchRequest)) {
-      this.logger.warn('Response status:', searchRequest);
+      this.logger.warn('Search response was not OK', { searchRequest });
       return;
     }
 
     const results = await this.extractSearchResults(searchRequest);
 
     const fuzzResults = this.fuzzyFilterAst<CarolinaSearchResult>(results);
-    this.logger.debug('fuzzResults:', { query, searchRequest, results, fuzzResults });
+    this.logger.debug('Applied fuzzy filter to search results', {
+      query,
+      searchRequest,
+      results,
+      fuzzResults,
+    });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));
   }
@@ -279,7 +285,7 @@ export class SupplierCarolina
 
       return resultsContainer.results.filter(isSearchResultItem);
     } catch (error) {
-      this.logger.error('Error extracting search results:', error);
+      this.logger.error(`Error extracting search results: ${getErrorMessage(error)}`, { error });
       return [];
     }
   }
@@ -315,7 +321,7 @@ export class SupplierCarolina
 
       return atgResponse.response.response;
     } catch (error) {
-      this.logger.warn('Error extracting ATG response:', error);
+      this.logger.warn(`Error extracting ATG response: ${getErrorMessage(error)}`, { error });
       return null;
     }
   }
@@ -346,7 +352,7 @@ export class SupplierCarolina
     const params = { format: 'json', ajax: 'true' };
     return this.getProductDataWithCache(product, async (builder) => {
       if (builder instanceof ProductBuilder === false) {
-        this.logger.warn('Invalid product object - Expected ProductBuilder instance:', {
+        this.logger.warn('Invalid product object - Expected ProductBuilder instance', {
           builder,
           product,
         });
@@ -359,7 +365,7 @@ export class SupplierCarolina
       });
 
       if (!isResponseOk(productResponse)) {
-        this.logger.warn('Product Response status NOT OK:', {
+        this.logger.warn('Product Response status NOT OK', {
           productResponse,
           builder,
           product,
@@ -378,7 +384,12 @@ export class SupplierCarolina
         });
         return;
       }
-      this.logger.debug('atgResponse:', { atgResponse, productResponse, builder, product });
+      this.logger.debug('Received ATG product response', {
+        atgResponse,
+        productResponse,
+        builder,
+        product,
+      });
 
       const productId = atgResponse.dataLayer.productDetail.productId;
       if (!productId) {
@@ -412,11 +423,8 @@ export class SupplierCarolina
         }
       } else {
         this.logger.warn(
-          'Unable to find the product price in the main product or any variants. contents.MainContent[0].atgResponse.response.response contents:',
-          atgResponse,
-          productResponse,
-          builder,
-          product,
+          'Unable to find the product price in the main product or any variants. contents.MainContent[0].atgResponse.response.response contents',
+          { atgResponse, productResponse, builder, product },
         );
         return;
       }

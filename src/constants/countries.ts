@@ -1,22 +1,22 @@
 /**
  * @group Constants
- * @groupDescription Country lists derived from `country-list-js`. Split out of
+ * @groupDescription Country lists derived from the compact `countryData` table. Split out of
  * `constants/common.ts` so that importing app constants (e.g. `CACHE`) does not
- * pull the full country dataset into dependency-light bundles such as the
+ * pull the country table into dependency-light bundles such as the
  * background service worker.
  * @source
  */
 
-import { all as countriesByIso2 } from 'country-list-js';
+import { COUNTRY_DATA } from '@/constants/countryData';
 
 /**
  * Supported countries for location-based features such as currency and shipping filters.
- * Sourced from `country-list-js` (full ISO 3166-1 alpha-2 list) and sorted alphabetically
- * by country name. Codes that the library can't name fall back to the raw code.
+ * Sourced from {@link COUNTRY_DATA} (full ISO 3166-1 alpha-2 list) and sorted alphabetically
+ * by country name.
  * @source
  */
-export const COUNTRIES = Object.entries(countriesByIso2)
-  .map(([code, record]) => ({ code, name: record?.name ?? code }))
+export const COUNTRIES = Object.entries(COUNTRY_DATA)
+  .map(([code, [name]]) => ({ code, name }))
   .sort((a, b) => a.name.localeCompare(b.name));
 
 /**
@@ -27,8 +27,8 @@ export const COUNTRIES = Object.entries(countriesByIso2)
 export const SUPPLIER_COUNTRY_OPTIONS = COUNTRIES.map(({ code, name }) => ({ code, label: name }));
 
 /**
- * ISO 3166-1 alpha-2 codes of the 27 EU member states. `country-list-js` exposes
- * geographic continent, not EU membership, so this legally-defined set is hardcoded.
+ * ISO 3166-1 alpha-2 codes of the 27 EU member states. The country table carries no EU
+ * membership, so this legally-defined set is hardcoded.
  * Used to evaluate "EU-only" purchase restrictions: a user whose location is not in
  * this set cannot buy an EU-only product.
  * @source
