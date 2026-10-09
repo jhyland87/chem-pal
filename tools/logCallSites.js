@@ -161,7 +161,7 @@ export function injectCallSites(code, file, { levels = ['warn', 'error'], srcRoo
   if (count === 0) return undefined;
   return {
     code: rewritten.toString(),
-    map: rewritten.generateMap({ hires: 'boundary', source: file }),
+    map: rewritten.generateMap({ hires: 'boundary', source: toPosix(file) }),
   };
 }
 

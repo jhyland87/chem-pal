@@ -125,7 +125,8 @@ describe('injectCallSites', () => {
   it('returns a source map for the rewritten source', () => {
     const result = injectCallSites(`logger.warn('x');`, FILE, { srcRoot: SRC });
 
-    expect(result?.map).toMatchObject({ version: 3, sources: [FILE] });
+    // Source maps always use forward slashes, even for a Windows path.
+    expect(result?.map).toMatchObject({ version: 3, sources: [FILE.replaceAll('\\', '/')] });
   });
 
   it('returns undefined when nothing matched', () => {
