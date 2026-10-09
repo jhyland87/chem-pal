@@ -30,6 +30,9 @@ export const SEARCHANISE_API_HOSTS: readonly string[] = [
  */
 export const SEARCHANISE_DEFAULT_API_HOST = 'searchserverapi.com';
 
+/** Plain-text bodies Searchanise returns when it no longer accepts an api key. */
+const REJECTED_KEY_RESPONSES: readonly string[] = ['ENGINE_REMOVED', 'INVALID_API_KEY'];
+
 /**
  * Outcome of one `/getresults` request.
  * - `ok` - The request succeeded; `json` is the parsed (unvalidated) body.
@@ -459,13 +462,13 @@ export abstract class SupplierBaseSearchanise
   /**
    * Whether a `/getresults` body means Searchanise no longer accepts the api key.
    *
-   * Only short bodies are checked: the error replies are a single word, and a full results payload
-   * should never be mistaken for one.
+   * The error replies are a single code followed by a line return, so the body is trimmed and
+   * compared exactly; a results payload that merely mentions a code is not mistaken for one.
    * @param body - The response body text (or an `HttpError` body)
-   * @returns `true` when the body contains `ENGINE_REMOVED` or `INVALID_API_KEY`
+   * @returns `true` when the trimmed body is `ENGINE_REMOVED` or `INVALID_API_KEY`
    * @example
    * ```typescript
-   * this.isApiKeyRejected('ENGINE_REMOVED');        // true
+   * this.isApiKeyRejected('ENGINE_REMOVED\n');      // true
    * this.isApiKeyRejected('INVALID_API_KEY');       // true
    * this.isApiKeyRejected('{"totalItems":12}');     // false
    * this.isApiKeyRejected(undefined);               // false
@@ -473,9 +476,7 @@ export abstract class SupplierBaseSearchanise
    * @source
    */
   protected isApiKeyRejected(body: unknown): boolean {
-    return (
-      typeof body === 'string' && body.length < 200 && /ENGINE_REMOVED|INVALID_API_KEY/.test(body)
-    );
+    return typeof body === 'string' && REJECTED_KEY_RESPONSES.includes(body.trim());
   }
 
   /**

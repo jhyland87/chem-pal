@@ -162,7 +162,10 @@ describe('SupplierBaseSearchanise', () => {
     it.each([
       ['ENGINE_REMOVED', true],
       ['INVALID_API_KEY', true],
+      ['ENGINE_REMOVED\n', true],
+      ['INVALID_API_KEY\r\n', true],
       ['  ENGINE_REMOVED\n', true],
+      ['ENGINE_REMOVED and more', false],
       ['{"totalItems":12,"items":[]}', false],
       ['', false],
       [undefined, false],
