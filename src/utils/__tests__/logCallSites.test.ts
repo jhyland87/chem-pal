@@ -1,7 +1,9 @@
 import { injectCallSites, isInstrumentable, logCallSitesPlugin } from '@/../tools/logCallSites.js';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const SRC = '/repo/src';
+// resolve() so the root is a real absolute path on Windows too (`C:\repo\src`).
+const SRC = resolve('/repo/src');
 const FILE = `${SRC}/suppliers/Foo.ts`;
 
 /** Runs the transform on `code` as if it were `suppliers/Foo.ts`, returning only the code. */

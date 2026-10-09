@@ -72,6 +72,19 @@ function enclosingName(node) {
 }
 
 /**
+ * Converts a path to forward slashes. Vite hands plugins POSIX-style module ids even on Windows,
+ * while `path.resolve` returns backslashes there, so paths are compared in this one form.
+ *
+ * @param {string} file - A file path using either separator.
+ * @returns {string} The path with `/` separators.
+ * @example
+ * toPosix("C:\\repo\\src/a.ts"); // => "C:/repo/src/a.ts" (on Windows)
+ */
+function toPosix(file) {
+  return file.split(path.sep).join("/");
+}
+
+/**
  * Whether a file under `src/` should be scanned for logger calls.
  *
  * @param {string} file - Absolute path of the module (query string already removed).
@@ -83,9 +96,11 @@ function enclosingName(node) {
  * isInstrumentable("/repo/src/utils/__tests__/Logger.test.ts", "/repo/src"); // => false
  */
 export function isInstrumentable(file, srcRoot) {
-  if (!file.startsWith(srcRoot + path.sep)) return false;
-  if (!/\.tsx?$/.test(file) || SKIPPED_FILE.test(file)) return false;
-  return path.relative(srcRoot, file).split(path.sep).join("/") !== "utils/Logger.ts";
+  const posixFile = toPosix(file);
+  const posixRoot = toPosix(srcRoot);
+  if (!posixFile.startsWith(`${posixRoot}/`)) return false;
+  if (!/\.tsx?$/.test(posixFile) || SKIPPED_FILE.test(posixFile)) return false;
+  return path.posix.relative(posixRoot, posixFile) !== "utils/Logger.ts";
 }
 
 /**
@@ -111,7 +126,7 @@ export function injectCallSites(code, file, { levels = ["warn", "error"], srcRoo
     true,
     file.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
   );
-  const relativePath = path.relative(srcRoot, file).split(path.sep).join("/");
+  const relativePath = path.posix.relative(toPosix(srcRoot), toPosix(file));
   const rewritten = new MagicString(code);
   let count = 0;
 
