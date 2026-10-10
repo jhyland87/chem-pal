@@ -13,6 +13,8 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+## [1.17.0] - 2026-10-09
+
 ### Changed
 
 - ChemPal opens faster: the startup bundle is about 40% smaller. The interface now loads only the
