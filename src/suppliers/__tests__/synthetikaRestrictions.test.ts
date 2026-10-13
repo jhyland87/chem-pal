@@ -1,7 +1,7 @@
 // ProductBuilder is imported first to satisfy the supplier module-init cycle that the
 // transitive typeGuards import can otherwise trip.
 import '@/utils/ProductBuilder';
-import { parseSynthetikaRestrictions } from '@/suppliers/synthetikaRestrictions';
+import { parseSynthetikaRestrictions } from '@/suppliers/SupplierSynthetika';
 import { describe, expect, it } from 'vitest';
 
 /** Wraps restriction text in a `<p>` the way Synthetika's shortDescription arrives. */
