@@ -1,0 +1,15 @@
+---
+description: Adding or changing localized message keys
+globs: src/_locales/**
+alwaysApply: false
+---
+
+# Locales
+
+Procedure: @.claude/skills/add-i18n-key/SKILL.md
+
+- Any add, rename, reword, or removal in `src/_locales/en/messages.json` gets the same,
+  properly translated change in `de`, `es`, `nl`, `fi`, `hi`, `pl`, and `ru`.
+- Edit the files as text. Never round-trip a `messages.json` through a JSON serializer —
+  placeholder formatting differs per file and a reserialize rewrites every key.
+- `src/_locales` is excluded from Prettier on purpose; don't format it.

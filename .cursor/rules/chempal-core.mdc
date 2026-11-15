@@ -1,0 +1,38 @@
+---
+description: ChemPal repo-wide conventions, commands, and invariants
+globs:
+alwaysApply: true
+---
+
+# ChemPal core rules
+
+ChemPal is a Manifest V3 browser extension (Chrome + Firefox) that searches ~30 chemical
+suppliers and normalizes prices/quantities. React 19 + MUI 7, TypeScript, Vite, pnpm.
+
+The full guide is @AGENTS.md — read it before non-trivial work. This rule only restates what
+gets missed most. Edit the source docs, not this file, when a convention changes.
+
+## Commands
+
+- Typecheck: `pnpm type-check` (`tsc -b`). `tsc --noEmit -p tsconfig.json` checks nothing.
+- Unit tests: `pnpm test:run` — never bare `vitest` (skips the config and the no-network guard).
+- `pnpm run docs` and `pnpm run pack` need `run`; plain `pnpm docs`/`pnpm pack` are pnpm builtins.
+- **Run `pnpm format` after editing** — there's no auto-format hook in Cursor. Don't hand-fix
+  quotes or wrapping.
+- Verify in order: `pnpm type-check` → `pnpm lint` → `pnpm test:run` → E2E if user-facing.
+
+## Invariants
+
+- No `as` assertions or `!` non-null assertions outside test files.
+- Every function gets a TSDoc block, including private helpers. Malformed TSDoc fails lint.
+- Declare all class properties at the top of the class, above the methods.
+- Named imports from `react` (`import { useState } from 'react'`), never the default import.
+- Logger calls are `(message, { details })`. Caught errors: name the variable `error`,
+  `` logger.warn(`Failed to load: ${getErrorMessage(error)}`, { error }) ``. No trailing `:`.
+- i18n changes land in all 8 locales in the same change.
+
+## Off-limits
+
+- `docs/` is generated TypeDoc output; `dev/` is gitignored scratch — don't read or edit either.
+- Never hand-edit `src/constants/supplierMeta.generated.ts` or `public/static/images/logo/*`;
+  run `pnpm run generate`.

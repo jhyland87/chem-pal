@@ -1,0 +1,14 @@
+---
+description: Cache migration steps for IndexedDB data shape changes
+globs: src/migrations/**
+alwaysApply: false
+---
+
+# Cache migrations
+
+Procedure: @.claude/skills/add-migration-step/SKILL.md
+
+- A migration step reshapes records already cached in an existing object store. Adding or
+  removing an object store or index is a `DB_VERSION` bump in `src/utils/idbCache.ts` instead; disposable data may just need a cache
+  clear. Decide which before writing code.
+- Steps must be idempotent and follow the skill's version-chaining and filename rules.

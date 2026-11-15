@@ -36,10 +36,15 @@ demo/output/videos/*.webm
 *.sw?
 docs
 coverage
-.cursor
-# Project skills are shared; everything else under .claude is machine-local.
+.cursor/*
+!.cursor/rules/
+# Project skills, agents, hooks and shared settings are tracked; everything else under .claude
+# (settings.local.json, worktrees, launch.json) is machine-local.
 .claude/*
 !.claude/skills/
+!.claude/agents/
+!.claude/hooks/
+!.claude/settings.json
 build.pem
 ChemPal.pem
 chem-pal.pem

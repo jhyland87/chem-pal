@@ -1,0 +1,15 @@
+---
+description: Generated files that must never be hand-edited
+globs: docs/**,src/constants/supplierMeta.generated.ts,public/static/images/logo/**
+alwaysApply: false
+---
+
+# Generated files — do not edit
+
+These are build outputs. Change their inputs and regenerate instead:
+
+- `docs/**` — TypeDoc output: `pnpm run docs`.
+- `src/constants/supplierMeta.generated.ts` — from supplier classes' static fields:
+  `pnpm run generate` (force with `FORCE_SUPPLIER_META=1`).
+- `public/static/images/logo/**` — from the logo template: `pnpm run generate`
+  (force with `FORCE_LOGO_GEN=1`).

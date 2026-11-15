@@ -1,6 +1,7 @@
 ---
 name: add-migration-step
 description: Add a cache migration step in src/migrations/steps when a release changes the shape of data already cached in IndexedDB. Use when a released version reshapes records inside an existing object store and old caches must be transformed on upgrade — covers the when/whether decision, the version-chaining and filename rules, the untyped db handle, idempotency, tests, and how it ties into cutting a release. Distinguishes a data migration from a DB_VERSION structural bump and from a plain cache clear.
+paths: src/migrations/**
 ---
 
 # Adding a cache migration step

@@ -79,6 +79,13 @@ export default defineConfig({
         'src/migrations/types.ts',
         'src/utils/index.ts',
       ],
+      // Ratchet: floor of the measured totals. Raise when coverage improves; never lower to pass.
+      thresholds: {
+        statements: 84,
+        branches: 83,
+        functions: 80,
+        lines: 84,
+      },
     },
   },
   resolve: {

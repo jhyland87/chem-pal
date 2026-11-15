@@ -1,0 +1,5 @@
+# Mirrors the read-deny list in .claude/settings.json: generated, scratch, and secret paths.
+docs/
+dev/
+coverage/
+.env

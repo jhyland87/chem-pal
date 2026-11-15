@@ -1,0 +1,23 @@
+---
+description: TypeScript style and TSDoc rules for ChemPal source files
+globs: src/**/*.ts,src/**/*.tsx
+alwaysApply: false
+---
+
+# TypeScript source
+
+House style is @STYLEGUIDE.md (Google TS style plus ChemPal's deviations). TSDoc tag set,
+order, `@example` format, and the `@category`/`@group` taxonomy are in
+@.claude/skills/typedoc-comments/SKILL.md — reuse an existing category before coining one.
+
+Project-specific points the style guide doesn't make obvious:
+
+- No `as` / `!` — narrow with type guards (`src/utils/typeGuards/`), `in` checks, or generics.
+- A `catch` variable is `unknown`; use `getErrorMessage` from `src/helpers/exceptions.ts`.
+- Quantity has two layers: `quantity` + `uom` are the metric display pair (convert imperial at
+  the store boundary with `toMetricQuantity`); `baseQuantity` is the sort scale
+  (`toBaseQuantity`). Don't add a display-layer formatter.
+- `ProductBuilder` optional-field setters take `unknown` and guard internally — pass raw values.
+  Required and overloaded setters stay strictly typed.
+- Logger debug/trace levels are for per-step tracing; `fatal` only when a page or the app
+  can't continue. Don't put the search query in messages — it's attached automatically.

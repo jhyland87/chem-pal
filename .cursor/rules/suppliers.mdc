@@ -1,0 +1,23 @@
+---
+description: Adding, fixing, or disabling a chemical supplier
+globs: src/suppliers/**
+alwaysApply: false
+---
+
+# Suppliers
+
+Directory notes: @src/suppliers/AGENTS.md
+
+- Adding, re-enabling, or disabling a supplier: follow
+  @.claude/skills/add-supplier/SKILL.md — it touches the barrel, `disabled/`, the metadata
+  codegen, `public/manifest.json` host permissions, fixtures, tests, and CHANGELOG.
+- Repairing a supplier whose storefront changed: follow @.claude/skills/fix-supplier/SKILL.md.
+
+Key points:
+
+- Extend a platform base (`SupplierBaseShopify`, `…Woocommerce`, `…Magento2`, …) before
+  `SupplierBase`.
+- Static display/shipping metadata must be literals on the supplier's own class, in the config
+  block at the top — the codegen reads the AST and doesn't follow inheritance.
+- After changing static metadata run `pnpm run generate`; the `supplierMeta` test fails if stale.
+- A supplier's hosts must be in `public/manifest.json`, or every request fails.

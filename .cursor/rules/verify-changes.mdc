@@ -1,0 +1,17 @@
+---
+description: How to verify a ChemPal change before calling it done or committing — which checks to run and what each one proves
+globs:
+alwaysApply: false
+---
+
+# Verifying a change
+
+Full guide: @.claude/skills/verify-changes/SKILL.md
+
+- Order: `pnpm type-check` → `pnpm lint` → `pnpm test:run` → `pnpm test:e2e:chrome` if
+  user-facing.
+- The Vite dev server can't verify extension behavior — `chrome.*` is undefined there. Use
+  `pnpm build` and load `build/` unpacked in `chrome://extensions`.
+- `pnpm test:e2e:firefox` only proves the extension loads.
+- Some test files are excluded in `configs/vitest.config.ts` and never run; if you touch code
+  they cover, run them explicitly.

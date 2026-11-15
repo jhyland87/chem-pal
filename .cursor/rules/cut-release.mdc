@@ -1,0 +1,15 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+
+# Cutting a release
+
+Manual rule — attach it with `@cut-release` only when shipping a version.
+
+Procedure: @.claude/skills/cut-release/SKILL.md (background in @RELEASING.md).
+
+- Pushing a `vX.Y.Z` tag publishes publicly. Confirm with the user before every push.
+- CHANGELOG entries are written for users; the tag's section becomes the in-extension update
+  prompt.

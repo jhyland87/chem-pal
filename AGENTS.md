@@ -21,6 +21,7 @@ Run these from the repo root with `pnpm`.
 | Typecheck | `pnpm type-check` | `tsc -b`. **`tsc --noEmit -p tsconfig.json` silently checks nothing** — don't use it. |
 | Lint | `pnpm lint` | ESLint over `src`, excluding test/fixture/mock files. |
 | Unit tests | `pnpm test:run` | **Always via this script.** Bare `vitest` skips `configs/vitest.config.ts` and disables the no-network fetch guard. |
+| Coverage | `pnpm test:coverage` | Fails below `coverage.thresholds` in `configs/vitest.config.ts`. Raise them when coverage improves; never lower them to pass. |
 | E2E (Chrome) | `pnpm test:e2e:chrome` | Prefix `E2E_HEADED=1` to watch it. |
 | E2E (Firefox) | `pnpm test:e2e:firefox` | Load smoke test only — see below. |
 | Dev build | `pnpm build` | Output in `build/`. `build:firefox` for `build-firefox/`. |
@@ -181,5 +182,18 @@ corresponding task even if you're not using Claude Code:
 - `add-i18n-key` — adding or changing a message key across all 8 locales.
 - `verify-changes` — what to run, and what each check does and doesn't prove.
 - `cut-release` — cutting and publishing a release.
+- `fix-supplier` — diagnosing and repairing a supplier whose storefront changed.
 - `add-migration-step` — adding a cache migration step when a release changes the shape of
   data already cached in IndexedDB (vs. a `DB_VERSION` bump or a plain cache clear).
+
+## Subagents and hooks
+
+`.claude/agents/` holds two read-only helpers: `supplier-scout` (recon a storefront before
+writing or repairing a supplier) and `invariant-reviewer` (checks a diff against the invariants
+above). `.claude/settings.json` is shared: it formats edited `.ts`/`.tsx` files with Prettier and
+blocks hand-edits to generated files (`docs/`, `supplierMeta.generated.ts`, the logo set).
+Personal permissions go in the gitignored `.claude/settings.local.json`.
+
+`.cursor/rules/` gives Cursor path-scoped pointers to this same guidance. Cursor has no
+format hook, so its core rule says to run `pnpm format`. Change conventions in these docs and
+skills, not in the `.mdc` files.

@@ -1,6 +1,7 @@
 ---
 name: cut-release
 description: Cut and publish a ChemPal release — roll the CHANGELOG, bump the version, tag, and watch the release workflow. Use when shipping a new version, tagging vX.Y.Z, or preparing release notes for the Chrome Web Store. Pushing a tag publishes publicly, so the push steps require explicit confirmation.
+disable-model-invocation: true
 ---
 
 # Cutting a release

@@ -1,6 +1,7 @@
 ---
 name: writing-tests
 description: How to write and refactor ChemPal unit tests (Vitest) — prefer parametrized tables (it.each / describe.each / it.for) over native loops, and use concurrency (test.concurrent / describe.concurrent) where the suite is isolated. Use when adding tests, optimizing an existing test file, converting for-loops of cases into tables, or deciding whether a suite can run concurrently.
+paths: src/**/__tests__/**, e2e/**
 ---
 
 # Writing ChemPal tests
@@ -240,7 +241,11 @@ runtime no-op and verifies nothing. Do **not** use it to replace a runtime
 ```bash
 pnpm test:run <path-to-file>     # the file you changed
 pnpm test:run                    # full suite before you're done
+pnpm test:coverage               # enforces coverage.thresholds in configs/vitest.config.ts
 ```
+
+Coverage thresholds are a ratchet: new code needs tests that keep every metric at or above
+its threshold. Never lower one to pass; raise them to the new floor when coverage improves.
 
 Converting a loop to a table must be **behavior-preserving**: the same inputs asserted
 the same way, only restructured. If the case count reported changes unexpectedly, you

@@ -1,0 +1,28 @@
+---
+description: Writing and running ChemPal unit (Vitest) and E2E (Playwright) tests
+globs: src/**/__tests__/**,e2e/**,**/*.test.ts,**/*.test.tsx
+alwaysApply: false
+---
+
+# Tests
+
+How to write them: @.claude/skills/writing-tests/SKILL.md (parametrized tables over loops,
+`*.concurrent` where isolated, which modules to mock).
+
+- Run with `pnpm test:run`, never bare `vitest`.
+- Zero network or external calls — mock `fetch`, `chrome.*`, IndexedDB, currency, analytics at
+  their owning module.
+- Tests that import `SupplierBase` import `ProductBuilder` first (module-init cycle).
+- Test files may use `as` freely and are exempt from the TSDoc-on-every-function rule.
+- Never run, so a green suite says nothing about them: `src/helpers/__tests__/productBuilder.test.ts`,
+  `src/suppliers/__tests__/supplierMacklin.test.ts`, `src/__tests__/**`.
+- `pnpm test:e2e:firefox` is a load smoke test only.
+
+## Coverage limit
+
+`configs/vitest.config.ts` sets `coverage.thresholds`; `pnpm test:coverage` and the coverage CI
+workflow fail below them.
+
+- New or changed code needs tests that keep every metric at or above its threshold.
+- Never lower a threshold to make a run pass. When coverage rises, raise the thresholds to the
+  new floor.
