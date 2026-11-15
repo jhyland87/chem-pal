@@ -13,6 +13,8 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+## [1.18.0] - 2026-11-15
+
 ### Added
 
 - Advanced mode has a new **Show supplier status** setting (off by default). When on, the results
