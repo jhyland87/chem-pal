@@ -138,6 +138,36 @@ describe('Chem-Pal search query', () => {
   }
 
   /**
+   * Turn on the opt-in supplier status chip: write the setting, reload so the app
+   * picks it up, then type the Konami sequence, since the chip only shows in
+   * advanced mode (which is per-page state and resets on reload).
+   */
+  async function enableSupplierStatus(page: Page): Promise<void> {
+    await page.evaluate(() => {
+      return new Promise<void>((resolve, reject) => {
+        chrome.storage.local.get(['user_settings'], (existing) => {
+          const merged = { ...(existing.user_settings ?? {}), showSupplierStatus: true };
+          chrome.storage.local.set({ user_settings: merged }, () => {
+            const err = chrome.runtime.lastError;
+            if (err) reject(new Error(err.message));
+            else resolve();
+          });
+        });
+      });
+    });
+    await page.reload();
+    await playwrightExpect(page.getByRole('textbox', { name: 'search for products' })).toBeVisible({
+      timeout: 10_000,
+    });
+    await page.locator('body').click();
+    for (const key of ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight']) {
+      await page.keyboard.press(key);
+      await page.waitForTimeout(60);
+    }
+    await page.waitForTimeout(1_000);
+  }
+
+  /**
    * Run the "sodium borohydride" search under a specific `fuzzScorerOverride` and
    * return the number of data rows the results table renders after the
    * search completes. Mirrors the waiting + page-size pattern used by the
@@ -324,6 +354,8 @@ describe('Chem-Pal search query', () => {
         analyticsPayloads[captured.event] = captured.properties;
       });
 
+      await enableSupplierStatus(page);
+
       // Type the search query and submit (mock routes + "abort" fallback are
       // already wired up by `openExtension()` — see that helper for the why).
       const searchInput = page.getByRole('textbox', {
@@ -342,6 +374,14 @@ describe('Chem-Pal search query', () => {
       await playwrightExpect(backdrop).toBeVisible({ timeout: 10_000 });
       // Then wait for it to go away as suppliers complete.
       await playwrightExpect(backdrop).toBeHidden({ timeout: 120_000 });
+
+      // The opt-in supplier status chip appears once the search settles and opens
+      // the per-supplier list.
+      const statusChip = page.getByRole('button', { name: 'Show supplier status' });
+      await playwrightExpect(statusChip).toBeVisible({ timeout: 10_000 });
+      await statusChip.click();
+      await playwrightExpect(page.getByText(/Returned results \(\d+\)/)).toBeVisible();
+      await page.keyboard.press('Escape');
 
       // search_query fires at the start of the search, search_results at the end.
       await playwrightExpect

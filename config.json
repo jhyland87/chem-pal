@@ -36,7 +36,10 @@
   },
   "search": {
     "defaultResultsLimitPerSupplier": 5,
-    "supplierSearchTimeBudgetSec": 60
+    "supplierSearchTimeBudgetSec": 60,
+    "supplierConcurrency": 8,
+    "streamFlushIntervalMs": 100,
+    "streamPersistIntervalMs": 1000
   },
   "wikidata": {
     "ttlDays": 30,
@@ -47,10 +50,12 @@
   "display": {
     "descriptionPreviewLength": 300,
     "unitPriceMinDisplay": 0.01,
-    "unitPriceExactFractionDigits": 4
+    "unitPriceExactFractionDigits": 4,
+    "priceHistoryReloadDelayMs": 300
   },
   "storage": {
-    "maxSupplierCacheEntries": 100,
+    "maxSupplierQueryCacheEntries": 200,
+    "maxSupplierProductCacheEntries": 1000,
     "maxHistoryEntries": 100,
     "maxExportEntries": 20,
     "maxExportsCacheBytes": 26214400,

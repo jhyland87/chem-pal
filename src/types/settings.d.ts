@@ -316,5 +316,14 @@ declare global {
      * @example true
      */
     fuzzyFilteringDisabled?: boolean;
+
+    /**
+     * When true (and advanced mode is on), the results header shows the supplier
+     * status chip listing how each supplier's search ended. Off by default.
+     *
+     * Surfaced via the "Advanced" drawer accordion, in advanced mode only.
+     * @example true
+     */
+    showSupplierStatus?: boolean;
   }
 }

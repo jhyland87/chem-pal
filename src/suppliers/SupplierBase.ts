@@ -437,9 +437,10 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   protected baseSearchParams: Record<string, string | number> = {};
 
   /**
-   * The AbortController instance used to manage and cancel ongoing requests.
-   * This allows for cancellation of in-flight requests when needed,
-   * such as when a new search is started or the supplier is disposed.
+   * This supplier's own AbortController, used to cancel its in-flight requests.
+   * It is linked to the controller passed to the constructor: aborting that one
+   * (the user stopping the search) aborts this one too, but aborting this one
+   * (the supplier's time budget elapsing) leaves other suppliers running.
    *
    * @example
    * ```typescript
@@ -743,10 +744,50 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     // Initialize required properties
     this.query = query;
     this.limit = limit;
-    this.controller = controller ?? new AbortController();
+    this.controller = this.createLinkedController(controller);
     this.logger = new Logger(this.stableClassName, undefined, this.color);
     // Snapshot the active search's context (its trace id) so logs made after it ends keep it.
     this.logger.setContext({ ...Logger.getContext(), search_query: query });
+  }
+
+  /**
+   * Builds this supplier's own controller, aborted whenever the search's controller is.
+   * @param parent - The search-wide controller, if one was given.
+   * @returns A new controller that follows `parent` but can also be aborted on its own.
+   * @example
+   * ```typescript
+   * const search = new AbortController();
+   * const own = this.createLinkedController(search);
+   * search.abort("user_aborted"); // own.signal.aborted === true
+   * own.abort();                  // never aborts `search`
+   * ```
+   * @source
+   */
+  private createLinkedController(parent?: AbortController): AbortController {
+    const own = new AbortController();
+    if (parent === undefined) return own;
+    if (parent.signal.aborted) {
+      own.abort(parent.signal.reason);
+      return own;
+    }
+    parent.signal.addEventListener('abort', () => own.abort(parent.signal.reason), {
+      once: true,
+    });
+    return own;
+  }
+
+  /**
+   * Whether this supplier's search was cut short, by the user stopping the search or by
+   * its own time budget elapsing.
+   * @returns `true` once this supplier's controller has been aborted.
+   * @example
+   * ```typescript
+   * supplier.stoppedEarly; // false while running normally
+   * ```
+   * @source
+   */
+  public get stoppedEarly(): boolean {
+    return this.controller.signal.aborted;
   }
 
   /**

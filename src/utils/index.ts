@@ -22,7 +22,6 @@ export { ProductBuilder } from './ProductBuilder';
  * Barrel re-export; see {@link Pubchem}.
  * @category Utils
  */
-export { Pubchem } from './Pubchem';
 /**
  * Barrel re-export; see {@link SupplierCache}.
  * @category Utils

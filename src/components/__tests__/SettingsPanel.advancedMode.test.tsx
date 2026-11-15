@@ -47,6 +47,7 @@ describe('SettingsPanel advanced mode gating', () => {
 
     expect(screen.queryByLabelText('settings_fuzz_scorer')).toBeNull();
     expect(screen.queryByText('settings_disable_fuzzy')).toBeNull();
+    expect(screen.queryByText('settings_show_supplier_status')).toBeNull();
     // The non-developer setting in the same section stays visible.
     expect(screen.getByLabelText('settings_max_search_time')).toBeTruthy();
   });
@@ -57,6 +58,7 @@ describe('SettingsPanel advanced mode gating', () => {
 
     expect(screen.getByLabelText('settings_fuzz_scorer')).toBeTruthy();
     expect(screen.getByText('settings_disable_fuzzy')).toBeTruthy();
+    expect(screen.getByText('settings_show_supplier_status')).toBeTruthy();
     expect(screen.getByLabelText('settings_max_search_time')).toBeTruthy();
   });
 });

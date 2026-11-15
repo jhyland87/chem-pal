@@ -11,6 +11,7 @@ import {
   getSearchResultsRecord,
 } from '@/utils/idbCache';
 import { SEARCH_ABORT_REASON } from '@/constants/common';
+import { Logger } from '@/utils/Logger';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   buildNoResultsMessage,
@@ -19,6 +20,8 @@ import {
   saveResultsToSession,
   updateColumnFilterFromResult,
   updateHistoryResultCount,
+  isSupplierOutcomeList,
+  logSupplierOutcomes,
 } from '../useSearch';
 
 vi.mock('@/helpers/pubchem', () => ({
@@ -313,5 +316,68 @@ describe('useSearch helpers', () => {
       const second = await buildNoResultsMessage(advanced, false, true);
       expect(second).toBe(`No results found for "${advanced}"`);
     });
+  });
+});
+
+describe('isSupplierOutcomeList', () => {
+  it('accepts a list of well-formed outcomes', () => {
+    expect(isSupplierOutcomeList([{ supplier: 'Ambeed', status: 'ok', resultCount: 3 }])).toBe(
+      true,
+    );
+    expect(isSupplierOutcomeList([])).toBe(true);
+  });
+
+  it.each([
+    ['a non-array', 'nope'],
+    ['undefined', undefined],
+    ['an item missing its count', [{ supplier: 'Ambeed', status: 'ok' }]],
+    ['a null item', [null]],
+  ])('rejects %s', (_label, value) => {
+    expect(isSupplierOutcomeList(value)).toBe(false);
+  });
+});
+
+describe('logSupplierOutcomes', () => {
+  it('logs one line per status, with result counts beside the supplier names', () => {
+    const log = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+
+    logSupplierOutcomes([
+      { supplier: 'Ambeed', status: 'ok', resultCount: 3 },
+      { supplier: 'LiMac', status: 'ok', resultCount: 1 },
+      { supplier: 'Carolina', status: 'failed', resultCount: 0 },
+    ]);
+
+    expect(log.mock.calls).toEqual([
+      ['Supplier outcomes', { status: 'ok', count: 2, suppliers: 'Ambeed (3), LiMac (1)' }],
+      ['Supplier outcomes', { status: 'failed', count: 1, suppliers: 'Carolina' }],
+    ]);
+    log.mockRestore();
+  });
+
+  it('splits a long supplier list across several lines', () => {
+    const log = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+    const outcomes = Array.from({ length: 40 }, (_, i) => ({
+      supplier: `Supplier Number ${i}`,
+      status: 'empty' as const,
+      resultCount: 0,
+    }));
+
+    logSupplierOutcomes(outcomes);
+
+    expect(log.mock.calls.length).toBeGreaterThan(1);
+    const logged = log.mock.calls.flatMap(([, detail]) =>
+      (detail as { suppliers: string }).suppliers.split(', '),
+    );
+    expect(logged).toHaveLength(40);
+    log.mockRestore();
+  });
+
+  it('logs nothing when there are no outcomes', () => {
+    const log = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+
+    logSupplierOutcomes([]);
+
+    expect(log).not.toHaveBeenCalled();
+    log.mockRestore();
   });
 });

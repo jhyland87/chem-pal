@@ -1454,5 +1454,45 @@
   "chem_info_wikipedia_link": { "message": "View on Wikipedia" },
   "chem_info_nist_link": { "message": "View on NIST WebBook" },
   "chem_info_niosh_link": { "message": "NIOSH Pocket Guide" },
-  "chem_info_cameo_link": { "message": "View on CAMEO Chemicals" }
+  "chem_info_cameo_link": { "message": "View on CAMEO Chemicals" },
+  "supplier_status_summary": {
+    "message": "$responded$ of $total$ suppliers responded",
+    "description": "Chip in the results header: how many searched suppliers finished without a problem.",
+    "placeholders": {
+      "responded": { "content": "$1" },
+      "total": { "content": "$2" }
+    }
+  },
+  "supplier_status_aria": {
+    "message": "Show supplier status",
+    "description": "Accessible label for the chip that opens the per-supplier status list."
+  },
+  "supplier_status_failed": {
+    "message": "Failed",
+    "description": "Heading for suppliers whose search hit an error."
+  },
+  "supplier_status_rate_limited": {
+    "message": "Rate limited",
+    "description": "Heading for suppliers that throttled our requests (HTTP 429)."
+  },
+  "supplier_status_stopped": {
+    "message": "Stopped early",
+    "description": "Heading for suppliers cut short by Stop or the time limit."
+  },
+  "supplier_status_empty": {
+    "message": "No results",
+    "description": "Heading for suppliers that finished but found nothing."
+  },
+  "supplier_status_ok": {
+    "message": "Returned results",
+    "description": "Heading for suppliers that returned products."
+  },
+  "settings_show_supplier_status": {
+    "message": "Show supplier status",
+    "description": "Setting label (advanced mode only)."
+  },
+  "settings_show_supplier_status_desc": {
+    "message": "Show in the results header how each supplier's search ended",
+    "description": "Description for the show-supplier-status setting (advanced mode only)."
+  }
 }

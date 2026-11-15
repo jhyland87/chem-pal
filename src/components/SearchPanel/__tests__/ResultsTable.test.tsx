@@ -114,6 +114,7 @@ beforeEach(() => {
     excludeProduct: vi.fn(),
     tableText: '',
     executedQuery: '',
+    supplierOutcomes: [],
   });
 });
 

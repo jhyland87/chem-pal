@@ -4,9 +4,11 @@ import {
   CACHE,
   SEARCH_ABORT_REASON,
   isShippingRange,
+  type SupplierOutcome,
 } from '@/constants/common';
 import { supplierShippingMeta } from '@/constants/supplierMeta';
 import { SUPPLIER_CLASS_NAMES, isSupplierClassName } from '@/constants/suppliers';
+import { analytics as analyticsConfig, search as searchConfig } from '@/../config.json';
 import { useAppContext } from '@/context';
 import { SearchEvent, emitSearchEvent, type SearchOutcomeDetail } from '@/events/searchEvents';
 import { getErrorMessage } from '@/helpers/exceptions';
@@ -97,6 +99,94 @@ export function updateColumnFilterFromResult(config: ColumnFilterConfig, result:
  * ```
  * @source
  */
+/**
+ * Narrows a value read back from session storage to a list of supplier outcomes.
+ * @param value - The stored value, of unknown shape.
+ * @returns `true` when every item has a supplier name, a status and a result count.
+ * @example
+ * ```ts
+ * isSupplierOutcomeList([{ supplier: "Ambeed", status: "ok", resultCount: 3 }]); // true
+ * isSupplierOutcomeList("nope"); // false
+ * ```
+ * @source
+ */
+export function isSupplierOutcomeList(value: unknown): value is SupplierOutcome[] {
+  if (!Array.isArray(value)) return false;
+  return value.every(
+    (item: unknown) =>
+      typeof item === 'object' &&
+      item !== null &&
+      'supplier' in item &&
+      typeof item.supplier === 'string' &&
+      'status' in item &&
+      typeof item.status === 'string' &&
+      'resultCount' in item &&
+      typeof item.resultCount === 'number',
+  );
+}
+
+/**
+ * Keeps the per-supplier outcomes in session storage so the results header can show
+ * them again after the popup is reopened. Logs (but does not throw on) errors.
+ * @param outcomes - How each supplier's part of the search ended.
+ * @returns A promise that resolves once the write settles.
+ * @example
+ * ```ts
+ * await saveSupplierOutcomes([{ supplier: "Ambeed", status: "ok", resultCount: 3 }]);
+ * ```
+ * @source
+ */
+export async function saveSupplierOutcomes(outcomes: SupplierOutcome[]): Promise<void> {
+  try {
+    await cstorage.session.set({ [CACHE.SUPPLIER_OUTCOMES]: outcomes });
+  } catch (error) {
+    logger.warn(`Failed to save supplier outcomes: ${getErrorMessage(error)}`, { error });
+  }
+}
+
+// Room left for supplier names in one remote log line, after the other fields.
+const OUTCOME_LOG_NAME_CHARS = analyticsConfig.logs.maxArgChars - 80;
+
+/**
+ * Logs how each supplier's search ended, one line per status, so the remote logs show
+ * which suppliers failed, were throttled, were stopped, found nothing or returned results.
+ * Long supplier lists are split across lines to stay under the remote log size cap.
+ * @param outcomes - How each supplier's part of the search ended.
+ * @example
+ * ```ts
+ * logSupplierOutcomes([
+ *   { supplier: "Ambeed", status: "ok", resultCount: 3 },
+ *   { supplier: "Carolina", status: "failed", resultCount: 0 },
+ * ]);
+ * // log: "Supplier outcomes" { status: "ok", count: 1, suppliers: "Ambeed (3)" }
+ * // log: "Supplier outcomes" { status: "failed", count: 1, suppliers: "Carolina" }
+ * ```
+ * @source
+ */
+export function logSupplierOutcomes(outcomes: readonly SupplierOutcome[]): void {
+  const byStatus = new Map<string, string[]>();
+  for (const { supplier, status, resultCount } of outcomes) {
+    const label = resultCount > 0 ? `${supplier} (${resultCount})` : supplier;
+    byStatus.set(status, [...(byStatus.get(status) ?? []), label]);
+  }
+
+  for (const [status, labels] of byStatus) {
+    let chunk: string[] = [];
+    for (const label of labels) {
+      if (chunk.length > 0 && [...chunk, label].join(', ').length > OUTCOME_LOG_NAME_CHARS) {
+        logger.log('Supplier outcomes', {
+          status,
+          count: labels.length,
+          suppliers: chunk.join(', '),
+        });
+        chunk = [];
+      }
+      chunk.push(label);
+    }
+    logger.log('Supplier outcomes', { status, count: labels.length, suppliers: chunk.join(', ') });
+  }
+}
+
 export async function saveResultsToSession(results: Product[], query?: string): Promise<void> {
   try {
     await idbSetSearchResults(results, query);
@@ -396,6 +486,8 @@ export function useSearch() {
   // The query string of the most recently executed search. Displayed in the
   // results panel header so the user can see what they searched for.
   const [executedQuery, setExecutedQuery] = useState<string>('');
+  // How each supplier's part of the most recent search ended, for the results header.
+  const [supplierOutcomes, setSupplierOutcomes] = useState<SupplierOutcome[]>([]);
 
   // Guard to ensure session storage is only loaded once, even under StrictMode's
   // double-invoke of effects in development.
@@ -415,7 +507,7 @@ export function useSearch() {
         // we don't add a serial round-trip to the hot path.
         const [cachedRecord, sessionData] = await Promise.all([
           getSearchResultsRecord(),
-          cstorage.session.get([CACHE.QUERY, CACHE.SEARCH_IS_NEW_SEARCH]),
+          cstorage.session.get([CACHE.QUERY, CACHE.SEARCH_IS_NEW_SEARCH, CACHE.SUPPLIER_OUTCOMES]),
         ]);
         const cachedResults = cachedRecord.data;
 
@@ -453,6 +545,10 @@ export function useSearch() {
             (typeof sessionData[CACHE.QUERY] === 'string' ? sessionData[CACHE.QUERY] : '');
           if (restoredQuery) {
             setExecutedQuery(restoredQuery);
+          }
+          const restoredOutcomes: unknown = sessionData[CACHE.SUPPLIER_OUTCOMES];
+          if (isSupplierOutcomeList(restoredOutcomes)) {
+            setSupplierOutcomes(restoredOutcomes);
           }
         }
 
@@ -547,6 +643,7 @@ export function useSearch() {
         resultCount: 0,
       });
       setSearchResults([]);
+      setSupplierOutcomes([]);
       setTableText('');
       setExecutedQuery(query);
 
@@ -713,7 +810,9 @@ export function useSearch() {
         });
 
         // Execute the search for all suppliers.
-        const productQueryResults = await productQueryFactory.executeAllStream(3);
+        const productQueryResults = await productQueryFactory.executeAllStream(
+          searchConfig.supplierConcurrency,
+        );
 
         // Tracks supplier-scoped identities already emitted this search so the
         // streaming branch can skip a product that arrives more than once,
@@ -781,67 +880,87 @@ export function useSearch() {
             finalResults,
           });
         } else {
-          // No filters active — stream results directly; ResultsTable re-emits
-          // the count per appended row, so no direct badge update is needed here.
-          for await (const result of productQueryResults) {
-            // Skip a product whose identity already streamed in this search, so
-            // the same product is never appended (and persisted) twice.
-            const dedupeKey = getProductDedupeKey(result);
-            if (dedupeKey !== undefined) {
-              if (seenKeys.has(dedupeKey)) continue;
-              seenKeys.add(dedupeKey);
-            }
+          // No filters active — stream results into the table as they arrive.
+          // Rows are appended in short batches and persisted on a throttle, so a
+          // large search doesn't re-render and rewrite the whole set once per row.
+          const streamed: Product[] = [];
+          let pendingBatch: Product[] = [];
+          let flushTimer: ReturnType<typeof setTimeout> | undefined;
+          let lastPersistAt = performance.now();
 
-            totalResults += 1;
+          /**
+           * Persists everything streamed so far and updates the live history count.
+           * @returns A promise that settles once both writes do.
+           */
+          const persistStreamed = async (): Promise<void> => {
+            const snapshot = [...streamed];
+            await saveResultsToSession(snapshot, query);
+            await updateHistoryResultCount(historyTimestamp, snapshot.length);
+          };
 
-            // Update state with current count using startTransition for better performance
+          /** Appends the pending batch to the table and refreshes the status line. */
+          const flushBatch = (): void => {
+            flushTimer = undefined;
+            if (pendingBatch.length === 0) return;
+            const batch = pendingBatch;
+            pendingBatch = [];
+            const count = streamed.length;
             startTransition(() => {
               setState((prev) => ({
                 ...prev,
-                resultCount: totalResults,
+                resultCount: count,
                 status: i18n(
-                  totalResults === 1 ? 'search_status_found_one' : 'search_status_found_other',
-                  [String(totalResults)],
+                  count === 1 ? 'search_status_found_one' : 'search_status_found_other',
+                  [String(count)],
                 ),
               }));
+              setSearchResults((prevSearchResults) => [...prevSearchResults, ...batch]);
             });
 
-            // Build column filter config for this result
-            updateColumnFilterFromResult(columnFilterConfig, result);
+            if (performance.now() - lastPersistAt < searchConfig.streamPersistIntervalMs) return;
+            lastPersistAt = performance.now();
+            void persistStreamed();
+          };
 
-            // Add result immediately to the table - streaming behavior restored!
-            // `_id` carries the positional index; the real product `id` is left untouched.
-            const productWithId = {
-              ...result,
-              _id: totalResults - 1,
-            };
-            suppliersWithResults.add(result.supplier);
-            logger.trace('Received product from stream', {
-              supplier: result.supplier,
-              title: result.title,
-            });
+          try {
+            for await (const result of productQueryResults) {
+              // Skip a product whose identity already streamed in this search, so
+              // the same product is never appended (and persisted) twice.
+              const dedupeKey = getProductDedupeKey(result);
+              if (dedupeKey !== undefined) {
+                if (seenKeys.has(dedupeKey)) continue;
+                seenKeys.add(dedupeKey);
+              }
 
-            // Record USD price history for this streamed product (fire-and-forget;
-            // done outside the state updater so it runs once per product, not per
-            // whole-array remap).
-            void recordProductPrices([productWithId], appContext.userSettings);
+              totalResults += 1;
 
-            // Update results immediately using startTransition for better performance
-            startTransition(() => {
-              setSearchResults((prevSearchResults) => {
-                const newResults = [...prevSearchResults, productWithId];
-                // Re-index positions on `_id` only; preserve each product's real `id`.
-                const indexedResults = newResults.map((r, idx) => ({ ...r, _id: idx }));
+              // Build column filter config for this result
+              updateColumnFilterFromResult(columnFilterConfig, result);
 
-                // Persist and update history live (fire and forget)
-                void (async () => {
-                  await saveResultsToSession(indexedResults, query);
-                  await updateHistoryResultCount(historyTimestamp, newResults.length);
-                })();
-
-                return newResults;
+              // `_id` carries the positional index; the real product `id` is left untouched.
+              const productWithId = {
+                ...result,
+                _id: totalResults - 1,
+              };
+              suppliersWithResults.add(result.supplier);
+              logger.trace('Received product from stream', {
+                supplier: result.supplier,
+                title: result.title,
               });
-            });
+
+              // Record USD price history for this streamed product (fire-and-forget).
+              void recordProductPrices([productWithId], appContext.userSettings);
+
+              streamed.push(productWithId);
+              pendingBatch.push(productWithId);
+              flushTimer ??= setTimeout(flushBatch, searchConfig.streamFlushIntervalMs);
+            }
+          } finally {
+            // Show and persist whatever arrived, even when the stream threw.
+            clearTimeout(flushTimer);
+            lastPersistAt = performance.now();
+            flushBatch();
+            await persistStreamed();
           }
         }
 
@@ -947,6 +1066,11 @@ export function useSearch() {
       } finally {
         // Release the guard so a later deliberate re-search of the same term runs.
         inFlightQueryRef.current = null;
+        // Publish how each supplier fared, and keep it for a popup reopen.
+        const outcomes = [...(productQueryFactory?.supplierOutcomes ?? [])];
+        setSupplierOutcomes(outcomes);
+        void saveSupplierOutcomes(outcomes);
+        logSupplierOutcomes(outcomes);
         // Stop tagging logs with this search, unless a newer search has already replaced it.
         if (Logger.getContext()?.trace_id === traceId) {
           Logger.setContext(undefined);
@@ -1066,5 +1190,6 @@ export function useSearch() {
     excludeProduct,
     tableText,
     executedQuery,
+    supplierOutcomes,
   };
 }

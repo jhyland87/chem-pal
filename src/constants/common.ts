@@ -125,6 +125,8 @@ export const CACHE = {
   PANEL: 'panel',
   /** Persisted TanStack table state (sorting, pagination, expanded rows, column visibility) */
   TABLE_STATE: 'table_state',
+  /** Per-supplier outcomes of the most recent search, for the results header */
+  SUPPLIER_OUTCOMES: 'supplier_outcomes',
   /** ID of the ChemPal Favorites bookmarks folder */
   BOOKMARKS_FOLDER_ID: 'bookmarks_folder_id',
   /** Rehydrated Chemsavers Typesense API key (overrides the hardcoded default when present) */
@@ -211,6 +213,40 @@ export const SEARCH_ABORT_REASON = {
 } as const;
 
 export type SearchAbortReason = (typeof SEARCH_ABORT_REASON)[keyof typeof SEARCH_ABORT_REASON];
+
+/**
+ * How a single supplier's part of a search ended, shown in the results header.
+ * @category Constants
+ * @source
+ */
+export const SUPPLIER_OUTCOME = {
+  /** Finished and returned at least one product. */
+  OK: 'ok',
+  /** Finished and returned nothing. */
+  EMPTY: 'empty',
+  /** Threw an error other than a rate limit or a deliberate stop. */
+  FAILED: 'failed',
+  /** Answered `429 Too Many Requests`. */
+  RATE_LIMITED: 'rate_limited',
+  /** Cut short by the user stopping the search or the time budget elapsing. */
+  STOPPED: 'stopped',
+} as const;
+
+export type SupplierOutcomeStatus = (typeof SUPPLIER_OUTCOME)[keyof typeof SUPPLIER_OUTCOME];
+
+/**
+ * One supplier's result for the most recent search.
+ * @category Constants
+ * @source
+ */
+export interface SupplierOutcome {
+  /** The supplier's display name. */
+  supplier: string;
+  /** How the supplier's search ended. */
+  status: SupplierOutcomeStatus;
+  /** Products the supplier returned before it ended. */
+  resultCount: number;
+}
 
 /**
  * Represents the availability of a product

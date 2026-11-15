@@ -1250,6 +1250,27 @@ export default function SettingsPanel() {
               />
             </ListItem>
           )}
+          {advancedMode && (
+            <ListItem className={styles['settings-panel__helper-on-hover']}>
+              <ListItemText
+                primary={i18n('settings_show_supplier_status')}
+                secondary={i18n('settings_show_supplier_status_desc')}
+                slotProps={{ secondary: { sx: { fontStyle: 'italic' } } }}
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={currentSettings.showSupplierStatus ?? false}
+                    onChange={handleSwitchChange}
+                    name="showSupplierStatus"
+                    disabled={isPending}
+                  />
+                }
+                labelPlacement="start"
+                label=""
+              />
+            </ListItem>
+          )}
         </AccordionDetails>
       </Accordion>
       <Accordion

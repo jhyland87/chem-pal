@@ -4,6 +4,11 @@ import {
   supplierShippingMeta,
   supplierShipsTo,
 } from '@/constants/supplierMeta';
+import {
+  SUPPLIER_OUTCOME,
+  type SupplierOutcome,
+  type SupplierOutcomeStatus,
+} from '@/constants/common';
 import { HttpStatus } from '@/constants/httpStatus';
 import { recordException } from '@/helpers/errorBuffer';
 import { resolveIdentifierNames } from '@/helpers/pubchem';
@@ -198,6 +203,10 @@ export class SupplierFactory<P extends Product> {
   // aborted). Mirrors the stream's internal done counter so a caller can read a
   // partial value the moment an aborted search stops draining.
   public suppliersCompleted: number = 0;
+
+  // How each queried supplier's search ended in the most recent streamed run.
+  // Filled as suppliers finish, so a caller can read a partial list mid-stream.
+  public supplierOutcomes: SupplierOutcome[] = [];
 
   /**
    * Factory class for querying all suppliers.
@@ -650,23 +659,31 @@ export class SupplierFactory<P extends Product> {
 
     const channel: P[] = [];
     const errors: SupplierExecutionError<P>[] = [];
+    const outcomes: SupplierOutcome[] = [];
+    this.supplierOutcomes = outcomes;
     let doneCount = 0;
 
     permittedInstances.forEach((supplier) => {
       queue.run(async () => {
         this.logger.trace('Starting supplier', { supplier: supplier.supplierName });
+        let resultCount = 0;
+        let status: SupplierOutcomeStatus | undefined;
         try {
           const iterator = supplier.execute();
           for await (const product of iterator) {
             const filtered = this.applyRestrictionFilter(product);
             if (filtered !== undefined) {
               channel.push(filtered);
+              resultCount++;
             }
           }
         } catch (e) {
+          status = this.classifyFailure(e);
           this.recordSupplierFailure(e, supplier);
           if (!isAbortError(e)) errors.push({ error: e, supplier });
         } finally {
+          status ??= this.classifyCompletion(resultCount, supplier.stoppedEarly);
+          outcomes.push({ supplier: supplier.supplierName, status, resultCount });
           doneCount++;
           this.suppliersCompleted = doneCount;
         }
@@ -685,6 +702,42 @@ export class SupplierFactory<P extends Product> {
     // All suppliers have settled; partial results were already streamed, so record
     // (rather than throw) any failures as one AggregateError for bug reports.
     this.reportExecutionErrors(errors);
+  }
+
+  /**
+   * Names the outcome of a supplier whose `execute()` threw.
+   * @param error - The value the supplier threw.
+   * @returns `stopped` for a deliberate abort, `rate_limited` for a 429, otherwise `failed`.
+   * @example
+   * ```ts
+   * this.classifyFailure('user_aborted');                         // "stopped"
+   * this.classifyFailure(new HttpError(429, 'Too Many Requests')); // "rate_limited"
+   * this.classifyFailure(new TypeError('bad'));                    // "failed"
+   * ```
+   * @source
+   */
+  private classifyFailure(error: unknown): SupplierOutcomeStatus {
+    if (isExpectedAbort(error)) return SUPPLIER_OUTCOME.STOPPED;
+    if (isRateLimited(error)) return SUPPLIER_OUTCOME.RATE_LIMITED;
+    return SUPPLIER_OUTCOME.FAILED;
+  }
+
+  /**
+   * Names the outcome of a supplier whose `execute()` returned without throwing.
+   * @param resultCount - Products the supplier yielded.
+   * @param stoppedEarly - Whether the supplier was aborted (search stopped, or its time budget).
+   * @returns `stopped` when the supplier was cut short, else `ok` or `empty`.
+   * @example
+   * ```ts
+   * this.classifyCompletion(4, false); // "ok"
+   * this.classifyCompletion(0, false); // "empty"
+   * this.classifyCompletion(4, true);  // "stopped"
+   * ```
+   * @source
+   */
+  private classifyCompletion(resultCount: number, stoppedEarly: boolean): SupplierOutcomeStatus {
+    if (stoppedEarly) return SUPPLIER_OUTCOME.STOPPED;
+    return resultCount > 0 ? SUPPLIER_OUTCOME.OK : SUPPLIER_OUTCOME.EMPTY;
   }
 
   /**

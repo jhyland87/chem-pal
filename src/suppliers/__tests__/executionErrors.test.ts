@@ -159,3 +159,37 @@ describe('SupplierFactory supplier-failure counting', () => {
     expect(incrementParseError).not.toHaveBeenCalled();
   });
 });
+
+describe('SupplierFactory supplier outcomes', () => {
+  /** Reaches the private outcome classifiers. */
+  type OutcomeInternals = {
+    classifyFailure: (error: unknown) => string;
+    classifyCompletion: (resultCount: number, stoppedEarly: boolean) => string;
+  };
+
+  it.each([
+    ['the user stopping the search', 'user_aborted', 'stopped'],
+    ['an AbortError', new DOMException('stop', 'AbortError'), 'stopped'],
+    ['a 429 response', new HttpError(429, 'Too Many Requests'), 'rate_limited'],
+    ['any other error', new TypeError('bad response'), 'failed'],
+  ])('classifies %s', (_label, thrown, expected) => {
+    const internals = makeFactory() as unknown as OutcomeInternals;
+
+    expect(internals.classifyFailure(thrown)).toBe(expected);
+  });
+
+  it.each([
+    [3, 'ok'],
+    [0, 'empty'],
+  ])('classifies a clean finish with %i results as %s', (resultCount, expected) => {
+    const internals = makeFactory() as unknown as OutcomeInternals;
+
+    expect(internals.classifyCompletion(resultCount, false)).toBe(expected);
+  });
+
+  it('classifies a supplier that was cut short as stopped', () => {
+    const internals = makeFactory() as unknown as OutcomeInternals;
+
+    expect(internals.classifyCompletion(3, true)).toBe('stopped');
+  });
+});

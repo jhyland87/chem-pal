@@ -99,6 +99,7 @@ import RangeColumnFilter from './Inputs/RangeColumnFilter';
 import SelectColumnFilter from './Inputs/SelectColumnFilter';
 import TextColumnFilter from './Inputs/TextColumnFilter';
 import { ProductDetailPanel } from './ProductDetailPanel';
+import { SupplierStatusChip } from './SupplierStatusChip';
 import styles from './ResultsTable.module.scss';
 import { useAutoColumnSizing } from './useAutoColumnSizing.hook';
 import { useContextMenu } from './useContextMenu.hook';
@@ -232,6 +233,7 @@ export default function ResultsTable({
     excludeProduct,
     tableText,
     executedQuery,
+    supplierOutcomes,
   } = useSearch();
 
   const setColumnFilters = columnFilterFns[1];
@@ -768,6 +770,10 @@ export default function ResultsTable({
           {executedQuery ? (
             <ChemicalChips query={executedQuery} onSelect={setChemicalInfoTerm} />
           ) : null}
+          {/* Opt-in from the Advanced settings, and only while advanced mode is on. */}
+          {appContext?.advancedMode && appContext.userSettings?.showSupplierStatus === true && (
+            <SupplierStatusChip outcomes={supplierOutcomes} />
+          )}
           {/* Only show the global filter if there are results. Based on
               searchResults (not the filtered row model) so the input doesn't
               vanish once the user's filter query matches zero rows. */}

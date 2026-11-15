@@ -81,6 +81,34 @@ describe('SupplierBase search-time budget', () => {
     expect(supplier.abortSignal.reason).toBe(SEARCH_ABORT_REASON.TIME_BUDGET);
   });
 
+  it('stops only this supplier, leaving the shared search controller running', async () => {
+    const search = new AbortController();
+    const supplier = new TimeoutTestSupplier('potassium', 5, search);
+    supplier.setSupplierSearchTimeBudgetSec(2);
+
+    supplier.callArmSearchTimeout(Symbol('searchTimeout'));
+    await vi.advanceTimersByTimeAsync(2_100);
+
+    expect(supplier.stoppedEarly).toBe(true);
+    expect(search.signal.aborted).toBe(false);
+  });
+
+  it('is stopped when the shared search controller is aborted', () => {
+    const search = new AbortController();
+    const supplier = new TimeoutTestSupplier('potassium', 5, search);
+
+    search.abort(SEARCH_ABORT_REASON.USER);
+
+    expect(supplier.abortSignal.reason).toBe(SEARCH_ABORT_REASON.USER);
+  });
+
+  it('starts stopped when the search was already aborted', () => {
+    const search = new AbortController();
+    search.abort(SEARCH_ABORT_REASON.USER);
+
+    expect(new TimeoutTestSupplier('potassium', 5, search).stoppedEarly).toBe(true);
+  });
+
   it('stays disarmed when the budget is zero', () => {
     const supplier = new TimeoutTestSupplier('potassium', 5, new AbortController());
     supplier.setSupplierSearchTimeBudgetSec(0);

@@ -340,16 +340,6 @@ declare global {
   }
 
   /**
-   * Props for the TabHeader component
-   */
-  interface TabHeaderProps {
-    /** Current page number */
-    page: number;
-    /** Function to update page */
-    setPage: (page: number) => void;
-  }
-
-  /**
    * Props for the Link component
    */
   interface LinkProps {
@@ -361,14 +351,6 @@ declare global {
 
     /** Child elements */
     children: React.ReactNode;
-  }
-
-  /**
-   * Props for the SearchInput component
-   */
-  interface SearchInputStates {
-    /** Function to update search input */
-    onSearch?: (query: string) => void;
   }
 
   /**
@@ -395,18 +377,6 @@ declare global {
     setStatusLabel: React.Dispatch<React.SetStateAction<string | boolean>>;
     /** Function to update the loading state */
     setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  }
-
-  /**
-   * Props for the IconTextFader component
-   */
-  interface IconTextFaderProps {
-    /** Icon element to display */
-    children: ReactNode;
-    /** Text to display when fading from icon */
-    text: string;
-    /** Whether the component is in active state */
-    active: boolean;
   }
 }
 

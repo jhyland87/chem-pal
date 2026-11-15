@@ -145,6 +145,31 @@ describe('deleteSupplierProductDataCacheEntry', () => {
   });
 });
 
+describe('putSupplierProductDataCacheEntry eviction', () => {
+  const cap = storage.maxSupplierProductCacheEntries;
+
+  beforeEach(async () => {
+    await clearSupplierProductDataCache();
+    for (let i = 0; i < cap; i++) {
+      await putSupplierProductDataCacheEntry(`key-${i}`, { data: { i }, timestamp: i + 1 });
+    }
+  });
+
+  it('keeps every entry when a full store overwrites an existing key', async () => {
+    await putSupplierProductDataCacheEntry(`key-${cap - 1}`, { data: {}, timestamp: cap + 1 });
+
+    expect(await getSupplierProductDataCacheEntry('key-0')).toBeDefined();
+  });
+
+  it('evicts the oldest entry when a full store takes a new key', async () => {
+    await putSupplierProductDataCacheEntry('key-new', { data: {}, timestamp: cap + 1 });
+
+    expect(await getSupplierProductDataCacheEntry('key-0')).toBeUndefined();
+    expect(await getSupplierProductDataCacheEntry('key-1')).toBeDefined();
+    expect(await getSupplierProductDataCacheEntry('key-new')).toBeDefined();
+  });
+});
+
 describe('price history store', () => {
   const entry = (id: string, productKey: string, usd: number) => ({
     id,

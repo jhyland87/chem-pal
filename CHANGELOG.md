@@ -13,6 +13,26 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+### Added
+
+- Advanced mode has a new **Show supplier status** setting (off by default). When on, the results
+  header shows how many suppliers responded to your search; click it to see which suppliers
+  returned results, which found nothing, and which failed, were rate limited or were stopped early.
+- The diagnostic logs now record how each supplier's search ended, so a supplier that keeps failing
+  can be spotted sooner. Turning off **Share usage data** stops them.
+
+### Changed
+
+- Searches finish sooner: ChemPal now searches up to 8 suppliers at once instead of 3, and adds
+  results to the table in small batches instead of one row at a time.
+- Repeat searches hit the cache more often: it now keeps many more supplier results before
+  discarding the oldest.
+
+### Fixed
+
+- One slow supplier no longer ends the whole search. A supplier that runs past the max search
+  time is now stopped on its own, and the other suppliers keep going.
+
 ## [1.17.0] - 2026-10-09
 
 ### Changed

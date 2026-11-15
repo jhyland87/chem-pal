@@ -448,13 +448,19 @@ function App() {
   }, [appState.speedDialVisibility, dispatch]);
 
   // Handlers for child components
-  const handleSetUserSettings = (settings: UserSettings) => {
-    dispatch({ type: APP_ACTION.UPDATE_SETTINGS, settings });
-  };
+  const handleSetUserSettings = useCallback(
+    (settings: UserSettings) => {
+      dispatch({ type: APP_ACTION.UPDATE_SETTINGS, settings });
+    },
+    [dispatch],
+  );
 
-  const handleSetPanel = (panel: PANEL) => {
-    dispatch({ type: APP_ACTION.SET_PANEL, panel });
-  };
+  const handleSetPanel = useCallback(
+    (panel: PANEL) => {
+      dispatch({ type: APP_ACTION.SET_PANEL, panel });
+    },
+    [dispatch],
+  );
 
   // Leaving advanced mode while the stats or price-history panel is open would
   // otherwise strand the user on a panel that no longer renders anything.
@@ -467,24 +473,36 @@ function App() {
     }
   }, [statsVisible, appState.panel]);
 
-  const handleSetSelectedSuppliers = (suppliers: SupplierClassName[]) => {
-    dispatch({ type: APP_ACTION.SET_SELECTED_SUPPLIERS, suppliers });
-  };
+  const handleSetSelectedSuppliers = useCallback(
+    (suppliers: SupplierClassName[]) => {
+      dispatch({ type: APP_ACTION.SET_SELECTED_SUPPLIERS, suppliers });
+    },
+    [dispatch],
+  );
 
-  const handleSetDrawerTab = (tab: DRAWER_INDEX) => {
-    dispatch({ type: APP_ACTION.SET_DRAWER_TAB, tab });
-  };
+  const handleSetDrawerTab = useCallback(
+    (tab: DRAWER_INDEX) => {
+      dispatch({ type: APP_ACTION.SET_DRAWER_TAB, tab });
+    },
+    [dispatch],
+  );
 
-  const handleToggleDrawer = (tab: DRAWER_INDEX = DRAWER_INDEX.SEARCH) => {
-    dispatch({
-      type: APP_ACTION.SET_DRAWER_TAB,
-      tab: appState.drawerTab === DRAWER_INDEX.CLOSED ? tab : DRAWER_INDEX.CLOSED,
-    });
-  };
+  const handleToggleDrawer = useCallback(
+    (tab: DRAWER_INDEX = DRAWER_INDEX.SEARCH) => {
+      dispatch({
+        type: APP_ACTION.SET_DRAWER_TAB,
+        tab: appState.drawerTab === DRAWER_INDEX.CLOSED ? tab : DRAWER_INDEX.CLOSED,
+      });
+    },
+    [dispatch, appState.drawerTab],
+  );
 
-  const handleSetBookmarksFolderId = (id: string | null) => {
-    dispatch({ type: APP_ACTION.SET_BOOKMARKS_FOLDER_ID, id });
-  };
+  const handleSetBookmarksFolderId = useCallback(
+    (id: string | null) => {
+      dispatch({ type: APP_ACTION.SET_BOOKMARKS_FOLDER_ID, id });
+    },
+    [dispatch],
+  );
 
   // Hotkey action handlers. Keyed by the `id` field in config.json -> hotkeys.
   // The useHotkeys hook already suppresses events when focus is in an input.
@@ -546,29 +564,53 @@ function App() {
     [dispatch],
   );
 
-  // AppContext value with fixed searchResults property
-  const appContextValue = {
-    // defaultSettings is trusted static config.json; its JSON-inferred type widens
-    // beyond UserSettings, so assert to the model type here.
-    userSettings: { ...(defaultSettings as UserSettings), ...appState.userSettings },
-    setUserSettings: handleSetUserSettings,
-    searchResults, // This fixes the missing property linter error
-    setSearchResults, // Expose setter for child components to use
-    setPanel: handleSetPanel, // Add setPanel to context for tab switching
-    drawerTab: appState.drawerTab,
-    setDrawerTab: handleSetDrawerTab,
-    toggleDrawer: handleToggleDrawer,
-    selectedSuppliers: appState.selectedSuppliers,
-    setSelectedSuppliers: handleSetSelectedSuppliers,
-    pendingSearchQuery,
-    setPendingSearchQuery,
-    searchFilters,
-    setSearchFilters,
-    bookmarksFolderId: appState.bookmarksFolderId,
-    setBookmarksFolderId: handleSetBookmarksFolderId,
-    advancedMode,
-    setAdvancedMode,
-  };
+  // defaultSettings is trusted static config.json; its JSON-inferred type widens
+  // beyond UserSettings, so assert to the model type here. Memoized so consumers
+  // keyed on the settings object don't see a new one every render.
+  const mergedUserSettings = useMemo(
+    () => ({ ...(defaultSettings as UserSettings), ...appState.userSettings }),
+    [appState.userSettings],
+  );
+
+  // AppContext value, memoized so consumers re-render only when a field changes.
+  const appContextValue = useMemo(
+    () => ({
+      userSettings: mergedUserSettings,
+      setUserSettings: handleSetUserSettings,
+      searchResults, // This fixes the missing property linter error
+      setSearchResults, // Expose setter for child components to use
+      setPanel: handleSetPanel, // Add setPanel to context for tab switching
+      drawerTab: appState.drawerTab,
+      setDrawerTab: handleSetDrawerTab,
+      toggleDrawer: handleToggleDrawer,
+      selectedSuppliers: appState.selectedSuppliers,
+      setSelectedSuppliers: handleSetSelectedSuppliers,
+      pendingSearchQuery,
+      setPendingSearchQuery,
+      searchFilters,
+      setSearchFilters,
+      bookmarksFolderId: appState.bookmarksFolderId,
+      setBookmarksFolderId: handleSetBookmarksFolderId,
+      advancedMode,
+      setAdvancedMode,
+    }),
+    [
+      mergedUserSettings,
+      handleSetUserSettings,
+      searchResults,
+      handleSetPanel,
+      appState.drawerTab,
+      handleSetDrawerTab,
+      handleToggleDrawer,
+      appState.selectedSuppliers,
+      handleSetSelectedSuppliers,
+      pendingSearchQuery,
+      searchFilters,
+      appState.bookmarksFolderId,
+      handleSetBookmarksFolderId,
+      advancedMode,
+    ],
+  );
   const searchParams = new URLSearchParams(location.search);
   if (searchParams.has('test-crash')) {
     const errorOpts: ErrorOptions = {};

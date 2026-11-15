@@ -39,7 +39,8 @@ const CHEMICAL_DB_KEY = 'current';
 /** Single-row key used by the `app_meta` store (mirrors the `"current"` pattern of `search_results`). */
 const APP_META_KEY = 'current';
 // Cache-capacity caps live in config.json alongside the other build-time tunables.
-const MAX_SUPPLIER_CACHE_ENTRIES = storage.maxSupplierCacheEntries;
+const MAX_SUPPLIER_QUERY_CACHE_ENTRIES = storage.maxSupplierQueryCacheEntries;
+const MAX_SUPPLIER_PRODUCT_CACHE_ENTRIES = storage.maxSupplierProductCacheEntries;
 const MAX_HISTORY_ENTRIES = storage.maxHistoryEntries;
 // Exports are capped by BOTH a record count and a total byte budget; the oldest
 // are evicted first when either is exceeded (see `putExport`).
@@ -570,7 +571,7 @@ export async function getSupplierQueryCacheEntry(
 
 /**
  * Writes a supplier query-cache entry, evicting the least recently cached row
- * first when the store is at `storage.maxSupplierCacheEntries` capacity.
+ * first when a new key would exceed `storage.maxSupplierQueryCacheEntries`.
  * @category Utils
  * @param cacheKey - The composite query+supplier cache key.
  * @param entry - The result set plus its `__cacheMetadata`.
@@ -590,9 +591,9 @@ export async function putSupplierQueryCacheEntry(
     const tx = db.transaction(IDB_STORE.SUPPLIER_QUERY_CACHE, 'readwrite');
     const store = tx.objectStore(IDB_STORE.SUPPLIER_QUERY_CACHE);
 
-    // Evict oldest if at capacity
-    const count = await store.count();
-    if (count >= MAX_SUPPLIER_CACHE_ENTRIES) {
+    // Evict oldest if at capacity; overwriting an existing key adds no row.
+    const isNewKey = (await store.getKey(cacheKey)) === undefined;
+    if (isNewKey && (await store.count()) >= MAX_SUPPLIER_QUERY_CACHE_ENTRIES) {
       const index = store.index('cachedAt');
       const cursor = await index.openCursor();
       if (cursor) {
@@ -745,7 +746,7 @@ export async function getSupplierProductDataCacheEntry(
 
 /**
  * Writes a supplier product-data cache entry, evicting the oldest row first
- * when the store is at `storage.maxSupplierCacheEntries` capacity.
+ * when a new key would exceed `storage.maxSupplierProductCacheEntries`.
  * @category Utils
  * @param cacheKey - The product-level cache key.
  * @param entry - The product data and the timestamp it was fetched.
@@ -765,9 +766,9 @@ export async function putSupplierProductDataCacheEntry(
     const tx = db.transaction(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE, 'readwrite');
     const store = tx.objectStore(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE);
 
-    // Evict oldest if at capacity
-    const count = await store.count();
-    if (count >= MAX_SUPPLIER_CACHE_ENTRIES) {
+    // Evict oldest if at capacity; overwriting an existing key adds no row.
+    const isNewKey = (await store.getKey(cacheKey)) === undefined;
+    if (isNewKey && (await store.count()) >= MAX_SUPPLIER_PRODUCT_CACHE_ENTRIES) {
       const index = store.index('timestamp');
       const cursor = await index.openCursor();
       if (cursor) {

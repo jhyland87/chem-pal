@@ -1422,5 +1422,45 @@
   "chem_info_wikipedia_link": { "message": "विकिपीडिया पर देखें" },
   "chem_info_nist_link": { "message": "NIST WebBook पर देखें" },
   "chem_info_niosh_link": { "message": "NIOSH पॉकेट गाइड" },
-  "chem_info_cameo_link": { "message": "CAMEO Chemicals पर देखें" }
+  "chem_info_cameo_link": { "message": "CAMEO Chemicals पर देखें" },
+  "supplier_status_summary": {
+    "message": "$total$ में से $responded$ आपूर्तिकर्ताओं ने जवाब दिया",
+    "description": "Chip in the results header: how many searched suppliers finished without a problem.",
+    "placeholders": {
+      "responded": { "content": "$1" },
+      "total": { "content": "$2" }
+    }
+  },
+  "supplier_status_aria": {
+    "message": "आपूर्तिकर्ता स्थिति दिखाएँ",
+    "description": "Accessible label for the chip that opens the per-supplier status list."
+  },
+  "supplier_status_failed": {
+    "message": "विफल",
+    "description": "Heading for suppliers whose search hit an error."
+  },
+  "supplier_status_rate_limited": {
+    "message": "अनुरोध सीमा पार",
+    "description": "Heading for suppliers that throttled our requests (HTTP 429)."
+  },
+  "supplier_status_stopped": {
+    "message": "समय से पहले रोका गया",
+    "description": "Heading for suppliers cut short by Stop or the time limit."
+  },
+  "supplier_status_empty": {
+    "message": "कोई परिणाम नहीं",
+    "description": "Heading for suppliers that finished but found nothing."
+  },
+  "supplier_status_ok": {
+    "message": "परिणाम मिले",
+    "description": "Heading for suppliers that returned products."
+  },
+  "settings_show_supplier_status": {
+    "message": "आपूर्तिकर्ता स्थिति दिखाएँ",
+    "description": "Setting label (advanced mode only)."
+  },
+  "settings_show_supplier_status_desc": {
+    "message": "परिणाम शीर्षलेख में दिखाएँ कि प्रत्येक आपूर्तिकर्ता की खोज कैसे समाप्त हुई",
+    "description": "Description for the show-supplier-status setting (advanced mode only)."
+  }
 }
