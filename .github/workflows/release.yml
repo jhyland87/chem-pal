@@ -76,7 +76,8 @@ jobs:
   test-e2e-chrome:
     name: Chrome E2E
     needs: build
-    runs-on: ubuntu-latest
+    # Pinned: Playwright 1.58 cannot install its browsers on ubuntu-latest (26.04).
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -104,7 +105,8 @@ jobs:
   test-e2e-firefox:
     name: Firefox E2E
     needs: build
-    runs-on: ubuntu-latest
+    # Pinned: Playwright 1.58 cannot install its browsers on ubuntu-latest (26.04).
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v7
