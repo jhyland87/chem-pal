@@ -24,7 +24,7 @@ classDef lru fill:#E74C3C,stroke:#C0392B,color:#fff,font-weight:bold
 classDef user fill:#27AE60,stroke:#1E8449,color:#fff,font-weight:bold
 classDef meta fill:#34495E,stroke:#22303D,color:#fff,font-weight:bold
 
-subgraph DB["IndexedDB — chempal (v7)"]
+subgraph DB["IndexedDB — chempal (v8)"]
 direction TB
 SR[("search_results\nkey: id ('current')\nvalue: Product[]")]
 EX[("excluded_products\nkey: id ('current')\nvalue: ExcludedProductsMap")]

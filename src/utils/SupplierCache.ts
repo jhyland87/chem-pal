@@ -17,10 +17,11 @@ import { getErrorMessage } from '@/helpers/exceptions';
  *
  * @remarks
  * The cache system uses two IndexedDB object stores:
- * 1. `supplierQueryCache` - Stores search query results (one record per query+supplier)
- * 2. `supplierProductDataCache` - Stores detailed product data (one record per product)
+ * 1. `supplier_query_cache` - Stores search query results (one record per query+supplier)
+ * 2. `supplier_product_data_cache` - Stores detailed product data (one record per product)
  *
- * Each store supports max 100 entries with LRU eviction handled by idbCache.
+ * Each store is capped (`storage.maxSupplier*CacheEntries` in `config.json`), with eviction
+ * handled by idbCache.
  * @category Utils
  * @typeParam T - The type of data being cached
  * @source
@@ -65,7 +66,7 @@ export class SupplierCache {
   // of returning the cached empty list.
   private doNotCacheEmptyResults: boolean;
 
-  // Mirrors userSettings.cacheTtlMinutes, stored here in milliseconds for
+  // Mirrors userSettings.caching.ttlMinutes, stored here in milliseconds for
   // direct comparison against `Date.now() - cachedAt`. A value of 0 disables
   // TTL expiration (preserves the original behavior where entries live until
   // LRU eviction or version-mismatch eviction).
@@ -160,7 +161,7 @@ export class SupplierCache {
 
   /**
    * Stores query results in the cache.
-   * LRU eviction (max 100 entries) is handled by idbCache.
+   * Eviction at the `config.json` cap is handled by idbCache.
    * @source
    */
   async cacheQueryResults(query: string, results: unknown[], limit: number): Promise<void> {
@@ -237,7 +238,7 @@ export class SupplierCache {
 
   /**
    * Stores product data in the cache.
-   * LRU eviction (max 100 entries) is handled by idbCache.
+   * Eviction at the `config.json` cap is handled by idbCache.
    * @source
    */
   async cacheProductData(key: string, data: Record<string, unknown>): Promise<void> {

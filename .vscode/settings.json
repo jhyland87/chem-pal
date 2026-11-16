@@ -4,12 +4,11 @@
   "editor.formatOnSave": true,
   "editor.detectIndentation": false,
   "editor.defaultFoldingRangeProvider": "vscode.typescript-language-features",
-  "javascript.preferences.quoteStyle": "single",
-  "typescript.preferences.quoteStyle": "single",
+  "js/ts.preferences.quoteStyle": "single",
   "jestTestExplorer.logpanel": true,
   "jest.runMode": "on-demand",
   "notebook.defaultFormatter": null,
-  "typescript.format.insertSpaceAfterTypeAssertion": false,
+  "js/ts.format.insertSpaceAfterTypeAssertion": false,
   "editor.autoIndent": "full",
   "eslint.workingDirectories": [
     {
@@ -30,21 +29,7 @@
   },
   "prettier.experimentalTernaries": true,
   "prettier.printWidth": 100,
-  "javascript.preferences.organizeImports": {
-    "typeOrder": "auto",
-    "enabled": "explicit",
-    //"style": "alphabetical",
-    "sortOrder": [
-      "lowercaseLetters",
-      "uppercaseLetters"
-    ],
-    "grouping": [
-      "moduleSpecifier",
-      "typeAndValue"
-    ],
-    "caseFirst": "default"
-  },
-  "typescript.preferences.organizeImports": {
+  "js/ts.preferences.organizeImports": {
     "accentCollation": true,
     "typeOrder": "auto",
     "enabled": true,
@@ -73,11 +58,13 @@
   },
   "[typescript]": {
     "editor.formatOnSave": true,
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "js/ts.suggest.jsdoc.enabled": false
   },
   "[typescriptreact]": {
     "editor.formatOnSave": true,
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "js/ts.suggest.jsdoc.enabled": false
   },
   "[scss]": {
     "editor.formatOnSave": true,
@@ -93,17 +80,17 @@
     "typescript",
     "typescriptreact"
   ],
-  "typescript.preferences.preferTypeOnlyAutoImports": true,
-  "typescript.suggest.autoImports": false,
-  "typescript.preferences.autoImportSuggestions": true,
-  "typescript.preferences.autoImportSuggestionsMode": "literals",
-  "typescript.inlayHints.propertyDeclarationTypes.enabled": false,
-  "typescript.inlayHints.parameterNames.enabled": "literals",
-  "typescript.inlayHints.variableTypes.enabled": false,
-  "typescript.inlayHints.functionLikeReturnType.enabled": true,
-  "typescript.inlayHints.enumValues.enabled": true,
-  "typescript.inlayHints.typeArguments.enabled": true,
-  "typescript.inlayHints.typeParameters.enabled": true,
+  "js/ts.preferences.preferTypeOnlyAutoImports": true,
+  "js/ts.suggest.autoImports": false,
+  "js/ts.preferences.autoImportSuggestions": true,
+  "js/ts.preferences.autoImportSuggestionsMode": "literals",
+  "[typescript][typescriptreact]": {
+    "js/ts.inlayHints.propertyDeclarationTypes.enabled": false,
+    "js/ts.inlayHints.parameterNames.enabled": "literals",
+    "js/ts.inlayHints.variableTypes.enabled": false,
+    "js/ts.inlayHints.functionLikeReturnTypes.enabled": true,
+    "js/ts.inlayHints.enumMemberValues.enabled": true
+  },
   "typescript.preferences.namingConvention": {
     "enabled": true,
     "options": {
@@ -116,8 +103,6 @@
   "[jsonc]": {
     "editor.defaultFormatter": "vscode.json-language-features"
   },
-  "typescript.suggest.completeJSDocs": false,
-  "javascript.suggest.completeJSDocs": true,
   "[graphql]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -127,5 +112,16 @@
   "openCoverage.coverageFilePath": "coverage/index.html",
   "vitest.shellType": "terminal",
   "testing.coverageToolbarEnabled": true,
-  "npm.packageManager": "pnpm"
+  "npm.packageManager": "pnpm",
+  "files.exclude": {
+    ".claude": false,
+    "**/.claude/**": false,
+    "**/.claude/worktrees": true,
+    "**/.claude/settings.local.json": true
+  },
+  "search.exclude": {
+    ".claude/**": false,
+    "**/.claude/**": false,
+    "**/.claude/worktrees": true
+  },
 }

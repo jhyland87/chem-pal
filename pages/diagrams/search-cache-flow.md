@@ -125,15 +125,15 @@ QLOOKUP -->|"hit"| CacheHit1
 QLOOKUP -->|"miss"| CacheMiss1
 INVALIDATE -->|"re-fetch"| CacheMiss1
 
-QCS[("supplierQueryCache\nkey: base64(query:supplier)\nindex: cachedAt")]
+QCS[("supplier_query_cache\nkey: base64(query:supplier)\nindex: cachedAt")]
 SAVE1 -->|"write"| QCS
 QLOOKUP -.->|"read"| QCS
 INVALIDATE -.->|"delete"| QCS
 
 subgraph LRU["LRU Eviction Policy"]
 direction TB
-MAX["Max entries: 100 per cache\nquery cache and product cache\neach have independent limits"]
-EVICT["On write: if entries >= 100\nsort by cachedAt/timestamp ascending\ndelete oldest entry via IDB index"]
+MAX["Max entries: 200 query, 1000 product\n(config.json storage.maxSupplier*CacheEntries)\neach cache has its own limit"]
+EVICT["On write: if entries >= cap\nsort by cachedAt/timestamp ascending\ndelete oldest entry via IDB index"]
 MAX --- EVICT
 end
 SAVE1 -.->|"triggers if full"| LRU
@@ -160,7 +160,7 @@ D_QPC("Where a search checks for an already-cached result set")
 D_GCK("The cache key is just the query plus the supplier name")
 D_LIMITCHK("A cache hit is reused only if it has enough results for the new limit")
 D_SAVE1("Fresh results are stored as serialized builders, not raw pages")
-D_LRU("At 100 entries, the oldest is evicted to make room")
+D_LRU("At the cap, the oldest is evicted to make room")
 D_QPC ~~~ QPC
 D_GCK ~~~ GCK
 D_LIMITCHK ~~~ LIMITCHK
@@ -220,7 +220,7 @@ GPCK --> PLOOKUP
 PLOOKUP{"getCachedProductData(key)\nexists?"}
 subgraph CacheHit2["Cache Hit"]
 direction TB
-TOUCH["updateProductDataCacheTimestamp(key)\nrefresh timestamp to prevent\nLRU eviction"]
+TOUCH["putSupplierProductDataCacheEntry(key)\nrefresh timestamp to prevent\nLRU eviction"]
 SETDATA["product.setData(cachedData)\nhydrate builder with\ncached product details"]
 TOUCH --> SETDATA
 end
@@ -238,15 +238,15 @@ end
 PLOOKUP -->|"hit"| CacheHit2
 PLOOKUP -->|"miss"| CacheMiss2
 
-PDS[("supplierProductDataCache\nkey: MD5({ key: identity, supplier })\nindex: timestamp")]
+PDS[("supplier_product_data_cache\nkey: MD5({ key: identity, supplier })\nindex: timestamp")]
 SAVE2 -->|"write"| PDS
 PLOOKUP -.->|"read"| PDS
 TOUCH -.->|"update timestamp"| PDS
 
 subgraph LRU["LRU Eviction Policy"]
 direction TB
-MAX["Max entries: 100 per cache\nquery cache and product cache\neach have independent limits"]
-EVICT["On write: if entries >= 100\nsort by cachedAt/timestamp ascending\ndelete oldest entry via IDB index"]
+MAX["Max entries: 200 query, 1000 product\n(config.json storage.maxSupplier*CacheEntries)\neach cache has its own limit"]
+EVICT["On write: if entries >= cap\nsort by cachedAt/timestamp ascending\ndelete oldest entry via IDB index"]
 MAX --- EVICT
 end
 SAVE2 -.->|"triggers if full"| LRU
@@ -342,7 +342,7 @@ RETURN["return survivors\n(hydrated + newly enriched)"]
 HYDRATE --> RETURN
 WRITE --> RETURN
 
-PDS[("supplierProductDataCache\nkey: MD5({ key: identity, supplier })")]
+PDS[("supplier_product_data_cache\nkey: MD5({ key: identity, supplier })")]
 LOOKUP -.->|"read"| PDS
 WRITE -->|"write"| PDS
 
@@ -386,15 +386,15 @@ classDef cstorage fill:#16A085,stroke:#0E6B57,color:#fff,font-weight:bold
 
 subgraph IDB["IndexedDB (chempal db)"]
 direction TB
-QCS[("supplierQueryCache\nQuery Results\nkey: base64(query:supplier)\nindex: cachedAt")]
-PDS[("supplierProductDataCache\nProduct Data\nkey: MD5({ key: identity, supplier })\nindex: timestamp")]
-SRS[("searchResults\nCurrent Results\nkey: 'current'")]
-SHS[("searchHistory\nSearch History\nkey: timestamp")]
-SSS[("supplierStats\nSupplier Stats\nkey: YYYY-MM-DD")]
+QCS[("supplier_query_cache\nQuery Results\nkey: base64(query:supplier)\nindex: cachedAt")]
+PDS[("supplier_product_data_cache\nProduct Data\nkey: MD5({ key: identity, supplier })\nindex: timestamp")]
+SRS[("search_results\nCurrent Results\nkey: 'current'")]
+SHS[("search_history\nSearch History\nkey: timestamp")]
+SSS[("supplier_stats\nSupplier Stats\nkey: YYYY-MM-DD")]
 end
 subgraph CS["chrome.storage (via cstorage)"]
 direction TB
-LOCAL[("chrome.storage.local\nUSER_SETTINGS, HTTP_LRU,\nEXCLUDED_PRODUCTS,\nTABLE_STATE, etc.")]
+LOCAL[("chrome.storage.local\nUSER_SETTINGS,\nTABLE_STATE, etc.")]
 SESSION[("chrome.storage.session\nQUERY, PANEL,\nSEARCH_INPUT")]
 end
 
@@ -408,7 +408,7 @@ The two supplier caches store different things and invalidate differently:
 
 | Aspect | Query Results Cache | Product Data Cache |
 | --- | --- | --- |
-| Storage | IndexedDB `supplierQueryCache` | IndexedDB `supplierProductDataCache` |
+| Storage | IndexedDB `supplier_query_cache` | IndexedDB `supplier_product_data_cache` |
 | Key | base64 of `query + supplier` | MD5 of `{ key: identity, supplier }` (identity = `getUniqueProductKey`) |
 | Stored data | Array of serialized `ProductBuilder` snapshots | Single serialized `ProductBuilder` snapshot |
 | Invalidation | When requested limit exceeds cached limit | LRU eviction only (no limit-based invalidation) |

@@ -28,7 +28,7 @@ Cached results are a recent snapshot, not live data. If you want fresher numbers
 you have options in **[Settings](Settings) → Cache**:
 
 - **Cache TTL (minutes)** — set how long results stay valid before ChemPal
-  automatically refetches them. `0` (default) means no time-based expiry.
+  automatically refetches them. The default is `7200` (5 days); `0` means no time-based expiry.
 - **Do Not Cache Empty Results** — when on, a supplier that returned nothing isn't
   remembered as empty, so it gets another chance on your next search.
 - You can also right-click a single product and choose **Remove Product from

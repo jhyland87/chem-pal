@@ -29,7 +29,7 @@ export interface ExcludedProductEntry {
 
 /**
  * Map of exclusion-key → excluded product entry, as persisted in the
- * `excludedProducts` IndexedDB object store (via `@/utils/idbCache`).
+ * `excluded_products` IndexedDB object store (via `@/utils/idbCache`).
  * @category Helpers
  * @source
  */

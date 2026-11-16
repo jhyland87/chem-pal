@@ -530,7 +530,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * This controls the batch size for concurrent requests to avoid overwhelming
    * the supplier's API and the user's bandwidth.
    *
-   * @defaultValue 10
+   * @defaultValue 3
    * @example
    * ```typescript
    * class MySupplier extends SupplierBase<Product> {
@@ -682,7 +682,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   /**
    * Product-data cache keys the user has explicitly excluded via the "Ignore
    * Product" context menu action. Loaded once per `execute()` from
-   * `storage.local` so membership checks are synchronous on the hot path
+   * IndexedDB so membership checks are synchronous on the hot path
    * (see `getProductData`). Newly-ignored products take effect on the next
    * search, which matches the stated feature requirement.
    */
