@@ -109,6 +109,9 @@ import { getErrorMessage } from '@/helpers/exceptions';
 
 const logger = new Logger('ResultsTable');
 
+/** Column id of the opt-in price-trend sparkline, auto-shown when prices change. */
+const TREND_COLUMN_ID = 'priceTrend';
+
 type FilterVariant = 'text' | 'range' | 'select';
 
 /** Narrows an unknown column `filterVariant` to a known {@link FilterVariant}. */
@@ -378,6 +381,52 @@ export default function ResultsTable({
     setTableState((prev) => ({ ...prev, columnVisibility }));
     // `table` is a stable instance from useResultsTable.
   }, [isLoading, searchResults, autoHideEmptyColumns, priceHistory, table]);
+
+  // Auto-show the opt-in Trend column when a search that ran in this page finishes with
+  // any price change, so changes aren't missed while it's hidden. Cached results
+  // restored on a reload don't count, and once shown it isn't re-shown until the next
+  // search, so hiding it sticks. Remembers the prior visibility and restores it after a
+  // later search with no changes. Runs after the auto-hide effect and uses a functional
+  // update so the two compose.
+  const autoShownTrendPriorRef = useRef<{ prior: boolean | undefined } | undefined>(undefined);
+  // True from the start of a search until its price changes have been acted on.
+  const trendCheckPendingRef = useRef(false);
+  useEffect(() => {
+    if (isLoading) {
+      trendCheckPendingRef.current = true;
+      return;
+    }
+    if (!trendCheckPendingRef.current || searchResults.length === 0) return;
+    if (priceHistory === undefined || priceHistory.size === 0) return;
+
+    const hasPriceChange = table.options.data.some(
+      (row) => row.priceTrendValue !== undefined && row.priceTrendValue !== 0,
+    );
+    const current = table.getState().columnVisibility ?? {};
+
+    if (hasPriceChange) {
+      // Price history reloads shortly after results settle, so keep checking until a
+      // change is seen; then stop so a user's hide isn't undone.
+      trendCheckPendingRef.current = false;
+      if (current[TREND_COLUMN_ID] === true) return;
+      autoShownTrendPriorRef.current ??= { prior: current[TREND_COLUMN_ID] };
+      setTableState((prev) => ({
+        ...prev,
+        columnVisibility: { ...prev.columnVisibility, [TREND_COLUMN_ID]: true },
+      }));
+      return;
+    }
+
+    const tracked = autoShownTrendPriorRef.current;
+    if (tracked === undefined) return;
+    autoShownTrendPriorRef.current = undefined;
+    setTableState((prev) => {
+      const columnVisibility = { ...prev.columnVisibility };
+      if (tracked.prior === undefined) delete columnVisibility[TREND_COLUMN_ID];
+      else columnVisibility[TREND_COLUMN_ID] = tracked.prior;
+      return { ...prev, columnVisibility };
+    });
+  }, [isLoading, searchResults, priceHistory, table]);
 
   // Load persisted state once on mount
   useEffect(() => {

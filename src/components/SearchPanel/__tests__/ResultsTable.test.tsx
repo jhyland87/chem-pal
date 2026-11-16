@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import type { ColumnFiltersState } from '@tanstack/react-table';
 import type { ComponentProps } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -9,12 +9,15 @@ const h = vi.hoisted(() => {
   const sessionGet = vi.fn(async () => ({}) as Record<string, unknown>);
   const ctx: Record<string, unknown> = {};
   const search: Record<string, unknown> = {};
-  return { executeSearch, sessionGet, ctx, search };
+  const holder: { table?: ReturnType<typeof makeTable> } = {};
+  return { executeSearch, sessionGet, ctx, search, holder };
 });
 
 vi.mock('../hooks/useContext', () => ({ useAppContext: () => h.ctx }));
 vi.mock('../hooks/useSearch', () => ({ useSearch: () => h.search }));
-vi.mock('../useResultsTable.hook', () => ({ useResultsTable: () => makeTable() }));
+vi.mock('../useResultsTable.hook', () => ({
+  useResultsTable: () => (h.holder.table ??= makeTable()),
+}));
 vi.mock('../useContextMenu.hook', () => ({
   useContextMenu: () => ({
     contextMenu: null,
@@ -40,7 +43,11 @@ vi.mock('@/utils/storage', () => ({
   },
 }));
 
-/** Minimal TanStack-table stand-in: enough methods for an empty ResultsTable to render. */
+/**
+ * Minimal TanStack-table stand-in: enough methods for an empty ResultsTable to render.
+ * `setOptions` applies ResultsTable's updater so `getState()` and `options.onStateChange`
+ * reflect the component's controlled table state, as the real table does.
+ */
 function makeTable() {
   const state = {
     columnFilters: [] as ColumnFiltersState,
@@ -51,11 +58,13 @@ function makeTable() {
     columnVisibility: {},
   };
   const emptyRowModel = { rows: [] as unknown[] };
-  return {
+  const table = {
     initialState: state,
-    options: { meta: {} },
-    getState: () => state,
-    setOptions: vi.fn(),
+    options: { meta: {}, data: [] } as Record<string, any>,
+    getState: () => table.options.state ?? state,
+    setOptions: vi.fn((updater: (prev: Record<string, any>) => Record<string, any>) => {
+      table.options = updater(table.options);
+    }),
     getRowModel: () => emptyRowModel,
     getFilteredRowModel: () => emptyRowModel,
     getPreFilteredRowModel: () => emptyRowModel,
@@ -73,6 +82,7 @@ function makeTable() {
     setPageIndex: vi.fn(),
     setPageSize: vi.fn(),
   };
+  return table;
 }
 
 import ResultsTable from '../ResultsTable';
@@ -85,12 +95,16 @@ function renderTable(initialFilters: ColumnFiltersState = []) {
     getRowCanExpand: () => false,
     columnFilterFns: [initialFilters, setColumnFilters],
   };
-  render(<ResultsTable {...(props as unknown as ComponentProps<typeof ResultsTable>)} />);
-  return { setColumnFilters };
+  const element = () => (
+    <ResultsTable {...(props as unknown as ComponentProps<typeof ResultsTable>)} />
+  );
+  const { rerender } = render(element());
+  return { setColumnFilters, rerender: () => rerender(element()) };
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
+  h.holder.table = makeTable();
   h.sessionGet.mockResolvedValue({});
   Object.assign(h.ctx, {
     pendingSearchQuery: null,
@@ -148,5 +162,81 @@ describe('ResultsTable', () => {
     // …and never clears them, because reopening the panel is not a new search.
     expect(setColumnFilters).not.toHaveBeenCalledWith([]);
     expect(h.executeSearch).not.toHaveBeenCalled();
+  });
+});
+
+describe('ResultsTable auto-showing the Trend column', () => {
+  /** The current visibility of the price-trend column in the controlled table state. */
+  const trendVisibility = () => h.holder.table?.getState().columnVisibility.priceTrend;
+
+  /** Puts a result set in the table, with or without a price change, plus loaded history. */
+  function setResults(priceTrendValue: number | undefined) {
+    const table = h.holder.table!;
+    h.search.searchResults = [{ title: 'Acetone' }];
+    table.options.data = [{ title: 'Acetone', priceTrendValue }];
+    // A fresh map each time, as each history reload in useResultsTable produces one.
+    table.options.meta = { priceHistory: new Map([['series', { points: [] }]]) };
+  }
+
+  /** Simulates a search: loading, then settled with the given result set. */
+  function runSearch(rerender: () => void, priceTrendValue: number | undefined) {
+    h.search.isLoading = true;
+    rerender();
+    h.search.isLoading = false;
+    setResults(priceTrendValue);
+    rerender();
+  }
+
+  it('shows the column when a finished search has a price change', async () => {
+    const { rerender } = renderTable();
+    runSearch(rerender, 12.5);
+    await waitFor(() => expect(trendVisibility()).toBe(true));
+  });
+
+  it('leaves the column alone when the search has no price change', async () => {
+    const { rerender } = renderTable();
+    runSearch(rerender, 0);
+    // Let the effects flush before asserting nothing changed.
+    await waitFor(() => expect(h.holder.table?.options.state).toBeDefined());
+    expect(trendVisibility()).toBeUndefined();
+  });
+
+  it('does not show the column for restored results without a new search', async () => {
+    // A page refresh: cached results with a price change, but no search ran.
+    setResults(12.5);
+    const { rerender } = renderTable();
+    rerender();
+    await waitFor(() => expect(h.holder.table?.options.state).toBeDefined());
+    expect(trendVisibility()).toBeUndefined();
+  });
+
+  it('keeps the column hidden after the user hides it, until the next search', async () => {
+    const { rerender } = renderTable();
+    runSearch(rerender, 12.5);
+    await waitFor(() => expect(trendVisibility()).toBe(true));
+
+    // The user hides it, then price history reloads for the same result set.
+    act(() => {
+      h.holder.table?.options.onStateChange((prev: Record<string, any>) => ({
+        ...prev,
+        columnVisibility: { ...prev.columnVisibility, priceTrend: false },
+      }));
+    });
+    setResults(12.5);
+    rerender();
+    expect(trendVisibility()).toBe(false);
+
+    // A new search with a price change shows it again.
+    runSearch(rerender, -4);
+    await waitFor(() => expect(trendVisibility()).toBe(true));
+  });
+
+  it('restores the prior visibility after a later search with no price change', async () => {
+    const { rerender } = renderTable();
+    runSearch(rerender, 12.5);
+    await waitFor(() => expect(trendVisibility()).toBe(true));
+
+    runSearch(rerender, 0);
+    await waitFor(() => expect(trendVisibility()).toBeUndefined());
   });
 });
