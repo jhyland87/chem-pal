@@ -24,9 +24,6 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ### Added
 
-- Advanced mode has a new **Show supplier status** setting (off by default). When on, the results
-  header shows how many suppliers responded to your search; click it to see which suppliers
-  returned results, which found nothing, and which failed, were rate limited or were stopped early.
 - The diagnostic logs now record how each supplier's search ended, so a supplier that keeps failing
   can be spotted sooner. Turning off **Share usage data** stops them.
 
@@ -54,8 +51,7 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 - ChemPal now sends short diagnostic logs of warnings and errors to PostHog, the same service that
   receives the existing usage statistics, so problems like a supplier site changing its layout can
-  be spotted and fixed sooner. Turning off **Share usage data** in Settings stops them. In
-  Advanced settings you can choose which log levels are sent, including verbose debug and trace logs. See
+  be spotted and fixed sooner. Turning off **Share usage data** in Settings stops them. See
   the Privacy Policy for exactly what a log can contain.
 
 ### Fixed
@@ -344,7 +340,6 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 ### Added
 
 - Options page for configuring ChemPal outside the popup.
-- Advanced mode, which unlocks the supplier statistics panel.
 - Demo mode assets for showcasing the extension.
 
 ### Changed

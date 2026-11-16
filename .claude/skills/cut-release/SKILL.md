@@ -35,7 +35,8 @@ Leave `## [Unreleased]` in place, empty. Keep entries grouped under
 
 Write for users, not for the commit log — `tools/extractChangelog.js` pulls the section
 matching the tag, and that text becomes both the GitHub release body and the in-extension
-"What's new" prompt. "New supplier: Daily Bio USA." not "add SupplierDailyBioUSA".
+"What's new" prompt. "New supplier: Daily Bio USA." not "add SupplierDailyBioUSA". Never mention advanced
+mode; drop entries for advanced-mode-only features from the section.
 
 ## 3. Bump `package.json`
 

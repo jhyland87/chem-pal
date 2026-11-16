@@ -165,7 +165,7 @@ The extension console exposes `window.chempal` debug helpers from
 | [README.md](README.md) | Features, install, build prerequisites |
 | [STYLEGUIDE.md](STYLEGUIDE.md) | TypeScript house style — modules, naming, types, classes, control flow, comments |
 | [RELEASING.md](RELEASING.md) | The release workflow, signing key, version flow |
-| [CHANGELOG.md](CHANGELOG.md) | Keep a Changelog format. Write entries **for users**. The release workflow extracts the tag's section via `tools/extractChangelog.js`, and it becomes the in-extension update prompt. |
+| [CHANGELOG.md](CHANGELOG.md) | Keep a Changelog format. Write entries **for users**. The release workflow extracts the tag's section via `tools/extractChangelog.js`, and it becomes the in-extension update prompt. **Never mention advanced mode** — leave out entries for advanced-mode-only features entirely, rather than describing them without the name. |
 | `wiki_files/` | Source for the user-facing GitHub wiki |
 | `pages/` | Long-form docs published into the TypeDoc site (privacy policy, cache migrations) |
 | `STORE-LISTING.md` | Chrome Web Store listing copy |
