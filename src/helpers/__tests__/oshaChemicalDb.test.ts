@@ -5,7 +5,8 @@ import {
   resetOshaIndex,
 } from '@/helpers/oshaChemicalDb';
 import { clearAllCaches } from '@/utils/idbCache';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { chemicalDb } from '@/../config.json';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const XML = `<?xml version="1.0" encoding="UTF-8"?>
 <chemical_db>
@@ -83,16 +84,39 @@ describe('lookupOshaChemical', () => {
     expect(init?.signal).toBeInstanceOf(AbortSignal);
   });
 
-  it('gives up (resolves undefined) when the download times out', async () => {
-    await clearAllCaches();
-    resetOshaIndex();
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async () => {
-        throw new DOMException('The operation timed out.', 'TimeoutError');
-      }),
-    );
-    expect(await lookupOshaChemical('acetone')).toBeUndefined();
+  describe('when the download fails with nothing cached', () => {
+    const timeout = vi.fn(async () => {
+      throw new DOMException('The operation timed out.', 'TimeoutError');
+    });
+
+    beforeEach(async () => {
+      await clearAllCaches();
+      resetOshaIndex();
+      timeout.mockClear();
+      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      vi.stubGlobal('fetch', timeout);
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('rejects, so callers can tell "unavailable" from "not found"', async () => {
+      await expect(lookupOshaChemical('acetone')).rejects.toThrow('unavailable');
+    });
+
+    it('skips the download during the retry window, then tries again', async () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      await expect(lookupOshaChemical('acetone')).rejects.toThrow();
+      await expect(lookupOshaChemical('acetone')).rejects.toThrow();
+      expect(timeout).toHaveBeenCalledTimes(1);
+
+      vi.setSystemTime(Date.now() + chemicalDb.failureRetryMinutes * 60 * 1000 + 1);
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => new Response(XML, { status: 200 })),
+      );
+      expect((await lookupOshaChemical('acetone'))?.name).toBe('ACETONE');
+    });
   });
 });

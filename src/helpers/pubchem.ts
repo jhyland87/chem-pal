@@ -1,5 +1,5 @@
 import { isCAS } from '@/utils/typeGuards/common';
-import { withTtlCache } from '@/helpers/requestCache';
+import { fetchWithTimeout, withTtlCache } from '@/helpers/requestCache';
 import { isPubChemCID } from '@/utils/typeGuards/common';
 import { hasAdvancedSyntax } from '@/utils/search-query/parseSearchQuery';
 import { Logger } from '@/utils/Logger';
@@ -185,7 +185,7 @@ function extractDescription(data: unknown): PubChemDescription | undefined {
  */
 async function getCidsByCasUncached(cas: CAS<string>): Promise<PubChemCID[] | undefined> {
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${PUG_REST_BASE}/compound/xref/rn/${encodeURIComponent(cas)}/cids/JSON`,
     );
     if (!response.ok) return undefined;
@@ -229,7 +229,7 @@ export const getCidsByCas: (cas: CAS<string>) => Promise<PubChemCID[] | undefine
  */
 async function getCidByNameUncached(name: string): Promise<PubChemCID | undefined> {
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${PUG_REST_BASE}/compound/name/${encodeURIComponent(name)}/cids/JSON`,
     );
     if (!response.ok) return undefined;
@@ -272,7 +272,7 @@ async function getCidByFormulaUncached(formula: string): Promise<PubChemCID | un
   // `@/helpers/science` to avoid a pubchem→science→smiles→pubchem import cycle.
   const ascii = formula.replace(/[₀-₉]/g, (c) => String(c.charCodeAt(0) - 0x2080));
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${PUG_REST_BASE}/compound/fastformula/${encodeURIComponent(ascii)}/cids/JSON?MaxRecords=1`,
     );
     if (!response.ok) return undefined;
@@ -316,7 +316,7 @@ async function getCidBySmilesUncached(smiles: string): Promise<PubChemCID | unde
   const url = new URL(`${PUG_REST_BASE}/compound/smiles/cids/JSON`);
   url.searchParams.set('smiles', smiles);
   try {
-    const response = await fetch(url);
+    const response = await fetchWithTimeout(url);
     if (!response.ok) return undefined;
     const data = await response.json();
     const first = extractCids(data)?.[0];
@@ -376,7 +376,7 @@ async function getStructureSdfUncached(cid: PubChemCID): Promise<StructureRecord
   const preference: StructureRecordType[] = ['3d', '2d'];
   for (const recordType of preference) {
     try {
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `${PUG_REST_BASE}/compound/cid/${cid}/SDF?record_type=${recordType}`,
       );
       if (!response.ok) continue;
@@ -523,7 +523,7 @@ async function getCompoundPropertiesUncached(
   cid: PubChemCID,
 ): Promise<PubChemProperties | undefined> {
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${PUG_REST_BASE}/compound/cid/${cid}/property/${COMPOUND_PROPERTY_FIELDS}/JSON`,
     );
     if (!response.ok) return undefined;
@@ -566,7 +566,7 @@ export const getCompoundProperties: (cid: PubChemCID) => Promise<PubChemProperti
  */
 async function getSynonymsByCidUncached(cid: PubChemCID): Promise<string[] | undefined> {
   try {
-    const response = await fetch(`${PUG_REST_BASE}/compound/cid/${cid}/synonyms/JSON`);
+    const response = await fetchWithTimeout(`${PUG_REST_BASE}/compound/cid/${cid}/synonyms/JSON`);
     if (!response.ok) return undefined;
     const data = await response.json();
     return extractSynonyms(data);
@@ -605,7 +605,9 @@ async function getCompoundDescriptionUncached(
   cid: PubChemCID,
 ): Promise<PubChemDescription | undefined> {
   try {
-    const response = await fetch(`${PUG_REST_BASE}/compound/cid/${cid}/description/JSON`);
+    const response = await fetchWithTimeout(
+      `${PUG_REST_BASE}/compound/cid/${cid}/description/JSON`,
+    );
     if (!response.ok) return undefined;
     const data = await response.json();
     return extractDescription(data);
@@ -754,7 +756,7 @@ export function extractGhs(data: unknown): PubChemGhs | undefined {
  */
 async function getGhsClassificationUncached(cid: PubChemCID): Promise<PubChemGhs | undefined> {
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${PUG_VIEW_BASE}/compound/${cid}/JSON?heading=GHS+Classification`,
     );
     if (!response.ok) return undefined;
@@ -808,7 +810,9 @@ export function extractSolubility(data: unknown): string[] | undefined {
  */
 async function getSolubilityUncached(cid: PubChemCID): Promise<string[] | undefined> {
   try {
-    const response = await fetch(`${PUG_VIEW_BASE}/compound/${cid}/JSON?heading=Solubility`);
+    const response = await fetchWithTimeout(
+      `${PUG_VIEW_BASE}/compound/${cid}/JSON?heading=Solubility`,
+    );
     if (!response.ok) return undefined;
     return extractSolubility(await response.json());
   } catch (error) {
@@ -943,7 +947,7 @@ async function executeSDQSearchUncached({
     logger.debug('Built PubChem SDQ query', { pubchemQuery });
     const queryURLString = JSON.stringify(pubchemQuery);
 
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `https://pubchem.ncbi.nlm.nih.gov/sdq/sdqagent.cgi?infmt=json&outfmt=json&query=${queryURLString}`,
     );
     const data = await response.json();
@@ -1054,7 +1058,7 @@ function extractSynonyms(data: unknown): string[] | undefined {
  */
 async function getRankedNamesByNameUncached(name: string): Promise<string[] | undefined> {
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${PUG_REST_BASE}/compound/name/${encodeURIComponent(name)}/synonyms/JSON`,
     );
     if (!response.ok) return undefined;

@@ -1415,6 +1415,8 @@
   "chem_info_chip_aria": { "message": "Mostrar detalles químicos de $name$", "placeholders": { "name": { "content": "$1" } } },
   "chem_info_loading": { "message": "Cargando detalles químicos…" },
   "chem_info_not_found": { "message": "No se encontraron datos químicos para este término." },
+  "chem_info_source_loading": { "message": "Cargando $source$…", "placeholders": { "source": { "content": "$1" } } },
+  "chem_info_source_unavailable": { "message": "$source$ no está disponible en este momento", "placeholders": { "source": { "content": "$1" } } },
   "chem_info_iupac": { "message": "Nombre IUPAC" },
   "chem_info_cas": { "message": "CAS" },
   "chem_info_formula": { "message": "Fórmula" },

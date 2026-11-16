@@ -201,6 +201,9 @@ interface OshaIndex {
 
 let indexPromise: Promise<OshaIndex | undefined> | undefined;
 
+/** Epoch ms of the last failed load with no cached copy; later loads skip the download for a while. */
+let failedAt: number | undefined;
+
 /**
  * Builds the in-memory lookup indexes for a dataset.
  * @param chemicals - The chemical records.
@@ -223,9 +226,10 @@ function buildIndex(chemicals: OshaChemical[]): OshaIndex {
 
 /**
  * Loads the OBIS dataset from IndexedDB, downloading and caching it when missing or older than
- * `chemicalDb.ttlDays`. The download is abandoned after `chemicalDb.fetchTimeoutMs`, and a stale copy is
- * still used when the refresh fails or times out. The result is memoized
- * for the page's lifetime.
+ * `chemicalDb.ttlDays`. The download is abandoned after `chemicalDb.fetchTimeoutMs`, and a stale
+ * copy is still used when the refresh fails or times out. A successful load is memoized for the
+ * page's lifetime; a failure with no cached copy is remembered for
+ * `chemicalDb.failureRetryMinutes`, so reopening the dialog doesn't wait on a down server again.
  * @category Science Helpers
  * @group Chemical Info
  * @returns The lookup index, or undefined when no copy is cached and the download failed.
@@ -236,6 +240,10 @@ function buildIndex(chemicals: OshaChemical[]): OshaIndex {
  * @source
  */
 function loadOshaIndex(): Promise<OshaIndex | undefined> {
+  const retryMs = chemicalDb.failureRetryMinutes * 60 * 1000;
+  if (failedAt !== undefined && Date.now() - failedAt < retryMs) {
+    return Promise.resolve(undefined);
+  }
   indexPromise ??= (async () => {
     const cached = await getChemicalDb();
     const ttlMs = chemicalDb.ttlDays * 24 * 60 * 60 * 1000;
@@ -258,11 +266,24 @@ function loadOshaIndex(): Promise<OshaIndex | undefined> {
       return cached === undefined ? undefined : buildIndex(cached.chemicals);
     }
   })();
-  // Don't memoize a failure; let the next open retry.
-  void indexPromise.then((index) => {
-    if (index === undefined) indexPromise = undefined;
-  });
-  return indexPromise;
+  return settleIndex(indexPromise);
+}
+
+/**
+ * Records the outcome of a load: a failure clears the memo and starts the retry window.
+ * @param pending - The in-flight load.
+ * @returns The loaded index, or undefined on failure.
+ * @source
+ */
+async function settleIndex(
+  pending: Promise<OshaIndex | undefined>,
+): Promise<OshaIndex | undefined> {
+  const index = await pending;
+  if (index === undefined && indexPromise === pending) {
+    indexPromise = undefined;
+    failedAt = Date.now();
+  }
+  return index;
 }
 
 /**
@@ -271,7 +292,8 @@ function loadOshaIndex(): Promise<OshaIndex | undefined> {
  * @category Science Helpers
  * @group Chemical Info
  * @param term - A chemical name or CAS number.
- * @returns The matching record, or undefined when OBIS has none or is unavailable.
+ * @returns The matching record, or undefined when OBIS has none.
+ * @throws When the dataset is unavailable (no cached copy and the download failed).
  * @example
  * ```ts
  * await lookupOshaChemical('67-64-1'); // { name: "ACETONE", nfpaHealth: "1", ... }
@@ -281,7 +303,7 @@ function loadOshaIndex(): Promise<OshaIndex | undefined> {
  */
 export async function lookupOshaChemical(term: string): Promise<OshaChemical | undefined> {
   const index = await loadOshaIndex();
-  if (index === undefined) return undefined;
+  if (index === undefined) throw new Error('OSHA OBIS chemical data is unavailable');
   const trimmed = term.trim();
   if (isCAS(trimmed)) return index.byCas.get(trimmed);
   const key = normalizeChemicalName(trimmed);
@@ -289,7 +311,8 @@ export async function lookupOshaChemical(term: string): Promise<OshaChemical | u
 }
 
 /**
- * Clears the memoized index so the next lookup reloads from storage. Test helper.
+ * Clears the memoized index and failure window so the next lookup reloads from storage. Test
+ * helper.
  * @category Science Helpers
  * @group Chemical Info
  * @example
@@ -300,4 +323,5 @@ export async function lookupOshaChemical(term: string): Promise<OshaChemical | u
  */
 export function resetOshaIndex(): void {
   indexPromise = undefined;
+  failedAt = undefined;
 }

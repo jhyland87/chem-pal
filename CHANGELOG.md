@@ -13,6 +13,13 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+### Changed
+
+- The chemical details window (opened by clicking a chemical's name above the results) now shows
+  each source's information as soon as it arrives. A slow or unavailable source no longer holds up
+  the rest; it shows its own loading or "unavailable" note instead, and reopening the window is
+  much faster.
+
 ## [1.18.0] - 2026-11-15
 
 ### Added

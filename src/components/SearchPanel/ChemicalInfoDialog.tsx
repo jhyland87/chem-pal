@@ -1,8 +1,14 @@
 import { NfpaDiamond } from '@/components/NfpaDiamond';
-import { useChemicalInfo, type ChemicalInfo } from '@/hooks/useChemicalInfo';
+import {
+  useChemicalInfo,
+  type ChemicalInfo,
+  type ChemicalInfoSources,
+  type SourceStatus,
+} from '@/hooks/useChemicalInfo';
 import { i18n } from '@/helpers/i18n';
 import CloseIcon from '@mui/icons-material/Close';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -81,12 +87,75 @@ function LinkIcon({ src }: { src: string }) {
 }
 
 /**
- * Body of the dialog once data has loaded.
- * @param props - The merged chemical info.
+ * Combines several source statuses: loading while any is loading, failed if any failed.
+ * @param statuses - The statuses to combine.
+ * @returns The combined status.
+ * @source
+ */
+function combineStatus(...statuses: SourceStatus[]): SourceStatus {
+  if (statuses.includes('loading')) return 'loading';
+  return statuses.includes('failed') ? 'failed' : 'loaded';
+}
+
+/**
+ * One line per source that is still loading or has failed; renders nothing once all have loaded.
+ * @param props - The per-source state.
+ * @returns The status lines, or null.
+ * @source
+ */
+function SourceStatusLine({ sources }: { sources: ChemicalInfoSources }) {
+  const entries = [
+    { name: 'OSHA OBIS', status: sources.osha.status },
+    {
+      name: 'PubChem',
+      status: combineStatus(
+        sources.english.status,
+        sources.cid.status,
+        sources.properties.status,
+        sources.synonyms.status,
+        sources.description.status,
+        sources.ghs.status,
+        sources.solubility.status,
+      ),
+    },
+  ].filter(({ status }) => status !== 'loaded');
+  if (entries.length === 0) return null;
+
+  return (
+    <Stack spacing={0.5}>
+      {entries.map(({ name, status }) => (
+        <Stack key={name} direction="row" spacing={1} alignItems="center">
+          {status === 'loading' ? (
+            <CircularProgress size={14} />
+          ) : (
+            <WarningAmberIcon fontSize="small" color="warning" />
+          )}
+          <Typography variant="caption" color="text.secondary">
+            {status === 'loading'
+              ? i18n('chem_info_source_loading', [name])
+              : i18n('chem_info_source_unavailable', [name])}
+          </Typography>
+        </Stack>
+      ))}
+    </Stack>
+  );
+}
+
+/**
+ * Body of the dialog, showing whatever has loaded so far.
+ * @param props - The merged chemical info, each source's state, and whether any is loading.
  * @returns The sections.
  * @source
  */
-function ChemicalInfoBody({ info }: { info: ChemicalInfo }) {
+function ChemicalInfoBody({
+  info,
+  sources,
+  loading,
+}: {
+  info: ChemicalInfo;
+  sources: ChemicalInfoSources;
+  loading: boolean;
+}) {
   const { osha, properties, ghs } = info;
   const hasNfpa = [osha?.nfpaHealth, osha?.nfpaFire, osha?.nfpaReactivity].some((v) => v != null);
   const formula = properties?.molecularFormula ?? osha?.formula;
@@ -94,7 +163,21 @@ function ChemicalInfoBody({ info }: { info: ChemicalInfo }) {
   const synonyms = (info.synonyms.length > 0 ? info.synonyms : (osha?.synonyms ?? [])).slice(0, 12);
 
   if (osha === undefined && info.cid === undefined) {
-    return <Typography>{i18n('chem_info_not_found')}</Typography>;
+    if (!loading) {
+      return (
+        <Stack spacing={2}>
+          <Typography>{i18n('chem_info_not_found')}</Typography>
+          <SourceStatusLine sources={sources} />
+        </Stack>
+      );
+    }
+    return (
+      <Stack alignItems="center" py={4} spacing={1}>
+        <CircularProgress size={28} />
+        <Typography variant="body2">{i18n('chem_info_loading')}</Typography>
+        <SourceStatusLine sources={sources} />
+      </Stack>
+    );
   }
 
   return (
@@ -175,6 +258,7 @@ function ChemicalInfoBody({ info }: { info: ChemicalInfo }) {
         </Box>
       )}
 
+      <SourceStatusLine sources={sources} />
       <Typography variant="caption" color="text.secondary">
         {i18n('chem_info_sources')}
       </Typography>
@@ -197,7 +281,7 @@ function ChemicalInfoBody({ info }: { info: ChemicalInfo }) {
  * @source
  */
 export function ChemicalInfoDialog({ term, onClose }: ChemicalInfoDialogProps) {
-  const { info, loading } = useChemicalInfo(term);
+  const { info, sources, loading } = useChemicalInfo(term);
   const links = [
     {
       href: info?.pubchemUrl,
@@ -245,14 +329,7 @@ export function ChemicalInfoDialog({ term, onClose }: ChemicalInfoDialogProps) {
         </IconButton>
       </DialogTitle>
       <DialogContent dividers>
-        {loading || info === undefined ? (
-          <Stack alignItems="center" py={4} spacing={1}>
-            <CircularProgress size={28} />
-            <Typography variant="body2">{i18n('chem_info_loading')}</Typography>
-          </Stack>
-        ) : (
-          <ChemicalInfoBody info={info} />
-        )}
+        {info !== undefined && <ChemicalInfoBody info={info} sources={sources} loading={loading} />}
       </DialogContent>
       <DialogActions>
         {links.length > 0 && (

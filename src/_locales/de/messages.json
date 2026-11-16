@@ -1427,6 +1427,8 @@
   "chem_info_chip_aria": { "message": "Chemische Details zu $name$ anzeigen", "placeholders": { "name": { "content": "$1" } } },
   "chem_info_loading": { "message": "Chemische Details werden geladen…" },
   "chem_info_not_found": { "message": "Keine chemischen Daten für diesen Begriff gefunden." },
+  "chem_info_source_loading": { "message": "$source$ wird geladen…", "placeholders": { "source": { "content": "$1" } } },
+  "chem_info_source_unavailable": { "message": "$source$ ist gerade nicht erreichbar", "placeholders": { "source": { "content": "$1" } } },
   "chem_info_iupac": { "message": "IUPAC-Name" },
   "chem_info_cas": { "message": "CAS" },
   "chem_info_formula": { "message": "Formel" },

@@ -1803,6 +1803,8 @@
   "chem_info_chip_aria": { "message": "Показать сведения о веществе: $name$", "placeholders": { "name": { "content": "$1" } } },
   "chem_info_loading": { "message": "Загрузка сведений о веществе…" },
   "chem_info_not_found": { "message": "Для этого запроса нет химических данных." },
+  "chem_info_source_loading": { "message": "Загрузка: $source$…", "placeholders": { "source": { "content": "$1" } } },
+  "chem_info_source_unavailable": { "message": "$source$ сейчас недоступен", "placeholders": { "source": { "content": "$1" } } },
   "chem_info_iupac": { "message": "Название ИЮПАК" },
   "chem_info_cas": { "message": "CAS" },
   "chem_info_formula": { "message": "Формула" },

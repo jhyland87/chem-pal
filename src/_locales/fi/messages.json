@@ -1421,6 +1421,8 @@
   "chem_info_chip_aria": { "message": "Näytä kemialliset tiedot: $name$", "placeholders": { "name": { "content": "$1" } } },
   "chem_info_loading": { "message": "Ladataan kemiallisia tietoja…" },
   "chem_info_not_found": { "message": "Tälle hakusanalle ei löytynyt kemiallisia tietoja." },
+  "chem_info_source_loading": { "message": "Ladataan: $source$…", "placeholders": { "source": { "content": "$1" } } },
+  "chem_info_source_unavailable": { "message": "$source$ ei ole juuri nyt käytettävissä", "placeholders": { "source": { "content": "$1" } } },
   "chem_info_iupac": { "message": "IUPAC-nimi" },
   "chem_info_cas": { "message": "CAS" },
   "chem_info_formula": { "message": "Kaava" },

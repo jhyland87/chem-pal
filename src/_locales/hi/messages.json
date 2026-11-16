@@ -1397,6 +1397,8 @@
   "chem_info_chip_aria": { "message": "$name$ के रासायनिक विवरण दिखाएँ", "placeholders": { "name": { "content": "$1" } } },
   "chem_info_loading": { "message": "रासायनिक विवरण लोड हो रहे हैं…" },
   "chem_info_not_found": { "message": "इस शब्द के लिए कोई रासायनिक डेटा नहीं मिला।" },
+  "chem_info_source_loading": { "message": "$source$ लोड हो रहा है…", "placeholders": { "source": { "content": "$1" } } },
+  "chem_info_source_unavailable": { "message": "$source$ अभी उपलब्ध नहीं है", "placeholders": { "source": { "content": "$1" } } },
   "chem_info_iupac": { "message": "IUPAC नाम" },
   "chem_info_cas": { "message": "CAS" },
   "chem_info_formula": { "message": "सूत्र" },
