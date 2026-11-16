@@ -1,0 +1,47 @@
+---
+description: Supplier search caching — keep requests to suppliers to a minimum
+globs: src/suppliers/**,src/utils/SupplierCache.ts,src/utils/idbCache.ts,src/helpers/requestCache.ts,src/helpers/fetch.ts
+alwaysApply: false
+---
+
+# Supplier caching
+
+Every request to a supplier risks getting the user rate-limited or blocked. Caching is how
+ChemPal keeps the count down — treat a new uncached request as a regression.
+
+How it fits together: @pages/diagrams/search-cache-flow.md and @src/suppliers/README.md
+
+Two IndexedDB caches, both owned by `SupplierBase` via `SupplierCache`. They hold parsed
+`ProductBuilder.dump()` snapshots, never raw HTTP responses.
+
+- **Query results** (`supplier_query_cache`) — keyed by raw query + supplier. Automatic:
+  `execute()` goes through `queryProductsWithCache()`. Don't override either or call
+  `queryProducts` around them. A hit skips `ensureSetup()`, so a cached search sends nothing.
+- **Product detail** (`supplier_product_data_cache`) — keyed by product identity + supplier,
+  not URL or query, so a product fetched for one search is reused by every later search that
+  returns it.
+
+When writing or changing a supplier:
+
+- Stamp every parsed product with `.setCacheKey(this.getUniqueProductKey(item))`, using a
+  stable supplier ID (SKU, product ID) — never the search term, position, or a volatile URL.
+  An unstamped product is never cached.
+- Fetch detail pages only inside `getProductDataWithCache(product, fetcher)`. Suppliers that
+  enrich in bulk use `partitionForBatch()` and fetch only the misses, then
+  `cacheProductBuilders()`.
+- Set `skipProductDetailCache` only on a concrete supplier whose search response is already
+  complete — never on a platform base.
+- Report a failed detail fetch with `recordFetchFailure(key, status)` so a 429 isn't cached as
+  a finished product.
+- Send requests through the supplier's own `fetch`, which enforces `httpRequestHardLimit`,
+  `maxConcurrentRequests`, and `minConcurrentCycle`. `backgroundFetch` skips all three.
+- Don't add retries, polling, or extra setup requests without a cache or a cap in front.
+- PubChem and Wikidata lookups go through `withTtlCache` (`src/helpers/requestCache.ts`).
+
+Changing the cache itself:
+
+- TTL and size caps live in `config.json` (`defaultSettings.caching`, `storage.max*`) — no
+  literals.
+- A change to cached data's shape needs a migration step that clears the affected store, not a
+  `SupplierCache.CACHE_VERSION` bump: @.claude/skills/add-migration-step/SKILL.md
+- Changing a cache key orphans every existing entry; clear the store in the same change.
