@@ -64,7 +64,12 @@
   "chemicalDb": {
     "url": "https://obis.osha.gov/chemicaldata/Chemical_DB.xml",
     "ttlDays": 30,
-    "fetchTimeoutMs": 10000
+    "fetchTimeoutMs": 10000,
+    "failureRetryMinutes": 10
+  },
+  "chemicalInfo": {
+    "sourceTimeoutMs": 8000,
+    "cacheTtlDays": 3
   },
   "reviewPrompt": {
     "minDaysInstalled": 14,

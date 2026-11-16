@@ -28,11 +28,20 @@ vi.mock('@/helpers/pubchem', () => ({
 }));
 
 import {
+  deriveChemicalInfo,
+  initialSources,
   nistStructureImageUrl,
   nistWebbookUrl,
   useChemicalInfo,
   wikipediaUrl,
 } from '../useChemicalInfo';
+
+/** A promise plus the function that resolves it. */
+function deferred<T>() {
+  let resolve: (value: T) => void = () => undefined;
+  const promise = new Promise<T>((done) => (resolve = done));
+  return { promise, resolve };
+}
 
 /** Renders the hook and waits for the load to finish. */
 async function loadInfo(term: string | undefined) {
@@ -81,7 +90,7 @@ describe('useChemicalInfo', () => {
   it('does nothing while no term is set', async () => {
     const { result } = await loadInfo(undefined);
 
-    expect(result.current).toEqual({ info: undefined, loading: false });
+    expect(result.current).toMatchObject({ info: undefined, loading: false });
     expect(mocks.lookupOshaChemical).not.toHaveBeenCalled();
   });
 
@@ -218,17 +227,85 @@ describe('useChemicalInfo', () => {
     });
   });
 
-  it('reports loading while the lookup is in flight', async () => {
-    let release: (value: unknown) => void = () => undefined;
-    mocks.lookupOshaChemical.mockReturnValue(new Promise((resolve) => (release = resolve)));
+  it('shows PubChem data while OSHA is still loading', async () => {
+    const osha = deferred<unknown>();
+    mocks.lookupOshaChemical.mockReturnValue(osha.promise);
+    mocks.getCidByName.mockResolvedValue(180);
+    mocks.getCompoundProperties.mockResolvedValue({ title: 'Acetone' });
 
     const { result } = renderHook(() => useChemicalInfo('acetone'));
-    await waitFor(() => expect(result.current.loading).toBe(true));
-    expect(result.current.info).toBeUndefined();
+    await waitFor(() => expect(result.current.info?.properties).toEqual({ title: 'Acetone' }));
+    expect(result.current.loading).toBe(true);
+    expect(result.current.sources.osha.status).toBe('loading');
+    expect(result.current.sources.properties.status).toBe('loaded');
 
-    await act(async () => release(undefined));
+    await act(async () => osha.resolve({ name: 'ACETONE', synonyms: [] }));
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.info?.term).toBe('acetone');
+    expect(result.current.info?.osha?.name).toBe('ACETONE');
+  });
+
+  it('reports each PubChem detail as it arrives', async () => {
+    const ghs = deferred<unknown>();
+    mocks.getCidByName.mockResolvedValue(180);
+    mocks.getGhsClassification.mockReturnValue(ghs.promise);
+    mocks.getSolubility.mockResolvedValue(['miscible']);
+
+    const { result } = renderHook(() => useChemicalInfo('acetone'));
+    await waitFor(() => expect(result.current.info?.solubility).toEqual(['miscible']));
+    expect(result.current.sources.ghs.status).toBe('loading');
+
+    await act(async () => ghs.resolve({ signal: 'Danger' }));
+    await waitFor(() => expect(result.current.info?.ghs).toEqual({ signal: 'Danger' }));
+    expect(result.current.loading).toBe(false);
+  });
+
+  it('marks OSHA failed when it is unavailable, without holding up PubChem', async () => {
+    mocks.lookupOshaChemical.mockRejectedValue(new Error('OSHA OBIS chemical data is unavailable'));
+    mocks.getCidByName.mockResolvedValue(180);
+    mocks.getCompoundProperties.mockResolvedValue({ title: 'Acetone' });
+
+    const { result } = await loadInfo('acetone');
+
+    expect(result.current.sources.osha.status).toBe('failed');
+    expect(result.current.sources.properties.status).toBe('loaded');
+    expect(result.current.info).toMatchObject({ osha: undefined, cid: 180 });
+  });
+
+  it('settles the PubChem details empty, without calling them, when OSHA fails and no CID is found', async () => {
+    mocks.lookupOshaChemical.mockRejectedValue(new Error('unavailable'));
+
+    const { result } = await loadInfo('mystery');
+
+    expect(mocks.getCidsByCas).not.toHaveBeenCalled();
+    expect(mocks.getCompoundProperties).not.toHaveBeenCalled();
+    expect(result.current.sources.cid).toEqual({ status: 'loaded', value: undefined });
+  });
+
+  it('keeps the last values on screen while reopening the same term', async () => {
+    mocks.getCidByName.mockResolvedValue(180);
+    mocks.getCompoundProperties.mockResolvedValue({ title: 'Acetone' });
+    const { result, rerender } = await loadInfo('acetone');
+
+    const properties = deferred<unknown>();
+    mocks.getCompoundProperties.mockReturnValue(properties.promise);
+    rerender({ value: undefined });
+    rerender({ value: 'acetone' });
+
+    await waitFor(() => expect(result.current.sources.properties.status).toBe('loading'));
+    expect(result.current.info?.properties).toEqual({ title: 'Acetone' });
+    await act(async () => properties.resolve({ title: 'Acetone' }));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+  });
+
+  it("never shows the previous term's data for a new term", async () => {
+    mocks.getCidByName.mockResolvedValue(180);
+    mocks.getCompoundProperties.mockResolvedValue({ title: 'Acetone' });
+    const { result, rerender } = await loadInfo('acetone');
+
+    mocks.getCidByName.mockReturnValue(new Promise(() => undefined));
+    rerender({ value: 'toluene' });
+
+    expect(result.current.info).toMatchObject({ term: 'toluene', properties: undefined });
   });
 
   it('ignores a stale result when the term changes mid-lookup', async () => {
@@ -247,5 +324,26 @@ describe('useChemicalInfo', () => {
 
     await act(async () => releaseFirst(undefined));
     expect(result.current.info?.term).toBe('second');
+  });
+});
+
+describe('deriveChemicalInfo', () => {
+  it('builds NIST links from a CAS term before any source answers', () => {
+    expect(deriveChemicalInfo('67-64-1', initialSources())).toMatchObject({
+      term: '67-64-1',
+      cas: '67-64-1',
+      nistUrl: nistWebbookUrl('67-64-1'),
+      imageUrls: [nistStructureImageUrl('67-64-1')],
+      synonyms: [],
+      wikipediaUrl: wikipediaUrl('67-64-1'),
+    });
+  });
+
+  it('prefers the English name from Wikidata for the Wikipedia link', () => {
+    const sources = initialSources();
+    sources.english = { status: 'loaded', value: { name: 'hydrochloric acid' } };
+    expect(deriveChemicalInfo('zoutzuur', sources).wikipediaUrl).toBe(
+      wikipediaUrl('hydrochloric acid'),
+    );
   });
 });

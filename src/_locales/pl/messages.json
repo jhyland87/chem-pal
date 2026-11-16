@@ -1802,6 +1802,8 @@
   "chem_info_chip_aria": { "message": "Pokaż szczegóły chemiczne: $name$", "placeholders": { "name": { "content": "$1" } } },
   "chem_info_loading": { "message": "Ładowanie szczegółów chemicznych…" },
   "chem_info_not_found": { "message": "Nie znaleziono danych chemicznych dla tego hasła." },
+  "chem_info_source_loading": { "message": "Wczytywanie: $source$…", "placeholders": { "source": { "content": "$1" } } },
+  "chem_info_source_unavailable": { "message": "$source$ jest teraz niedostępne", "placeholders": { "source": { "content": "$1" } } },
   "chem_info_iupac": { "message": "Nazwa IUPAC" },
   "chem_info_cas": { "message": "CAS" },
   "chem_info_formula": { "message": "Wzór" },

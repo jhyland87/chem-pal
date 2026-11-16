@@ -2,7 +2,8 @@ import {
   resetChromeStorageMock,
   setupChromeStorageMock,
 } from '@/__fixtures__/helpers/chrome/storageMock';
-import { THREE_DAYS_MS, withTtlCache } from '@/helpers/requestCache';
+import { chemicalInfo } from '@/../config.json';
+import { DEFAULT_CACHE_TTL_MS, fetchWithTimeout, withTtlCache } from '@/helpers/requestCache';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('withTtlCache', () => {
@@ -63,13 +64,13 @@ describe('withTtlCache', () => {
     vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
 
     const fn = vi.fn(async (x: number) => x * 2);
-    const cached = withTtlCache(fn, { namespace: 'double', ttlMs: THREE_DAYS_MS });
+    const cached = withTtlCache(fn, { namespace: 'double', ttlMs: DEFAULT_CACHE_TTL_MS });
 
     await cached(3);
     expect(fn).toHaveBeenCalledTimes(1);
 
     // Just before expiry: still a hit.
-    vi.setSystemTime(new Date(Date.now() + THREE_DAYS_MS - 1000));
+    vi.setSystemTime(new Date(Date.now() + DEFAULT_CACHE_TTL_MS - 1000));
     await cached(3);
     expect(fn).toHaveBeenCalledTimes(1);
 
@@ -101,5 +102,45 @@ describe('withTtlCache', () => {
     expect(fn).toHaveBeenCalledTimes(1);
 
     getSpy.mockRestore();
+  });
+});
+
+describe('fetchWithTimeout', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it.each([
+    ['the configured default', undefined, chemicalInfo.sourceTimeoutMs],
+    ['an explicit timeout', 250, 250],
+  ])('passes a timeout signal using %s', async (_label, timeoutMs, expected) => {
+    const timeout = vi.spyOn(AbortSignal, 'timeout');
+    const fetchMock = vi.fn(async () => new Response('ok'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await fetchWithTimeout('https://example.test/a', { method: 'GET' }, timeoutMs);
+
+    expect(timeout).toHaveBeenCalledWith(expected);
+    expect(fetchMock).toHaveBeenCalledWith('https://example.test/a', {
+      method: 'GET',
+      signal: expect.any(AbortSignal),
+    });
+  });
+
+  it('rejects once the timeout fires', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (_url: string, init: RequestInit) =>
+          new Promise((_resolve, reject) =>
+            init.signal?.addEventListener('abort', () => reject(init.signal?.reason)),
+          ),
+      ),
+    );
+
+    await expect(fetchWithTimeout('https://example.test/slow', {}, 5)).rejects.toMatchObject({
+      name: 'TimeoutError',
+    });
   });
 });

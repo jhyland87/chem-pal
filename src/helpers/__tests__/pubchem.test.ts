@@ -57,6 +57,9 @@ function mockSynonymsFetch(synonyms?: string[]): void {
   );
 }
 
+/** The init every PubChem fetch passes: a timeout signal. */
+const TIMEOUT_INIT = { signal: expect.any(AbortSignal) };
+
 describe('PubChem Helpers', () => {
   // The PubChem network helpers are wrapped in a chrome.storage-backed cache, so every suite needs
   // a fresh storage mock. resetChromeStorageMock (clearAllMocks) preserves the fetch mock impl.
@@ -313,6 +316,7 @@ describe('PubChem Helpers', () => {
         expect(result).toEqual([4311764, 22959485, 23673181]);
         expect(global.fetch).toHaveBeenCalledWith(
           'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/xref/rn/15681-89-7/cids/JSON',
+          TIMEOUT_INIT,
         );
       });
 
@@ -345,6 +349,7 @@ describe('PubChem Helpers', () => {
         expect(result).toBe(2244);
         expect(global.fetch).toHaveBeenCalledWith(
           'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/aspirin/cids/JSON',
+          TIMEOUT_INIT,
         );
       });
 
@@ -388,6 +393,7 @@ describe('PubChem Helpers', () => {
         });
         expect(global.fetch).toHaveBeenCalledWith(
           'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/180/property/MolecularFormula,MolecularWeight,IUPACName,SMILES,InChI,InChIKey,Title,XLogP,TPSA/JSON',
+          TIMEOUT_INIT,
         );
       });
 
@@ -415,6 +421,7 @@ describe('PubChem Helpers', () => {
         expect(result).toEqual(['acetone', '67-64-1']);
         expect(global.fetch).toHaveBeenCalledWith(
           'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/180/synonyms/JSON',
+          TIMEOUT_INIT,
         );
       });
 
@@ -451,6 +458,7 @@ describe('PubChem Helpers', () => {
         });
         expect(global.fetch).toHaveBeenCalledWith(
           'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/180/description/JSON',
+          TIMEOUT_INIT,
         );
       });
 

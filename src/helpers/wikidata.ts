@@ -1,5 +1,5 @@
 import { wikidata as wikidataConfig } from '@/../config.json';
-import { withTtlCache } from '@/helpers/requestCache';
+import { fetchWithTimeout, withTtlCache } from '@/helpers/requestCache';
 import { isCAS, isPopulatedObject } from '@/utils/typeGuards/common';
 import { Logger } from '@/utils/Logger';
 import { getErrorMessage } from '@/helpers/exceptions';
@@ -51,7 +51,7 @@ async function queryWikidata(params: Record<string, string>): Promise<unknown> {
     for (const [key, value] of Object.entries({ ...params, format: 'json' })) {
       url.searchParams.set(key, value);
     }
-    const response = await fetch(url);
+    const response = await fetchWithTimeout(url);
     if (!response.ok) {
       return undefined;
     }

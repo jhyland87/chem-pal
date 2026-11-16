@@ -1,3 +1,4 @@
+import { chemicalInfo } from '@/../config.json';
 import { cstorage } from '@/utils/storage';
 import { Logger } from '@/utils/Logger';
 
@@ -12,11 +13,12 @@ const logger = new Logger('requestCache');
  */
 
 /**
- * Three days in milliseconds — the default freshness window for a cached response.
+ * Default freshness window for a cached response, in ms (`chemicalInfo.cacheTtlDays` in
+ * config.json).
  * @category Helpers
  * @source
  */
-export const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+export const DEFAULT_CACHE_TTL_MS = chemicalInfo.cacheTtlDays * 24 * 60 * 60 * 1000;
 
 /**
  * Prefix applied to every cache key written to `chrome.storage.local`, so cached entries are easy
@@ -42,10 +44,33 @@ interface CacheEntry<Result> {
 export interface TtlCacheOptions<Args extends unknown[]> {
   /** Namespace segment separating one wrapped function's keys from another's. */
   namespace: string;
-  /** How long a cached entry stays fresh, in ms. Defaults to {@link THREE_DAYS_MS}. */
+  /** How long a cached entry stays fresh, in ms. Defaults to {@link DEFAULT_CACHE_TTL_MS}. */
   ttlMs?: number;
   /** Derives the cache key from the call arguments. Defaults to `JSON.stringify(args)`. */
   keyFromArgs?: (...args: Args) => string;
+}
+
+/**
+ * Calls `fetch` with a timeout. The abort also covers reading the body, so a stalled response
+ * can't hang a caller; the rejection is a `TimeoutError` `DOMException`.
+ * @category Helpers
+ * @param input - The URL or request to fetch
+ * @param init - Extra fetch options; any `signal` is replaced by the timeout signal
+ * @param timeoutMs - Milliseconds before aborting. Defaults to `chemicalInfo.sourceTimeoutMs`.
+ * @returns The response
+ * @example
+ * ```typescript
+ * const response = await fetchWithTimeout("https://pubchem.ncbi.nlm.nih.gov/rest/pug/...");
+ * // Rejects with a TimeoutError after 8 s without a complete response
+ * ```
+ * @source
+ */
+export function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init: RequestInit = {},
+  timeoutMs: number = chemicalInfo.sourceTimeoutMs,
+): Promise<Response> {
+  return fetch(input, { ...init, signal: AbortSignal.timeout(timeoutMs) });
 }
 
 /**
@@ -78,7 +103,7 @@ function isCacheEntry<Result>(value: unknown): value is CacheEntry<Result> {
  * @example
  * ```typescript
  * const getCidsByCas = withTtlCache(getCidsByCasUncached, { namespace: "cidsByCas" });
- * await getCidsByCas("15681-89-7"); // fetches, then caches for 3 days
+ * await getCidsByCas("15681-89-7"); // fetches, then caches for 3 days (the default)
  * await getCidsByCas("15681-89-7"); // served from cache, no network call
  * ```
  * @source
@@ -87,7 +112,7 @@ export function withTtlCache<Args extends unknown[], Result>(
   fn: (...args: Args) => Promise<Result>,
   options: TtlCacheOptions<Args>,
 ): (...args: Args) => Promise<Result> {
-  const { namespace, ttlMs = THREE_DAYS_MS } = options;
+  const { namespace, ttlMs = DEFAULT_CACHE_TTL_MS } = options;
   const keyFromArgs = options.keyFromArgs ?? ((...args: Args) => JSON.stringify(args));
 
   return async (...args: Args): Promise<Result> => {

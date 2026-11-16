@@ -5,8 +5,22 @@ vi.mock('@/helpers/i18n', () => ({
   i18n: (key: string, subs?: string[]) => (subs?.length ? `${key}:${subs.join(',')}` : key),
 }));
 
-const useChemicalInfo = vi.hoisted(() => vi.fn());
-vi.mock('@/hooks/useChemicalInfo', () => ({ useChemicalInfo }));
+const { useChemicalInfo, allSources } = vi.hoisted(() => {
+  const allSources = (status: string) =>
+    Object.fromEntries(
+      ['english', 'osha', 'cid', 'properties', 'synonyms', 'description', 'ghs', 'solubility'].map(
+        (key) => [key, { status }],
+      ),
+    );
+  return { useChemicalInfo: vi.fn(), allSources };
+});
+// Tests set `info`/`loading` (and `sources` when they care); sources default to all loaded.
+vi.mock('@/hooks/useChemicalInfo', () => ({
+  useChemicalInfo: (term: string | undefined) => ({
+    sources: allSources('loaded'),
+    ...useChemicalInfo(term),
+  }),
+}));
 
 import type { ChemicalInfo } from '@/hooks/useChemicalInfo';
 import { ChemicalInfoDialog } from '../ChemicalInfoDialog';
@@ -84,16 +98,57 @@ describe('ChemicalInfoDialog', () => {
     expect(useChemicalInfo).toHaveBeenCalledWith(undefined);
   });
 
-  it.each([
-    ['loading', { info: FULL, loading: true }],
-    ['info is not there yet', { info: undefined, loading: false }],
-  ])('shows the spinner while %s', (_label, state) => {
-    useChemicalInfo.mockReturnValue(state);
+  it('shows the spinner while nothing has arrived yet', () => {
+    useChemicalInfo.mockReturnValue({
+      info: makeInfo({ cid: undefined }),
+      sources: allSources('loading'),
+      loading: true,
+    });
     renderDialog('acetone');
 
     expect(screen.getByText('chem_info_loading')).toBeInTheDocument();
-    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+    expect(screen.getByText('chem_info_source_loading:OSHA OBIS')).toBeInTheDocument();
+    expect(screen.getByText('chem_info_source_loading:PubChem')).toBeInTheDocument();
     expect(screen.queryByText('chem_info_sources')).not.toBeInTheDocument();
+  });
+
+  it('shows PubChem data while OSHA is still loading', () => {
+    useChemicalInfo.mockReturnValue({
+      info: makeInfo({ properties: { iupacName: 'propan-2-one' } }),
+      sources: { ...allSources('loaded'), osha: { status: 'loading' } },
+      loading: true,
+    });
+    renderDialog('acetone');
+
+    expect(screen.getByText('propan-2-one', { exact: false })).toBeInTheDocument();
+    expect(screen.getByText('chem_info_source_loading:OSHA OBIS')).toBeInTheDocument();
+    expect(screen.queryByText(/chem_info_source_loading:PubChem/)).not.toBeInTheDocument();
+    expect(screen.queryByText('chem_info_loading')).not.toBeInTheDocument();
+  });
+
+  it('notes an unavailable source without hiding the rest', () => {
+    useChemicalInfo.mockReturnValue({
+      info: makeInfo({ properties: { iupacName: 'propan-2-one' } }),
+      sources: { ...allSources('loaded'), osha: { status: 'failed' } },
+      loading: false,
+    });
+    renderDialog('acetone');
+
+    expect(screen.getByText('propan-2-one', { exact: false })).toBeInTheDocument();
+    expect(screen.getByText('chem_info_source_unavailable:OSHA OBIS')).toBeInTheDocument();
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+  });
+
+  it('says not found, with the unavailable note, when the only reachable source has nothing', () => {
+    useChemicalInfo.mockReturnValue({
+      info: makeInfo({ cid: undefined }),
+      sources: { ...allSources('loaded'), osha: { status: 'failed' } },
+      loading: false,
+    });
+    renderDialog('acetone');
+
+    expect(screen.getByText('chem_info_not_found')).toBeInTheDocument();
+    expect(screen.getByText('chem_info_source_unavailable:OSHA OBIS')).toBeInTheDocument();
   });
 
   it('shows the searched term as the title until data arrives', () => {
