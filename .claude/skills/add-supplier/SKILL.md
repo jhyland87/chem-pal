@@ -107,6 +107,12 @@ derived at runtime (`requiredHosts`, and `baseURL` for the Amazon-backed supplie
 the classes and is not extracted. `src/suppliers/__tests__/supplierMeta.test.ts` fails if the
 generated file drifts from the classes.
 
+**Price alerts.** A supplier whose products can be refetched by id sets
+`public static readonly supportsPriceAlerts: boolean = true` literally on the concrete class and
+overrides `queryProductsById` (the platform bases already do). Also export it from
+`src/suppliers/priceAlertSuppliers.ts`, which the service worker bundles;
+`supplierMeta.test.ts` guards this. Then run `pnpm run generate`.
+
 ## 5. Add host permissions to `public/manifest.json`
 
 Add `https://<host>/*` entries for the supplier's `baseURL` and any distinct `apiURL`.

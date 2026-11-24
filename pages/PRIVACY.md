@@ -65,6 +65,9 @@ transmitted to the developer:
 - **Favorites** — products you save for later.
 - **Search and price history** — recent searches and price snapshots used to show
   price trends.
+- **Price alerts** — the list of products you chose to watch, and the results of
+  the background price checks. Checks send only the normal product requests to
+  the supplier's website.
 
 ### 2.4 Bookmarks
 
@@ -209,6 +212,8 @@ practices of these independent services.
 | `cookies` | Establish the session cookies certain suppliers require to return search results, on those suppliers' own domains. |
 | `bookmarks` | Create and manage the favorites folder used to save products. |
 | `tabs` | Read the current tab's context to open product pages and search links, and to power the right‑click "search selection" action. |
+| `alarms` | Schedule the periodic background price-alert check. Shows no warning. |
+| `notifications` (optional) | Show a notification when a watched product's price drops. Requested only when you enable your first price alert. |
 | `contextMenus` | Add a right‑click menu item to search selected text with ChemPal. |
 | Host permissions (supplier domains, PubChem, etc.) | Send search and lookup requests to the supplier and chemistry services you enable. |
 

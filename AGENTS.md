@@ -61,6 +61,11 @@ diff is real.
 
 - `src/suppliers/` — one class per supplier plus shared `SupplierBase*` platform bases.
   `index.ts` is the barrel that decides which suppliers are live.
+  A supplier whose products can be refetched sets `public static readonly supportsPriceAlerts:
+  boolean = true` literally on the concrete class, overrides `queryProductsById` (platform bases
+  already do), and is exported from `priceAlertSuppliers.ts` (bundled into the service worker;
+  guarded by `supplierMeta.test.ts`). Then run `pnpm run generate`.
+- `src/background/` — service worker jobs (price alerts).
 - `src/utils/` — `ProductBuilder`, `Logger`, `search-query/` (AST parsing), `typeGuards/`.
 - `src/helpers/` — domain parsing: currency, quantity, CAS, SMILES, purity/grade.
 - `src/components/SearchPanel/` — the results table and search UI (the bulk of the app).

@@ -63,6 +63,11 @@ You have a few ways to control this:
 - **Permanently** — in **Settings → Supplier Status**, switch a supplier off to
   remove it from *all* searches and from the supplier filters entirely.
 
+## Price alerts
+
+[Price reduction alerts](Price-Tracking#price-alerts) work for these suppliers:
+Albo Chemicals, Alliance Chemical, Amaris Chemical Solutions, AsesChem, BVV, Carolina Chemical, Consolidated Chemical & Solvents, Daily Bio USA, Gold and Silver Testing, HyperFuels, Laballey, LabPro Services, LibertySci, and The Lab Stockroom.
+
 ## Suppliers that aren't currently searchable
 
 A handful of suppliers are built into ChemPal but **turned off** because their

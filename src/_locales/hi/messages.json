@@ -584,6 +584,107 @@
     "placeholders": { "count": { "content": "$1" } },
     "description": "Italic badge by the Supplier Status header; placeholder is the number of disabled suppliers."
   },
+  "settings_section_price_alerts": {
+    "message": "मूल्य अलर्ट",
+    "description": "Settings section header."
+  },
+  "settings_price_alerts_interval": {
+    "message": "मूल्य अलर्ट जाँच अंतराल (घंटे)",
+    "description": "Setting label."
+  },
+  "settings_price_alerts_interval_helper": {
+    "message": "ब्राउज़र खुला होने पर निगरानी वाले उत्पादों की जाँच कितनी बार की जाती है। खाली = डिफ़ॉल्ट ($hours$)",
+    "placeholders": {"hours": {"content": "$1"}},
+    "description": "Helper text; the placeholder is the default interval in hours."
+  },
+  "settings_price_alerts_min_drop": {
+    "message": "न्यूनतम मूल्य गिरावट (%)",
+    "description": "Setting label."
+  },
+  "settings_price_alerts_min_drop_helper": {
+    "message": "केवल तब अलर्ट करें जब कीमत कम से कम इतनी गिरे। खाली = डिफ़ॉल्ट ($percent$)",
+    "placeholders": {"percent": {"content": "$1"}},
+    "description": "Helper text; the placeholder is the default percentage."
+  },
+  "price_alerts_enabled": {
+    "message": "मूल्य कटौती अलर्ट सक्षम",
+    "description": "Status text after watching a product."
+  },
+  "price_alerts_disabled": {
+    "message": "मूल्य कटौती अलर्ट अक्षम",
+    "description": "Status text after no longer watching a product."
+  },
+  "price_alerts_enable_failed": {
+    "message": "इस उत्पाद की मूल्य कटौती पर नज़र नहीं रखी जा सकती",
+    "description": "Status text when a product can't be watched."
+  },
+  "price_alerts_empty": {
+    "message": "कोई मूल्य अलर्ट नहीं। जोड़ने के लिए किसी खोज परिणाम पर राइट-क्लिक करें।",
+    "description": "Empty-state text."
+  },
+  "price_alerts_select_all": {
+    "message": "सभी चुनें",
+    "description": "Checkbox label."
+  },
+  "price_alerts_select_item": {
+    "message": "$item$ चुनें",
+    "placeholders": {"item": {"content": "$1"}},
+    "description": "Accessible checkbox label; the placeholder is the product title."
+  },
+  "price_alerts_delete_selected": {
+    "message": "चयनित हटाएँ ($count$)",
+    "placeholders": {"count": {"content": "$1"}},
+    "description": "Button label; the placeholder is how many are selected."
+  },
+  "price_alerts_delete_all": {
+    "message": "सभी हटाएँ",
+    "description": "Button label."
+  },
+  "price_alerts_delete_all_title": {
+    "message": "सभी मूल्य अलर्ट हटाएँ?",
+    "description": "Confirmation dialog title."
+  },
+  "price_alerts_delete_all_body": {
+    "message": "ChemPal सभी निगरानी वाले उत्पादों ($count$) की कीमतें जाँचना बंद कर देगा।",
+    "placeholders": {"count": {"content": "$1"}},
+    "description": "Confirmation dialog text; the placeholder is how many products are watched."
+  },
+  "price_alerts_not_checked": {
+    "message": "अभी तक जाँचा नहीं गया",
+    "description": "Shown for a watched product that has not been checked."
+  },
+  "price_alerts_last_checked": {
+    "message": "अंतिम जाँच: $time$",
+    "placeholders": {"time": {"content": "$1"}},
+    "description": "Shown for a watched product; the placeholder is a date and time."
+  },
+  "price_alerts_last_drop": {
+    "message": "$from$ से घटकर $to$ हुई ($time$)",
+    "placeholders": {"from": {"content": "$1"}, "to": {"content": "$2"}, "time": {"content": "$3"}},
+    "description": "Latest price drop of a watched product; placeholders are both prices and a date and time."
+  },
+  "price_alerts_unavailable": {
+    "message": "फ़िलहाल उपलब्ध नहीं",
+    "description": "Shown when a watched product is out of stock or no longer listed."
+  },
+  "price_alerts_check_failed": {
+    "message": "कीमत जाँची नहीं जा सकी (असफल प्रयास: $count$)",
+    "placeholders": {"count": {"content": "$1"}},
+    "description": "Shown when checking a watched product failed; the placeholder is how many times in a row."
+  },
+  "price_alerts_notifications_off": {
+    "message": "सूचनाएँ बंद हैं, इसलिए मूल्य कटौती केवल यहीं दिखती है।",
+    "description": "Shown when the notification permission is missing."
+  },
+  "price_alerts_allow_notifications": {
+    "message": "सूचनाओं की अनुमति दें",
+    "description": "Button that asks for the notification permission."
+  },
+  "price_alert_notification_title": {
+    "message": "$supplier$ पर कीमत घटी",
+    "placeholders": {"supplier": {"content": "$1"}},
+    "description": "Notification title; the placeholder is the supplier's name."
+  },
   "settings_section_supplier_status": {
     "message": "आपूर्तिकर्ता स्थिति",
     "description": "Settings section header."
@@ -808,6 +909,14 @@
   "context_menu_ignore_product": {
     "message": "उत्पाद अनदेखा करें",
     "description": "Context menu option to ignore the product."
+  },
+  "context_menu_enable_price_alerts": {
+    "message": "मूल्य कटौती अलर्ट सक्षम करें",
+    "description": "Context menu option to watch the product for price drops."
+  },
+  "context_menu_disable_price_alerts": {
+    "message": "मूल्य कटौती अलर्ट अक्षम करें",
+    "description": "Context menu option to stop watching the product for price drops."
   },
   "context_menu_remove_product_from_cache": {
     "message": "उत्पाद को कैश से हटाएँ",

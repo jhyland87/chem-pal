@@ -599,6 +599,107 @@
     "placeholders": { "count": { "content": "$1" } },
     "description": "Italic badge by the Supplier Status header; placeholder is the number of disabled suppliers."
   },
+  "settings_section_price_alerts": {
+    "message": "Alertas de precio",
+    "description": "Settings section header."
+  },
+  "settings_price_alerts_interval": {
+    "message": "Intervalo de comprobación de alertas de precio (horas)",
+    "description": "Setting label."
+  },
+  "settings_price_alerts_interval_helper": {
+    "message": "Con qué frecuencia se comprueban los productos vigilados mientras el navegador está abierto. Vacío = predeterminado ($hours$)",
+    "placeholders": {"hours": {"content": "$1"}},
+    "description": "Helper text; the placeholder is the default interval in hours."
+  },
+  "settings_price_alerts_min_drop": {
+    "message": "Bajada mínima de precio (%)",
+    "description": "Setting label."
+  },
+  "settings_price_alerts_min_drop_helper": {
+    "message": "Avisar solo cuando un precio baje al menos esta cantidad. Vacío = predeterminado ($percent$)",
+    "placeholders": {"percent": {"content": "$1"}},
+    "description": "Helper text; the placeholder is the default percentage."
+  },
+  "price_alerts_enabled": {
+    "message": "Alertas de bajada de precio activadas",
+    "description": "Status text after watching a product."
+  },
+  "price_alerts_disabled": {
+    "message": "Alertas de bajada de precio desactivadas",
+    "description": "Status text after no longer watching a product."
+  },
+  "price_alerts_enable_failed": {
+    "message": "Este producto no se puede vigilar para bajadas de precio",
+    "description": "Status text when a product can't be watched."
+  },
+  "price_alerts_empty": {
+    "message": "No hay alertas de precio. Haz clic derecho en un resultado de búsqueda para añadir una.",
+    "description": "Empty-state text."
+  },
+  "price_alerts_select_all": {
+    "message": "Seleccionar todo",
+    "description": "Checkbox label."
+  },
+  "price_alerts_select_item": {
+    "message": "Seleccionar $item$",
+    "placeholders": {"item": {"content": "$1"}},
+    "description": "Accessible checkbox label; the placeholder is the product title."
+  },
+  "price_alerts_delete_selected": {
+    "message": "Eliminar seleccionadas ($count$)",
+    "placeholders": {"count": {"content": "$1"}},
+    "description": "Button label; the placeholder is how many are selected."
+  },
+  "price_alerts_delete_all": {
+    "message": "Eliminar todas",
+    "description": "Button label."
+  },
+  "price_alerts_delete_all_title": {
+    "message": "¿Eliminar todas las alertas de precio?",
+    "description": "Confirmation dialog title."
+  },
+  "price_alerts_delete_all_body": {
+    "message": "ChemPal dejará de comprobar los precios de todos los productos vigilados ($count$).",
+    "placeholders": {"count": {"content": "$1"}},
+    "description": "Confirmation dialog text; the placeholder is how many products are watched."
+  },
+  "price_alerts_not_checked": {
+    "message": "Aún no comprobado",
+    "description": "Shown for a watched product that has not been checked."
+  },
+  "price_alerts_last_checked": {
+    "message": "Última comprobación: $time$",
+    "placeholders": {"time": {"content": "$1"}},
+    "description": "Shown for a watched product; the placeholder is a date and time."
+  },
+  "price_alerts_last_drop": {
+    "message": "Bajó de $from$ a $to$ ($time$)",
+    "placeholders": {"from": {"content": "$1"}, "to": {"content": "$2"}, "time": {"content": "$3"}},
+    "description": "Latest price drop of a watched product; placeholders are both prices and a date and time."
+  },
+  "price_alerts_unavailable": {
+    "message": "No disponible actualmente",
+    "description": "Shown when a watched product is out of stock or no longer listed."
+  },
+  "price_alerts_check_failed": {
+    "message": "No se pudo comprobar el precio (intentos fallidos: $count$)",
+    "placeholders": {"count": {"content": "$1"}},
+    "description": "Shown when checking a watched product failed; the placeholder is how many times in a row."
+  },
+  "price_alerts_notifications_off": {
+    "message": "Las notificaciones están desactivadas, por lo que las bajadas de precio solo se muestran aquí.",
+    "description": "Shown when the notification permission is missing."
+  },
+  "price_alerts_allow_notifications": {
+    "message": "Permitir notificaciones",
+    "description": "Button that asks for the notification permission."
+  },
+  "price_alert_notification_title": {
+    "message": "Precio rebajado en $supplier$",
+    "placeholders": {"supplier": {"content": "$1"}},
+    "description": "Notification title; the placeholder is the supplier's name."
+  },
   "settings_section_supplier_status": {
     "message": "Estado de proveedores",
     "description": "Settings section header."
@@ -827,6 +928,14 @@
   "context_menu_ignore_product": {
     "message": "Ignorar producto",
     "description": "Context menu option to ignore the product."
+  },
+  "context_menu_enable_price_alerts": {
+    "message": "Activar alertas de bajada de precio",
+    "description": "Context menu option to watch the product for price drops."
+  },
+  "context_menu_disable_price_alerts": {
+    "message": "Desactivar alertas de bajada de precio",
+    "description": "Context menu option to stop watching the product for price drops."
   },
   "context_menu_remove_product_from_cache": {
     "message": "Quitar producto de la caché",

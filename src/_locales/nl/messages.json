@@ -608,6 +608,107 @@
     "placeholders": { "count": { "content": "$1" } },
     "description": "Italic badge by the Supplier Status header; placeholder is the number of disabled suppliers."
   },
+  "settings_section_price_alerts": {
+    "message": "Prijsmeldingen",
+    "description": "Settings section header."
+  },
+  "settings_price_alerts_interval": {
+    "message": "Controle-interval voor prijsmeldingen (uren)",
+    "description": "Setting label."
+  },
+  "settings_price_alerts_interval_helper": {
+    "message": "Hoe vaak gevolgde producten worden gecontroleerd terwijl de browser open is. Leeg = standaard ($hours$)",
+    "placeholders": {"hours": {"content": "$1"}},
+    "description": "Helper text; the placeholder is the default interval in hours."
+  },
+  "settings_price_alerts_min_drop": {
+    "message": "Minimale prijsdaling (%)",
+    "description": "Setting label."
+  },
+  "settings_price_alerts_min_drop_helper": {
+    "message": "Alleen melden als een prijs minstens zoveel daalt. Leeg = standaard ($percent$)",
+    "placeholders": {"percent": {"content": "$1"}},
+    "description": "Helper text; the placeholder is the default percentage."
+  },
+  "price_alerts_enabled": {
+    "message": "Meldingen bij prijsverlaging ingeschakeld",
+    "description": "Status text after watching a product."
+  },
+  "price_alerts_disabled": {
+    "message": "Meldingen bij prijsverlaging uitgeschakeld",
+    "description": "Status text after no longer watching a product."
+  },
+  "price_alerts_enable_failed": {
+    "message": "Dit product kan niet op prijsverlagingen worden gevolgd",
+    "description": "Status text when a product can't be watched."
+  },
+  "price_alerts_empty": {
+    "message": "Geen prijsmeldingen. Klik met de rechtermuisknop op een zoekresultaat om er een toe te voegen.",
+    "description": "Empty-state text."
+  },
+  "price_alerts_select_all": {
+    "message": "Alles selecteren",
+    "description": "Checkbox label."
+  },
+  "price_alerts_select_item": {
+    "message": "$item$ selecteren",
+    "placeholders": {"item": {"content": "$1"}},
+    "description": "Accessible checkbox label; the placeholder is the product title."
+  },
+  "price_alerts_delete_selected": {
+    "message": "Geselecteerde verwijderen ($count$)",
+    "placeholders": {"count": {"content": "$1"}},
+    "description": "Button label; the placeholder is how many are selected."
+  },
+  "price_alerts_delete_all": {
+    "message": "Alles verwijderen",
+    "description": "Button label."
+  },
+  "price_alerts_delete_all_title": {
+    "message": "Alle prijsmeldingen verwijderen?",
+    "description": "Confirmation dialog title."
+  },
+  "price_alerts_delete_all_body": {
+    "message": "ChemPal controleert de prijzen van alle gevolgde producten ($count$) niet meer.",
+    "placeholders": {"count": {"content": "$1"}},
+    "description": "Confirmation dialog text; the placeholder is how many products are watched."
+  },
+  "price_alerts_not_checked": {
+    "message": "Nog niet gecontroleerd",
+    "description": "Shown for a watched product that has not been checked."
+  },
+  "price_alerts_last_checked": {
+    "message": "Laatst gecontroleerd: $time$",
+    "placeholders": {"time": {"content": "$1"}},
+    "description": "Shown for a watched product; the placeholder is a date and time."
+  },
+  "price_alerts_last_drop": {
+    "message": "Gedaald van $from$ naar $to$ ($time$)",
+    "placeholders": {"from": {"content": "$1"}, "to": {"content": "$2"}, "time": {"content": "$3"}},
+    "description": "Latest price drop of a watched product; placeholders are both prices and a date and time."
+  },
+  "price_alerts_unavailable": {
+    "message": "Momenteel niet beschikbaar",
+    "description": "Shown when a watched product is out of stock or no longer listed."
+  },
+  "price_alerts_check_failed": {
+    "message": "Prijs kon niet worden gecontroleerd (mislukte pogingen: $count$)",
+    "placeholders": {"count": {"content": "$1"}},
+    "description": "Shown when checking a watched product failed; the placeholder is how many times in a row."
+  },
+  "price_alerts_notifications_off": {
+    "message": "Meldingen staan uit, dus prijsverlagingen worden alleen hier getoond.",
+    "description": "Shown when the notification permission is missing."
+  },
+  "price_alerts_allow_notifications": {
+    "message": "Meldingen toestaan",
+    "description": "Button that asks for the notification permission."
+  },
+  "price_alert_notification_title": {
+    "message": "Prijs verlaagd bij $supplier$",
+    "placeholders": {"supplier": {"content": "$1"}},
+    "description": "Notification title; the placeholder is the supplier's name."
+  },
   "settings_section_supplier_status": {
     "message": "Status van leveranciers",
     "description": "Settings section header."
@@ -816,6 +917,14 @@
   "context_menu_ignore_product": {
     "message": "Product negeren",
     "description": "Context menu option to ignore the product."
+  },
+  "context_menu_enable_price_alerts": {
+    "message": "Meldingen bij prijsverlaging inschakelen",
+    "description": "Context menu option to watch the product for price drops."
+  },
+  "context_menu_disable_price_alerts": {
+    "message": "Meldingen bij prijsverlaging uitschakelen",
+    "description": "Context menu option to stop watching the product for price drops."
   },
   "context_menu_remove_product_from_cache": {
     "message": "Product uit cache verwijderen",

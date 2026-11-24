@@ -35,6 +35,7 @@ https://github.com/user-attachments/assets/342676d9-cb91-4c7f-9ef0-cd1e7673db84
 - Works on both Chrome and Firefox, with light and dark themes
 - Viewable from popup or in separate browser tab
 - [Price tracking](https://github.com/jhyland87/chem-pal/blob/main/public/static/images/demo/price-tracking.png) on all products and variants
+- Price reduction alerts: watch a product and get a notification when its price drops (supported suppliers only)
 - No account creation required to use extension
 - No data collection by the developer — see the [Privacy Policy](pages/PRIVACY.md) for exactly what stays local on your device and what is sent to the suppliers you search
 

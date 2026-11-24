@@ -26,7 +26,7 @@ Not published anywhere (kept out of `pages/`, so TypeDoc doesn't render it).
 
 **storage**
 > Stores the user's own settings (currency, language, font size, selected suppliers), search
-> history, saved favorites, and a short-lived local cache of recent search results using
+> history, saved favorites, the price-alert watchlist, and a short-lived local cache of recent search results using
 > chrome.storage. This lets ChemPal remember preferences between sessions and avoid re-running
 > identical searches. Settings, history, favorites, and cached results stay on the user's device
 > and are never transmitted. Separately from this permission, ChemPal sends anonymous usage and
@@ -43,6 +43,16 @@ Not published anywhere (kept out of `pages/`, so TypeDoc doesn't render it).
 > Adds a single right-click menu item, "Search selection in ChemPal," shown when the user has text
 > selected. Choosing it sends the selected text to ChemPal as a search query and opens the app.
 > Used only for this user-initiated shortcut.
+
+**alarms**
+> Schedules ChemPal's periodic price-alert check (every 12 hours by default, configurable) in the
+> service worker, so watched products can be refetched while the browser is open. It is used only
+> for this timer and shows no user-facing warning.
+
+**notifications (optional)**
+> Requested only when the user enables their first price reduction alert. It shows a browser
+> notification when a watched product's price drops. If the user declines, drops still appear in
+> ChemPal's Settings.
 
 **bookmarks**
 > Lets the user save a chemical product listing as a browser bookmark from ChemPal. It creates a
