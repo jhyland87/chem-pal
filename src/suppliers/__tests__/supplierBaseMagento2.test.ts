@@ -138,3 +138,47 @@ describe('SupplierBaseMagento2 wires getProductUrl into the product permalink', 
     expect(builder.get('permalink')).toContain('potassium-nitrate.html');
   });
 });
+
+describe('SupplierBaseMagento2 sale prices', () => {
+  const sale = {
+    minimum_price: {
+      regular_price: { value: 100, currency: 'USD' },
+      final_price: { value: 85, currency: 'USD' },
+    },
+  } as Magento2PriceRange;
+
+  it('prices a simple product from final_price', () => {
+    const [builder] = supplier.callInitProductBuilders([makeItem({ price_range: sale })]);
+    expect(builder.get('price')).toBe(85);
+  });
+
+  it('prices grouped sub-products from final_price, or regular_price without one', () => {
+    const item = makeItem({
+      __typename: 'GroupedProduct',
+      items: [
+        { product: { sku: 'S-5g', name: '5g', price_range: sale } },
+        {
+          product: {
+            sku: 'S-25g',
+            name: '25g',
+            price_range: { minimum_price: { regular_price: { value: 200, currency: 'USD' } } },
+          },
+        },
+      ] as Magento2GroupedItem[],
+    });
+    const [builder] = supplier.callInitProductBuilders([item]);
+    expect(builder.get('price')).toBe(85);
+    expect(builder.get('variants')?.[0]?.price).toBe(200);
+  });
+
+  it('prices configurable variants from final_price', () => {
+    const item = makeItem({
+      __typename: 'ConfigurableProduct',
+      variants: [
+        { attributes: [], product: { sku: 'S-5g', name: '5g', price_range: sale } },
+      ] as unknown as Magento2ConfigurableVariant[],
+    });
+    const [builder] = supplier.callInitProductBuilders([item]);
+    expect(builder.get('price')).toBe(85);
+  });
+});

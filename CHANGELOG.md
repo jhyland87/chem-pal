@@ -20,6 +20,13 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
   the rest; it shows its own loading or "unavailable" note instead, and reopening the window is
   much faster.
 
+### Fixed
+
+- Sale prices are now used for suppliers that list them separately from the regular price (AladdinSci,
+  Chemsavers, and the Wix-based stores). Price charts for discounted products may show a one-time step.
+- AsesChem prices are shown in Indian rupees and converted correctly. They were previously read as
+  US dollars.
+
 ## [1.18.0] - 2026-11-15
 
 ### Added

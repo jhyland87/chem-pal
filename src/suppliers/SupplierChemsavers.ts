@@ -422,7 +422,7 @@ export class SupplierChemsavers
         .setID(result.id)
         .setCacheKey(this.getUniqueProductKey(result))
         .setSku(result.sku)
-        .setPricing(result.price, 'USD', '$')
+        .setPricing(this.currentPrice(result), 'USD', '$')
         .setQuantity(quantity.quantity, quantity.uom)
         .setCAS(result.CAS)
         .setPurity(parsePurity(result.name))
@@ -440,7 +440,7 @@ export class SupplierChemsavers
               id: variant.id,
               sku: variant.sku,
               title: variant.name,
-              price: variant.price,
+              price: this.currentPrice(variant),
               url: variant.url,
               ...quantity,
             };
@@ -450,6 +450,22 @@ export class SupplierChemsavers
 
       return builder;
     });
+  }
+
+  /**
+   * Reads what a customer pays today: the sale price when one is set (Chemsavers reports `0` when
+   * there is none), otherwise the list price.
+   * @param item - A product or variant from the search response
+   * @returns The current price in USD
+   * @example
+   * ```typescript
+   * this.currentPrice({ price: 50, salePrice: 40 }); // 40
+   * this.currentPrice({ price: 50, salePrice: 0 }); // 50
+   * ```
+   * @source
+   */
+  private currentPrice(item: { price: number; salePrice?: number }): number {
+    return item.salePrice !== undefined && item.salePrice > 0 ? item.salePrice : item.price;
   }
 
   /**

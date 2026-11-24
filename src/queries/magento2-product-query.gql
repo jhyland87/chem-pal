@@ -95,6 +95,10 @@ query searchProducts($search: String!, $pageSize: Int!) {
                   value
                   currency
                 }
+                final_price {
+                  value
+                  currency
+                }
               }
             }
           }
@@ -123,6 +127,10 @@ query searchProducts($search: String!, $pageSize: Int!) {
             price_range {
               minimum_price {
                 regular_price {
+                  value
+                  currency
+                }
+                final_price {
                   value
                   currency
                 }

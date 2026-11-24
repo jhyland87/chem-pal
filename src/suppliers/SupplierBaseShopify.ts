@@ -1,4 +1,5 @@
 import { AVAILABILITY, UOM } from '@/constants/common';
+import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
 import { findCAS } from '@/helpers/cas';
 import { parsePrice } from '@/helpers/currency';
 import { parseQuantity, standardizeUom, toMetricQuantity } from '@/helpers/quantity';
@@ -243,6 +244,8 @@ export abstract class SupplierBaseShopify
 
       const parsedPrice = parsePrice(`$${primaryVariant.price.amount}`);
       if (!parsedPrice) return;
+      // Stores price in their own currency (AsesChem is INR), which the `$` above doesn't know.
+      const currencyCode = primaryVariant.price.currencyCode ?? parsedPrice.currencyCode;
 
       // onlineStoreUrl is null for products not published to the online store;
       // fall back to the canonical product path built from the handle.
@@ -257,7 +260,11 @@ export abstract class SupplierBaseShopify
       builder
         .setBasicInfo(product.title, url, this.supplierName)
         .setMatchPercentage(this.matchScoreOf(product))
-        .setPricing(parsedPrice)
+        .setPricing(
+          parsedPrice.price,
+          currencyCode,
+          CURRENCY_SYMBOL_MAP[currencyCode] ?? currencyCode,
+        )
         .setAvailability(
           primaryVariant.currentlyNotInStock ? AVAILABILITY.OUT_OF_STOCK : AVAILABILITY.IN_STOCK,
         )

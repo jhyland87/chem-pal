@@ -232,7 +232,13 @@ export abstract class SupplierBaseWix
           return;
         }
 
-        const parsedPrice = parsePrice(item.formattedPrice ?? product.formattedPrice);
+        // The discounted price equals the regular one when nothing is on sale.
+        const parsedPrice = parsePrice(
+          item.formattedDiscountedPrice ??
+            item.formattedPrice ??
+            product.formattedDiscountedPrice ??
+            product.formattedPrice,
+        );
         if (!isParsedPrice(parsedPrice)) {
           this.logger.warn('Dropping product item: unparseable formattedPrice', {
             item,
@@ -265,7 +271,9 @@ export abstract class SupplierBaseWix
       // Synthesize the implicit default variant from the parent price.
       // Wix omits the default variant from productItems, so any selection
       // that wasn't covered above represents the parent's price point.
-      const parentParsedPrice = parsePrice(product.formattedPrice);
+      const parentParsedPrice = parsePrice(
+        product.formattedDiscountedPrice ?? product.formattedPrice,
+      );
       if (isParsedPrice(parentParsedPrice)) {
         for (const option of product.options ?? []) {
           for (const selection of option.selections ?? []) {

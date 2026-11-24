@@ -1,4 +1,5 @@
 import { AVAILABILITY } from '@/constants/common';
+import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
 import { ProductBuilder } from '@/utils/ProductBuilder';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -106,6 +107,25 @@ describe('SupplierBaseShopify initProductBuilders', () => {
     expect(builder.get('concentration')).toBe('0.1 M');
     expect(builder.get('moleweight')).toBe(39.997);
     expect(builder.get('purity')).toBe('99%');
+  });
+
+  it("uses the store's own currency", async () => {
+    const supplier = new TestShopify('q', 5, new AbortController());
+    const node = sampleNode();
+    node.variants.edges[0].node.price = { amount: '1200.00', currencyCode: 'INR' };
+    const [builder] = supplier.callInitProductBuilders([node]);
+    expect(builder.get('price')).toBe(1200);
+    expect(builder.get('currencyCode')).toBe('INR');
+    expect(builder.get('currencySymbol')).toBe(CURRENCY_SYMBOL_MAP.INR);
+
+    // The non-USD product must still pass build()'s validation, with a converted price.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => Response.json({ status_code: 200, data: { mid: 0.012 } })),
+    );
+    const product = await builder.build();
+    vi.unstubAllGlobals();
+    expect(product?.usdPrice).toBe(14.4);
   });
 
   it('carries the fuzzy match score from the scored item onto the product', () => {

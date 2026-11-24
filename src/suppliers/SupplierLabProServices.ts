@@ -3,19 +3,18 @@ import { ProductBuilder } from '@/utils/ProductBuilder';
 import { extractAllPositiveTerms } from '@/utils/search-query/extractPositiveTerms';
 import { isValidMagento2SearchResponse } from '@/utils/typeGuards/magento2';
 import { print } from 'graphql';
-import { SupplierBaseMagento2, type RawMagento2Variant } from './SupplierBaseMagento2';
+import { SupplierBaseMagento2 } from './SupplierBaseMagento2';
 
 /**
  * SupplierLabProServices — labproservices.com, a US lab-chemical reseller (Spectrum
  * Chemical catalog) running on Magento 2.4.6+.
  *
  * @remarks
- * Reuses the Magento 2 GraphQL plumbing from {@link SupplierBaseMagento2} but with three
+ * Reuses the Magento 2 GraphQL plumbing from {@link SupplierBaseMagento2} but with two
  * store-specific differences:
  * - Its own query ({@link labproProductsQuery}) scopes results to the "Chemicals" category
  *   ({@link categoryId}) via a `name`/`category_id` filter, so it needs `categoryId` and
  *   `currentPage` variables the base query lacks.
- * - Pricing comes from `final_price` (post-discount) rather than `regular_price`.
  * - Product pages are served at `{baseURL}/{url_key}.html` with no locale path segment, so
  *   {@link getPermalink} drops the store code.
  *
@@ -71,36 +70,6 @@ export class SupplierLabProServices extends SupplierBaseMagento2 implements ISup
    */
   protected getPermalink(productUrl: string): string {
     return `${this.baseURL}/${productUrl}`;
-  }
-
-  /**
-   * Collects the single raw variant for a LabPro product. The catalog is entirely
-   * `SimpleProduct`, so this synthesizes one variant from the parent fields, pricing it from
-   * `final_price` (the post-discount price) and falling back to `regular_price`.
-   *
-   * @param item - Magento 2 product item from the search response
-   * @returns A single-element array of the normalized raw variant, or an empty array when no
-   *   usable price is present
-   * @example
-   * ```typescript
-   * this.collectRawVariants(item); // [{ sku: "B1085-500GM-EA", name: "...", price: 153.7, currency: "USD" }]
-   * ```
-   * @source
-   */
-  protected collectRawVariants(item: Magento2ProductItem): RawMagento2Variant[] {
-    const bound = item.price_range?.minimum_price;
-    const money = bound?.final_price ?? bound?.regular_price;
-    if (typeof money?.value !== 'number') {
-      return [];
-    }
-    return [
-      {
-        sku: item.sku,
-        name: item.name,
-        price: money.value,
-        currency: money.currency,
-      },
-    ];
   }
 
   /**

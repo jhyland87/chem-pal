@@ -237,6 +237,30 @@ export abstract class SupplierBaseMagento2
   }
 
   /**
+   * Reads what a customer pays today from a Magento 2 price range: `final_price` (after any sale or
+   * discount), or `regular_price` when the store doesn't return one.
+   *
+   * @param range - The price range of a product, sub-product or variant
+   * @returns The money value, or undefined when the range carries neither
+   * @example
+   * ```typescript
+   * this.currentPrice({
+   *   minimum_price: {
+   *     regular_price: { value: 100, currency: 'USD' },
+   *     final_price: { value: 85, currency: 'USD' },
+   *   },
+   * }); // { value: 85, currency: 'USD' }
+   * ```
+   * @source
+   */
+  protected currentPrice(
+    range: Pick<Magento2PriceRange, 'minimum_price'> | undefined,
+  ): Magento2Money | undefined {
+    const bound = range?.minimum_price;
+    return bound?.final_price ?? bound?.regular_price;
+  }
+
+  /**
    * Collects the variant rows for a Magento 2 product, branching on the
    * `__typename` discriminator. Falls back to a single synthesized variant
    * built from the parent product fields when no nested variants are present
@@ -254,7 +278,7 @@ export abstract class SupplierBaseMagento2
   protected collectRawVariants(item: Magento2ProductItem): RawMagento2Variant[] {
     if (item.__typename === 'GroupedProduct' && Array.isArray(item.items)) {
       return mapDefined(item.items, (sub) => {
-        const money = sub.product.price_range.minimum_price.regular_price;
+        const money = this.currentPrice(sub.product.price_range);
         if (typeof money?.value !== 'number') return;
         return {
           sku: sub.product.sku,
@@ -267,7 +291,7 @@ export abstract class SupplierBaseMagento2
 
     if (item.__typename === 'ConfigurableProduct' && Array.isArray(item.variants)) {
       return mapDefined(item.variants, (variant) => {
-        const money = variant.product.price_range.minimum_price.regular_price;
+        const money = this.currentPrice(variant.product.price_range);
         if (typeof money?.value !== 'number') return;
         return {
           sku: variant.product.sku,
@@ -278,7 +302,7 @@ export abstract class SupplierBaseMagento2
       });
     }
 
-    const money = item.price_range?.minimum_price?.regular_price;
+    const money = this.currentPrice(item.price_range);
     if (typeof money?.value !== 'number') return [];
     return [
       {

@@ -81,6 +81,14 @@ describe('SupplierDailyBioUSA initProductBuilders', () => {
     expect(product.availability).toBe(AVAILABILITY.IN_STOCK);
   });
 
+  it('uses the discounted price when the product is on sale', () => {
+    const supplier = makeSupplier() as unknown as DailyBioUSAInternals;
+
+    const onSale = { ...products.skuSize, formattedDiscountedPrice: '$17.50' };
+    const product = supplier.initProductBuilders([onSale])[0].dump();
+    expect(product.price).toBe(17.5);
+  });
+
   it('marks a product out of stock when isInStock is false', () => {
     const supplier = makeSupplier() as unknown as DailyBioUSAInternals;
 
