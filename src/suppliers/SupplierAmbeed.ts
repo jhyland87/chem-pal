@@ -1,6 +1,8 @@
 import { AVAILABILITY, CACHE } from '@/constants/common';
+import { HttpStatus } from '@/constants/httpStatus';
 import { getCookie } from '@/helpers/cookies';
 import { getUserCountryName } from '@/helpers/country';
+import type { ProductLookup, ProductRef } from '@/helpers/productRef';
 import { parsePrice } from '@/helpers/currency';
 import { parseQuantity } from '@/helpers/quantity';
 import { looksLikeSmiles } from '@/helpers/smiles';
@@ -28,7 +30,7 @@ import {
 } from '@/utils/typeGuards/ambeed';
 import type { JsonValue } from 'type-fest';
 import { SupplierBase } from './SupplierBase';
-import { getErrorMessage } from '@/helpers/exceptions';
+import { getErrorMessage, HttpError } from '@/helpers/exceptions';
 
 // Decoder for ambeed's am-new2.woff cmap-substitution font.
 // Source codepoint -> visible character. Verified: "łÇÊ¶ÊÊ" -> "$10.00".
@@ -299,6 +301,9 @@ export class SupplierAmbeed
     'EG',
     'IL',
   ] as const;
+
+  // Specific products can be refetched by id, so they can be watched for price drops.
+  public static readonly supportsPriceAlerts: boolean = true;
 
   // The payment methods accepted by the supplier.
   public static readonly paymentMethods: PaymentMethod[] = [
@@ -1046,32 +1051,11 @@ export class SupplierAmbeed
       productBuilder.setCAS(product.p_cas);
       productBuilder.setSpecSheetUrl(this.getSpecSheetUrl(product.p_am));
 
-      for (const variant of product.priceList) {
-        const parsedPrice = parsePrice(variant.pr_usd);
-        const quantity = parseQuantity(variant.pr_size);
-
-        if (!parsedPrice || !quantity) {
-          this.logger.warn(`Failed to parse Ambeed product price for ${productTitle}`, {
-            product,
-            variant,
-          });
-          continue;
-        }
-
-        productBuilder.addVariant({
-          title: variant.pr_size,
-          price: parsedPrice.price,
-          currencyCode: parsedPrice.currencyCode,
-          currencySymbol: parsedPrice.currencySymbol,
-          quantity: quantity.quantity,
-          uom: quantity.uom,
-          sku: variant.pr_am,
-          id: String(variant.pr_id),
-        });
-      }
-
-      // Use the first variant as the main product. The ID will be wrong, but well overwrite it later.
-      const mainVariant = productBuilder.getVariant(0);
+      const mainVariant = this.addPriceListVariants(
+        productBuilder,
+        product.priceList,
+        productTitle,
+      );
 
       if (!mainVariant) {
         this.logger.warn(`Ambeed product ${productTitle} has no main variant`, { product });
@@ -1095,6 +1079,116 @@ export class SupplierAmbeed
         .setSupplierShipping(this.shipping)
         .setCAS(product.p_cas);
     });
+  }
+
+  /**
+   * Adds one variant per row of an Ambeed price list and returns the first, which is the
+   * headline. Used for the search `priceList` and the `product_price` rows alike, so both
+   * routes yield the same variants. Only `pr_usd` is read: VIP and discount prices are ignored.
+   *
+   * @param builder - The builder to add the variants to
+   * @param priceList - The price rows, already decoded from Ambeed's price font
+   * @param productTitle - The product's title, for log messages
+   * @returns The first variant, or `undefined` when no row could be parsed
+   * @example
+   * ```typescript
+   * this.addPriceListVariants(builder, priceList, 'Acetone');
+   * // { title: '1g', price: 10, quantity: 1, uom: 'g', sku: 'A179048', id: '3452550', … }
+   * ```
+   * @source
+   */
+  protected addPriceListVariants(
+    builder: ProductBuilder<Product>,
+    priceList: AmbeedProductListResponsePriceList[],
+    productTitle: string,
+  ): Variant | undefined {
+    for (const variant of priceList) {
+      const parsedPrice = parsePrice(variant.pr_usd);
+      const quantity = parseQuantity(variant.pr_size);
+
+      if (!parsedPrice || !quantity) {
+        this.logger.warn(`Failed to parse Ambeed product price for ${productTitle}`, { variant });
+        continue;
+      }
+
+      builder.addVariant({
+        title: variant.pr_size,
+        price: parsedPrice.price,
+        currencyCode: parsedPrice.currencyCode,
+        currencySymbol: parsedPrice.currencySymbol,
+        quantity: quantity.quantity,
+        uom: quantity.uom,
+        sku: variant.pr_am,
+        id: String(variant.pr_id),
+      });
+    }
+
+    // Use the first variant as the main product. The ID will be wrong, but we'll overwrite it later.
+    return builder.getVariant(0);
+  }
+
+  /**
+   * Refetches specific products with one `product_price` request each, skipping the stock
+   * request. Prices are rebuilt from the response exactly as a search builds them.
+   *
+   * @param refs - The products to refetch
+   * @returns The builders found, and the `cacheKey`s whose request failed
+   * @example
+   * ```typescript
+   * const { builders, failed } = await this.queryProductsById(refs);
+   * ```
+   * @source
+   */
+  protected override async queryProductsById(
+    refs: readonly ProductRef[],
+  ): Promise<ProductLookup<Product>> {
+    return this.refreshViaDetail(refs, (builder) => this.refreshPrices(builder));
+  }
+
+  /**
+   * Replaces a seeded builder's variants and headline price with the live `product_price` rows.
+   *
+   * @param builder - A builder seeded from a product ref
+   * @returns The same builder, priced
+   * @throws HttpError `NOT_FOUND` when Ambeed no longer lists the product
+   * @throws Error when the response is invalid or has no priced size
+   * @example
+   * ```typescript
+   * await this.refreshPrices(seed); // seed.get('price') === 10
+   * ```
+   * @source
+   */
+  private async refreshPrices(builder: ProductBuilder<Product>): Promise<ProductBuilder<Product>> {
+    const title = builder.get('title');
+    const url = builder.get('url');
+    const id = builder.get('id');
+    const sku = builder.get('sku');
+    if (id == null) {
+      throw new Error('Ambeed product ref has no product id');
+    }
+
+    const response = await this.fetchProductPrice(String(id));
+    if (!response) {
+      throw new Error('Invalid Ambeed product price response');
+    }
+    if (response.value.proInfo.p_status === false) {
+      throw new HttpError(HttpStatus.NOT_FOUND, 'Ambeed no longer lists the product');
+    }
+
+    const priceList = this.getPriceVariants(response.value).map((row) =>
+      this.decodePriceObjectValues(row),
+    );
+    const mainVariant = this.addPriceListVariants(builder, priceList, String(title));
+    if (!mainVariant) {
+      throw new Error('Ambeed product price response has no priced size');
+    }
+
+    // The headline variant carries the size's own title, id and sku; restore the product's.
+    return builder
+      .setData(mainVariant)
+      .setBasicInfo(title, url, this.supplierName)
+      .setID(id)
+      .setSku(sku);
   }
 
   /**
@@ -1164,17 +1258,20 @@ export class SupplierAmbeed
   }
 
   /**
-   * No real need to get the product data on a second page, the initial product listing
-   * page has enough data.
-   * @param product - The product builder to get data for
-   * @returns The product builder
+   * Requests a product's priced sizes from `webapi/v1/product_price`.
+   * @param proid - The product ID (`p_id`)
+   * @returns The validated response, or `undefined` when it isn't one
+   * @example
+   * ```js
+   * const response = await this.fetchProductPrice('P000640099');
+   * console.log(response?.value.proInfo.p_am); // "A179048"
+   * ```
    * @source
    */
-  protected async getProductData(
-    product: ProductBuilder<Product>,
-  ): Promise<ProductBuilder<Product> | void> {
+  protected async fetchProductPrice(
+    proid: string,
+  ): Promise<AmbeedProductPriceResponse | undefined> {
     // /webapi/v1/product_price?params=btoa(JSON.stringify({ proid: "P000640099" }))
-    const proid = String(product.get('id'));
     const productPriceParams = this.makeSignedParams({ proid });
 
     const productPriceResponse = await this.httpPostJson({
@@ -1196,6 +1293,24 @@ export class SupplierAmbeed
         productPriceParams,
         productPriceResponse,
       });
+      return undefined;
+    }
+    return productPriceResponse;
+  }
+
+  /**
+   * No real need to get the product data on a second page, the initial product listing
+   * page has enough data.
+   * @param product - The product builder to get data for
+   * @returns The product builder
+   * @source
+   */
+  protected async getProductData(
+    product: ProductBuilder<Product>,
+  ): Promise<ProductBuilder<Product> | void> {
+    const proid = String(product.get('id'));
+    const productPriceResponse = await this.fetchProductPrice(proid);
+    if (!productPriceResponse) {
       return product;
     }
 

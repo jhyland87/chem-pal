@@ -1,4 +1,6 @@
 import { AVAILABILITY } from '@/constants/common';
+import { HttpStatus } from '@/constants/httpStatus';
+import type { ProductLookup, ProductRef } from '@/helpers/productRef';
 import { parseQuantity } from '@/helpers/quantity';
 import { ProductBuilder } from '@/utils/ProductBuilder';
 import { detectTermType } from '@/utils/search-query/detectTermType';
@@ -12,7 +14,7 @@ import {
   isVWRTokenResponse,
 } from '@/utils/typeGuards/vwr';
 import { SupplierBase } from './SupplierBase';
-import { getErrorMessage } from '@/helpers/exceptions';
+import { HttpError, getErrorMessage } from '@/helpers/exceptions';
 
 /**
  * SupplierVWR - supplier implementation for VWR (Avantor Sciences).
@@ -48,6 +50,9 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
   // The payment methods accepted by the supplier.
   public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
+  // Specific products can be refetched by id, so they can be watched for price drops.
+  public static readonly supportsPriceAlerts: boolean = true;
+
   // OAuth client id for the anonymous client_credentials grant.
   private readonly clientId: string = 'VVjdGUHAb3ETZLEVTWtFy3BmhFhXSdBB';
 
@@ -66,6 +71,9 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
 
   // Raise the base per-search HTTP ceiling to accommodate paginated search + per-product detail calls.
   protected readonly httpRequestHardLimit: number = 100;
+
+  // Query params shared by the product endpoints.
+  private readonly commonParams = { lang: 'en_US', curr: 'USD', newStorefront: true } as const;
 
   // OCC API paths. All except the token endpoint carry the `/occ/v2/us.vwr.com` prefix;
   // `assetReferences` is base-product specific so it's built on demand.
@@ -363,55 +371,148 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    return this.getProductDataWithCache(product, async (builder) => {
-      const baseProduct = this.baseProductFromUrl(builder.get('url'));
-      if (!baseProduct) {
-        this.logger.warn('VWR getProductData| could not derive baseProduct', {
-          url: builder.get('url'),
-        });
-        return builder;
-      }
+    return this.getProductDataWithCache(product, (builder) => this.fetchProductDetail(builder));
+  }
 
-      const commonParams = {
-        lang: 'en_US',
-        curr: 'USD',
-        newStorefront: true,
-      };
-
-      const [ordertable, assets, substance, specification, canonicalUrl] = await Promise.all([
-        this.httpGetJson({
-          path: this.paths.ordertable,
-          host: this.apiURL,
-          params: { ...commonParams, productId: baseProduct, impressions: '', user: 'anonymous' },
-        }),
-        this.httpGetJson({
-          path: this.paths.assetReferences(baseProduct),
-          host: this.apiURL,
-          params: { ...commonParams, fields: 'DEFAULT' },
-        }),
-        this.httpGetJson({
-          path: this.paths.substance,
-          host: this.apiURL,
-          params: { ...commonParams, productId: baseProduct, user: 'anonymous' },
-        }),
-        this.httpGetJson({
-          path: this.paths.specification,
-          host: this.apiURL,
-          params: { ...commonParams, productId: baseProduct, user: 'anonymous' },
-        }),
-        this.fetchCanonicalUrl(baseProduct),
-      ]);
-
-      if (canonicalUrl) {
-        builder.setURL(canonicalUrl).setPermalink(canonicalUrl);
-      }
-      this.applySubstance(builder, substance);
-      this.applySpecification(builder, specification);
-      await this.applyOrdertable(builder, ordertable);
-      this.applyAssetReferences(builder, ordertable, assets);
-
+  /**
+   * Fetches every detail endpoint for a product and applies it. The body of {@link getProductData},
+   * which adds the product-detail cache around it.
+   * @param builder - The ProductBuilder to enrich
+   * @returns Promise resolving to the enriched builder
+   * @example
+   * ```typescript
+   * const enriched = await this.fetchProductDetail(builder);
+   * ```
+   * @source
+   */
+  private async fetchProductDetail(
+    builder: ProductBuilder<Product>,
+  ): Promise<ProductBuilder<Product>> {
+    const baseProduct = this.baseProductFromUrl(builder.get('url'));
+    if (!baseProduct) {
+      this.logger.warn('VWR getProductData| could not derive baseProduct', {
+        url: builder.get('url'),
+      });
       return builder;
-    });
+    }
+
+    const commonParams = this.commonParams;
+
+    const [ordertable, assets, substance, specification, canonicalUrl] = await Promise.all([
+      this.httpGetJson({
+        path: this.paths.ordertable,
+        host: this.apiURL,
+        params: { ...commonParams, productId: baseProduct, impressions: '', user: 'anonymous' },
+      }),
+      this.httpGetJson({
+        path: this.paths.assetReferences(baseProduct),
+        host: this.apiURL,
+        params: { ...commonParams, fields: 'DEFAULT' },
+      }),
+      this.httpGetJson({
+        path: this.paths.substance,
+        host: this.apiURL,
+        params: { ...commonParams, productId: baseProduct, user: 'anonymous' },
+      }),
+      this.httpGetJson({
+        path: this.paths.specification,
+        host: this.apiURL,
+        params: { ...commonParams, productId: baseProduct, user: 'anonymous' },
+      }),
+      this.fetchCanonicalUrl(baseProduct),
+    ]);
+
+    if (canonicalUrl) {
+      builder.setURL(canonicalUrl).setPermalink(canonicalUrl);
+    }
+    this.applySubstance(builder, substance);
+    this.applySpecification(builder, specification);
+    await this.applyOrdertable(builder, ordertable);
+    this.applyAssetReferences(builder, ordertable, assets);
+
+    return builder;
+  }
+
+  /**
+   * Refetches specific products, one request for the ordertable plus one for stock each. The
+   * substance, specification, asset and canonical URL calls are skipped: they don't set price, size
+   * or availability. The price is the list price.
+   * @param refs - The products to refetch
+   * @returns The builders found, and the refs whose request failed
+   * @example
+   * ```typescript
+   * const { builders } = await this.queryProductsById(refs);
+   * ```
+   * @source
+   */
+  protected override async queryProductsById(
+    refs: readonly ProductRef[],
+  ): Promise<ProductLookup<Product>> {
+    return this.refreshViaDetail(refs, (builder) => this.refetchProduct(builder));
+  }
+
+  /**
+   * Fills a seeded builder from the ordertable (sizes, prices, availability).
+   * @param builder - A builder seeded from the ref
+   * @returns The builder, with a price
+   * @throws HttpError with `NOT_FOUND` when VWR doesn't know the product
+   * @throws Error when the response is invalid or carries no price
+   * @example
+   * ```typescript
+   * const refreshed = await this.refetchProduct(builder);
+   * ```
+   * @source
+   */
+  private async refetchProduct(builder: ProductBuilder<Product>): Promise<ProductBuilder<Product>> {
+    const baseProduct = this.baseProductFromUrl(builder.get('url'));
+    if (!baseProduct) {
+      throw new Error('VWR product url has no base product');
+    }
+
+    const ordertable = await this.fetchOrdertable(baseProduct);
+    if (!isVWROrdertableResponse(ordertable) || ordertable.productRows.length === 0) {
+      throw new Error(`Invalid VWR ordertable for ${baseProduct}`);
+    }
+    await this.applyOrdertable(builder, ordertable);
+    if (typeof builder.get('price') !== 'number') {
+      throw new Error(`VWR product ${baseProduct} has no price`);
+    }
+    return builder;
+  }
+
+  /**
+   * Fetches the ordertable for a base product, with failures propagated. VWR answers an unknown
+   * product with a 400 `UnknownIdentifierError`, which is reported as a 404.
+   * @param baseProduct - The base product id
+   * @returns The parsed response body
+   * @throws HttpError with `NOT_FOUND` when VWR doesn't know the product
+   * @example
+   * ```typescript
+   * const ordertable = await this.fetchOrdertable('4560994');
+   * ```
+   * @source
+   */
+  private async fetchOrdertable(baseProduct: string): Promise<unknown> {
+    try {
+      const response = await this.httpGet({
+        path: this.paths.ordertable,
+        host: this.apiURL,
+        params: {
+          ...this.commonParams,
+          productId: baseProduct,
+          impressions: '',
+          user: 'anonymous',
+        },
+        headers: { accept: 'application/json' },
+        rethrowErrors: true,
+      });
+      return await response?.json();
+    } catch (error) {
+      if (error instanceof HttpError && error.body?.includes('UnknownIdentifierError')) {
+        throw new HttpError(HttpStatus.NOT_FOUND, 'Unknown VWR product', error.body);
+      }
+      throw error;
+    }
   }
 
   /**
@@ -655,7 +756,8 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
   }
 
   /**
-   * Extracts the `baseProduct` id from a synthesized product URL.
+   * Extracts the `baseProduct` id from a product URL: the synthesized `/store/product/{base}/{code}`
+   * or the canonical `/us/en/product/{base}/{slug}`.
    * @param url - The product URL (absolute or relative)
    * @returns The baseProduct id, or undefined if the URL doesn't match the expected shape
    * @source
@@ -664,6 +766,6 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
     if (typeof url !== 'string') {
       return undefined;
     }
-    return url.match(/\/store\/product\/([^/]+)\//)?.[1];
+    return url.match(/\/product\/([^/]+)\//)?.[1];
   }
 }

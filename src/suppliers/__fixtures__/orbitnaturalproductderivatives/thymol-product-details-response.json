@@ -1,0 +1,190 @@
+{
+  "id": "019dda5e-dae6-756d-90db-a579bb95294f",
+  "name": "Thymol",
+  "description": "<p><strong>THYMOL Crystals (99.9+%)</strong></p>\n<p><strong>CAS#</strong> 89-83-8</p>\n<p>Thymol (the major component of Thyme oil) is a natural pesticide and disinfectant. Packaged in a resealable plastic bag within an HDPE container.</p>",
+  "price": "45.00",
+  "slug": "thymol",
+  "total_on_hand": 4,
+  "available": true,
+  "sku": null,
+  "updated_at": "2026-08-28T12:25:40.866Z",
+  "on_sale?": false,
+  "sale_price": "0.00",
+  "source": null,
+  "source_url": null,
+  "description_text": "THYMOL Crystals (99.9+%)\nCAS# 89-83-8\nThymol (the major component of Thyme oil) is a natural pesticide and disinfectant. Packaged in a resealable plastic bag within an HDPE container.",
+  "product_type": "physical",
+  "description_raw": "<p><strong>THYMOL Crystals (99.9+%)</strong></p>\n<p><strong>CAS#</strong> 89-83-8</p>\n<p>Thymol (the major component of Thyme oil) is a natural pesticide and disinfectant. Packaged in a resealable plastic bag within an HDPE container.</p>",
+  "digital_goods_files": [],
+  "currency": "USD",
+  "ship_free": true,
+  "relative_url": "/ols/products/thymol",
+  "has_variants": true,
+  "has_price_range": true,
+  "variant_count": 3,
+  "track_inventory": true,
+  "in_stock": true,
+  "backorderable": false,
+  "measurement_system": "imperial",
+  "limited_edition": false,
+  "free_return": false,
+  "low_inventory_threshold": 1,
+  "new_product?": false,
+  "bestseller?": false,
+  "assets": [
+    {
+      "id": "019ee141-e509-77d5-ac0e-6974a39a4aa7",
+      "small_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_500g_pic1_051725.jpg",
+      "large_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_500g_pic1_051725.jpg",
+      "original_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_500g_pic1_051725.jpg/:/rs=w:600,h:600",
+      "product_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_500g_pic1_051725.jpg/:/",
+      "zoom_image_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_500g_pic1_051725.jpg",
+      "attachment_height": null,
+      "attachment_width": null,
+      "type": "image"
+    },
+    {
+      "id": "019dda86-0d8b-7029-8e47-fc24324204ec",
+      "small_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_4Kg_pic1_051825.jpg/:/rs=w:600,h:600",
+      "large_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_4Kg_pic1_051825.jpg/:/rs=w:600,h:600",
+      "original_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_4Kg_pic1_051825.jpg/:/rs=w:600,h:600/:/rs=w:600,h:600",
+      "product_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_4Kg_pic1_051825.jpg/:/rs=w:600,h:600/:/",
+      "zoom_image_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_4Kg_pic1_051825.jpg/:/rs=w:600,h:600",
+      "attachment_height": 762,
+      "attachment_width": 1334,
+      "type": "image"
+    },
+    {
+      "id": "019dda86-1877-757d-b376-37dd58a2f526",
+      "small_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_1Kg_pic1_051825.JPG/:/rs=w:600,h:600",
+      "large_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_1Kg_pic1_051825.JPG/:/rs=w:600,h:600",
+      "original_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_1Kg_pic1_051825.JPG/:/rs=w:600,h:600/:/rs=w:600,h:600",
+      "product_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_1Kg_pic1_051825.JPG/:/rs=w:600,h:600/:/",
+      "zoom_image_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_1Kg_pic1_051825.JPG/:/rs=w:600,h:600",
+      "attachment_height": 526,
+      "attachment_width": 888,
+      "type": "image"
+    },
+    {
+      "id": "019ee141-e140-71ba-97e3-6e3f4740be50",
+      "small_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/thymol-label-500g.jpg",
+      "large_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/thymol-label-500g.jpg",
+      "original_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/thymol-label-500g.jpg/:/rs=w:600,h:600",
+      "product_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/thymol-label-500g.jpg/:/",
+      "zoom_image_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/thymol-label-500g.jpg",
+      "attachment_height": null,
+      "attachment_width": null,
+      "type": "image"
+    }
+  ],
+  "variants": [
+    {
+      "options_text": "Size: 500 g",
+      "in_stock": true,
+      "backorderable": false,
+      "asset_ids": [
+        "019ee141-e140-71ba-97e3-6e3f4740be50"
+      ],
+      "option_values": [
+        {
+          "id": "019dda5e-db41-72c5-ab31-4e7dbb87617f",
+          "name": "500 g",
+          "presentation": "500 g",
+          "color": "",
+          "option_type_name": "Size",
+          "option_type_id": "019dda5e-db11-73aa-ba39-7c48c3be3b1c",
+          "option_type_presentation": "Size",
+          "valueId": "019dda5e-db41-72c5-ab31-4e7dbb87617f"
+        }
+      ],
+      "variant_properties": [],
+      "id": "019dda86-190f-77ec-8045-7a5e6ea8100e",
+      "sku": "THY-500-G",
+      "price": "45.00",
+      "on_sale?": false,
+      "sale_price": "",
+      "display_sale_price": "",
+      "display_price": "$45.00",
+      "total_on_hand": 3,
+      "weight": "0",
+      "height": "0",
+      "width": "0",
+      "depth": "0"
+    },
+    {
+      "options_text": "Size: 1 Kg",
+      "in_stock": false,
+      "backorderable": false,
+      "asset_ids": [
+        "019dda86-1877-757d-b376-37dd58a2f526"
+      ],
+      "option_values": [
+        {
+          "id": "019dda5e-db41-72c5-ab31-50205ff7266c",
+          "name": "1 Kg",
+          "presentation": "1 Kg",
+          "color": "",
+          "option_type_name": "Size",
+          "option_type_id": "019dda5e-db11-73aa-ba39-7c48c3be3b1c",
+          "option_type_presentation": "Size",
+          "valueId": "019dda5e-db41-72c5-ab31-50205ff7266c"
+        }
+      ],
+      "variant_properties": [],
+      "id": "019dda86-186f-75d0-9833-692396ec9a96",
+      "sku": "THY-1-KG",
+      "price": "65.00",
+      "on_sale?": false,
+      "sale_price": "",
+      "display_sale_price": "",
+      "display_price": "$65.00",
+      "total_on_hand": 0,
+      "weight": "0",
+      "height": "0",
+      "width": "0",
+      "depth": "0"
+    },
+    {
+      "options_text": "Size: 4 Kg",
+      "in_stock": true,
+      "backorderable": false,
+      "asset_ids": [
+        "019dda86-0d8b-7029-8e47-fc24324204ec"
+      ],
+      "option_values": [
+        {
+          "id": "019dda5e-db41-72c5-ab31-55f3dd5a531c",
+          "name": "4 Kg",
+          "presentation": "4 Kg",
+          "color": "",
+          "option_type_name": "Size",
+          "option_type_id": "019dda5e-db11-73aa-ba39-7c48c3be3b1c",
+          "option_type_presentation": "Size",
+          "valueId": "019dda5e-db41-72c5-ab31-55f3dd5a531c"
+        }
+      ],
+      "variant_properties": [],
+      "id": "019dda86-0d7d-755e-a70a-412e888218b9",
+      "sku": "THY-4-KG",
+      "price": "175.00",
+      "on_sale?": false,
+      "sale_price": "",
+      "display_sale_price": "",
+      "display_price": "$175.00",
+      "total_on_hand": 1,
+      "weight": "0",
+      "height": "0",
+      "width": "0",
+      "depth": "0"
+    }
+  ],
+  "personalizations": [],
+  "product_option_order": [
+    {
+      "position": 1,
+      "reference_id": "019dda5e-db11-73aa-ba39-7c48c3be3b1c",
+      "reference_type": "Spree::OptionType"
+    }
+  ],
+  "ols_product_id": "3"
+}

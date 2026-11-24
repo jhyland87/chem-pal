@@ -45,6 +45,8 @@ describe('Chem-Pal price alerts', () => {
 
   afterAll(async () => {
     await context?.close();
+    // E2E files share one process.
+    delete process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS;
   });
 
   /** Reads the stored price alerts. */

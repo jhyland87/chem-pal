@@ -1,0 +1,87 @@
+{
+  "code": 200,
+  "message": "\u67e5\u8be2\u6210\u529f",
+  "data": {
+    "total": 3,
+    "list": {
+      "18583-60-3": [
+        {
+          "chem_cas": "18583-60-3",
+          "item_code": "P866188",
+          "chem_mdl": "MFCD00040346",
+          "chem_if_toxic": 0,
+          "item_en_specification": "\u226597%",
+          "smile_code": "[B-](N1C=CC=N1)(N2C=CC=N2)N3C=CC=N3.[K+]",
+          "item_cn_name": "\u4e09(1-\u5421\u5511\u57fa)\u787c\u6c22\u5316\u94be",
+          "item_id": 866188,
+          "chem_mf": "C<sub>9</sub>H<sub>10</sub>BKN<sub>6</sub>",
+          "item_weihuaxuhao": null,
+          "item_specification": "\u226597%",
+          "item_if_bio": 0,
+          "item_transport": 1,
+          "chem_id": 57085,
+          "item_order": 100,
+          "item_en_name": "Potassium Tris(1-pyrazolyl)borohydride",
+          "item_safe_level": 0,
+          "item_upimg": "https://img.macklin.cn/img/item/000/86/34643900.png",
+          "item_product_cate": 0,
+          "if_yj": 0,
+          "cas": "18583-60-3",
+          "all_bio": false
+        }
+      ],
+      "16903-61-0": [
+        {
+          "chem_cas": "16903-61-0",
+          "item_code": "B803083",
+          "chem_mdl": "MFCD00013219",
+          "chem_if_toxic": 0,
+          "item_en_specification": "90%",
+          "smile_code": "[BH4-].C1=CC=C(C=C1)P(C2=CC=CC=C2)C3=CC=CC=C3.C1=CC=C(C=C1)P(C2=CC=CC=C2)C3=CC=CC=C3.[Cu+]",
+          "item_cn_name": "\u53cc(\u4e09\u82ef\u57fa\u81a6)\u787c\u6c22\u5316\u4e9a\u94dc",
+          "item_id": 803083,
+          "chem_mf": "C<sub>36</sub>H<sub>34</sub>BCuP<sub>2</sub>",
+          "item_weihuaxuhao": "",
+          "item_specification": "90%",
+          "item_if_bio": 0,
+          "item_transport": 0,
+          "chem_id": 2243,
+          "item_order": 100,
+          "item_en_name": "Bis(triphenylphosphine)copper(I) borohydride",
+          "item_safe_level": 0,
+          "item_upimg": "https://img.macklin.cn/img/item/000/80/B803083.gif",
+          "item_product_cate": 0,
+          "if_yj": 0,
+          "cas": "16903-61-0",
+          "all_bio": false
+        }
+      ],
+      "33725-74-5": [
+        {
+          "chem_cas": "33725-74-5",
+          "item_code": "T819228",
+          "chem_mdl": "MFCD00012035",
+          "chem_if_toxic": 0,
+          "item_en_specification": "95%",
+          "smile_code": "[BH4-].CCCC[N+](CCCC)(CCCC)CCCC",
+          "item_cn_name": "\u56db\u4e01\u57fa\u787c\u6c22\u5316\u94f5",
+          "item_id": 819228,
+          "chem_mf": "C<sub>16</sub>H<sub>40</sub>BN",
+          "item_weihuaxuhao": "",
+          "item_specification": "95%",
+          "item_if_bio": 0,
+          "item_transport": 0,
+          "chem_id": 13512,
+          "item_order": 100,
+          "item_en_name": "Tetrabutylammonium borohydride",
+          "item_safe_level": 0,
+          "item_upimg": "https://img.macklin.cn/img/item/000/81/T819228.gif",
+          "item_product_cate": 0,
+          "if_yj": 0,
+          "cas": "33725-74-5",
+          "all_bio": false
+        }
+      ]
+    }
+  }
+}

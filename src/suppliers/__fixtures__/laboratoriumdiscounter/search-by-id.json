@@ -1,0 +1,121 @@
+{
+  "page": {
+    "search": "citric acid",
+    "session_id": "redacted",
+    "key": "1fe554050239d0744322580e1df72c56",
+    "title": "Search results for citric acid",
+    "breadcrumbs": [
+      {
+        "url": "search/citric+acid",
+        "title": "Search results for citric acid"
+      }
+    ],
+    "back": false,
+    "cart": false,
+    "account": false,
+    "recent": false,
+    "compare": false,
+    "messages": false,
+    "stats": "https://www.laboratoriumdiscounter.nl/en/services/stats/pageview.js",
+    "no_index": false,
+    "status": 200
+  },
+  "request": {
+    "url": "https://www.laboratoriumdiscounter.nl/en/search/citric%20acid/?format=json&limit=100",
+    "method": "get",
+    "ssl": true,
+    "get": {
+      "format": "json",
+      "limit": "100"
+    },
+    "post": [],
+    "device": {},
+    "country": "us"
+  },
+  "shop": {
+    "id": 286851,
+    "currency": "eur"
+  },
+  "collection": {
+    "products": {
+      "135857451": {
+        "id": 135857451,
+        "vid": 268605573,
+        "image": 405872757,
+        "brand": false,
+        "code": "C1949-500G",
+        "ean": "",
+        "sku": "C1949-500G",
+        "score": 0,
+        "price": {
+          "price": 30.36,
+          "price_incl": 36.7356,
+          "price_excl": 30.36,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "available": true,
+        "unit": false,
+        "url": "citric-acid-980t-500g.html",
+        "title": "Citric Acid >98.0%(T) 500g",
+        "fulltitle": "Citric Acid >98.0%(T) 500g",
+        "variant": "1 Piece",
+        "description": "",
+        "data_01": ""
+      },
+      "104426842": {
+        "id": 104426842,
+        "vid": 211532633,
+        "image": 310006514,
+        "brand": false,
+        "code": "5110.3",
+        "ean": "",
+        "sku": "5110.3",
+        "score": 0,
+        "price": {
+          "price": 29.227,
+          "price_incl": 35.3647,
+          "price_excl": 29.227,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "available": true,
+        "unit": false,
+        "url": "citric-acid-monohydrate-995-pheur.html",
+        "title": "Citric acid monohydrate ≥99,5 %, Ph.Eur.",
+        "fulltitle": "Citric acid monohydrate ≥99,5 %, Ph.Eur.",
+        "variant": "500 g",
+        "description": "",
+        "data_01": ""
+      },
+      "123109275": {
+        "id": 123109275,
+        "vid": 245229376,
+        "image": 373743537,
+        "brand": false,
+        "code": "MA45.1",
+        "ean": "8720254946207",
+        "sku": "MA45.1",
+        "score": 0,
+        "price": {
+          "price": 10.978,
+          "price_incl": 13.2834,
+          "price_excl": 10.978,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "available": true,
+        "unit": false,
+        "url": "dl-malic-acid-99-food-grade-e296.html",
+        "title": "DL-Malic Acid 99+%, food grade, E296",
+        "fulltitle": "DL-Malic Acid 99+%, food grade, E296",
+        "variant": "Variant,500 g,CAS,6915-15-7",
+        "description": "",
+        "data_01": ""
+      }
+    }
+  }
+}

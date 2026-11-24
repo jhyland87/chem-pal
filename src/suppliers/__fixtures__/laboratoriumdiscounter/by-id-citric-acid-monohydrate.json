@@ -1,0 +1,484 @@
+{
+  "shop": {
+    "id": 286851,
+    "currencies": {
+      "eur": {
+        "url": "session/currency/eur",
+        "symbol": "€",
+        "code": "EUR",
+        "title": "eur",
+        "active": true
+      }
+    },
+    "currency": "eur",
+    "language": "en",
+    "locale": "en_GB"
+  },
+  "product": {
+    "id": 104426842,
+    "vid": 211532633,
+    "image": 310006514,
+    "brand": false,
+    "code": "5110.3",
+    "ean": "",
+    "sku": "5110.3",
+    "score": 0,
+    "price": {
+      "price": 29.227,
+      "price_incl": 35.3647,
+      "price_excl": 29.227,
+      "price_old": 0,
+      "price_old_incl": 0,
+      "price_old_excl": 0
+    },
+    "price_cost": "hidden",
+    "weight": 500,
+    "volume": 0,
+    "colli": 0,
+    "size": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "unit": false,
+    "tax": 0.21,
+    "url": "citric-acid-monohydrate-995-pheur.html",
+    "title": "Citric acid monohydrate ≥99,5 %, Ph.Eur.",
+    "fulltitle": "Citric acid monohydrate ≥99,5 %, Ph.Eur.",
+    "variant": "500 g",
+    "description": "",
+    "stock": {
+      "available": true,
+      "on_stock": false,
+      "track": false,
+      "allow_outofstock_sale": true,
+      "level": 0,
+      "minimum": 1,
+      "maximum": 10000,
+      "delivery": {
+        "title": "3-4 days"
+      }
+    },
+    "shorttitle": "Citric acid monohydrate ≥99,5 %, Ph.Eur.",
+    "content": "<p>Empirical formula C6H8O7<br />Molar mass (M) 192.13 g / mol<br />Density (D) 1.665<br />Melting point (mp) 153 ° C<br />Solubility 1330 g / l (H2O, 20 ° C)<br />WGK 1<br />CAS No. [77-92-9]<br />EC no. 201-069-1</p> \n<p>$$$$$</p> \n<p><br />Hazard statements</p> \n<p>H319 Causes serious eye irritation<br />Safety recommendations</p> \n<p><br />Precautions - prevention<br />P280 Wear protective gloves / eye protection.</p> \n<p><br />Precautions - response<br />P305 + P351 + P338 IF IN EYES: Rinse cautiously with water for a long period of time<br />amount of minutes; remove contact lenses, if possible; keep rinsing.</p> \n<p><img src=\"https://cdn.webshopapp.com/shops/286851/files/315724779/irritant.gif\" alt=\"\" width=\"95\" height=\"95\" /></p>",
+    "tags": [],
+    "specs": false,
+    "custom": false,
+    "options": false,
+    "matrix": false,
+    "variants": {
+      "211532633": {
+        "id": 211532633,
+        "position": 1,
+        "code": "5110.3",
+        "ean": "",
+        "sku": "5110.3",
+        "image": null,
+        "price": {
+          "price": 29.227,
+          "price_incl": 35.3647,
+          "price_excl": 29.227,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "addcost": true,
+        "addcost_name": "",
+        "addcost_price_incl": 0,
+        "addcost_price_excl": 0,
+        "title": "500 g",
+        "active": true,
+        "stock": {
+          "available": true,
+          "on_stock": false,
+          "track": false,
+          "level": 0,
+          "minimum": 1,
+          "maximum": 10000,
+          "delivery": {
+            "title": "3-4 days"
+          },
+          "allow_backorders": false
+        }
+      },
+      "211532717": {
+        "id": 211532717,
+        "position": 2,
+        "code": "5110.1",
+        "ean": "",
+        "sku": "5110.1",
+        "image": null,
+        "price": {
+          "price": 50.82,
+          "price_incl": 61.4922,
+          "price_excl": 50.82,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "addcost": true,
+        "addcost_name": "",
+        "addcost_price_incl": 0,
+        "addcost_price_excl": 0,
+        "title": "1 Kg",
+        "active": false,
+        "stock": {
+          "available": true,
+          "on_stock": false,
+          "track": false,
+          "level": 0,
+          "minimum": 1,
+          "maximum": 10000,
+          "delivery": {
+            "title": "3-4 days"
+          },
+          "allow_backorders": false
+        }
+      },
+      "211532854": {
+        "id": 211532854,
+        "position": 3,
+        "code": "5110.4",
+        "ean": "",
+        "sku": "5110.4",
+        "image": null,
+        "price": {
+          "price": 102.971,
+          "price_incl": 124.5949,
+          "price_excl": 102.971,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "addcost": true,
+        "addcost_name": "",
+        "addcost_price_incl": 0,
+        "addcost_price_excl": 0,
+        "title": "2.5 Kg",
+        "active": false,
+        "stock": {
+          "available": true,
+          "on_stock": false,
+          "track": false,
+          "level": 0,
+          "minimum": 1,
+          "maximum": 10000,
+          "delivery": {
+            "title": "3-4 days"
+          },
+          "allow_backorders": false
+        }
+      },
+      "211532869": {
+        "id": 211532869,
+        "position": 4,
+        "code": "5110.2",
+        "ean": "",
+        "sku": "5110.2",
+        "image": null,
+        "price": {
+          "price": 183.183,
+          "price_incl": 221.6514,
+          "price_excl": 183.183,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "addcost": true,
+        "addcost_name": "",
+        "addcost_price_incl": 0,
+        "addcost_price_excl": 0,
+        "title": "5 Kg",
+        "active": false,
+        "stock": {
+          "available": true,
+          "on_stock": false,
+          "track": false,
+          "level": 0,
+          "minimum": 1,
+          "maximum": 10000,
+          "delivery": {
+            "title": "3-4 days"
+          },
+          "allow_backorders": false
+        }
+      },
+      "211532903": {
+        "id": 211532903,
+        "position": 5,
+        "code": "5110.6",
+        "ean": "",
+        "sku": "5110.6",
+        "image": null,
+        "price": {
+          "price": 346.445,
+          "price_incl": 419.1985,
+          "price_excl": 346.445,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "addcost": true,
+        "addcost_name": "",
+        "addcost_price_incl": 0,
+        "addcost_price_excl": 0,
+        "title": "10 Kg",
+        "active": false,
+        "stock": {
+          "available": true,
+          "on_stock": false,
+          "track": false,
+          "level": 0,
+          "minimum": 1,
+          "maximum": 10000,
+          "delivery": {
+            "title": "3-4 days"
+          },
+          "allow_backorders": false
+        }
+      },
+      "211532909": {
+        "id": 211532909,
+        "position": 6,
+        "code": "5110.5",
+        "ean": "",
+        "sku": "5110.5",
+        "image": null,
+        "price": {
+          "price": 694.1,
+          "price_incl": 839.861,
+          "price_excl": 694.1,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "addcost": true,
+        "addcost_name": "",
+        "addcost_price_incl": 0,
+        "addcost_price_excl": 0,
+        "title": "25 Kg",
+        "active": false,
+        "stock": {
+          "available": true,
+          "on_stock": false,
+          "track": false,
+          "level": 0,
+          "minimum": 1,
+          "maximum": 10000,
+          "delivery": {
+            "title": "3-4 days"
+          },
+          "allow_backorders": false
+        }
+      }
+    },
+    "discounts": [],
+    "discount_rules": [],
+    "bundles": [],
+    "images": ["310006514"],
+    "related": {
+      "114525509": {
+        "id": 114525509,
+        "vid": 230342636,
+        "image": 343336274,
+        "brand": false,
+        "code": "TNF304.1",
+        "ean": "8720254298757",
+        "sku": "TNF304.1",
+        "score": 0,
+        "price": {
+          "price": 9.79,
+          "price_incl": 11.8459,
+          "price_excl": 9.79,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "available": true,
+        "unit": false,
+        "url": "tri-sodium-phosphate-dodecahydrate-98-food-grade-p.html",
+        "title": "Tri-sodium phosphate Dodecahydrate 98 +%, food grade, pure",
+        "fulltitle": "Tri-sodium phosphate Dodecahydrate 98 +%, food grade, pure",
+        "variant": "Variant,1 Kg,CAS,10101-89-0",
+        "description": "",
+        "data_01": ""
+      },
+      "115182601": {
+        "id": 115182601,
+        "vid": 231567162,
+        "image": 346081238,
+        "brand": false,
+        "code": "NC9384.1",
+        "ean": "8720254298771",
+        "sku": "NC9384.1",
+        "score": 0,
+        "price": {
+          "price": 10.45,
+          "price_incl": 12.6445,
+          "price_excl": 10.45,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "available": true,
+        "unit": false,
+        "url": "sodium-carbonate-997-pure.html",
+        "title": "Sodium carbonate 99.7 +%, pure",
+        "fulltitle": "Sodium carbonate 99.7 +%, pure",
+        "variant": "Variant,1 Kg,CAS, 497-19-8",
+        "description": "",
+        "data_01": ""
+      },
+      "115664287": {
+        "id": 115664287,
+        "vid": 232363810,
+        "image": 422292269,
+        "brand": false,
+        "code": "AM344.1",
+        "ean": "8720254298788",
+        "sku": "AM344.1",
+        "score": 0,
+        "price": {
+          "price": 8.58,
+          "price_incl": 10.3818,
+          "price_excl": 8.58,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "available": true,
+        "unit": false,
+        "url": "ammonia-25-pure.html",
+        "title": "Ammonia 25%, pure",
+        "fulltitle": "Ammonia 25%, pure",
+        "variant": "Variant,1 L,CAS,1336-21-6,Shipping info,ADR 8 III UN2672",
+        "description": "",
+        "data_01": ""
+      },
+      "115742098": {
+        "id": 115742098,
+        "vid": 279113458,
+        "image": 423028348,
+        "brand": false,
+        "code": "DMF34.7",
+        "ean": "8720254298825",
+        "sku": "DMF34.7",
+        "score": 0,
+        "price": {
+          "price": 6.05,
+          "price_incl": 7.3205,
+          "price_excl": 6.05,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "available": true,
+        "unit": false,
+        "url": "dimethylformamide-dmf-995-pure.html",
+        "title": "Dimethylformamide (DMF) 99.5 +%, pure",
+        "fulltitle": "Dimethylformamide (DMF) 99.5 +%, pure",
+        "variant": "Variant,100 ml,CAS,68-12-2,Shipping info,ADR 3 III LQ <5L",
+        "description": "",
+        "data_01": ""
+      },
+      "115742528": {
+        "id": 115742528,
+        "vid": 232484440,
+        "image": 348215183,
+        "brand": false,
+        "code": "MAF023.1",
+        "ean": "8720254298832",
+        "sku": "MAF023.1",
+        "score": 0,
+        "price": {
+          "price": 13.86,
+          "price_incl": 16.7706,
+          "price_excl": 13.86,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "available": true,
+        "unit": false,
+        "url": "ammonium-dihydrogen-phosphate-98-pure.html",
+        "title": "Ammonium dihydrogen phosphate 98 +%, pure",
+        "fulltitle": "Ammonium dihydrogen phosphate 98 +%, pure",
+        "variant": "Variant,500g,CAS,7722-76-1",
+        "description": "",
+        "data_01": ""
+      }
+    },
+    "reviews": false,
+    "categories": {
+      "9702453": {
+        "id": 9702453,
+        "parent": 9340848,
+        "path": ["9702453", "9340848", "9319959", "9319956", "9765906"],
+        "depth": 5,
+        "image": 310004862,
+        "type": "category",
+        "url": "own-brand-products/chemicals-9319956/a-z/c/citric-acid",
+        "title": "Citric acid",
+        "description": "",
+        "count": 5
+      },
+      "11064117": {
+        "id": 11064117,
+        "parent": 11064112,
+        "path": ["11064117", "11064112", "9319956", "9765906"],
+        "depth": 4,
+        "image": 380881047,
+        "type": "category",
+        "url": "own-brand-products/chemicals-9319956/food-grade-pharma/fine-chemicals",
+        "title": "Fine Chemicals",
+        "description": "",
+        "count": 142
+      },
+      "9319956": {
+        "id": 9319956,
+        "parent": 9765906,
+        "path": ["9319956", "9765906"],
+        "depth": 2,
+        "image": 429066757,
+        "type": "category",
+        "url": "own-brand-products/chemicals-9319956",
+        "title": "chemicals",
+        "description": "chemicals",
+        "count": 50480
+      },
+      "9319959": {
+        "id": 9319959,
+        "parent": 9319956,
+        "path": ["9319959", "9319956", "9765906"],
+        "depth": 3,
+        "image": 294164370,
+        "type": "category",
+        "url": "own-brand-products/chemicals-9319956/a-z",
+        "title": "A-Z",
+        "description": "",
+        "count": 808
+      },
+      "9340848": {
+        "id": 9340848,
+        "parent": 9319959,
+        "path": ["9340848", "9319959", "9319956", "9765906"],
+        "depth": 4,
+        "image": 319678094,
+        "type": "category",
+        "url": "own-brand-products/chemicals-9319956/a-z/c",
+        "title": "C",
+        "description": "",
+        "count": 76
+      }
+    },
+    "quantity": 1,
+    "data_01": "",
+    "data_02": "",
+    "data_03": "",
+    "metafields": {
+      "meta_title_nl": "Citroenzuur monohydraat ≥99,5 %, Ph.Eur."
+    },
+    "canonical": false,
+    "matrix_non_exists": false
+  }
+}

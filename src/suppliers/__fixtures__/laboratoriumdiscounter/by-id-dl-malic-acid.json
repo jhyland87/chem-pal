@@ -1,0 +1,474 @@
+{
+  "shop": {
+    "id": 286851,
+    "currencies": {
+      "eur": {
+        "url": "session/currency/eur",
+        "symbol": "€",
+        "code": "EUR",
+        "title": "eur",
+        "active": true
+      }
+    },
+    "currency": "eur",
+    "language": "en",
+    "locale": "en_GB"
+  },
+  "product": {
+    "id": 123109275,
+    "vid": 245229376,
+    "image": 373743537,
+    "brand": false,
+    "code": "MA45.1",
+    "ean": "8720254946207",
+    "sku": "MA45.1",
+    "score": 0,
+    "price": {
+      "price": 10.978,
+      "price_incl": 13.2834,
+      "price_excl": 10.978,
+      "price_old": 0,
+      "price_old_incl": 0,
+      "price_old_excl": 0
+    },
+    "price_cost": "hidden",
+    "weight": 0,
+    "volume": 0,
+    "colli": 0,
+    "size": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "unit": false,
+    "tax": 0.21,
+    "url": "dl-malic-acid-99-food-grade-e296.html",
+    "title": "DL-Malic Acid 99+%, food grade, E296",
+    "fulltitle": "DL-Malic Acid 99+%, food grade, E296",
+    "variant": "Variant,500 g,CAS,6915-15-7",
+    "description": "",
+    "stock": {
+      "available": true,
+      "on_stock": false,
+      "track": true,
+      "allow_outofstock_sale": true,
+      "level": 0,
+      "minimum": 1,
+      "maximum": 10000,
+      "delivery": {
+        "title": "1-3 days"
+      }
+    },
+    "shorttitle": "DL-Malic Acid 99+%, food grade, E296",
+    "content": "<p><strong>What is malic acid?</strong></p>\r\n<p>Malic acid (2-hydroxysuccinic acid) is a chemical compound from the groups of dicarboxylic acids and hydroxycarboxylic acids, which occurs as dextrorotatory D- and levorotatory L-malic acid. The L form is an intermediate in the citric acid cycle. In nature, L-malic acid mainly occurs in unripe fruits such as apples, quinces, grapes, barberry berries, rowan berries and gooseberries. The esters and salts of malic acid are called malates (from the Latin malum = apple, not to be confused with maleates, the esters and salts of maleic acid).</p>\r\n<p><strong>What is malic acid used for?</strong></p>\r\n<p>L-malic acid was first isolated from apple juice and described by Carl Wilhelm Scheele in 1785. In 1787, Antoine Lavoisier suggested the name acid malique, derived from the Latin word for apple (mālum). Paul Walden was able to prove the chirality and reversal of configuration at the carbon atom by the synthesis of L-malic acid and D-malic acid.</p>\r\n<p>As a food additive, both the L-form and the D-form or the racemate can be used (E 296). In humans, D-malic acid can be converted to L-malic acid by enzymes. In practice, its use is rather limited due to the relatively high price. Instead, cheaper alternatives such as citric acid (E 330), tartaric acid (E 334) or phosphoric acid (E 338) are usually used. Sodium malate (E 350), potassium malate (E 351) and calcium malate (E 352) are used as additives in crisps.</p>\r\n<p><strong>Buy malic acid?</strong></p>\r\n<p>Malic acid of the best quality can be found at Laboratoriumdiscounter. This malic acid is not only food grade, but it is also friendly priced! Delivered quickly and available in different packaging. With volume discounts!</p>\r\n<p><strong>-Technical information</strong></p>\r\n<p>Empirical formula C4H6O5<br />Molar mass (M) 134.09 g/mol<br />Density 1.60<br />Flash point (flp) 200 °C • Melting point (mp) approx. 130 °C<br />Solubility: approx. 550 g/l (H2O, 20 °C)<br />WCS 1<br />CAS No.[6915-15-7]<br />EC-No. 230-022-8</p>\r\n<p><strong>Downloads</strong></p>\r\n<table style=\"height: 108px; width: 100%; border-collapse: collapse;\" border=\"0\">\r\n<tbody>\r\n<tr style=\"height: 18px;\">\r\n<td style=\"width: 100%; height: 18px;\"><a href=\"https://sds.laboratoriumdiscounter.nl/MSDS_DL_Appelzuur_NL.pdf\" target=\"_blank\" rel=\"noopener\">Download MSDS DL-Appelzuur 99+%, foodgrade, E296 (NL)</a></td>\r\n</tr>\r\n<tr style=\"height: 18px; background-color: #edfcff;\">\r\n<td style=\"width: 100%; height: 18px;\"><a href=\"https://sds.laboratoriumdiscounter.nl/MSDS_DL_Äpfelsäure_DE.pdf\" target=\"_blank\" rel=\"noopener\">Download MSDS DL-Äpfelsäure 99+%, Lebensmittelqualität, E296 (DE)</a></td>\r\n</tr>\r\n<tr style=\"height: 18px;\">\r\n<td style=\"width: 100%; height: 18px;\"><a href=\"https://sds.laboratoriumdiscounter.nl/MSDS_DL_Malic_Acid_GB.pdf\" target=\"_blank\" rel=\"noopener\">Download MSDS DL-Malic Acid 99+%, food grade, E296 (EN)</a></td>\r\n</tr>\r\n<tr style=\"height: 18px; background-color: #edfcff;\">\r\n<td style=\"width: 100%; height: 18px;\"><a href=\"https://sds.laboratoriumdiscounter.nl/MSDS_Acide_DL_malique_FR.pdf\" target=\"_blank\" rel=\"noopener\">Download MSDS Acide DL-malique 99+%, qualité alimentaire, E296 (FR)</a></td>\r\n</tr>\r\n<tr style=\"height: 18px;\">\r\n<td style=\"width: 100%; height: 18px;\"><a href=\"https://sds.laboratoriumdiscounter.nl/MSDS_Ácido_DL_málico_ES.pdf\" target=\"_blank\" rel=\"noopener\">Download MSDS Ácido DL-málico 99 +%, grado alimenticio, E296 (ES)</a></td>\r\n</tr>\r\n<tr style=\"height: 18px; background-color: #edfcff;\">\r\n<td style=\"width: 100%; height: 18px;\"><a href=\"https://sds.laboratoriumdiscounter.nl/MSDS_Acido_DL_malico_IT.pdf\" target=\"_blank\" rel=\"noopener\">Download MSDS Acido DL-malico 99+%, commestibile, E296 (IT)</a></td>\r\n</tr>\r\n</tbody>\r\n</table>\r\n<p>$$$$$</p>\r\n<p>Hazard Statements<br />H319 Causes serious eye irritation.</p>\r\n<p><br />Safety Recommendations<br />Precautions - Prevention<br />P280 Wear protective gloves/eye protection.</p>\r\n<p><br />Precautions - Response<br />P305+P351+P338 IF IN EYES: Rinse cautiously with water for<br />amount of minutes; remove contact lenses, if possible; keep rinsing.</p>",
+    "tags": [],
+    "specs": false,
+    "custom": false,
+    "options": false,
+    "matrix": false,
+    "variants": {
+      "245229376": {
+        "id": 245229376,
+        "position": 1,
+        "code": "MA45.1",
+        "ean": "8720254946207",
+        "sku": "MA45.1",
+        "image": null,
+        "price": {
+          "price": 10.978,
+          "price_incl": 13.2834,
+          "price_excl": 10.978,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "addcost": true,
+        "addcost_name": "",
+        "addcost_price_incl": 0,
+        "addcost_price_excl": 0,
+        "title": "Variant,500 g,CAS,6915-15-7",
+        "active": true,
+        "stock": {
+          "available": true,
+          "on_stock": false,
+          "track": true,
+          "level": 0,
+          "minimum": 1,
+          "maximum": 10000,
+          "delivery": {
+            "title": "1-3 days"
+          },
+          "allow_backorders": true
+        }
+      },
+      "245230084": {
+        "id": 245230084,
+        "position": 2,
+        "code": "MA45.2",
+        "ean": "",
+        "sku": "MA45.2",
+        "image": null,
+        "price": {
+          "price": 16.808,
+          "price_incl": 20.3377,
+          "price_excl": 16.808,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "addcost": true,
+        "addcost_name": "",
+        "addcost_price_incl": 0,
+        "addcost_price_excl": 0,
+        "title": "Variant,1 Kg,CAS,6915-15-7",
+        "active": false,
+        "stock": {
+          "available": true,
+          "on_stock": false,
+          "track": true,
+          "level": 0,
+          "minimum": 1,
+          "maximum": 10000,
+          "delivery": {
+            "title": "1-3 days"
+          },
+          "allow_backorders": true
+        }
+      },
+      "245232149": {
+        "id": 245232149,
+        "position": 3,
+        "code": "MA45.3",
+        "ean": "",
+        "sku": "MA45.3",
+        "image": null,
+        "price": {
+          "price": 33.506,
+          "price_incl": 40.5423,
+          "price_excl": 33.506,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "addcost": true,
+        "addcost_name": "",
+        "addcost_price_incl": 0,
+        "addcost_price_excl": 0,
+        "title": "Variant,2.5 Kg,CAS,6915-15-7",
+        "active": false,
+        "stock": {
+          "available": true,
+          "on_stock": false,
+          "track": true,
+          "level": 0,
+          "minimum": 1,
+          "maximum": 10000,
+          "delivery": {
+            "title": "1-3 days"
+          },
+          "allow_backorders": true
+        }
+      },
+      "245232229": {
+        "id": 245232229,
+        "position": 4,
+        "code": "MA45.4",
+        "ean": "",
+        "sku": "MA45.4",
+        "image": null,
+        "price": {
+          "price": 238.7,
+          "price_incl": 288.827,
+          "price_excl": 238.7,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "addcost": true,
+        "addcost_name": "",
+        "addcost_price_incl": 0,
+        "addcost_price_excl": 0,
+        "title": "Variant,25 Kg,CAS,6915-15-7",
+        "active": false,
+        "stock": {
+          "available": true,
+          "on_stock": false,
+          "track": true,
+          "level": 0,
+          "minimum": 1,
+          "maximum": 10000,
+          "delivery": {
+            "title": "1-3 days"
+          },
+          "allow_backorders": true
+        }
+      }
+    },
+    "discounts": {
+      "2": {
+        "id": "2643921",
+        "quantity": "2",
+        "price": {
+          "price": 10.4291,
+          "price_incl": 12.6192,
+          "price_excl": 10.4291,
+          "price_old": 10.978,
+          "price_old_incl": 13.2834,
+          "price_old_excl": 10.978
+        },
+        "percentage": 0.05,
+        "unit": false
+      },
+      "6": {
+        "id": "2643922",
+        "quantity": "6",
+        "price": {
+          "price": 9.8802,
+          "price_incl": 11.9551,
+          "price_excl": 9.8802,
+          "price_old": 10.978,
+          "price_old_incl": 13.2834,
+          "price_old_excl": 10.978
+        },
+        "percentage": 0.1,
+        "unit": false
+      }
+    },
+    "discount_rules": [],
+    "bundles": [],
+    "images": ["373743537", "372500768", "429361564"],
+    "related": {
+      "104617906": {
+        "id": 104617906,
+        "vid": 211966297,
+        "image": 331456243,
+        "brand": false,
+        "code": "X9910.1",
+        "ean": "8720165807116",
+        "sku": "X9910.1",
+        "score": 0,
+        "price": {
+          "price": 13.75,
+          "price_incl": 16.6375,
+          "price_excl": 13.75,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "available": true,
+        "unit": false,
+        "url": "citric-acid-monohydrate-995-pheur-copy.html",
+        "title": "Citric acid monohydrate ≥99,5 %, fg",
+        "fulltitle": "Citric acid monohydrate ≥99,5 %, fg",
+        "variant": "Variant,1 Kg,CAS,5949-29-1",
+        "description": "",
+        "data_01": "eindgebruikerverklaring"
+      },
+      "104793998": {
+        "id": 104793998,
+        "vid": 212419532,
+        "image": 349127662,
+        "brand": false,
+        "code": "26146.1",
+        "ean": "8720165807017",
+        "sku": "26146.1",
+        "score": 0,
+        "price": {
+          "price": 11.88,
+          "price_incl": 14.3748,
+          "price_excl": 11.88,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "available": true,
+        "unit": false,
+        "url": "ortho-phosphoric-acid-75-copy.html",
+        "title": "Phosphoric acid 75%, pure, food grade",
+        "fulltitle": "Phosphoric acid 75%, pure, food grade",
+        "variant": "Variant, 1 L Plastic packaging, CAS, 7664-38-2,ADR,8 III UN1805,LQ,5L",
+        "description": "",
+        "data_01": ""
+      },
+      "105007329": {
+        "id": 105007329,
+        "vid": 212868258,
+        "image": 357592661,
+        "brand": false,
+        "code": "WSZ23.1",
+        "ean": "8720254669038",
+        "sku": "WSZ23.1",
+        "score": 0,
+        "price": {
+          "price": 9.51,
+          "price_incl": 11.5071,
+          "price_excl": 9.51,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "available": true,
+        "unit": false,
+        "url": "l-tartaric-acid-99-for-biochemistry.html",
+        "title": "L (+) - Tartaric Acid ≥99.9 +% FCC, Ph. Eur, Foodgrade, E334",
+        "fulltitle": "L (+) - Tartaric Acid ≥99.9 +% FCC, Ph. Eur, Foodgrade, E334",
+        "variant": "Variant,250g,CAS,87-69-4",
+        "description": "",
+        "data_01": ""
+      },
+      "107228476": {
+        "id": 107228476,
+        "vid": 217356409,
+        "image": 423283664,
+        "brand": false,
+        "code": "GLY834.1.1",
+        "ean": "8720165807086",
+        "sku": "GLY834.1.1",
+        "score": 0,
+        "price": {
+          "price": 14.168,
+          "price_incl": 17.1433,
+          "price_excl": 14.168,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "available": true,
+        "unit": false,
+        "url": "glycerol-995-foodgrade.html",
+        "title": "Glycerol 99.7% foodgrade",
+        "fulltitle": "Glycerol 99.7% foodgrade",
+        "variant": "Variant,1 L,CAS :,200-289-5",
+        "description": "",
+        "data_01": ""
+      },
+      "113601325": {
+        "id": 113601325,
+        "vid": 228676575,
+        "image": 339125812,
+        "brand": false,
+        "code": "LCT94.1",
+        "ean": "8720254298528",
+        "sku": "LCT94.1",
+        "score": 0,
+        "price": {
+          "price": 17.28,
+          "price_incl": 20.9088,
+          "price_excl": 17.28,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "available": true,
+        "unit": false,
+        "url": "lactic-acid-80-food-grade-e270.html",
+        "title": "(+)-Lactic acid 80%, food grade, E270",
+        "fulltitle": "(+)-Lactic acid 80%, food grade, E270",
+        "variant": "Variant,1 L,CAS,79-33-4",
+        "description": "",
+        "data_01": ""
+      }
+    },
+    "reviews": false,
+    "categories": {
+      "9725014": {
+        "id": 9725014,
+        "parent": 9323070,
+        "path": ["9725014", "9323070", "9319959", "9319956", "9765906"],
+        "depth": 5,
+        "image": 310955694,
+        "type": "category",
+        "url": "own-brand-products/chemicals-9319956/a-z/a/malic-acid",
+        "title": "Malic acid",
+        "description": "",
+        "count": 2
+      },
+      "9781324": {
+        "id": 9781324,
+        "parent": 9765906,
+        "path": ["9781324", "9765906"],
+        "depth": 2,
+        "image": 360799257,
+        "type": "category",
+        "url": "own-brand-products/chemicals",
+        "title": "Chemicals",
+        "description": "",
+        "count": 275
+      },
+      "11064117": {
+        "id": 11064117,
+        "parent": 11064112,
+        "path": ["11064117", "11064112", "9319956", "9765906"],
+        "depth": 4,
+        "image": 380881047,
+        "type": "category",
+        "url": "own-brand-products/chemicals-9319956/food-grade-pharma/fine-chemicals",
+        "title": "Fine Chemicals",
+        "description": "",
+        "count": 142
+      },
+      "9319956": {
+        "id": 9319956,
+        "parent": 9765906,
+        "path": ["9319956", "9765906"],
+        "depth": 2,
+        "image": 429066757,
+        "type": "category",
+        "url": "own-brand-products/chemicals-9319956",
+        "title": "chemicals",
+        "description": "chemicals",
+        "count": 50480
+      },
+      "9319959": {
+        "id": 9319959,
+        "parent": 9319956,
+        "path": ["9319959", "9319956", "9765906"],
+        "depth": 3,
+        "image": 294164370,
+        "type": "category",
+        "url": "own-brand-products/chemicals-9319956/a-z",
+        "title": "A-Z",
+        "description": "",
+        "count": 808
+      },
+      "9323070": {
+        "id": 9323070,
+        "parent": 9319959,
+        "path": ["9323070", "9319959", "9319956", "9765906"],
+        "depth": 4,
+        "image": 319678210,
+        "type": "category",
+        "url": "own-brand-products/chemicals-9319956/a-z/a",
+        "title": "A",
+        "description": "",
+        "count": 140
+      }
+    },
+    "quantity": 1,
+    "data_01": "",
+    "data_02": "",
+    "data_03": "",
+    "metafields": {
+      "meta_description_de": "DL-Äpfelsäure CAS 6915-15-7 Lebensmittelqualität kaufen? Apfelsäure von bester Qualität zu einem günstigen Preis! Unsere Apfelsäure ist lebensmittelecht und zu ",
+      "meta_description_en": "buy DL-Malic acid CAS 6915-15-7 food grade? The best quality malic acid for a friendly price! Our malic acid is food grade and for a low price!",
+      "meta_description_es": "comprar ácido DL-málico CAS 6915-15-7 grado alimenticio? ¡Ácido málico de la mejor calidad a un precio amigable! ¡Nuestro ácido málico es de grado alimenticio y",
+      "meta_description_fr": "acheter de l'acide DL-malique CAS 6915-15-7 de qualité alimentaire ? L'acide malique de la meilleure qualité à un prix abordable ! Notre acide malique est de qu",
+      "meta_description_it": "comprare acido DL-malico CAS 6915-15-7 per uso alimentare? L'acido malico della migliore qualità a un prezzo amichevole! Il nostro acido malico è di qualità ali",
+      "meta_description_nl": "DL-Appelzuur CAS 6915-15-7 foodgrade kopen? De beste kwaliteit appelzuur voor een vriendelijke prijs!  Onze appelzuur is foodgrade en voor een lage prijs!",
+      "meta_keywords_de": "Äpfelsäure, kaufen, bestellen, Äpfelsäure,CAS,6915-15-7",
+      "meta_keywords_en": "malic acid, buy, order, malic acid,CAS,6915-15-7",
+      "meta_keywords_es": "ácido málico, comprar, pedir, ácido málico,CAS,6915-15-7",
+      "meta_keywords_fr": "acide malique, acheter, commander, acide malique,CAS,6915-15-7",
+      "meta_keywords_it": "acido malico, comprare, ordinare, acido malico, CAS, 6915-15-7",
+      "meta_keywords_nl": "appelzuur, kopen, bestellen, malic acid,CAS,6915-15-7",
+      "meta_title_de": "DL-Äpfelsäure 99+%, Lebensmittelqualität, E296",
+      "meta_title_en": "DL-Malic acid 99+%, food grade, E296",
+      "meta_title_es": "Ácido DL-Málico 99+%, grado alimenticio, E296",
+      "meta_title_fr": "Acide DL-malique 99+%, qualité alimentaire, E296",
+      "meta_title_it": "Acido DL-malico 99+%, commestibile, E296",
+      "meta_title_nl": "DL-Appelzuur CAS 6915-15-7 foodgrade, E296"
+    },
+    "canonical": false,
+    "matrix_non_exists": false
+  }
+}

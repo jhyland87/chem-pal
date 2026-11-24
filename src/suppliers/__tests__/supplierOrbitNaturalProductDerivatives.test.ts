@@ -1,4 +1,8 @@
 import { ProductBuilder } from '@/utils/ProductBuilder';
+import { PRODUCT_REFRESH_STATUS } from '@/constants/common';
+import { HttpError } from '@/helpers/exceptions';
+import { collectNativePrices } from '@/helpers/priceAlerts';
+import { toProductRef } from '@/helpers/productRef';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -22,6 +26,20 @@ const geraniolDetail = JSON.parse(
     'utf8',
   ),
 );
+
+const fixture = (name: string) =>
+  JSON.parse(
+    readFileSync(
+      resolve(__dirname, `../__fixtures__/orbitnaturalproductderivatives/${name}`),
+      'utf8',
+    ),
+  );
+const byIdSearch = fixture('by-id-search-response.json');
+const details: Record<string, unknown> = {
+  'geraniol-60': geraniolDetail,
+  thymol: fixture('thymol-product-details-response.json'),
+  nitromethane: fixture('nitromethane-product-details-response.json'),
+};
 
 const makeSupplier = () => new SupplierOrbitNaturalProductDerivatives('geraniol', 5);
 
@@ -82,7 +100,9 @@ describe('SupplierOrbitNaturalProductDerivatives getProductData', () => {
   it('enumerates variants and promotes the smallest to parent fields', async () => {
     const supplier = makeSupplier() as unknown as MySimpleStoreInternals;
 
-    vi.spyOn(supplier as never, 'httpGetJson').mockResolvedValue(geraniolDetail as never);
+    vi.spyOn(supplier as never, 'httpGet').mockResolvedValue(
+      new Response(JSON.stringify(geraniolDetail)) as never,
+    );
     // Bypass the cache wrapper and run the fetcher directly.
     vi.spyOn(supplier as never, 'getProductDataWithCache').mockImplementation(((
       b: ProductBuilder<Product>,
@@ -138,5 +158,96 @@ describe('SupplierOrbitNaturalProductDerivatives queryProducts', () => {
     expect(builders).toBeDefined();
     expect(builders?.length).toBeGreaterThan(0);
     expect(builders?.some((b) => String(b.dump().title).includes('Geraniol'))).toBe(true);
+  });
+});
+
+describe('SupplierOrbitNaturalProductDerivatives refreshProducts', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  /** Runs the search path (listing + detail) for one product, without the detail cache. */
+  async function searchPath(slug: string) {
+    const supplier = makeSupplier() as any;
+    const listing = byIdSearch.products.filter((p: MySimpleStoreListProduct) => p.slug === slug);
+    vi.spyOn(supplier, 'httpGet').mockImplementation(
+      async () => new Response(JSON.stringify(details[slug])),
+    );
+    vi.spyOn(supplier, 'getProductDataWithCache').mockImplementation((b: any, f: any) => f(b));
+    const [builder] = supplier.initProductBuilders(listing);
+    const enriched = await supplier.getProductData(builder);
+    return supplier.finishProduct(enriched) as Promise<Product>;
+  }
+
+  /** Runs the refetch path for a ref taken from the search product. */
+  async function refetch(product: Product, respond: (path: string) => Response) {
+    const supplier = makeSupplier() as any;
+    const get = vi
+      .spyOn(supplier, 'httpGet')
+      .mockImplementation(async (opts: any) => respond(opts.path));
+    const ref = toProductRef(product);
+    if (!ref) throw new Error('no ref');
+    const [result] = await supplier.refreshProducts([ref]);
+    return { result, get };
+  }
+
+  it('is enabled for price alerts', () => {
+    expect(SupplierOrbitNaturalProductDerivatives.supportsPriceAlerts).toBe(true);
+  });
+
+  it.each(['geraniol-60', 'thymol', 'nitromethane'])(
+    'keeps the same price series as the search path for %s',
+    async (slug) => {
+      const searched = await searchPath(slug);
+      const { result, get } = await refetch(
+        searched,
+        () => new Response(JSON.stringify(details[slug])),
+      );
+
+      expect(get).toHaveBeenCalledTimes(1);
+      expect(result.status).toBe(PRODUCT_REFRESH_STATUS.OK);
+      expect(Object.keys(collectNativePrices(result.product))).toEqual(
+        Object.keys(collectNativePrices(searched)),
+      );
+      expect(collectNativePrices(result.product)).toEqual(collectNativePrices(searched));
+      expect(result.product.price).toBe(searched.price);
+      expect(result.product.currencyCode).toBe(searched.currencyCode);
+      expect(result.product.quantity).toBe(searched.quantity);
+    },
+  );
+
+  it('reads the detail price, in dollars, when the product has no variants', async () => {
+    const searched = await searchPath('nitromethane');
+    const detail = { ...(details.nitromethane as object), variants: [], price: '90.00' };
+    const { result } = await refetch(searched, () => new Response(JSON.stringify(detail)));
+
+    expect(result.status).toBe(PRODUCT_REFRESH_STATUS.OK);
+    expect(result.product.price).toBe(90);
+    expect(result.product.currencyCode).toBe('USD');
+  });
+
+  it('reports a 404 as UNAVAILABLE', async () => {
+    const searched = await searchPath('thymol');
+    const supplier = makeSupplier() as any;
+    vi.spyOn(supplier, 'httpGet').mockRejectedValue(new HttpError(404, 'Not Found'));
+    const ref = toProductRef(searched);
+    if (!ref) throw new Error('no ref');
+    const [result] = await supplier.refreshProducts([ref]);
+    expect(result.status).toBe(PRODUCT_REFRESH_STATUS.UNAVAILABLE);
+  });
+
+  it.each([
+    ['an invalid response', () => new Response(JSON.stringify({ nope: 1 }))],
+    [
+      'a product with no price',
+      () =>
+        new Response(
+          JSON.stringify({ ...(details.nitromethane as object), variants: [], price: undefined }),
+        ),
+    ],
+  ])('fails on %s', async (_name, respond) => {
+    const searched = await searchPath('nitromethane');
+    const { result } = await refetch(searched, respond);
+    expect(result.status).toBe(PRODUCT_REFRESH_STATUS.FAILED);
   });
 });

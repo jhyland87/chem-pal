@@ -1,0 +1,516 @@
+{
+  "count": 6,
+  "pages": 1,
+  "page": 1,
+  "list": [
+    {
+      "id": 824,
+      "name": "Citric Acid Monohydrate - 5000g",
+      "can_buy": true,
+      "ean": "5906288622505",
+      "code": "231141731",
+      "package": "0",
+      "unit": {
+        "name": "szt.",
+        "floating_point": false
+      },
+      "rate": 0,
+      "votes": 0,
+      "stockId": 912,
+      "url": "https://synthetikaeu.com/en_US/p/Citric-Acid-Monohydrate-5000g/824",
+      "category": {
+        "name": "Carboxylic Acids",
+        "id": 53
+      },
+      "availability": {
+        "name": "Large quantity"
+      },
+      "visibility": {
+        "status": 1,
+        "cart_status": 1,
+        "search_status": 1
+      },
+      "delivery": {
+        "name": "7 days ",
+        "hours": "168"
+      },
+      "price": {
+        "gross": {
+          "base": "€36.34",
+          "base_float": 36.34,
+          "final": "€36.34",
+          "final_float": 36.34,
+          "historical_lowest_price": "€39.50",
+          "historical_lowest_price_float": 39.5
+        },
+        "net": {
+          "base": "€29.55",
+          "base_float": 29.55,
+          "final": "€29.55",
+          "final_float": 29.55,
+          "historical_lowest_price": "€32.12",
+          "historical_lowest_price_float": 32.12
+        }
+      },
+      "productExists30DaysBeforePromotion": false,
+      "weight": {
+        "weight_float": 0,
+        "weight": "0 kg"
+      },
+      "producer": {
+        "name": "SYNTHETIKA",
+        "id": 13,
+        "img": "https://synthetikaeu.com/userdata/public/producers/13.jpg"
+      },
+      "newProduct": false,
+      "shortDescription": "",
+      "main_image": "3126",
+      "main_image_filename": "3126.jpg",
+      "description": "<h3 class=\"\" data-start=\"83\" data-end=\"116\"><strong data-start=\"87\" data-end=\"114\">Citric Acid Monohydrate</strong></h3>\r\n<p class=\"\" data-start=\"117\" data-end=\"352\"><strong data-start=\"117\" data-end=\"133\">Other Names:</strong> 2-Hydroxy-1,2,3-propane-tricarboxylic acid monohydrate<br data-start=\"188\" data-end=\"191\" /> <strong data-start=\"191\" data-end=\"206\">CAS Number:</strong> 5949-29-1<br data-start=\"216\" data-end=\"219\" /> <strong data-start=\"219\" data-end=\"233\">EC Number:</strong> 201-069-1<br data-start=\"243\" data-end=\"246\" /> <strong data-start=\"246\" data-end=\"267\">Chemical Formula:</strong> C₆H₈O₇·H₂O<br data-start=\"278\" data-end=\"281\" /> <strong data-start=\"281\" data-end=\"296\">Molar Mass:</strong> 210.14 g/mol<br data-start=\"309\" data-end=\"312\" /> <strong data-start=\"312\" data-end=\"327\">Appearance:</strong> White, crystalline solid</p>\r\n<hr class=\"\" data-start=\"354\" data-end=\"357\" />\r\n<h3 class=\"\" data-start=\"359\" data-end=\"399\"><strong data-start=\"363\" data-end=\"399\">Chemical and Physical Properties</strong></h3>\r\n<ul data-start=\"401\" data-end=\"729\">\r\n<li class=\"\" data-start=\"401\" data-end=\"429\">\r\n<p class=\"\" data-start=\"403\" data-end=\"429\"><strong data-start=\"403\" data-end=\"415\">Density:</strong> ~1.54 g/cm³</p>\r\n</li>\r\n<li class=\"\" data-start=\"430\" data-end=\"497\">\r\n<p class=\"\" data-start=\"432\" data-end=\"497\"><strong data-start=\"432\" data-end=\"450\">Melting Point:</strong> 100–104°C (loss of water of crystallization)</p>\r\n</li>\r\n<li class=\"\" data-start=\"498\" data-end=\"546\">\r\n<p class=\"\" data-start=\"500\" data-end=\"546\"><strong data-start=\"500\" data-end=\"518\">Boiling Point:</strong> Decomposes before boiling</p>\r\n</li>\r\n<li class=\"\" data-start=\"547\" data-end=\"608\">\r\n<p class=\"\" data-start=\"549\" data-end=\"608\"><strong data-start=\"549\" data-end=\"573\">Solubility in Water:</strong> Highly soluble (590 g/L at 20°C)</p>\r\n</li>\r\n<li class=\"\" data-start=\"609\" data-end=\"677\">\r\n<p class=\"\" data-start=\"611\" data-end=\"677\"><strong data-start=\"611\" data-end=\"644\">Solubility in Other Solvents:</strong> Soluble in ethanol and acetone</p>\r\n</li>\r\n<li class=\"\" data-start=\"678\" data-end=\"700\">\r\n<p class=\"\" data-start=\"680\" data-end=\"700\"><strong data-start=\"680\" data-end=\"689\">Odor:</strong> Odorless</p>\r\n</li>\r\n<li class=\"\" data-start=\"701\" data-end=\"729\">\r\n<p class=\"\" data-start=\"703\" data-end=\"729\"><strong data-start=\"703\" data-end=\"724\">pH (1% solution):</strong> ~2.2</p>\r\n</li>\r\n</ul>\r\n<hr class=\"\" data-start=\"731\" data-end=\"734\" />\r\n<h3 class=\"\" data-start=\"736\" data-end=\"756\"><strong data-start=\"740\" data-end=\"756\">Applications</strong></h3>\r\n<ul data-start=\"758\" data-end=\"1204\">\r\n<li class=\"\" data-start=\"758\" data-end=\"852\">\r\n<p class=\"\" data-start=\"760\" data-end=\"852\"><strong data-start=\"760\" data-end=\"782\">Chemical Industry:</strong> Used as a chelating agent and pH regulator in various formulations.</p>\r\n</li>\r\n<li class=\"\" data-start=\"853\" data-end=\"937\">\r\n<p class=\"\" data-start=\"855\" data-end=\"937\"><strong data-start=\"855\" data-end=\"874\">Laboratory Use:</strong> Employed as a buffer component and acidulant in experiments.</p>\r\n</li>\r\n<li class=\"\" data-start=\"938\" data-end=\"1031\">\r\n<p class=\"\" data-start=\"940\" data-end=\"1031\"><strong data-start=\"940\" data-end=\"962\">Cleaning Products:</strong> Acts as a descaling agent and ingredient in eco-friendly cleaners.</p>\r\n</li>\r\n<li class=\"\" data-start=\"1032\" data-end=\"1110\">\r\n<p class=\"\" data-start=\"1034\" data-end=\"1110\"><strong data-start=\"1034\" data-end=\"1066\">Cosmetics and Personal Care:</strong> Used as a pH adjuster and mild exfoliant.</p>\r\n</li>\r\n<li class=\"\" data-start=\"1111\" data-end=\"1204\">\r\n<p class=\"\" data-start=\"1113\" data-end=\"1204\"><strong data-start=\"1113\" data-end=\"1152\">Photography and Textile Processing:</strong> Occasionally used in dyeing and photographic baths.</p>\r\n</li>\r\n</ul>\r\n<hr class=\"\" data-start=\"1206\" data-end=\"1209\" />\r\n<h3 class=\"\" data-start=\"1211\" data-end=\"1225\"><strong data-start=\"1215\" data-end=\"1225\">Safety</strong></h3>\r\n<p><strong data-start=\"1215\" data-end=\"1225\"><img src=\"/userdata/public/assets//warn.png\" alt=\"\" width=\"144\" height=\"142\" /></strong></p>\r\n<p class=\"\" data-start=\"1227\" data-end=\"1294\"><strong data-start=\"1227\" data-end=\"1243\">Signal Word:</strong> <em data-start=\"1244\" data-end=\"1253\">Warning</em><br data-start=\"1253\" data-end=\"1256\" /><br /></p>\r\n<div class=\"p-2 sm:table-row pc-gray-border-t sm:border-0 \">\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 font-medium pt-1 sm:align-top sm:w-1/3 xl:w-1/4\"><strong>GHS Hazard Statements</strong></div>\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 pb-1 pl-2 sm:align-middle\">\r\n<div class=\"break-words space-y-1\">\r\n<p>H315 (14.2%): Causes skin irritation [<span class=\"ghswarning\">Warning</span> Skin corrosion/irritation]</p>\r\n<p>H319 (93.2%): Causes serious eye irritation [<span class=\"ghswarning\">Warning</span> Serious eye damage/eye irritation]</p>\r\n<p>H335 (45.3%): May cause respiratory irritation [<span class=\"ghswarning\">Warning</span> Specific target organ toxicity, single exposure; Respiratory tract irritation]</p>\r\n</div>\r\n</div>\r\n</div>\r\n<div class=\"p-2 sm:table-row pc-gray-border-t sm:border-0 \">\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 font-medium pt-1 sm:align-top sm:w-1/3 xl:w-1/4\"><strong>Precautionary Statement Codes</strong></div>\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 pb-1 pl-2 sm:align-middle\">\r\n<div class=\"break-words space-y-1\">\r\n<p>P261, P264, P264+P265, P271, P280, P302+P352, P304+P340, P305+P351+P338, P319, P321, P332+P317, P337+P317, P362+P364, P403+P233, P405, and P501</p>\r\n</div>\r\n</div>\r\n</div>\r\n<hr class=\"\" data-start=\"1826\" data-end=\"1829\" />\r\n<h3 class=\"\" data-start=\"1831\" data-end=\"1859\"><strong data-start=\"1835\" data-end=\"1859\">Handling and Storage</strong></h3>\r\n<ul data-start=\"1861\" data-end=\"2138\">\r\n<li class=\"\" data-start=\"1861\" data-end=\"2021\">\r\n<p class=\"\" data-start=\"1863\" data-end=\"2021\"><strong data-start=\"1863\" data-end=\"1886\">Storage Conditions:</strong> Store in a tightly sealed container in a cool, dry, well-ventilated area away from incompatible substances such as strong oxidizers.</p>\r\n</li>\r\n<li class=\"\" data-start=\"2022\" data-end=\"2138\">\r\n<p class=\"\" data-start=\"2024\" data-end=\"2138\"><strong data-start=\"2024\" data-end=\"2049\">Handling Precautions:</strong> Avoid generating dust. Use suitable protective equipment when handling large quantities.</p>\r\n</li>\r\n</ul>",
+      "images": ["3126"],
+      "images_filename": ["3126.jpg"],
+      "lowest_shipping_cost": {
+        "price": "€3.51",
+        "price_float": 3.51
+      },
+      "historical_lowest_price": "€39.50",
+      "net_historical_lowest_price": "€32.12",
+      "is_notification_enabled": false,
+      "gauge": []
+    },
+    {
+      "id": 825,
+      "name": "Citric Acid Monohydrate - 1000g",
+      "can_buy": true,
+      "ean": "5906288603528",
+      "code": "231141735",
+      "package": "0",
+      "unit": {
+        "name": "szt.",
+        "floating_point": false
+      },
+      "rate": 0,
+      "votes": 0,
+      "stockId": 913,
+      "url": "https://synthetikaeu.com/en_US/p/Citric-Acid-Monohydrate-1000g/825",
+      "category": {
+        "name": "Carboxylic Acids",
+        "id": 53
+      },
+      "availability": {
+        "name": "Large quantity"
+      },
+      "visibility": {
+        "status": 1,
+        "cart_status": 1,
+        "search_status": 1
+      },
+      "delivery": {
+        "name": "7 days ",
+        "hours": "168"
+      },
+      "price": {
+        "gross": {
+          "base": "€8.29",
+          "base_float": 8.29,
+          "final": "€8.29",
+          "final_float": 8.29,
+          "historical_lowest_price": "€9.02",
+          "historical_lowest_price_float": 9.02
+        },
+        "net": {
+          "base": "€6.74",
+          "base_float": 6.74,
+          "final": "€6.74",
+          "final_float": 6.74,
+          "historical_lowest_price": "€7.33",
+          "historical_lowest_price_float": 7.33
+        }
+      },
+      "productExists30DaysBeforePromotion": false,
+      "weight": {
+        "weight_float": 0,
+        "weight": "0 kg"
+      },
+      "producer": {
+        "name": "SYNTHETIKA",
+        "id": 13,
+        "img": "https://synthetikaeu.com/userdata/public/producers/13.jpg"
+      },
+      "newProduct": false,
+      "shortDescription": "",
+      "main_image": "3127",
+      "main_image_filename": "3127.jpg",
+      "description": "<h3 class=\"\" data-start=\"83\" data-end=\"116\"><strong data-start=\"87\" data-end=\"114\">Citric Acid Monohydrate</strong></h3>\r\n<p class=\"\" data-start=\"117\" data-end=\"352\"><strong data-start=\"117\" data-end=\"133\">Other Names:</strong> 2-Hydroxy-1,2,3-propane-tricarboxylic acid monohydrate<br data-start=\"188\" data-end=\"191\" /><strong data-start=\"191\" data-end=\"206\">CAS Number:</strong> 5949-29-1<br data-start=\"216\" data-end=\"219\" /><strong data-start=\"219\" data-end=\"233\">EC Number:</strong> 201-069-1<br data-start=\"243\" data-end=\"246\" /><strong data-start=\"246\" data-end=\"267\">Chemical Formula:</strong> C₆H₈O₇·H₂O<br data-start=\"278\" data-end=\"281\" /><strong data-start=\"281\" data-end=\"296\">Molar Mass:</strong> 210.14 g/mol<br data-start=\"309\" data-end=\"312\" /><strong data-start=\"312\" data-end=\"327\">Appearance:</strong> White, crystalline solid</p>\r\n<hr class=\"\" data-start=\"354\" data-end=\"357\" />\r\n<h3 class=\"\" data-start=\"359\" data-end=\"399\"><strong data-start=\"363\" data-end=\"399\">Chemical and Physical Properties</strong></h3>\r\n<ul data-start=\"401\" data-end=\"729\">\r\n<li class=\"\" data-start=\"401\" data-end=\"429\">\r\n<p class=\"\" data-start=\"403\" data-end=\"429\"><strong data-start=\"403\" data-end=\"415\">Density:</strong> ~1.54 g/cm³</p>\r\n</li>\r\n<li class=\"\" data-start=\"430\" data-end=\"497\">\r\n<p class=\"\" data-start=\"432\" data-end=\"497\"><strong data-start=\"432\" data-end=\"450\">Melting Point:</strong> 100–104°C (loss of water of crystallization)</p>\r\n</li>\r\n<li class=\"\" data-start=\"498\" data-end=\"546\">\r\n<p class=\"\" data-start=\"500\" data-end=\"546\"><strong data-start=\"500\" data-end=\"518\">Boiling Point:</strong> Decomposes before boiling</p>\r\n</li>\r\n<li class=\"\" data-start=\"547\" data-end=\"608\">\r\n<p class=\"\" data-start=\"549\" data-end=\"608\"><strong data-start=\"549\" data-end=\"573\">Solubility in Water:</strong> Highly soluble (590 g/L at 20°C)</p>\r\n</li>\r\n<li class=\"\" data-start=\"609\" data-end=\"677\">\r\n<p class=\"\" data-start=\"611\" data-end=\"677\"><strong data-start=\"611\" data-end=\"644\">Solubility in Other Solvents:</strong> Soluble in ethanol and acetone</p>\r\n</li>\r\n<li class=\"\" data-start=\"678\" data-end=\"700\">\r\n<p class=\"\" data-start=\"680\" data-end=\"700\"><strong data-start=\"680\" data-end=\"689\">Odor:</strong> Odorless</p>\r\n</li>\r\n<li class=\"\" data-start=\"701\" data-end=\"729\">\r\n<p class=\"\" data-start=\"703\" data-end=\"729\"><strong data-start=\"703\" data-end=\"724\">pH (1% solution):</strong> ~2.2</p>\r\n</li>\r\n</ul>\r\n<hr class=\"\" data-start=\"731\" data-end=\"734\" />\r\n<h3 class=\"\" data-start=\"736\" data-end=\"756\"><strong data-start=\"740\" data-end=\"756\">Applications</strong></h3>\r\n<ul data-start=\"758\" data-end=\"1204\">\r\n<li class=\"\" data-start=\"758\" data-end=\"852\">\r\n<p class=\"\" data-start=\"760\" data-end=\"852\"><strong data-start=\"760\" data-end=\"782\">Chemical Industry:</strong> Used as a chelating agent and pH regulator in various formulations.</p>\r\n</li>\r\n<li class=\"\" data-start=\"853\" data-end=\"937\">\r\n<p class=\"\" data-start=\"855\" data-end=\"937\"><strong data-start=\"855\" data-end=\"874\">Laboratory Use:</strong> Employed as a buffer component and acidulant in experiments.</p>\r\n</li>\r\n<li class=\"\" data-start=\"938\" data-end=\"1031\">\r\n<p class=\"\" data-start=\"940\" data-end=\"1031\"><strong data-start=\"940\" data-end=\"962\">Cleaning Products:</strong> Acts as a descaling agent and ingredient in eco-friendly cleaners.</p>\r\n</li>\r\n<li class=\"\" data-start=\"1032\" data-end=\"1110\">\r\n<p class=\"\" data-start=\"1034\" data-end=\"1110\"><strong data-start=\"1034\" data-end=\"1066\">Cosmetics and Personal Care:</strong> Used as a pH adjuster and mild exfoliant.</p>\r\n</li>\r\n<li class=\"\" data-start=\"1111\" data-end=\"1204\">\r\n<p class=\"\" data-start=\"1113\" data-end=\"1204\"><strong data-start=\"1113\" data-end=\"1152\">Photography and Textile Processing:</strong> Occasionally used in dyeing and photographic baths.</p>\r\n</li>\r\n</ul>\r\n<hr class=\"\" data-start=\"1206\" data-end=\"1209\" />\r\n<h3 class=\"\" data-start=\"1211\" data-end=\"1225\"><strong data-start=\"1215\" data-end=\"1225\">Safety</strong></h3>\r\n<p><strong data-start=\"1215\" data-end=\"1225\"><img src=\"/userdata/public/assets//warn.png\" alt=\"\" width=\"144\" height=\"142\" /></strong></p>\r\n<p class=\"\" data-start=\"1227\" data-end=\"1294\"><strong data-start=\"1227\" data-end=\"1243\">Signal Word:</strong> <em data-start=\"1244\" data-end=\"1253\">Warning</em><br data-start=\"1253\" data-end=\"1256\" /><br /></p>\r\n<div class=\"p-2 sm:table-row pc-gray-border-t sm:border-0 \">\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 font-medium pt-1 sm:align-top sm:w-1/3 xl:w-1/4\"><strong>GHS Hazard Statements</strong></div>\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 pb-1 pl-2 sm:align-middle\">\r\n<div class=\"break-words space-y-1\">\r\n<p>H315 (14.2%): Causes skin irritation [<span class=\"ghswarning\">Warning</span> Skin corrosion/irritation]</p>\r\n<p>H319 (93.2%): Causes serious eye irritation [<span class=\"ghswarning\">Warning</span> Serious eye damage/eye irritation]</p>\r\n<p>H335 (45.3%): May cause respiratory irritation [<span class=\"ghswarning\">Warning</span> Specific target organ toxicity, single exposure; Respiratory tract irritation]</p>\r\n</div>\r\n</div>\r\n</div>\r\n<div class=\"p-2 sm:table-row pc-gray-border-t sm:border-0 \">\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 font-medium pt-1 sm:align-top sm:w-1/3 xl:w-1/4\"><strong>Precautionary Statement Codes</strong></div>\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 pb-1 pl-2 sm:align-middle\">\r\n<div class=\"break-words space-y-1\">\r\n<p>P261, P264, P264+P265, P271, P280, P302+P352, P304+P340, P305+P351+P338, P319, P321, P332+P317, P337+P317, P362+P364, P403+P233, P405, and P501</p>\r\n</div>\r\n</div>\r\n</div>\r\n<hr class=\"\" data-start=\"1826\" data-end=\"1829\" />\r\n<h3 class=\"\" data-start=\"1831\" data-end=\"1859\"><strong data-start=\"1835\" data-end=\"1859\">Handling and Storage</strong></h3>\r\n<ul data-start=\"1861\" data-end=\"2138\">\r\n<li class=\"\" data-start=\"1861\" data-end=\"2021\">\r\n<p class=\"\" data-start=\"1863\" data-end=\"2021\"><strong data-start=\"1863\" data-end=\"1886\">Storage Conditions:</strong> Store in a tightly sealed container in a cool, dry, well-ventilated area away from incompatible substances such as strong oxidizers.</p>\r\n</li>\r\n<li class=\"\" data-start=\"2022\" data-end=\"2138\">\r\n<p class=\"\" data-start=\"2024\" data-end=\"2138\"><strong data-start=\"2024\" data-end=\"2049\">Handling Precautions:</strong> Avoid generating dust. Use suitable protective equipment when handling large quantities.</p>\r\n</li>\r\n</ul>",
+      "images": ["3127"],
+      "images_filename": ["3127.jpg"],
+      "lowest_shipping_cost": {
+        "price": "€3.51",
+        "price_float": 3.51
+      },
+      "historical_lowest_price": "€9.02",
+      "net_historical_lowest_price": "€7.33",
+      "is_notification_enabled": false,
+      "gauge": []
+    },
+    {
+      "id": 826,
+      "name": "Citric Acid Monohydrate - 500g",
+      "can_buy": true,
+      "ean": "5906288622499",
+      "code": "231141739",
+      "package": "0",
+      "unit": {
+        "name": "szt.",
+        "floating_point": false
+      },
+      "rate": 0,
+      "votes": 0,
+      "stockId": 914,
+      "url": "https://synthetikaeu.com/en_US/p/Citric-Acid-Monohydrate-500g/826",
+      "category": {
+        "name": "Carboxylic Acids",
+        "id": 53
+      },
+      "availability": {
+        "name": "Large quantity"
+      },
+      "visibility": {
+        "status": 1,
+        "cart_status": 1,
+        "search_status": 1
+      },
+      "delivery": {
+        "name": "7 days ",
+        "hours": "168"
+      },
+      "price": {
+        "gross": {
+          "base": "€4.66",
+          "base_float": 4.66,
+          "final": "€4.66",
+          "final_float": 4.66,
+          "historical_lowest_price": "€5.06",
+          "historical_lowest_price_float": 5.06
+        },
+        "net": {
+          "base": "€3.79",
+          "base_float": 3.79,
+          "final": "€3.79",
+          "final_float": 3.79,
+          "historical_lowest_price": "€4.12",
+          "historical_lowest_price_float": 4.12
+        }
+      },
+      "productExists30DaysBeforePromotion": false,
+      "weight": {
+        "weight_float": 0,
+        "weight": "0 kg"
+      },
+      "producer": {
+        "name": "SYNTHETIKA",
+        "id": 13,
+        "img": "https://synthetikaeu.com/userdata/public/producers/13.jpg"
+      },
+      "newProduct": false,
+      "shortDescription": "",
+      "main_image": "3128",
+      "main_image_filename": "3128.jpg",
+      "description": "<h3 class=\"\" data-start=\"83\" data-end=\"116\"><strong data-start=\"87\" data-end=\"114\">Citric Acid Monohydrate</strong></h3>\r\n<p class=\"\" data-start=\"117\" data-end=\"352\"><strong data-start=\"117\" data-end=\"133\">Other Names:</strong> 2-Hydroxy-1,2,3-propane-tricarboxylic acid monohydrate<br data-start=\"188\" data-end=\"191\" /><strong data-start=\"191\" data-end=\"206\">CAS Number:</strong> 5949-29-1<br data-start=\"216\" data-end=\"219\" /><strong data-start=\"219\" data-end=\"233\">EC Number:</strong> 201-069-1<br data-start=\"243\" data-end=\"246\" /><strong data-start=\"246\" data-end=\"267\">Chemical Formula:</strong> C₆H₈O₇·H₂O<br data-start=\"278\" data-end=\"281\" /><strong data-start=\"281\" data-end=\"296\">Molar Mass:</strong> 210.14 g/mol<br data-start=\"309\" data-end=\"312\" /><strong data-start=\"312\" data-end=\"327\">Appearance:</strong> White, crystalline solid</p>\r\n<hr class=\"\" data-start=\"354\" data-end=\"357\" />\r\n<h3 class=\"\" data-start=\"359\" data-end=\"399\"><strong data-start=\"363\" data-end=\"399\">Chemical and Physical Properties</strong></h3>\r\n<ul data-start=\"401\" data-end=\"729\">\r\n<li class=\"\" data-start=\"401\" data-end=\"429\">\r\n<p class=\"\" data-start=\"403\" data-end=\"429\"><strong data-start=\"403\" data-end=\"415\">Density:</strong> ~1.54 g/cm³</p>\r\n</li>\r\n<li class=\"\" data-start=\"430\" data-end=\"497\">\r\n<p class=\"\" data-start=\"432\" data-end=\"497\"><strong data-start=\"432\" data-end=\"450\">Melting Point:</strong> 100–104°C (loss of water of crystallization)</p>\r\n</li>\r\n<li class=\"\" data-start=\"498\" data-end=\"546\">\r\n<p class=\"\" data-start=\"500\" data-end=\"546\"><strong data-start=\"500\" data-end=\"518\">Boiling Point:</strong> Decomposes before boiling</p>\r\n</li>\r\n<li class=\"\" data-start=\"547\" data-end=\"608\">\r\n<p class=\"\" data-start=\"549\" data-end=\"608\"><strong data-start=\"549\" data-end=\"573\">Solubility in Water:</strong> Highly soluble (590 g/L at 20°C)</p>\r\n</li>\r\n<li class=\"\" data-start=\"609\" data-end=\"677\">\r\n<p class=\"\" data-start=\"611\" data-end=\"677\"><strong data-start=\"611\" data-end=\"644\">Solubility in Other Solvents:</strong> Soluble in ethanol and acetone</p>\r\n</li>\r\n<li class=\"\" data-start=\"678\" data-end=\"700\">\r\n<p class=\"\" data-start=\"680\" data-end=\"700\"><strong data-start=\"680\" data-end=\"689\">Odor:</strong> Odorless</p>\r\n</li>\r\n<li class=\"\" data-start=\"701\" data-end=\"729\">\r\n<p class=\"\" data-start=\"703\" data-end=\"729\"><strong data-start=\"703\" data-end=\"724\">pH (1% solution):</strong> ~2.2</p>\r\n</li>\r\n</ul>\r\n<hr class=\"\" data-start=\"731\" data-end=\"734\" />\r\n<h3 class=\"\" data-start=\"736\" data-end=\"756\"><strong data-start=\"740\" data-end=\"756\">Applications</strong></h3>\r\n<ul data-start=\"758\" data-end=\"1204\">\r\n<li class=\"\" data-start=\"758\" data-end=\"852\">\r\n<p class=\"\" data-start=\"760\" data-end=\"852\"><strong data-start=\"760\" data-end=\"782\">Chemical Industry:</strong> Used as a chelating agent and pH regulator in various formulations.</p>\r\n</li>\r\n<li class=\"\" data-start=\"853\" data-end=\"937\">\r\n<p class=\"\" data-start=\"855\" data-end=\"937\"><strong data-start=\"855\" data-end=\"874\">Laboratory Use:</strong> Employed as a buffer component and acidulant in experiments.</p>\r\n</li>\r\n<li class=\"\" data-start=\"938\" data-end=\"1031\">\r\n<p class=\"\" data-start=\"940\" data-end=\"1031\"><strong data-start=\"940\" data-end=\"962\">Cleaning Products:</strong> Acts as a descaling agent and ingredient in eco-friendly cleaners.</p>\r\n</li>\r\n<li class=\"\" data-start=\"1032\" data-end=\"1110\">\r\n<p class=\"\" data-start=\"1034\" data-end=\"1110\"><strong data-start=\"1034\" data-end=\"1066\">Cosmetics and Personal Care:</strong> Used as a pH adjuster and mild exfoliant.</p>\r\n</li>\r\n<li class=\"\" data-start=\"1111\" data-end=\"1204\">\r\n<p class=\"\" data-start=\"1113\" data-end=\"1204\"><strong data-start=\"1113\" data-end=\"1152\">Photography and Textile Processing:</strong> Occasionally used in dyeing and photographic baths.</p>\r\n</li>\r\n</ul>\r\n<hr class=\"\" data-start=\"1206\" data-end=\"1209\" />\r\n<h3 class=\"\" data-start=\"1211\" data-end=\"1225\"><strong data-start=\"1215\" data-end=\"1225\">Safety</strong></h3>\r\n<p><strong data-start=\"1215\" data-end=\"1225\"><img src=\"/userdata/public/assets//warn.png\" alt=\"\" width=\"144\" height=\"142\" /></strong></p>\r\n<p class=\"\" data-start=\"1227\" data-end=\"1294\"><strong data-start=\"1227\" data-end=\"1243\">Signal Word:</strong> <em data-start=\"1244\" data-end=\"1253\">Warning</em><br data-start=\"1253\" data-end=\"1256\" /><br /></p>\r\n<div class=\"p-2 sm:table-row pc-gray-border-t sm:border-0 \">\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 font-medium pt-1 sm:align-top sm:w-1/3 xl:w-1/4\"><strong>GHS Hazard Statements</strong></div>\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 pb-1 pl-2 sm:align-middle\">\r\n<div class=\"break-words space-y-1\">\r\n<p>H315 (14.2%): Causes skin irritation [<span class=\"ghswarning\">Warning</span> Skin corrosion/irritation]</p>\r\n<p>H319 (93.2%): Causes serious eye irritation [<span class=\"ghswarning\">Warning</span> Serious eye damage/eye irritation]</p>\r\n<p>H335 (45.3%): May cause respiratory irritation [<span class=\"ghswarning\">Warning</span> Specific target organ toxicity, single exposure; Respiratory tract irritation]</p>\r\n</div>\r\n</div>\r\n</div>\r\n<div class=\"p-2 sm:table-row pc-gray-border-t sm:border-0 \">\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 font-medium pt-1 sm:align-top sm:w-1/3 xl:w-1/4\"><strong>Precautionary Statement Codes</strong></div>\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 pb-1 pl-2 sm:align-middle\">\r\n<div class=\"break-words space-y-1\">\r\n<p>P261, P264, P264+P265, P271, P280, P302+P352, P304+P340, P305+P351+P338, P319, P321, P332+P317, P337+P317, P362+P364, P403+P233, P405, and P501</p>\r\n</div>\r\n</div>\r\n</div>\r\n<hr class=\"\" data-start=\"1826\" data-end=\"1829\" />\r\n<h3 class=\"\" data-start=\"1831\" data-end=\"1859\"><strong data-start=\"1835\" data-end=\"1859\">Handling and Storage</strong></h3>\r\n<ul data-start=\"1861\" data-end=\"2138\">\r\n<li class=\"\" data-start=\"1861\" data-end=\"2021\">\r\n<p class=\"\" data-start=\"1863\" data-end=\"2021\"><strong data-start=\"1863\" data-end=\"1886\">Storage Conditions:</strong> Store in a tightly sealed container in a cool, dry, well-ventilated area away from incompatible substances such as strong oxidizers.</p>\r\n</li>\r\n<li class=\"\" data-start=\"2022\" data-end=\"2138\">\r\n<p class=\"\" data-start=\"2024\" data-end=\"2138\"><strong data-start=\"2024\" data-end=\"2049\">Handling Precautions:</strong> Avoid generating dust. Use suitable protective equipment when handling large quantities.</p>\r\n</li>\r\n</ul>",
+      "images": ["3128"],
+      "images_filename": ["3128.jpg"],
+      "lowest_shipping_cost": {
+        "price": "€3.51",
+        "price_float": 3.51
+      },
+      "historical_lowest_price": "€5.06",
+      "net_historical_lowest_price": "€4.12",
+      "is_notification_enabled": false,
+      "gauge": []
+    },
+    {
+      "id": 827,
+      "name": "Citric Acid Monohydrate - 100g",
+      "can_buy": true,
+      "ean": "5906288622482",
+      "code": "231141743",
+      "package": "0",
+      "unit": {
+        "name": "szt.",
+        "floating_point": false
+      },
+      "rate": 0,
+      "votes": 0,
+      "stockId": 915,
+      "url": "https://synthetikaeu.com/en_US/p/Citric-Acid-Monohydrate-100g/827",
+      "category": {
+        "name": "Carboxylic Acids",
+        "id": 53
+      },
+      "availability": {
+        "name": "Large quantity"
+      },
+      "visibility": {
+        "status": 1,
+        "cart_status": 1,
+        "search_status": 1
+      },
+      "delivery": {
+        "name": "7 days ",
+        "hours": "168"
+      },
+      "price": {
+        "gross": {
+          "base": "€1.94",
+          "base_float": 1.94,
+          "final": "€1.94",
+          "final_float": 1.94,
+          "historical_lowest_price": "€5,771.16",
+          "historical_lowest_price_float": 5771.16
+        },
+        "net": {
+          "base": "€1.57",
+          "base_float": 1.57,
+          "final": "€1.57",
+          "final_float": 1.57,
+          "historical_lowest_price": "€4,692.00",
+          "historical_lowest_price_float": 4692
+        }
+      },
+      "productExists30DaysBeforePromotion": false,
+      "weight": {
+        "weight_float": 0,
+        "weight": "0 kg"
+      },
+      "producer": {
+        "name": "SYNTHETIKA",
+        "id": 13,
+        "img": "https://synthetikaeu.com/userdata/public/producers/13.jpg"
+      },
+      "newProduct": false,
+      "shortDescription": "",
+      "main_image": "3129",
+      "main_image_filename": "3129.jpg",
+      "description": "<h3 class=\"\" data-start=\"83\" data-end=\"116\"><strong data-start=\"87\" data-end=\"114\">Citric Acid Monohydrate</strong></h3>\r\n<p class=\"\" data-start=\"117\" data-end=\"352\"><strong data-start=\"117\" data-end=\"133\">Other Names:</strong> 2-Hydroxy-1,2,3-propane-tricarboxylic acid monohydrate<br data-start=\"188\" data-end=\"191\" /><strong data-start=\"191\" data-end=\"206\">CAS Number:</strong> 5949-29-1<br data-start=\"216\" data-end=\"219\" /><strong data-start=\"219\" data-end=\"233\">EC Number:</strong> 201-069-1<br data-start=\"243\" data-end=\"246\" /><strong data-start=\"246\" data-end=\"267\">Chemical Formula:</strong> C₆H₈O₇·H₂O<br data-start=\"278\" data-end=\"281\" /><strong data-start=\"281\" data-end=\"296\">Molar Mass:</strong> 210.14 g/mol<br data-start=\"309\" data-end=\"312\" /><strong data-start=\"312\" data-end=\"327\">Appearance:</strong> White, crystalline solid</p>\r\n<hr class=\"\" data-start=\"354\" data-end=\"357\" />\r\n<h3 class=\"\" data-start=\"359\" data-end=\"399\"><strong data-start=\"363\" data-end=\"399\">Chemical and Physical Properties</strong></h3>\r\n<ul data-start=\"401\" data-end=\"729\">\r\n<li class=\"\" data-start=\"401\" data-end=\"429\">\r\n<p class=\"\" data-start=\"403\" data-end=\"429\"><strong data-start=\"403\" data-end=\"415\">Density:</strong> ~1.54 g/cm³</p>\r\n</li>\r\n<li class=\"\" data-start=\"430\" data-end=\"497\">\r\n<p class=\"\" data-start=\"432\" data-end=\"497\"><strong data-start=\"432\" data-end=\"450\">Melting Point:</strong> 100–104°C (loss of water of crystallization)</p>\r\n</li>\r\n<li class=\"\" data-start=\"498\" data-end=\"546\">\r\n<p class=\"\" data-start=\"500\" data-end=\"546\"><strong data-start=\"500\" data-end=\"518\">Boiling Point:</strong> Decomposes before boiling</p>\r\n</li>\r\n<li class=\"\" data-start=\"547\" data-end=\"608\">\r\n<p class=\"\" data-start=\"549\" data-end=\"608\"><strong data-start=\"549\" data-end=\"573\">Solubility in Water:</strong> Highly soluble (590 g/L at 20°C)</p>\r\n</li>\r\n<li class=\"\" data-start=\"609\" data-end=\"677\">\r\n<p class=\"\" data-start=\"611\" data-end=\"677\"><strong data-start=\"611\" data-end=\"644\">Solubility in Other Solvents:</strong> Soluble in ethanol and acetone</p>\r\n</li>\r\n<li class=\"\" data-start=\"678\" data-end=\"700\">\r\n<p class=\"\" data-start=\"680\" data-end=\"700\"><strong data-start=\"680\" data-end=\"689\">Odor:</strong> Odorless</p>\r\n</li>\r\n<li class=\"\" data-start=\"701\" data-end=\"729\">\r\n<p class=\"\" data-start=\"703\" data-end=\"729\"><strong data-start=\"703\" data-end=\"724\">pH (1% solution):</strong> ~2.2</p>\r\n</li>\r\n</ul>\r\n<hr class=\"\" data-start=\"731\" data-end=\"734\" />\r\n<h3 class=\"\" data-start=\"736\" data-end=\"756\"><strong data-start=\"740\" data-end=\"756\">Applications</strong></h3>\r\n<ul data-start=\"758\" data-end=\"1204\">\r\n<li class=\"\" data-start=\"758\" data-end=\"852\">\r\n<p class=\"\" data-start=\"760\" data-end=\"852\"><strong data-start=\"760\" data-end=\"782\">Chemical Industry:</strong> Used as a chelating agent and pH regulator in various formulations.</p>\r\n</li>\r\n<li class=\"\" data-start=\"853\" data-end=\"937\">\r\n<p class=\"\" data-start=\"855\" data-end=\"937\"><strong data-start=\"855\" data-end=\"874\">Laboratory Use:</strong> Employed as a buffer component and acidulant in experiments.</p>\r\n</li>\r\n<li class=\"\" data-start=\"938\" data-end=\"1031\">\r\n<p class=\"\" data-start=\"940\" data-end=\"1031\"><strong data-start=\"940\" data-end=\"962\">Cleaning Products:</strong> Acts as a descaling agent and ingredient in eco-friendly cleaners.</p>\r\n</li>\r\n<li class=\"\" data-start=\"1032\" data-end=\"1110\">\r\n<p class=\"\" data-start=\"1034\" data-end=\"1110\"><strong data-start=\"1034\" data-end=\"1066\">Cosmetics and Personal Care:</strong> Used as a pH adjuster and mild exfoliant.</p>\r\n</li>\r\n<li class=\"\" data-start=\"1111\" data-end=\"1204\">\r\n<p class=\"\" data-start=\"1113\" data-end=\"1204\"><strong data-start=\"1113\" data-end=\"1152\">Photography and Textile Processing:</strong> Occasionally used in dyeing and photographic baths.</p>\r\n</li>\r\n</ul>\r\n<hr class=\"\" data-start=\"1206\" data-end=\"1209\" />\r\n<h3 class=\"\" data-start=\"1211\" data-end=\"1225\"><strong data-start=\"1215\" data-end=\"1225\">Safety</strong></h3>\r\n<p><strong data-start=\"1215\" data-end=\"1225\"><img src=\"/userdata/public/assets//warn.png\" alt=\"\" width=\"144\" height=\"142\" /></strong></p>\r\n<p class=\"\" data-start=\"1227\" data-end=\"1294\"><strong data-start=\"1227\" data-end=\"1243\">Signal Word:</strong> <em data-start=\"1244\" data-end=\"1253\">Warning</em><br data-start=\"1253\" data-end=\"1256\" /><br /></p>\r\n<div class=\"p-2 sm:table-row pc-gray-border-t sm:border-0 \">\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 font-medium pt-1 sm:align-top sm:w-1/3 xl:w-1/4\"><strong>GHS Hazard Statements</strong></div>\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 pb-1 pl-2 sm:align-middle\">\r\n<div class=\"break-words space-y-1\">\r\n<p>H315 (14.2%): Causes skin irritation [<span class=\"ghswarning\">Warning</span> Skin corrosion/irritation]</p>\r\n<p>H319 (93.2%): Causes serious eye irritation [<span class=\"ghswarning\">Warning</span> Serious eye damage/eye irritation]</p>\r\n<p>H335 (45.3%): May cause respiratory irritation [<span class=\"ghswarning\">Warning</span> Specific target organ toxicity, single exposure; Respiratory tract irritation]</p>\r\n</div>\r\n</div>\r\n</div>\r\n<div class=\"p-2 sm:table-row pc-gray-border-t sm:border-0 \">\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 font-medium pt-1 sm:align-top sm:w-1/3 xl:w-1/4\"><strong>Precautionary Statement Codes</strong></div>\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 pb-1 pl-2 sm:align-middle\">\r\n<div class=\"break-words space-y-1\">\r\n<p>P261, P264, P264+P265, P271, P280, P302+P352, P304+P340, P305+P351+P338, P319, P321, P332+P317, P337+P317, P362+P364, P403+P233, P405, and P501</p>\r\n</div>\r\n</div>\r\n</div>\r\n<hr class=\"\" data-start=\"1826\" data-end=\"1829\" />\r\n<h3 class=\"\" data-start=\"1831\" data-end=\"1859\"><strong data-start=\"1835\" data-end=\"1859\">Handling and Storage</strong></h3>\r\n<ul data-start=\"1861\" data-end=\"2138\">\r\n<li class=\"\" data-start=\"1861\" data-end=\"2021\">\r\n<p class=\"\" data-start=\"1863\" data-end=\"2021\"><strong data-start=\"1863\" data-end=\"1886\">Storage Conditions:</strong> Store in a tightly sealed container in a cool, dry, well-ventilated area away from incompatible substances such as strong oxidizers.</p>\r\n</li>\r\n<li class=\"\" data-start=\"2022\" data-end=\"2138\">\r\n<p class=\"\" data-start=\"2024\" data-end=\"2138\"><strong data-start=\"2024\" data-end=\"2049\">Handling Precautions:</strong> Avoid generating dust. Use suitable protective equipment when handling large quantities.</p>\r\n</li>\r\n</ul>",
+      "images": ["3129"],
+      "images_filename": ["3129.jpg"],
+      "lowest_shipping_cost": {
+        "price": "€3.51",
+        "price_float": 3.51
+      },
+      "historical_lowest_price": "€5,771.16",
+      "net_historical_lowest_price": "€4,692.00",
+      "is_notification_enabled": false,
+      "gauge": []
+    },
+    {
+      "id": 7670,
+      "name": "Sodium Dichromate",
+      "can_buy": true,
+      "ean": "",
+      "code": "SYNTH_20241118121011",
+      "package": "0",
+      "unit": {
+        "name": "szt.",
+        "floating_point": false
+      },
+      "rate": 0,
+      "votes": 0,
+      "stockId": 8522,
+      "url": "https://synthetikaeu.com/en_US/p/Sodium-Dichromate/7670",
+      "category": {
+        "name": "Oxidizing agents",
+        "id": 298
+      },
+      "availability": {
+        "name": "Large quantity"
+      },
+      "visibility": {
+        "status": 1,
+        "cart_status": 1,
+        "search_status": 1
+      },
+      "delivery": {
+        "name": "10 days",
+        "hours": "240"
+      },
+      "price": {
+        "gross": {
+          "base": "€7.60",
+          "base_float": 7.6,
+          "final": "€7.60",
+          "final_float": 7.6,
+          "historical_lowest_price": "€7.60",
+          "historical_lowest_price_float": 7.6
+        },
+        "net": {
+          "base": "€6.18",
+          "base_float": 6.18,
+          "final": "€6.18",
+          "final_float": 6.18,
+          "historical_lowest_price": "€6.18",
+          "historical_lowest_price_float": 6.18
+        }
+      },
+      "productExists30DaysBeforePromotion": false,
+      "weight": {
+        "weight_float": 0,
+        "weight": "0 kg"
+      },
+      "producer": {
+        "name": "SYNTHETIKA",
+        "id": 13,
+        "img": "https://synthetikaeu.com/userdata/public/producers/13.jpg"
+      },
+      "newProduct": false,
+      "shortDescription": "<p>⚠️ EU: This product is  classified as CMR in category 1A/1B Annex VI. CLP Regulation (EC) No. 1272/2008 and therefore <strong>can</strong> <strong>only be purchased by registered business or government entities.</strong></p>",
+      "main_image": "15767",
+      "main_image_filename": "15767.png",
+      "description": "<p class=\"\" data-start=\"131\" data-end=\"233\"><strong data-start=\"131\" data-end=\"152\">Sodium Dichromate</strong><br data-start=\"152\" data-end=\"155\" /> Other Names: Chromic acid disodium salt, Sodium bichromate, Bichromate of soda</p>\r\n<p class=\"\" data-start=\"235\" data-end=\"370\"><strong data-start=\"235\" data-end=\"250\">CAS Number:</strong> 10588-01-9<br data-start=\"261\" data-end=\"264\" /> <strong data-start=\"264\" data-end=\"280\">Sum Formula:</strong> Na₂Cr₂O₇<br data-start=\"289\" data-end=\"292\" /> <strong data-start=\"292\" data-end=\"307\">Molar Mass:</strong> 261.97 g/mol<br data-start=\"320\" data-end=\"323\" /> <strong data-start=\"323\" data-end=\"338\">Appearance:</strong> Orange to red crystalline solid</p>\r\n<p class=\"\" data-start=\"372\" data-end=\"693\">Sodium dichromate is a highly water-soluble, inorganic oxidizing agent containing chromium in the hexavalent state (Cr⁶⁺). It is commonly used in industrial and laboratory applications requiring strong oxidation, particularly in the synthesis of organic and inorganic chemicals, corrosion inhibition, and metal finishing.</p>\r\n<p class=\"\" data-start=\"695\" data-end=\"973\"><strong data-start=\"695\" data-end=\"731\">Chemical and Physical Properties</strong><br data-start=\"731\" data-end=\"734\" /> Density: 2.52 g/cm³<br data-start=\"753\" data-end=\"756\" /> Melting Point: 356.7°C (decomposes)<br data-start=\"791\" data-end=\"794\" /> Boiling Point: Not applicable (decomposes)<br data-start=\"836\" data-end=\"839\" /> Solubility in Water: Highly soluble (73 g/100 mL at 20°C)<br data-start=\"896\" data-end=\"899\" /> Solubility in Other Solvents: Slightly soluble in alcohol<br data-start=\"956\" data-end=\"959\" /> Odor: Odorless</p>\r\n<p class=\"\" data-start=\"975\" data-end=\"1388\"><strong data-start=\"975\" data-end=\"991\">Applications</strong><br data-start=\"991\" data-end=\"994\" /> Oxidizing Agent: Used in organic synthesis for oxidation of alcohols and aldehydes.<br data-start=\"1077\" data-end=\"1080\" /> Corrosion Inhibitor: Applied in metal surface treatments and passivation.<br data-start=\"1153\" data-end=\"1156\" /> Pigments and Dyes: Precursor for various chromium-based pigments.<br data-start=\"1221\" data-end=\"1224\" /> Tanning Industry: Employed in leather processing (now largely replaced due to toxicity).<br data-start=\"1312\" data-end=\"1315\" /> Laboratory Reagent: Used in analytical chemistry and qualitative testing.</p>\r\n<p class=\"\" data-start=\"1390\" data-end=\"1426\"><strong data-start=\"1390\" data-end=\"1400\">Safety</strong></p>\r\n<p class=\"\" data-start=\"1390\" data-end=\"1426\"><img src=\"/userdata/public/assets//2024-12-29_02h10_55.png\" alt=\"\" width=\"377\" height=\"108\" /><img src=\"/userdata/public/assets//aqua.png\" alt=\"\" width=\"99\" height=\"97\" /><br data-start=\"1400\" data-end=\"1403\" /> <strong data-start=\"1403\" data-end=\"1419\">Signal Word:</strong> Danger</p>\r\n<div class=\"p-2 sm:table-row pc-gray-border-t sm:border-0 \">\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 font-medium pt-1 sm:align-top sm:w-1/3 xl:w-1/4\"><strong>GHS Hazard Statements</strong></div>\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 pb-1 pl-2 sm:align-middle\">\r\n<div class=\"break-words space-y-1\">\r\n<p>H272 (98.5%): May intensify fire; oxidizer [<span class=\"ghsdanger\">Danger</span> Oxidizing liquids; Oxidizing solids]</p>\r\n<p>H301 (&gt; 99.9%): Toxic if swallowed [<span class=\"ghsdanger\">Danger</span> Acute toxicity, oral]</p>\r\n<p>H312 (98.5%): Harmful in contact with skin [<span class=\"ghswarning\">Warning</span> Acute toxicity, dermal]</p>\r\n<p>H314 (&gt; 99.9%): Causes severe skin burns and eye damage [<span class=\"ghsdanger\">Danger</span> Skin corrosion/irritation]</p>\r\n<p>H317 (&gt; 99.9%): May cause an allergic skin reaction [<span class=\"ghswarning\">Warning</span> Sensitization, Skin]</p>\r\n<p>H330 (&gt; 99.9%): Fatal if inhaled [<span class=\"ghsdanger\">Danger</span> Acute toxicity, inhalation]</p>\r\n<p>H334 (&gt; 99.9%): May cause allergy or asthma symptoms or breathing difficulties if inhaled [<span class=\"ghsdanger\">Danger</span> Sensitization, respiratory]</p>\r\n<p>H340 (&gt; 99.9%): May cause genetic defects [<span class=\"ghsdanger\">Danger</span> Germ cell mutagenicity]</p>\r\n<p>H350 (99.1%): May cause cancer [<span class=\"ghsdanger\">Danger</span> Carcinogenicity]</p>\r\n<p>H360 (94%): May damage fertility or the unborn child [<span class=\"ghsdanger\">Danger</span> Reproductive toxicity]</p>\r\n<p>H372 (98.5%): Causes damage to organs through prolonged or repeated exposure [<span class=\"ghsdanger\">Danger</span> Specific target organ toxicity, repeated exposure]</p>\r\n<p>H400 (&gt; 99.9%): Very toxic to aquatic life [<span class=\"ghswarning\">Warning</span> Hazardous to the aquatic environment, acute hazard]</p>\r\n<p>H410 (&gt; 99.9%): Very toxic to aquatic life with long lasting effects [<span class=\"ghswarning\">Warning</span> Hazardous to the aquatic environment, long-term hazard]</p>\r\n</div>\r\n</div>\r\n</div>\r\n<div class=\"p-2 sm:table-row pc-gray-border-t sm:border-0 \">\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 font-medium pt-1 sm:align-top sm:w-1/3 xl:w-1/4\"><strong>Precautionary Statement Codes</strong></div>\r\n<div class=\"text-left sm:table-cell sm:p-2 sm:border-t sm:border-gray-300 dark:sm:border-gray-300/20 pb-1 pl-2 sm:align-middle\">\r\n<div class=\"break-words space-y-1\">\r\n<p>P203, P210, P220, P233, P260, P261, P264, P270, P271, P272, P273, P280, P284, P301+P316, P301+P330+P331, P302+P352, P302+P361+P354, P304+P340, P305+P354+P338, P316, P317, P318, P319, P320, P321, P330, P333+P317, P342+P316, P362+P364, P363, P370+P378, P391, P403, P403+P233, P405, and P501</p>\r\n</div>\r\n</div>\r\n</div>\r\n<p class=\"\" data-start=\"1428\" data-end=\"1940\"> </p>\r\n<p class=\"\" data-start=\"2830\" data-end=\"3191\"><strong data-start=\"2830\" data-end=\"2854\">Handling and Storage</strong><br data-start=\"2854\" data-end=\"2857\" /> <strong data-start=\"2857\" data-end=\"2880\">Storage Conditions:</strong> Store in a tightly sealed container in a cool, dry, well-ventilated area away from combustible materials, reducing agents, and acids.<br data-start=\"3014\" data-end=\"3017\" /> <strong data-start=\"3017\" data-end=\"3042\">Handling Precautions:</strong> Handle with extreme caution due to carcinogenicity and oxidizing nature. Use full PPE and operate in a chemical fume hood or controlled environment.</p>",
+      "options_configuration": [
+        {
+          "required": true,
+          "stock": true,
+          "values": [
+            {
+              "id": "121",
+              "order": "11",
+              "name": "1000g"
+            },
+            {
+              "id": "122",
+              "order": "13",
+              "name": "500g"
+            },
+            {
+              "id": "123",
+              "order": "15",
+              "name": "250g"
+            }
+          ],
+          "id": 19,
+          "name": "Net weight",
+          "type": "select",
+          "order": 1
+        }
+      ],
+      "images": ["15767"],
+      "images_filename": ["15767.png"],
+      "lowest_shipping_cost": {
+        "price": "€3.51",
+        "price_float": 3.51
+      },
+      "historical_lowest_price": "€7.60",
+      "net_historical_lowest_price": "€6.18",
+      "is_notification_enabled": false,
+      "gauge": []
+    },
+    {
+      "id": 8402,
+      "name": "Potassium Citrate",
+      "can_buy": true,
+      "ean": "5908164021198",
+      "code": "B5B2-89676",
+      "package": "0",
+      "unit": {
+        "name": "szt.",
+        "floating_point": false
+      },
+      "rate": 0,
+      "votes": 0,
+      "stockId": 11068,
+      "url": "https://synthetikaeu.com/en_US/p/Potassium-Citrate/8402",
+      "category": {
+        "name": "Organic salts",
+        "id": 112
+      },
+      "availability": {
+        "name": "Large quantity"
+      },
+      "visibility": {
+        "status": 1,
+        "cart_status": 1,
+        "search_status": 1
+      },
+      "delivery": {
+        "name": "7 days ",
+        "hours": "168"
+      },
+      "price": {
+        "gross": {
+          "base": "€2.27",
+          "base_float": 2.27,
+          "final": "€2.27",
+          "final_float": 2.27,
+          "historical_lowest_price": "€129.75",
+          "historical_lowest_price_float": 129.75
+        },
+        "net": {
+          "base": "€1.84",
+          "base_float": 1.84,
+          "final": "€1.84",
+          "final_float": 1.84,
+          "historical_lowest_price": "€105.49",
+          "historical_lowest_price_float": 105.49
+        }
+      },
+      "productExists30DaysBeforePromotion": false,
+      "weight": {
+        "weight_float": 0,
+        "weight": "0 kg"
+      },
+      "newProduct": false,
+      "shortDescription": "",
+      "main_image": "17226",
+      "main_image_filename": "17226.png",
+      "description": "<p data-start=\"2418\" data-end=\"2435\"><strong>POTASSIUM CITRATE</strong></p>\r\n<p data-start=\"2437\" data-end=\"2520\">Other Names: Potassium salt of citric acid, potassium citrate, tripotassium citrate</p>\r\n<p data-start=\"2522\" data-end=\"2654\"><strong>CAS Number:</strong> 866-84-2<br data-start=\"2542\" data-end=\"2545\" /> <strong>Chemical Formula:</strong> C₆H₅K₃O₇<br data-start=\"2571\" data-end=\"2574\" /> <strong>Molar Mass:</strong> 306.39 g/mol<br data-start=\"2598\" data-end=\"2601\" /> <strong>Appearance:</strong> White solid, powder, granules or crystals</p>\r\n<p data-start=\"2656\" data-end=\"3080\">Potassium citrate is the potassium salt of citric acid. The product is most commonly supplied as a white powder, granules or crystals and is readily soluble in water. It is characterized by buffering properties and the ability to influence the pH of aqueous solutions. It may be used as a reagent, a component of technical formulations, an auxiliary substance in chemical mixtures and a source of potassium and citrate ions.</p>\r\n<p data-start=\"3082\" data-end=\"3114\"><strong>Chemical and Physical Properties</strong></p>\r\n<p data-start=\"3116\" data-end=\"3555\">Form: Solid, powder, granules or crystals<br data-start=\"3157\" data-end=\"3160\" /> Color: White<br data-start=\"3172\" data-end=\"3175\" /> Odor: Odorless or slightly characteristic<br data-start=\"3216\" data-end=\"3219\" /> Solubility in Water: Readily soluble<br data-start=\"3255\" data-end=\"3258\" /> Solubility in Organic Solvents: Limited<br data-start=\"3297\" data-end=\"3300\" /> Chemical Character: Organic potassium salt of citric acid<br data-start=\"3357\" data-end=\"3360\" /> pH of Aqueous Solution: Usually slightly alkaline<br data-start=\"3409\" data-end=\"3412\" /> Properties: Buffering compound, source of potassium and citrate ions<br data-start=\"3480\" data-end=\"3483\" /> Stability: Stable under normal storage conditions, protect from moisture</p>\r\n<p data-start=\"3557\" data-end=\"3569\"><strong>Applications</strong></p>\r\n<p data-start=\"3571\" data-end=\"3678\">Laboratory Use: Used as a reagent, buffer solution component and auxiliary material in chemical procedures.</p>\r\n<p data-start=\"3680\" data-end=\"3767\">pH Adjustment: Applied for correction and stabilization of the pH of aqueous solutions.</p>\r\n<p data-start=\"3769\" data-end=\"3873\">Technical Formulations: May be used as a component of mixtures requiring the presence of a citrate salt.</p>\r\n<p data-start=\"3875\" data-end=\"3944\">Source of Potassium Ions: Provides K⁺ ions in a readily soluble form.</p>\r\n<p data-start=\"3946\" data-end=\"4036\">Source of Citrate Ions: Used where the presence of citrate anions in solution is required.</p>\r\n<p data-start=\"4038\" data-end=\"4124\">Buffer Systems: Applied in mixtures where maintaining a defined pH range is important.</p>\r\n<p data-start=\"4126\" data-end=\"4275\">Not intended for food, pharmaceutical or cosmetic applications unless the product has the appropriate grade and documentation required for such uses.</p>\r\n<p data-start=\"4277\" data-end=\"4297\"><strong>Handling and Storage</strong></p>\r\n<p data-start=\"4299\" data-end=\"4578\" data-is-last-node=\"\" data-is-only-node=\"\">Store in a tightly closed container in a dry, cool and well-ventilated place. Protect from moisture, direct sunlight and product contamination. Close the container tightly after use to reduce caking and maintain product quality. Keep away from chemically incompatible substances</p>",
+      "options_configuration": [
+        {
+          "required": true,
+          "stock": true,
+          "values": [
+            {
+              "id": "119",
+              "order": "5",
+              "name": "25 000g | 25kg"
+            },
+            {
+              "id": "120",
+              "order": "9",
+              "name": "5000g"
+            },
+            {
+              "id": "121",
+              "order": "11",
+              "name": "1000g"
+            },
+            {
+              "id": "122",
+              "order": "13",
+              "name": "500g"
+            },
+            {
+              "id": "124",
+              "order": "17",
+              "name": "100g"
+            }
+          ],
+          "id": 19,
+          "name": "Net weight",
+          "type": "select",
+          "order": 1
+        }
+      ],
+      "images": ["17226"],
+      "images_filename": ["17226.png"],
+      "lowest_shipping_cost": {
+        "price": "€3.51",
+        "price_float": 3.51
+      },
+      "historical_lowest_price": "€129.75",
+      "net_historical_lowest_price": "€105.49",
+      "is_notification_enabled": false,
+      "gauge": []
+    }
+  ]
+}

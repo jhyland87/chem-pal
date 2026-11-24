@@ -1,0 +1,1435 @@
+{
+  "type": "productCategorySearchPageWsDTO",
+  "breadcrumbs": [],
+  "currentQuery": {
+    "query": {
+      "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:discontinued:false:webExcluded:false:tx_product:false"
+    },
+    "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Adiscontinued%3Afalse%3AwebExcluded%3Afalse%3Atx_product%3Afalse"
+  },
+  "facets": [
+    {
+      "category": false,
+      "code": "vendor_name",
+      "groupCode": "vendor_name",
+      "groupPriority": 0,
+      "multiSelect": true,
+      "name": "Supplier",
+      "priority": 100,
+      "values": [
+        {
+          "count": 56,
+          "name": "Thermo Scientific Chemicals",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Thermo+Scientific+Chemicals"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AThermo%2BScientific%2BChemicals"
+          },
+          "selected": false
+        },
+        {
+          "count": 55,
+          "name": "AVANTOR PERFORMANCE MATERIAL LLC",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:AVANTOR+PERFORMANCE+MATERIAL+LLC"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AAVANTOR%2BPERFORMANCE%2BMATERIAL%2BLLC"
+          },
+          "selected": false
+        },
+        {
+          "count": 33,
+          "name": "Ricca Chemical",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Ricca+Chemical"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3ARicca%2BChemical"
+          },
+          "selected": false
+        },
+        {
+          "count": 30,
+          "name": "MilliporeSigma",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:MilliporeSigma"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AMilliporeSigma"
+          },
+          "selected": false
+        },
+        {
+          "count": 26,
+          "name": "Honeywell Research Chemicals",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Honeywell+Research+Chemicals"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AHoneywell%2BResearch%2BChemicals"
+          },
+          "selected": false
+        },
+        {
+          "count": 23,
+          "name": "Baxter",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Baxter"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3ABaxter"
+          },
+          "selected": false
+        },
+        {
+          "count": 16,
+          "name": "MP Biomedicals",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:MP+Biomedicals"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AMP%2BBiomedicals"
+          },
+          "selected": false
+        },
+        {
+          "count": 15,
+          "name": "Cytiva",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Cytiva"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3ACytiva"
+          },
+          "selected": false
+        },
+        {
+          "count": 12,
+          "name": "Spectrum Chemical",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Spectrum+Chemical"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3ASpectrum%2BChemical"
+          },
+          "selected": false
+        },
+        {
+          "count": 11,
+          "name": "B Braun",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:B+Braun"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AB%2BBraun"
+          },
+          "selected": false
+        },
+        {
+          "count": 11,
+          "name": "Fresenius Kabi",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Fresenius+Kabi"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AFresenius%2BKabi"
+          },
+          "selected": false
+        },
+        {
+          "count": 11,
+          "name": "VWR",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:VWR"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AVWR"
+          },
+          "selected": false
+        },
+        {
+          "count": 10,
+          "name": "Aladdin Scientific",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Aladdin+Scientific"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AAladdin%2BScientific"
+          },
+          "selected": false
+        },
+        {
+          "count": 10,
+          "name": "BeanTown Chemical",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:BeanTown+Chemical"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3ABeanTown%2BChemical"
+          },
+          "selected": false
+        },
+        {
+          "count": 10,
+          "name": "VWR International",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:VWR+International"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AVWR%2BInternational"
+          },
+          "selected": false
+        },
+        {
+          "count": 9,
+          "name": "International Crystal Labs",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:International+Crystal+Labs"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AInternational%2BCrystal%2BLabs"
+          },
+          "selected": false
+        },
+        {
+          "count": 9,
+          "name": "Quality Biological",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Quality+Biological"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AQuality%2BBiological"
+          },
+          "selected": false
+        },
+        {
+          "count": 6,
+          "name": "Teknova",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Teknova"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3ATeknova"
+          },
+          "selected": false
+        },
+        {
+          "count": 5,
+          "name": "Avantor Performance Materials",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Avantor+Performance+Materials"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AAvantor%2BPerformance%2BMaterials"
+          },
+          "selected": false
+        },
+        {
+          "count": 5,
+          "name": "G-Biosciences",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:G-Biosciences"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AG-Biosciences"
+          },
+          "selected": false
+        },
+        {
+          "count": 5,
+          "name": "Growcells",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Growcells"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AGrowcells"
+          },
+          "selected": false
+        },
+        {
+          "count": 5,
+          "name": "Strem Chemicals Inc",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Strem+Chemicals+Inc"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AStrem%2BChemicals%2BInc"
+          },
+          "selected": false
+        },
+        {
+          "count": 4,
+          "name": "IBI Scientific",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:IBI+Scientific"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AIBI%2BScientific"
+          },
+          "selected": false
+        },
+        {
+          "count": 4,
+          "name": "VWR CHEMICALS LLC - AURORA",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:VWR+CHEMICALS+LLC+-+AURORA"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AVWR%2BCHEMICALS%2BLLC%2B-%2BAURORA"
+          },
+          "selected": false
+        },
+        {
+          "count": 3,
+          "name": "Abcam",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Abcam"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AAbcam"
+          },
+          "selected": false
+        },
+        {
+          "count": 3,
+          "name": "Adipogen",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Adipogen"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AAdipogen"
+          },
+          "selected": false
+        },
+        {
+          "count": 3,
+          "name": "Chem-Impex International",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Chem-Impex+International"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AChem-Impex%2BInternational"
+          },
+          "selected": false
+        },
+        {
+          "count": 2,
+          "name": "FUJIFILM Biosciences",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:FUJIFILM+Biosciences"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AFUJIFILM%2BBiosciences"
+          },
+          "selected": false
+        },
+        {
+          "count": 2,
+          "name": "Hawkins Pharmaceutical Group",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Hawkins+Pharmaceutical+Group"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AHawkins%2BPharmaceutical%2BGroup"
+          },
+          "selected": false
+        },
+        {
+          "count": 2,
+          "name": "Macco Organiques S.R.O",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Macco+Organiques+S.R.O"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AMacco%2BOrganiques%2BS.R.O"
+          },
+          "selected": false
+        },
+        {
+          "count": 2,
+          "name": "NURSE ASSIST, INC.",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:NURSE+ASSIST%2C+INC."
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3ANURSE%2BASSIST%252C%2BINC."
+          },
+          "selected": false
+        },
+        {
+          "count": 2,
+          "name": "TCI America",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:TCI+America"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3ATCI%2BAmerica"
+          },
+          "selected": false
+        },
+        {
+          "count": 1,
+          "name": "Corning",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Corning"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3ACorning"
+          },
+          "selected": false
+        },
+        {
+          "count": 1,
+          "name": "Electron Microscopy Sciences\t",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Electron+Microscopy+Sciences%09"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AElectron%2BMicroscopy%2BSciences%2509"
+          },
+          "selected": false
+        },
+        {
+          "count": 1,
+          "name": "Enzo Life Sciences",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Enzo+Life+Sciences"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AEnzo%2BLife%2BSciences"
+          },
+          "selected": false
+        },
+        {
+          "count": 1,
+          "name": "Hardy Diagnostics",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Hardy+Diagnostics"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3AHardy%2BDiagnostics"
+          },
+          "selected": false
+        },
+        {
+          "count": 1,
+          "name": "Promega",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Promega"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3APromega"
+          },
+          "selected": false
+        },
+        {
+          "count": 1,
+          "name": "Rockland Immunochemical",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:vendor_name:Rockland+Immunochemical"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Avendor_name%3ARockland%2BImmunochemical"
+          },
+          "selected": false
+        }
+      ],
+      "visible": true
+    },
+    {
+      "category": false,
+      "code": "stockLevelStatus",
+      "groupCode": "Ordering Considerations",
+      "groupName": "Ordering Considerations",
+      "groupPriority": 2,
+      "multiSelect": true,
+      "name": "inStock",
+      "priority": 100,
+      "values": [
+        {
+          "count": 75,
+          "name": "inStock",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:stockLevelStatus:inStock"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3AstockLevelStatus%3AinStock"
+          },
+          "selected": false
+        }
+      ],
+      "visible": true
+    },
+    {
+      "category": false,
+      "code": "sbe",
+      "groupCode": "Ordering Considerations",
+      "groupName": "Ordering Considerations",
+      "groupPriority": 2,
+      "multiSelect": true,
+      "name": "SBE",
+      "priority": 100,
+      "values": [
+        {
+          "count": 52,
+          "name": "true",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:sbe:true"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Asbe%3Atrue"
+          },
+          "selected": false
+        }
+      ],
+      "visible": true
+    },
+    {
+      "category": false,
+      "code": "mwbe",
+      "groupCode": "Ordering Considerations",
+      "groupName": "Ordering Considerations",
+      "groupPriority": 2,
+      "multiSelect": true,
+      "name": "MWBE",
+      "priority": 100,
+      "values": [
+        {
+          "count": 19,
+          "name": "true",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:mwbe:true"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Amwbe%3Atrue"
+          },
+          "selected": false
+        }
+      ],
+      "visible": true
+    },
+    {
+      "category": false,
+      "code": "gsa_contract",
+      "groupCode": "Ordering Considerations",
+      "groupName": "Ordering Considerations",
+      "groupPriority": 2,
+      "multiSelect": true,
+      "name": "GSA Contract",
+      "priority": 100,
+      "values": [
+        {
+          "count": 4,
+          "name": "true",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:gsa_contract:true"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Agsa_contract%3Atrue"
+          },
+          "selected": false
+        }
+      ],
+      "visible": true
+    },
+    {
+      "category": true,
+      "code": "category",
+      "groupCode": "category",
+      "groupPriority": 0,
+      "multiSelect": false,
+      "name": "Category",
+      "priority": 100,
+      "values": [
+        {
+          "count": 402,
+          "name": "Sodium chloride",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:category:776892"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Acategory%3A776892"
+          },
+          "selected": false
+        },
+        {
+          "count": 2,
+          "name": "Phosphocholine chloride sodium salt hydrate",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:category:20666697"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Acategory%3A20666697"
+          },
+          "selected": false
+        },
+        {
+          "count": 2,
+          "name": "Sodium chloride hydroxylamine sulfate solution",
+          "query": {
+            "query": {
+              "value": "chemical_name=sodium chloride:relevance:chemical_name:sodium:chemical_name:chloride:category:22492744"
+            },
+            "url": "/search?q=chemical_name%3Dsodium+chloride%3Arelevance%3Achemical_name%3Asodium%3Achemical_name%3Achloride%3Acategory%3A22492744"
+          },
+          "selected": false
+        }
+      ],
+      "visible": true
+    }
+  ],
+  "freeTextSearch": "",
+  "hasDiscontinuedHits": false,
+  "headerText": "chemical_name=sodium chloride",
+  "pagination": {
+    "currentPage": 0,
+    "pageSize": 10,
+    "sort": "relevance",
+    "totalPages": 18,
+    "totalResults": 174
+  },
+  "products": [
+    {
+      "articleCount": 8,
+      "baseProduct": "7422440",
+      "blocked": false,
+      "breakQuantity": 0,
+      "categoriesCode": [
+        "776892"
+      ],
+      "certificatesAvailable": true,
+      "chemical": true,
+      "code": "NA1965696",
+      "crossReferenceDetails": [],
+      "description": "Common source of salts for media propagation of many organisms.",
+      "dfsID": false,
+      "discontinued": false,
+      "hasAccessories": false,
+      "hasItemDetailPage": false,
+      "images": [
+        {
+          "format": "original",
+          "imageType": "PRIMARY",
+          "url": "https://digitalassets.avantorsciences.com/adaptivemedia/rendition/id_3ff02e27b7b1a4e9ca24f8b922cceb6a07f40ff5/vid_885354431bc2f0b702d490f229eea2bc59f6ad84/prid_original/clid_SAPDAM"
+        }
+      ],
+      "imgMultiVariant": {
+        "format": "original",
+        "imageType": "PRIMARY",
+        "url": "https://digitalassets.avantorsciences.com/adaptivemedia/rendition/id_3ff02e27b7b1a4e9ca24f8b922cceb6a07f40ff5/vid_885354431bc2f0b702d490f229eea2bc59f6ad84/prid_original/clid_SAPDAM"
+      },
+      "imgSingleVariant": {
+        "format": "original",
+        "imageType": "PRIMARY",
+        "url": "https://digitalassets.avantorsciences.com/adaptivemedia/rendition/id_3ff02e27b7b1a4e9ca24f8b922cceb6a07f40ff5/vid_885354431bc2f0b702d490f229eea2bc59f6ad84/prid_original/clid_SAPDAM"
+      },
+      "inquireForPrice": false,
+      "isOxfordNanoporeProduct": false,
+      "isProductIcon": false,
+      "licenseRequired": false,
+      "listViewDescription": "Sodium chloride for biotechnology",
+      "listViewName": "SODIUM CHLORIDE BIOTECH GRADE 10KG",
+      "liveSpecimenDeliveryEnabled": false,
+      "marketSource": false,
+      "msdsAvailable": true,
+      "name": "Sodium chloride for biotechnology",
+      "newProduct": false,
+      "nonRelatedInfoAssetAvailable": false,
+      "priceRange": {},
+      "restricted": false,
+      "salesStatusCode": "",
+      "showExpertPrice": true,
+      "sourceRegionNA": true,
+      "specSelectProduct": false,
+      "stock": {
+        "adjusted": false,
+        "isValueRounded": false,
+        "stockLevelStatus": "inStock"
+      },
+      "supplierId": "VWR8856EDI",
+      "uomSpecificPrices": [
+        {
+          "currencyIso": "USD",
+          "formattedDisplayPrice": "$274.38",
+          "formattedValue": "$274.38",
+          "priceType": "BUY",
+          "showExpertPrice": false,
+          "unicornInquireForPrice": false,
+          "uomDescription": "Each (10g)",
+          "uomID": "EA",
+          "value": 274.38
+        }
+      ],
+      "url": "/us/en/product/7422440/sodium-chloride-for-biotechnology",
+      "variantOptions": [
+        {
+          "alternateCount": 0,
+          "blocked": false,
+          "breakQuantity": 0,
+          "certificatesAvailable": true,
+          "clearance": false,
+          "code": "NA2012506",
+          "dfsID": false,
+          "discontinued": false,
+          "hasAccessories": false,
+          "hasAlternate": false,
+          "hideProduct": false,
+          "inquireForPrice": false,
+          "licenseRequired": false,
+          "marketSource": false,
+          "msdsAvailable": true,
+          "newProduct": false,
+          "nonRelatedInfoAssetAvailable": false,
+          "purchaseHold": false,
+          "quoteOnly": false,
+          "restricted": false,
+          "rowDisplayOrder": 0,
+          "sellHold": false,
+          "shortDescription": "SODIUM CHLORIDE BIOTECH GRADE 12KG",
+          "showExpertPrice": false,
+          "sourceRegionNA": true,
+          "txRestricted": false,
+          "uomSpecificPrices": [
+            {
+              "currencyIso": "USD",
+              "formattedDisplayPrice": "$350.98",
+              "formattedValue": "$350.98",
+              "priceType": "BUY",
+              "showExpertPrice": false,
+              "unicornInquireForPrice": false,
+              "uomDescription": "Each",
+              "uomID": "EA",
+              "value": 350.98
+            }
+          ],
+          "vasCode": 0,
+          "vendorCatalogNumber": "0241-12KG",
+          "vwrCatalogNumber": "97061-268"
+        },
+        {
+          "alternateCount": 0,
+          "blocked": false,
+          "breakQuantity": 0,
+          "certificatesAvailable": true,
+          "clearance": false,
+          "code": "NA2112162",
+          "dfsID": false,
+          "discontinued": false,
+          "hasAccessories": false,
+          "hasAlternate": false,
+          "hideProduct": false,
+          "inquireForPrice": false,
+          "licenseRequired": false,
+          "marketSource": false,
+          "msdsAvailable": true,
+          "newProduct": false,
+          "nonRelatedInfoAssetAvailable": false,
+          "purchaseHold": false,
+          "quoteOnly": false,
+          "restricted": false,
+          "rowDisplayOrder": 0,
+          "sellHold": false,
+          "shortDescription": "SODIUM CHLORIDE BIOTECH GRADE 500G",
+          "showExpertPrice": false,
+          "sourceRegionNA": true,
+          "txRestricted": false,
+          "uomSpecificPrices": [
+            {
+              "currencyIso": "USD",
+              "formattedDisplayPrice": "$70.03",
+              "formattedValue": "$70.03",
+              "priceType": "BUY",
+              "showExpertPrice": false,
+              "unicornInquireForPrice": false,
+              "uomDescription": "Each (500g)",
+              "uomID": "EA",
+              "value": 70.03
+            },
+            {
+              "currencyIso": "USD",
+              "formattedDisplayPrice": "$630.09",
+              "formattedValue": "$630.09",
+              "priceType": "BUY",
+              "showExpertPrice": false,
+              "unicornInquireForPrice": false,
+              "uomDescription": "Case of 12~ 500g",
+              "uomID": "CS",
+              "value": 630.09
+            }
+          ],
+          "vasCode": 0,
+          "vendorCatalogNumber": "0241-500G",
+          "vwrCatalogNumber": "97061-274"
+        },
+        {
+          "alternateCount": 0,
+          "blocked": false,
+          "breakQuantity": 0,
+          "certificatesAvailable": true,
+          "clearance": false,
+          "code": "NA2059711",
+          "dfsID": false,
+          "discontinued": false,
+          "hasAccessories": false,
+          "hasAlternate": false,
+          "hideProduct": false,
+          "inquireForPrice": false,
+          "licenseRequired": false,
+          "marketSource": false,
+          "msdsAvailable": true,
+          "newProduct": false,
+          "nonRelatedInfoAssetAvailable": false,
+          "purchaseHold": false,
+          "quoteOnly": false,
+          "restricted": false,
+          "rowDisplayOrder": 0,
+          "sellHold": false,
+          "shortDescription": "SODIUM CHLORIDE BIOTECH GRADE 5KG",
+          "showExpertPrice": false,
+          "sourceRegionNA": true,
+          "txRestricted": false,
+          "uomSpecificPrices": [
+            {
+              "currencyIso": "USD",
+              "formattedDisplayPrice": "$201.69",
+              "formattedValue": "$201.69",
+              "priceType": "BUY",
+              "showExpertPrice": false,
+              "unicornInquireForPrice": false,
+              "uomDescription": "Each (5kg)",
+              "uomID": "EA",
+              "value": 201.69
+            },
+            {
+              "currencyIso": "USD",
+              "formattedDisplayPrice": "$641.54",
+              "formattedValue": "$641.54",
+              "priceType": "BUY",
+              "showExpertPrice": false,
+              "unicornInquireForPrice": false,
+              "uomDescription": "Case of 4~ 5kg",
+              "uomID": "CS",
+              "value": 641.54
+            },
+            {
+              "currencyIso": "USD",
+              "formattedDisplayPrice": "$23,096.03",
+              "formattedValue": "$23,096.03",
+              "priceType": "BUY",
+              "showExpertPrice": false,
+              "unicornInquireForPrice": false,
+              "uomDescription": "Pallet of 144~ 5kg",
+              "uomID": "PL",
+              "value": 23096.03
+            }
+          ],
+          "vasCode": 0,
+          "vendorCatalogNumber": "0241-5KG",
+          "vwrCatalogNumber": "97061-278"
+        },
+        {
+          "alternateCount": 0,
+          "blocked": false,
+          "breakQuantity": 0,
+          "certificatesAvailable": true,
+          "clearance": false,
+          "code": "NA2112161",
+          "dfsID": false,
+          "discontinued": false,
+          "hasAccessories": false,
+          "hasAlternate": false,
+          "hideProduct": false,
+          "inquireForPrice": false,
+          "licenseRequired": false,
+          "marketSource": false,
+          "msdsAvailable": true,
+          "newProduct": false,
+          "nonRelatedInfoAssetAvailable": false,
+          "purchaseHold": false,
+          "quoteOnly": false,
+          "restricted": false,
+          "rowDisplayOrder": 0,
+          "sellHold": false,
+          "shortDescription": "SODIUM CHLORIDE BIOTECH GRADE 2.5 KG",
+          "showExpertPrice": false,
+          "sourceRegionNA": true,
+          "txRestricted": false,
+          "uomSpecificPrices": [
+            {
+              "currencyIso": "USD",
+              "formattedDisplayPrice": "$175.49",
+              "formattedValue": "$175.49",
+              "priceType": "BUY",
+              "showExpertPrice": false,
+              "unicornInquireForPrice": false,
+              "uomDescription": "Each (2,500g)",
+              "uomID": "EA",
+              "value": 175.49
+            },
+            {
+              "currencyIso": "USD",
+              "formattedDisplayPrice": "$543.71",
+              "formattedValue": "$543.71",
+              "priceType": "BUY",
+              "showExpertPrice": false,
+              "unicornInquireForPrice": false,
+              "uomDescription": "Case of 4~ 2,500,g",
+              "uomID": "CS",
+              "value": 543.71
+            },
+            {
+              "currencyIso": "USD",
+              "formattedDisplayPrice": "$19,572.89",
+              "formattedValue": "$19,572.89",
+              "priceType": "BUY",
+              "showExpertPrice": false,
+              "unicornInquireForPrice": false,
+              "uomDescription": "Pallet of 144~ 2,500,g",
+              "uomID": "PL",
+              "value": 19572.89
+            }
+          ],
+          "vasCode": 0,
+          "vendorCatalogNumber": "0241-2.5KG",
+          "vwrCatalogNumber": "97061-272"
+        },
+        {
+          "alternateCount": 0,
+          "blocked": false,
+          "breakQuantity": 0,
+          "certificatesAvailable": true,
+          "clearance": false,
+          "code": "NA1965697",
+          "dfsID": false,
+          "discontinued": false,
+          "hasAccessories": false,
+          "hasAlternate": false,
+          "hideProduct": false,
+          "inquireForPrice": false,
+          "licenseRequired": false,
+          "marketSource": false,
+          "msdsAvailable": true,
+          "newProduct": false,
+          "nonRelatedInfoAssetAvailable": false,
+          "purchaseHold": false,
+          "quoteOnly": false,
+          "restricted": false,
+          "rowDisplayOrder": 0,
+          "sellHold": false,
+          "shortDescription": "SODIUM CHLORIDE BIOTECH GRADE 1KG",
+          "showExpertPrice": false,
+          "sourceRegionNA": true,
+          "txRestricted": false,
+          "uomSpecificPrices": [
+            {
+              "currencyIso": "USD",
+              "formattedDisplayPrice": "$110.58",
+              "formattedValue": "$110.58",
+              "priceType": "BUY",
+              "showExpertPrice": false,
+              "unicornInquireForPrice": false,
+              "uomDescription": "Each (1kg)",
+              "uomID": "EA",
+              "value": 110.58
+            },
+            {
+              "currencyIso": "USD",
+              "formattedDisplayPrice": "$998.28",
+              "formattedValue": "$998.28",
+              "priceType": "BUY",
+              "showExpertPrice": false,
+              "unicornInquireForPrice": false,
+              "uomDescription": "Case of 12~ 1kg",
+              "uomID": "CS",
+              "value": 998.28
+            },
+            {
+              "currencyIso": "USD",
+              "formattedDisplayPrice": "$23,959.22",
+              "formattedValue": "$23,959.22",
+              "priceType": "BUY",
+              "showExpertPrice": false,
+              "unicornInquireForPrice": false,
+              "uomDescription": "Pallet of 288~ 1kg",
+              "uomID": "PL",
+              "value": 23959.22
+            }
+          ],
+          "vasCode": 0,
+          "vendorCatalogNumber": "0241-1KG",
+          "vwrCatalogNumber": "97061-270"
+        },
+        {
+          "alternateCount": 0,
+          "blocked": false,
+          "breakQuantity": 0,
+          "certificatesAvailable": true,
+          "clearance": false,
+          "code": "NA2112163",
+          "dfsID": false,
+          "discontinued": false,
+          "hasAccessories": false,
+          "hasAlternate": false,
+          "hideProduct": false,
+          "inquireForPrice": false,
+          "licenseRequired": false,
+          "marketSource": false,
+          "msdsAvailable": true,
+          "newProduct": false,
+          "nonRelatedInfoAssetAvailable": false,
+          "purchaseHold": false,
+          "quoteOnly": false,
+          "restricted": false,
+          "rowDisplayOrder": 0,
+          "sellHold": false,
+          "shortDescription": "SODIUM CHLORIDE BIOTECH GRADE 50KG",
+          "showExpertPrice": false,
+          "sourceRegionNA": true,
+          "txRestricted": false,
+          "uomSpecificPrices": [
+            {
+              "currencyIso": "USD",
+              "formattedDisplayPrice": "$848.85",
+              "formattedValue": "$848.85",
+              "priceType": "BUY",
+              "showExpertPrice": false,
+              "unicornInquireForPrice": false,
+              "uomDescription": "Each",
+              "uomID": "EA",
+              "value": 848.85
+            }
+          ],
+          "vasCode": 0,
+          "vendorCatalogNumber": "0241-50KG",
+          "vwrCatalogNumber": "97061-276"
+        }
+      ],
+      "vasCode": 15,
+      "vendorCatalogNumbers": [
+        "0241-10KG"
+      ],
+      "vendorName": "VWR",
+      "volumePricesFlag": false,
+      "vwrArticleNumber": "VWRV0241-10KG",
+      "vwrCatalogNumber": "97061-266"
+    },
+    {
+      "articleCount": 2,
+      "baseProduct": "4560992",
+      "blocked": false,
+      "breakQuantity": 0,
+      "categoriesCode": [
+        "776892"
+      ],
+      "certificatesAvailable": true,
+      "chemical": true,
+      "code": "NA1985508",
+      "crossReferenceDetails": [],
+      "description": "Granular.",
+      "dfsID": false,
+      "discontinued": false,
+      "hasAccessories": false,
+      "hasItemDetailPage": false,
+      "images": [
+        {
+          "format": "original",
+          "imageType": "PRIMARY",
+          "url": "https://digitalassets.avantorsciences.com/adaptivemedia/rendition/id_0dbafece295976ed8055b69c7fa96df56e217813/vid_2ee6972676d96b1077b29a20a6b2f539202b58e5/prid_original/clid_SAPDAM"
+        }
+      ],
+      "imgMultiVariant": {
+        "format": "original",
+        "imageType": "PRIMARY",
+        "url": "https://digitalassets.avantorsciences.com/adaptivemedia/rendition/id_0dbafece295976ed8055b69c7fa96df56e217813/vid_2ee6972676d96b1077b29a20a6b2f539202b58e5/prid_original/clid_SAPDAM"
+      },
+      "imgSingleVariant": {
+        "format": "original",
+        "imageType": "PRIMARY",
+        "url": "https://digitalassets.avantorsciences.com/adaptivemedia/rendition/id_0dbafece295976ed8055b69c7fa96df56e217813/vid_2ee6972676d96b1077b29a20a6b2f539202b58e5/prid_original/clid_SAPDAM"
+      },
+      "inquireForPrice": false,
+      "isOxfordNanoporeProduct": false,
+      "isProductIcon": false,
+      "licenseRequired": false,
+      "listViewDescription": "Sodium chloride \u226599.5%, granules, AR\u00ae, Macron Fine Chemicals\u2122",
+      "listViewName": "SODIUM CHLORIDE C.P. GRA 2.5K",
+      "liveSpecimenDeliveryEnabled": false,
+      "marketSource": false,
+      "msdsAvailable": true,
+      "name": "Sodium chloride \u226599.5%, granules, AR\u00ae, Macron Fine Chemicals\u2122",
+      "newProduct": false,
+      "nonRelatedInfoAssetAvailable": false,
+      "priceRange": {},
+      "restricted": false,
+      "salesStatusCode": "",
+      "showExpertPrice": true,
+      "sourceRegionNA": true,
+      "specSelectProduct": false,
+      "stock": {
+        "adjusted": false,
+        "isValueRounded": false,
+        "stockLevelStatus": "inStock"
+      },
+      "supplierId": "VWR8860EDI",
+      "uomSpecificPrices": [
+        {
+          "currencyIso": "USD",
+          "formattedDisplayPrice": "$209.07",
+          "formattedValue": "$209.07",
+          "priceType": "BUY",
+          "showExpertPrice": false,
+          "unicornInquireForPrice": false,
+          "uomDescription": "Each(1/Itm/Bx)",
+          "uomID": "EA",
+          "value": 209.07
+        },
+        {
+          "currencyIso": "USD",
+          "formattedDisplayPrice": "$1,254.31",
+          "formattedValue": "$1,254.31",
+          "priceType": "BUY",
+          "showExpertPrice": false,
+          "unicornInquireForPrice": false,
+          "uomDescription": "Case of 6~ 1/ Itm/Bx",
+          "uomID": "CS",
+          "value": 1254.31
+        }
+      ],
+      "url": "/us/en/product/4560992/sodium-chloride-995-granules-ar-macron-fine-chemicals",
+      "vasCode": 15,
+      "vendorCatalogNumbers": [
+        "7544-06"
+      ],
+      "vendorName": "AVANTOR PERFORMANCE MATERIAL LLC",
+      "volumePricesFlag": false,
+      "vwrArticleNumber": "MACR7544-06",
+      "vwrCatalogNumber": "MK754406"
+    },
+    {
+      "articleCount": 10,
+      "baseProduct": "4560994",
+      "blocked": false,
+      "breakQuantity": 0,
+      "categoriesCode": [
+        "776892"
+      ],
+      "certificatesAvailable": true,
+      "chemical": true,
+      "code": "NA1985509",
+      "crossReferenceDetails": [],
+      "description": "AR\u2014The standard\u00a0Macron Fine Chemicals\u2122\u00a0grade of analytical reagents; suitable for laboratory and general use.",
+      "dfsID": false,
+      "discontinued": false,
+      "hasAccessories": false,
+      "hasItemDetailPage": false,
+      "images": [
+        {
+          "format": "original",
+          "imageType": "PRIMARY",
+          "url": "https://digitalassets.avantorsciences.com/adaptivemedia/rendition/id_0dbafece295976ed8055b69c7fa96df56e217813/vid_2ee6972676d96b1077b29a20a6b2f539202b58e5/prid_original/clid_SAPDAM"
+        }
+      ],
+      "imgMultiVariant": {
+        "format": "original",
+        "imageType": "PRIMARY",
+        "url": "https://digitalassets.avantorsciences.com/adaptivemedia/rendition/id_0dbafece295976ed8055b69c7fa96df56e217813/vid_2ee6972676d96b1077b29a20a6b2f539202b58e5/prid_original/clid_SAPDAM"
+      },
+      "imgSingleVariant": {
+        "format": "original",
+        "imageType": "PRIMARY",
+        "url": "https://digitalassets.avantorsciences.com/adaptivemedia/rendition/id_0dbafece295976ed8055b69c7fa96df56e217813/vid_2ee6972676d96b1077b29a20a6b2f539202b58e5/prid_original/clid_SAPDAM"
+      },
+      "inquireForPrice": false,
+      "isOxfordNanoporeProduct": false,
+      "isProductIcon": false,
+      "licenseRequired": false,
+      "listViewDescription": "Sodium chloride \u226599% (by argentometric titration), crystals, AR\u00ae (ACS) Salts ACS, Macron Fine Chemicals\u2122",
+      "listViewName": "SODIUM CHLORIDE A.R. CRY 2.5K",
+      "liveSpecimenDeliveryEnabled": false,
+      "marketSource": false,
+      "msdsAvailable": true,
+      "name": "Sodium chloride \u226599% (by argentometric titration), crystals, AR\u00ae (ACS) Salts ACS, Macron Fine Chemicals\u2122",
+      "newProduct": false,
+      "nonRelatedInfoAssetAvailable": false,
+      "priceRange": {},
+      "restricted": false,
+      "salesStatusCode": "",
+      "showExpertPrice": true,
+      "sourceRegionNA": true,
+      "specSelectProduct": false,
+      "stock": {
+        "adjusted": false,
+        "isValueRounded": false,
+        "stockLevelStatus": "inStock"
+      },
+      "supplierId": "VWR8860EDI",
+      "uomSpecificPrices": [
+        {
+          "currencyIso": "USD",
+          "formattedDisplayPrice": "$187.18",
+          "formattedValue": "$187.18",
+          "priceType": "BUY",
+          "showExpertPrice": false,
+          "unicornInquireForPrice": false,
+          "uomDescription": "Each(1/Itm/Bx)",
+          "uomID": "EA",
+          "value": 187.18
+        },
+        {
+          "currencyIso": "USD",
+          "formattedDisplayPrice": "$748.72",
+          "formattedValue": "$748.72",
+          "priceType": "BUY",
+          "showExpertPrice": false,
+          "unicornInquireForPrice": false,
+          "uomDescription": "Case of 4~ 1/ Itm/Bx",
+          "uomID": "CS",
+          "value": 748.72
+        }
+      ],
+      "url": "/us/en/product/4560994/sodium-chloride-99-by-argentometric-titration-crystals-ar-acs-salts-acs-macron-fine-chemicals",
+      "variantOptions": [
+        {
+          "alternateCount": 0,
+          "blocked": false,
+          "breakQuantity": 0,
+          "certificatesAvailable": true,
+          "clearance": false,
+          "code": "NA2127762",
+          "dfsID": false,
+          "discontinued": false,
+          "hasAccessories": false,
+          "hasAlternate": false,
+          "hideProduct": false,
+          "inquireForPrice": false,
+          "licenseRequired": false,
+          "marketSource": false,
+          "msdsAvailable": true,
+          "newProduct": false,
+          "nonRelatedInfoAssetAvailable": false,
+          "purchaseHold": false,
+          "quoteOnly": false,
+          "restricted": false,
+          "rowDisplayOrder": 0,
+          "sellHold": false,
+          "shortDescription": "SODIUM CHLORIDE AR CRYSTL 50KG",
+          "showExpertPrice": false,
+          "sourceRegionNA": true,
+          "txRestricted": false,
+          "uomSpecificPrices": [
+            {
+              "currencyIso": "USD",
+              "formattedDisplayPrice": "$1,425.02",
+              "formattedValue": "$1,425.02",
+              "priceType": "BUY",
+              "showExpertPrice": false,
+              "unicornInquireForPrice": false,
+              "uomDescription": "Each (50kg)",
+              "uomID": "EA",
+              "value": 1425.02
+            }
+          ],
+          "vasCode": 0,
+          "vendorCatalogNumber": "7581-60",
+          "vwrCatalogNumber": "MK758160"
+        },
+        {
+          "alternateCount": 0,
+          "blocked": false,
+          "breakQuantity": 0,
+          "certificatesAvailable": true,
+          "clearance": false,
+          "code": "NA2184584",
+          "dfsID": false,
+          "discontinued": false,
+          "hasAccessories": false,
+          "hasAlternate": false,
+          "hideProduct": false,
+          "inquireForPrice": false,
+          "licenseRequired": false,
+          "marketSource": false,
+          "msdsAvailable": true,
+          "newProduct": false,
+          "nonRelatedInfoAssetAvailable": false,
+          "purchaseHold": false,
+          "quoteOnly": false,
+          "restricted": false,
+          "rowDisplayOrder": 0,
+          "sellHold": false,
+          "shortDescription": "SODIUM CHLR AR CR POLYSTK 12KG",
+          "showExpertPrice": false,
+          "sourceRegionNA": true,
+          "txRestricted": false,
+          "uomSpecificPrices": [
+            {
+              "currencyIso": "USD",
+              "formattedDisplayPrice": "$398.30",
+              "formattedValue": "$398.30",
+              "priceType": "BUY",
+              "showExpertPrice": false,
+              "unicornInquireForPrice": false,
+              "uomDescription": "Each (12kg)",
+              "uomID": "EA",
+              "value": 398.3
+            }
+          ],
+          "vasCode": 0,
+          "vendorCatalogNumber": "7581-19",
+          "vwrCatalogNumber": "MK758119"
+        },
+        {
+          "alternateCount": 0,
+          "blocked": false,
+          "breakQuantity": 0,
+          "certificatesAvailable": true,
+          "clearance": false,
+          "code": "NA2184585",
+          "dfsID": false,
+          "discontinued": false,
+          "hasAccessories": false,
+          "hasAlternate": false,
+          "hideProduct": false,
+          "inquireForPrice": false,
+          "licenseRequired": false,
+          "marketSource": false,
+          "msdsAvailable": true,
+          "newProduct": false,
+          "nonRelatedInfoAssetAvailable": false,
+          "purchaseHold": false,
+          "quoteOnly": false,
+          "restricted": false,
+          "rowDisplayOrder": 0,
+          "sellHold": false,
+          "shortDescription": "SODIUM CHLORIDE A R CRY 12KG",
+          "showExpertPrice": false,
+          "sourceRegionNA": true,
+          "txRestricted": false,
+          "uomSpecificPrices": [
+            {
+              "currencyIso": "USD",
+              "formattedDisplayPrice": "$453.75",
+              "formattedValue": "$453.75",
+              "priceType": "BUY",
+              "showExpertPrice": false,
+              "unicornInquireForPrice": false,
+              "uomDescription": "Each (12kg)",
+              "uomID": "EA",
+              "value": 453.75
+            }
+          ],
+          "vasCode": 0,
+          "vendorCatalogNumber": "7581-20",
+          "vwrCatalogNumber": "MK758120"
+        },
+        {
+          "alternateCount": 0,
+          "blocked": false,
+          "breakQuantity": 0,
+          "certificatesAvailable": true,
+          "clearance": false,
+          "code": "NA2027228",
+          "dfsID": false,
+          "discontinued": false,
+          "hasAccessories": false,
+          "hasAlternate": false,
+          "hideProduct": false,
+          "inquireForPrice": false,
+          "licenseRequired": false,
+          "marketSource": false,
+          "msdsAvailable": true,
+          "newProduct": false,
+          "nonRelatedInfoAssetAvailable": false,
+          "purchaseHold": false,
+          "quoteOnly": false,
+          "restricted": false,
+          "rowDisplayOrder": 0,
+          "sellHold": false,
+          "shortDescription": "SODIUM CHLORIDE AR CRY 500GM",
+          "showExpertPrice": false,
+          "sourceRegionNA": true,
+          "txRestricted": false,
+          "uomSpecificPrices": [
+            {
+              "currencyIso": "USD",
+              "formattedDisplayPrice": "$82.29",
+              "formattedValue": "$82.29",
+              "priceType": "BUY",
+              "showExpertPrice": false,
+              "unicornInquireForPrice": false,
+              "uomDescription": "Each(1/Itm/Bx)",
+              "uomID": "EA",
+              "value": 82.29
+            },
+            {
+              "currencyIso": "USD",
+              "formattedDisplayPrice": "$329.16",
+              "formattedValue": "$329.16",
+              "priceType": "BUY",
+              "showExpertPrice": false,
+              "unicornInquireForPrice": false,
+              "uomDescription": "Case of 4~ 1/ Itm/Bx",
+              "uomID": "CS",
+              "value": 329.16
+            }
+          ],
+          "vasCode": 0,
+          "vendorCatalogNumber": "7581-12",
+          "vwrCatalogNumber": "MK758112"
+        }
+      ],
+      "vasCode": 15,
+      "vendorCatalogNumbers": [
+        "7581-06"
+      ],
+      "vendorName": "AVANTOR PERFORMANCE MATERIAL LLC",
+      "volumePricesFlag": false,
+      "vwrArticleNumber": "MACR7581-06",
+      "vwrCatalogNumber": "MK758106"
+    }
+  ],
+  "sorts": [
+    {
+      "code": "relevance",
+      "name": "Best Match",
+      "selected": true
+    },
+    {
+      "code": "name-asc",
+      "name": "Product Name (A-Z)",
+      "selected": false
+    },
+    {
+      "code": "name-desc",
+      "name": "Product Name (Z-A)",
+      "selected": false
+    },
+    {
+      "code": "price-asc",
+      "name": "Price (low to high)",
+      "selected": false
+    },
+    {
+      "code": "price-desc",
+      "name": "Price (high to low)",
+      "selected": false
+    },
+    {
+      "code": "vendor-asc",
+      "name": "Supplier Name (A-Z)",
+      "selected": false
+    },
+    {
+      "code": "vendor-desc",
+      "name": "Supplier Name (Z-A)",
+      "selected": false
+    },
+    {
+      "code": "top-sellers",
+      "name": "Top Sellers",
+      "selected": false
+    }
+  ],
+  "pageTitle": "chemical_name=sodium chloride"
+}

@@ -1,13 +1,15 @@
 import { AVAILABILITY, type Availability } from '@/constants/common';
 import { findCAS } from '@/helpers/cas';
 import { parsePrice } from '@/helpers/currency';
+import { getErrorMessage } from '@/helpers/exceptions';
 import { findCountryByName } from '@/helpers/country';
-import { parseQuantity } from '@/helpers/quantity';
+import type { ProductLookup, ProductRef } from '@/helpers/productRef';
+import { parseQuantity, stripQuantityFromString } from '@/helpers/quantity';
 import { urlencode } from '@/helpers/request';
 import { findMolarity, formatFormula, parseChemicalSpecs } from '@/helpers/science';
 import { firstMap, htmlToAscii, mapDefined } from '@/helpers/utils';
 import { ProductBuilder } from '@/utils/ProductBuilder';
-import { isCountryCode } from '@/utils/typeGuards/common';
+import { isCountryCode, isPopulatedObject } from '@/utils/typeGuards/common';
 import {
   assertIsSynthetikaSearchResponse,
   isSynthetikaProduct,
@@ -188,6 +190,25 @@ export function parseSynthetikaRestrictions(html?: string): PurchaseRestriction 
 }
 
 /**
+ * Reads the product ids of a watched product's other sizes from its ref.
+ * @param ref - The watched product
+ * @returns The ids, or `undefined` for a ref saved before sizes carried theirs. Those sizes hold
+ * the head's own `uuid`, inherited when the product was built.
+ * @example
+ * ```typescript
+ * getMemberIds({ ...ref, variants: [{ uuid: '825' }, { uuid: '826' }] }); // ['825', '826']
+ * getMemberIds({ ...ref, uuid: '2311', variants: [{ uuid: '2311' }] }); // undefined
+ * ```
+ * @source
+ */
+function getMemberIds(ref: ProductRef): string[] | undefined {
+  const ids = mapDefined(ref.variants, ({ uuid }) =>
+    uuid === undefined || String(uuid) === String(ref.uuid) ? undefined : String(uuid),
+  );
+  return ids.length === ref.variants.length ? ids : undefined;
+}
+
+/**
  * Supplier implementation for Synthetika
  *
  * @remarks
@@ -249,6 +270,9 @@ export class SupplierSynthetika
   // The payment methods accepted by the supplier.
   public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
+  // Specific products can be refetched by id, so they can be watched for price drops.
+  public static readonly supportsPriceAlerts: boolean = true;
+
   /** Override the type of queryResults to use our specific type */
   protected queryResults: Array<SynthetikaProduct> = [];
 
@@ -269,6 +293,9 @@ export class SupplierSynthetika
   protected getUniqueProductKey(data: SynthetikaProduct): string {
     return String(data.id);
   }
+
+  /** Products per page of the by-id list endpoint (its maximum; the default is 10). */
+  private readonly listPageSize: number = 50;
 
   /** HTTP headers used as a basis for all queries */
   protected headers: HeadersInit = {
@@ -557,6 +584,8 @@ export class SupplierSynthetika
             const price = parsePrice(v.price?.gross.final ?? '');
             return {
               title: v.name,
+              // The size's own product id, so a refetch can find it without a search.
+              uuid: String(v.id),
               price: price?.price ?? 0,
               quantity: parseQuantity(v.name ?? '')?.quantity ?? 0,
               uom: parseQuantity(v.name ?? '')?.uom ?? '',
@@ -572,151 +601,290 @@ export class SupplierSynthetika
   }
 
   /**
+   * Refetches watched products with one request for the batch: the list endpoint takes several
+   * ids. Each product is rebuilt as its head plus the sizes its ref names, as a search shows it.
+   * @param refs - The watched products
+   * @returns The builders found, and the `cacheKey`s whose lookup failed. A head the store no
+   * longer lists, or no longer sells, is left out as unavailable.
+   * @example
+   * ```typescript
+   * const { builders } = await this.queryProductsById(refs);
+   * ```
+   * @source
+   */
+  protected override async queryProductsById(
+    refs: readonly ProductRef[],
+  ): Promise<ProductLookup<Product>> {
+    const failed = new Set<string>();
+    const memberIds = new Map<string, string[]>();
+    for (const ref of refs) {
+      try {
+        const ids = getMemberIds(ref) ?? (await this.findMemberIds(ref));
+        if (ids) memberIds.set(ref.cacheKey, ids);
+        else failed.add(ref.cacheKey);
+      } catch (error) {
+        this.logger.warn(`Failed to find a product's sizes: ${getErrorMessage(error)}`, { error });
+        failed.add(ref.cacheKey);
+      }
+    }
+
+    const wanted = [...memberIds].flatMap(([cacheKey, ids]) => [cacheKey, ...ids]);
+    if (wanted.length === 0) return { builders: [], failed };
+    const { items, invalid } = await this.fetchListedProducts([...new Set(wanted)]);
+
+    const builders: ProductBuilder<Product>[] = [];
+    for (const [cacheKey, ids] of memberIds) {
+      if (invalid.has(cacheKey) || ids.some((id) => invalid.has(id))) {
+        failed.add(cacheKey);
+        continue;
+      }
+      const head = items.get(cacheKey);
+      if (!head) continue;
+      const variants = mapDefined(ids, (id) => items.get(id));
+      const [builder] = this.initProductBuilders([{ ...head, variants }]);
+      // A head that isn't in stock is dropped by search too.
+      if (!builder) continue;
+      const detailed = this.applyProductDetail(builder, head);
+      if (detailed) builders.push(detailed);
+      else failed.add(cacheKey);
+    }
+    return { builders, failed };
+  }
+
+  /**
+   * Finds the ids of a product's sizes by searching its title, for refs saved before sizes
+   * carried their ids. Sizes are matched by exact title.
+   * @param ref - The watched product
+   * @returns The ids, or `undefined` when the search doesn't list every size
+   * @example
+   * ```typescript
+   * await this.findMemberIds(ref); // ['825', '826']
+   * ```
+   * @source
+   */
+  protected async findMemberIds(ref: ProductRef): Promise<string[] | undefined> {
+    const response = await this.httpGetJson({
+      path: `/webapi/front/en_US/products/usd/search/${urlencode(stripQuantityFromString(ref.title))}`,
+      params: { limit: this.listPageSize, page: 1 },
+    });
+    assertIsSynthetikaSearchResponse(response);
+    const idsByName = new Map(response.list.map((item) => [item.name, String(item.id)]));
+    const ids = mapDefined(ref.variants, ({ title }) =>
+      title === undefined ? undefined : idsByName.get(title),
+    );
+    return ids.length === ref.variants.length ? ids : undefined;
+  }
+
+  /**
+   * Fetches products by id from the list endpoint, which answers in the detail response's shape.
+   * Ids the store doesn't have are absent from the answer.
+   * @param ids - The product ids
+   * @returns The products that passed validation by id, and the ids that didn't
+   * @throws Error when a response isn't a product list, or pages were dropped
+   * @example
+   * ```typescript
+   * const { items } = await this.fetchListedProducts(['824', '825']);
+   * items.get('825')?.name; // 'Citric Acid Monohydrate - 1000g'
+   * ```
+   * @source
+   */
+  protected async fetchListedProducts(
+    ids: readonly string[],
+  ): Promise<{ items: Map<string, SynthetikaProduct>; invalid: Set<string> }> {
+    const items = new Map<string, SynthetikaProduct>();
+    const invalid = new Set<string>();
+    let pages = 1;
+    for (let page = 1; page <= pages; page++) {
+      const response = await this.httpGetJson({
+        path: `/webapi/front/en_US/products/usd/list/${ids.join(',')}`,
+        params: { limit: this.listPageSize, page },
+      });
+      assertIsSynthetikaSearchResponse(response);
+      pages = response.pages;
+      const list: unknown[] = response.list;
+      for (const item of list) {
+        if (isSynthetikaProduct(item)) items.set(String(item.id), item);
+        else if (isPopulatedObject(item)) invalid.add(String(item.id));
+      }
+    }
+    return { items, invalid };
+  }
+
+  /**
    * Process the product data and return a ProductBuilder instance
    * @param product - The ProductBuilder instance to process
    * @returns Promise resolving to a ProductBuilder instance or void
+   * @example
+   * ```typescript
+   * const detailed = await this.getProductData(builder);
+   * ```
    * @source
    */
   protected async getProductData(
     product: ProductBuilder<Product & { variants?: Variant[] }>,
   ): Promise<ProductBuilder<Product> | void> {
     this.logger.debug('[synthetika] getProductData init', { product });
-    return this.getProductDataWithCache(product, async (builder) => {
-      if (builder instanceof ProductBuilder === false) {
-        this.logger.warn('Invalid product object - Expected ProductBuilder instance', {
-          builder,
-          product,
-        });
-        return;
-      }
+    return this.getProductDataWithCache(product, (builder) => this.fetchProductDetail(builder));
+  }
 
-      const productURL = this.href(`/webapi/front/en_US/products/usd/${builder.get('id')}`);
-      const productResponse = await this.httpGetJson({
-        path: productURL,
-      });
+  /**
+   * Fetches a product's detail response and applies it to the builder. The body of
+   * {@link getProductData}, which adds the product-detail cache around it.
+   * @param builder - The builder to fill, which must carry the product `id`
+   * @returns The filled builder, or void when the response is unusable
+   * @example
+   * ```typescript
+   * const detailed = await this.fetchProductDetail(builder);
+   * ```
+   * @source
+   */
+  protected async fetchProductDetail(
+    builder: ProductBuilder<Product & { variants?: Variant[] }>,
+  ): Promise<ProductBuilder<Product> | void> {
+    if (builder instanceof ProductBuilder === false) {
+      this.logger.warn('Invalid product object - Expected ProductBuilder instance', { builder });
+      return;
+    }
 
-      this.logger.debug('[synthetika] Received product response', {
-        builder,
-        product,
-        productURL,
+    const productURL = this.href(`/webapi/front/en_US/products/usd/${builder.get('id')}`);
+    const productResponse = await this.httpGetJson({
+      path: productURL,
+    });
+
+    this.logger.debug('[synthetika] Received product response', {
+      builder,
+      productURL,
+      productResponse,
+    });
+
+    // Run the minimal check first, so if that fails we can bail early.
+    if (!isSynthetikaProduct(productResponse)) {
+      this.logger.warn('Product Response body did not satisfy product typeguard', {
         productResponse,
+        builder,
+        productURL,
       });
+      return;
+    }
 
-      // Run the minimal check first, so if that fails we can bail early.
-      if (!isSynthetikaProduct(productResponse)) {
-        this.logger.warn('Product Response body did not satisfy product typeguard', {
-          productResponse,
-          builder,
-          product,
-          productURL,
-        });
-        return;
-      }
+    return this.applyProductDetail(builder, productResponse);
+  }
 
-      let quantityObject: QuantityObject | undefined;
-      if ('options_configuration' in productResponse) {
-        quantityObject = mapDefined(
-          productResponse.options_configuration[0].values,
-          (value: SynthetikaConfigurationOptionValueSchema) => {
-            return parseQuantity(value.name);
-          },
-        )
-          .sort((a, b) => (a?.quantity ?? 0) - (b?.quantity ?? 0))
-          .at(0);
-        this.logger.debug('[synthetika] quantityObject (from configurationOptions', {
-          quantityObject,
-        });
-      }
+  /**
+   * Applies a detail-shaped product response to a builder: pack size, price (when unset), specs
+   * and images.
+   * @param builder - The builder to fill
+   * @param productResponse - A product from the detail or list endpoint
+   * @returns The filled builder, or void when the pack size or price can't be read
+   * @example
+   * ```typescript
+   * const detailed = this.applyProductDetail(builder, productResponse);
+   * ```
+   * @source
+   */
+  protected applyProductDetail(
+    builder: ProductBuilder<Product & { variants?: Variant[] }>,
+    productResponse: SynthetikaProduct,
+  ): ProductBuilder<Product> | void {
+    let quantityObject: QuantityObject | undefined;
+    if ('options_configuration' in productResponse) {
+      quantityObject = mapDefined(
+        productResponse.options_configuration[0].values,
+        (value: SynthetikaConfigurationOptionValueSchema) => {
+          return parseQuantity(value.name);
+        },
+      )
+        .sort((a, b) => (a?.quantity ?? 0) - (b?.quantity ?? 0))
+        .at(0);
+      this.logger.debug('[synthetika] quantityObject (from configurationOptions', {
+        quantityObject,
+      });
+    }
+
+    if (!quantityObject) {
+      quantityObject =
+        firstMap<string, QuantityObject | undefined>(parseQuantity, [
+          productResponse.name,
+          productResponse.description,
+          productResponse.weight.weight,
+        ]) ?? undefined;
 
       if (!quantityObject) {
-        quantityObject =
-          firstMap<string, QuantityObject | undefined>(parseQuantity, [
+        this.logger.warn('Failed to parse quantity from product response', {
+          productResponse,
+          builder,
+          parsedValues: [
             productResponse.name,
             productResponse.description,
             productResponse.weight.weight,
-          ]) ?? undefined;
+          ],
+        });
+        return;
+      }
+    }
 
-        if (!quantityObject) {
-          this.logger.warn('Failed to parse quantity from product response', {
-            productResponse,
-            builder,
-            product,
-            productURL,
-            parsedValues: [
-              productResponse.name,
-              productResponse.description,
-              productResponse.weight.weight,
-            ],
-          });
-          return;
-        }
-      }
+    builder.setQuantity(quantityObject);
 
-      builder.setQuantity(quantityObject);
+    if (builder.get('price') === undefined) {
+      const price = parsePrice(productResponse.price.gross.final);
+      if (!price) {
+        this.logger.warn('Failed to parse price from product response', {
+          productResponse,
+          builder,
+          parsedValue: productResponse.price.gross.final,
+        });
+        return;
+      }
+      builder.setPricing(price.price, price.currencyCode, price.currencySymbol);
+    }
 
-      if (builder.get('price') === undefined) {
-        const price = parsePrice(productResponse.price.gross.final);
-        if (!price) {
-          this.logger.warn('Failed to parse price from product response', {
-            productResponse,
-            builder,
-            product,
-            productURL,
-            parsedValue: productResponse.price.gross.final,
-          });
-          return;
-        }
-        builder.setPricing(price.price, price.currencyCode, price.currencySymbol);
-      }
+    // Synthetika descriptions aren't consistently formatted (labels may sit in <strong>,
+    // spans, or plain text, with unicode-subscript formulas), so extract with the tolerant
+    // free-text helpers rather than a fixed DOM structure.
+    const specs = parseChemicalSpecs(productResponse.description);
+    const cas = findCAS(productResponse.description);
+    if (cas) {
+      builder.setCAS(cas);
+    }
+    if (specs.formula) {
+      builder.setFormula(formatFormula(specs.formula));
+    }
+    if (specs.molecularWeight !== undefined) {
+      builder.setMoleweight(specs.molecularWeight);
+    }
+    if (specs.purity !== undefined) {
+      builder.setPurity(specs.purity);
+    }
+    if (specs.smiles) {
+      builder.setSmiles(specs.smiles);
+    }
 
-      // Synthetika descriptions aren't consistently formatted (labels may sit in <strong>,
-      // spans, or plain text, with unicode-subscript formulas), so extract with the tolerant
-      // free-text helpers rather than a fixed DOM structure.
-      const specs = parseChemicalSpecs(productResponse.description);
-      const cas = findCAS(productResponse.description);
-      if (cas) {
-        builder.setCAS(cas);
-      }
-      if (specs.formula) {
-        builder.setFormula(formatFormula(specs.formula));
-      }
-      if (specs.molecularWeight !== undefined) {
-        builder.setMoleweight(specs.molecularWeight);
-      }
-      if (specs.purity !== undefined) {
-        builder.setPurity(specs.purity);
-      }
-      if (specs.smiles) {
-        builder.setSmiles(specs.smiles);
-      }
+    // Molarity (e.g. "1.5M") shows up in the name/description for solution products.
+    const molarity =
+      findMolarity(productResponse.name) ?? findMolarity(productResponse.description);
+    if (molarity !== undefined) {
+      builder.setConcentration(molarity);
+    }
 
-      // Molarity (e.g. "1.5M") shows up in the name/description for solution products.
-      const molarity =
-        findMolarity(productResponse.name) ?? findMolarity(productResponse.description);
-      if (molarity !== undefined) {
-        builder.setConcentration(molarity);
-      }
-
-      // Images: the response gives gfx asset ids (main_image + the images array). Dedupe them
-      // and map each to its full-size gfx URL.
-      const imageIds = [
-        ...new Set(
-          [productResponse.main_image, ...(productResponse.images ?? [])].filter(
-            (id): id is string => typeof id === 'string' && id.length > 0,
-          ),
+    // Images: the response gives gfx asset ids (main_image + the images array). Dedupe them
+    // and map each to its full-size gfx URL.
+    const imageIds = [
+      ...new Set(
+        [productResponse.main_image, ...(productResponse.images ?? [])].filter(
+          (id): id is string => typeof id === 'string' && id.length > 0,
         ),
-      ];
-      if (imageIds.length > 0) {
-        builder.addImages(imageIds.map((id) => this.href(`/userdata/public/gfx/${id}/${id}.jpg`)));
-      }
+      ),
+    ];
+    if (imageIds.length > 0) {
+      builder.addImages(imageIds.map((id) => this.href(`/userdata/public/gfx/${id}/${id}.jpg`)));
+    }
 
-      // if (variants.length > 0) {
-      //   builder.setVariants(variants);
-      // }
+    // if (variants.length > 0) {
+    //   builder.setVariants(variants);
+    // }
 
-      this.logger.debug('[synthetika] Built product builder', { builder, product });
+    this.logger.debug('[synthetika] Built product builder', { builder });
 
-      return builder;
-    });
+    return builder;
   }
 }

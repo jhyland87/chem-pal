@@ -110,6 +110,7 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
       'EG',
       'IL',
     ],
+    supportsPriceAlerts: true,
   },
   SupplierAsesChem: {
     displayName: 'AsesChem',
@@ -143,6 +144,7 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     displayName: 'Chemsavers',
     country: 'US',
     shipping: 'international',
+    supportsPriceAlerts: true,
   },
   SupplierConsolidatedChemical: {
     displayName: 'Consolidated Chemical & Solvents',
@@ -198,11 +200,13 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     displayName: 'LabChem',
     country: 'DE',
     shipping: 'international',
+    supportsPriceAlerts: true,
   },
   SupplierLaboratoriumDiscounter: {
     displayName: 'Laboratorium Discounter',
     country: 'NL',
     shipping: 'domestic',
+    supportsPriceAlerts: true,
   },
   SupplierLabProServices: {
     displayName: 'LabPro Services',
@@ -240,6 +244,7 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     displayName: 'Macklin',
     country: 'CN',
     shipping: 'worldwide',
+    supportsPriceAlerts: true,
   },
   SupplierOnyxmet: {
     displayName: 'Onyxmet',
@@ -250,6 +255,7 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     displayName: 'Orbit Natural Product Derivatives',
     country: 'US',
     shipping: 'domestic',
+    supportsPriceAlerts: true,
   },
   SupplierS3Chemicals: {
     displayName: 'S3 Chemicals',
@@ -265,6 +271,7 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     displayName: 'Synthetika',
     country: 'PL',
     shipping: 'international',
+    supportsPriceAlerts: true,
   },
   SupplierTheLabStockroom: {
     displayName: 'The Lab Stockroom',
@@ -276,6 +283,7 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     displayName: 'VWR',
     country: 'US',
     shipping: 'worldwide',
+    supportsPriceAlerts: true,
   },
   SupplierWarchem: {
     displayName: 'Warchem',

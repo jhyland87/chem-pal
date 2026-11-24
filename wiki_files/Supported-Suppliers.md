@@ -66,7 +66,7 @@ You have a few ways to control this:
 ## Price alerts
 
 [Price reduction alerts](Price-Tracking#price-alerts) work for these suppliers:
-Albo Chemicals, Alliance Chemical, Amaris Chemical Solutions, AsesChem, BVV, Carolina Chemical, Consolidated Chemical & Solvents, Daily Bio USA, Gold and Silver Testing, HyperFuels, Laballey, LabPro Services, LibertySci, and The Lab Stockroom.
+Albo Chemicals, Alliance Chemical, Amaris Chemical Solutions, Ambeed, AsesChem, BVV, Carolina Chemical, Chemsavers, Consolidated Chemical & Solvents, Daily Bio USA, Gold and Silver Testing, HyperFuels, Laballey, LabChem, Laboratorium Discounter, LabPro Services, LibertySci, Macklin, Orbit Natural Product Derivatives, Synthetika, VWR, and The Lab Stockroom.
 
 ## Suppliers that aren't currently searchable
 

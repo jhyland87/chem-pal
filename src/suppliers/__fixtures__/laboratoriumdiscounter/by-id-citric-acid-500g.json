@@ -1,0 +1,110 @@
+{
+  "shop": {
+    "id": 286851,
+    "currencies": {
+      "eur": {
+        "url": "session/currency/eur",
+        "symbol": "€",
+        "code": "EUR",
+        "title": "eur",
+        "active": true
+      }
+    },
+    "currency": "eur",
+    "language": "en",
+    "locale": "en_GB"
+  },
+  "product": {
+    "id": 135857451,
+    "vid": 268605573,
+    "image": 405872757,
+    "brand": false,
+    "code": "C1949-500G",
+    "ean": "",
+    "sku": "C1949-500G",
+    "score": 0,
+    "price": {
+      "price": 30.36,
+      "price_incl": 36.7356,
+      "price_excl": 30.36,
+      "price_old": 0,
+      "price_old_incl": 0,
+      "price_old_excl": 0
+    },
+    "price_cost": false,
+    "weight": 0,
+    "volume": 0,
+    "colli": 0,
+    "size": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "unit": false,
+    "tax": 0.21,
+    "url": "citric-acid-980t-500g.html",
+    "title": "Citric Acid >98.0%(T) 500g",
+    "fulltitle": "Citric Acid >98.0%(T) 500g",
+    "variant": "1 Piece",
+    "description": "",
+    "stock": {
+      "available": true,
+      "on_stock": false,
+      "track": true,
+      "allow_outofstock_sale": true,
+      "level": 0,
+      "minimum": 1,
+      "maximum": 10000,
+      "delivery": {
+        "title": "1-2 Weeks"
+      }
+    },
+    "shorttitle": "Citric Acid >98.0%(T) 500g",
+    "content": "CAS : 77-92-9<br>Formula : C6H8O7<br>mol : 192.12<br>Boiling point:   <br>Melting point : 154°C <br>Density : <br>P&H codes : H319,H335P261,P280,P304+P340+P312,P337+P313,P403+P233,P501GHS07<br>Causes serious eye irritation. May cause respiratory irritation.<br>WGK 1: slightly water endangering<br>ADR: not subjected to ADR<br>Class : <br>Packing group : <br>",
+    "tags": [],
+    "specs": false,
+    "custom": false,
+    "options": false,
+    "matrix": false,
+    "variants": false,
+    "discounts": [],
+    "discount_rules": [],
+    "bundles": [],
+    "images": ["405872757"],
+    "related": false,
+    "reviews": false,
+    "categories": {
+      "9319956": {
+        "id": 9319956,
+        "parent": 9765906,
+        "path": ["9319956", "9765906"],
+        "depth": 2,
+        "image": 429066757,
+        "type": "category",
+        "url": "own-brand-products/chemicals-9319956",
+        "title": "chemicals",
+        "description": "chemicals",
+        "count": 50480
+      },
+      "11521218": {
+        "id": 11521218,
+        "parent": 9319956,
+        "path": ["11521218", "9319956", "9765906"],
+        "depth": 3,
+        "image": 405687727,
+        "type": "category",
+        "url": "own-brand-products/chemicals-9319956/tci-chemicals",
+        "title": "TCI chemicals",
+        "description": "",
+        "count": 49673
+      }
+    },
+    "quantity": 1,
+    "data_01": "",
+    "data_02": "",
+    "data_03": "",
+    "metafields": false,
+    "canonical": false,
+    "matrix_non_exists": false
+  }
+}

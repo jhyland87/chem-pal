@@ -1,0 +1,404 @@
+{
+  "count": 6,
+  "pages": 1,
+  "page": 1,
+  "list": [
+    {
+      "id": 824,
+      "name": "Citric Acid Monohydrate - 5000g",
+      "can_buy": true,
+      "ean": "5906288622505",
+      "code": "231141731",
+      "package": "0",
+      "unit": {
+        "name": "szt.",
+        "floating_point": false
+      },
+      "rate": 0,
+      "votes": 0,
+      "stockId": 912,
+      "url": "https://synthetikaeu.com/en_US/p/Citric-Acid-Monohydrate-5000g/824",
+      "category": {
+        "name": "Carboxylic Acids",
+        "id": 53
+      },
+      "availability": {
+        "name": "Large quantity"
+      },
+      "visibility": {
+        "status": 1,
+        "cart_status": 1,
+        "search_status": 1
+      },
+      "delivery": {
+        "name": "7 days ",
+        "hours": "168"
+      },
+      "price": {
+        "gross": {
+          "base": "€36.34",
+          "base_float": 36.34,
+          "final": "€36.34",
+          "final_float": 36.34,
+          "historical_lowest_price": "€39.50",
+          "historical_lowest_price_float": 39.5
+        },
+        "net": {
+          "base": "€29.55",
+          "base_float": 29.55,
+          "final": "€29.55",
+          "final_float": 29.55,
+          "historical_lowest_price": "€32.12",
+          "historical_lowest_price_float": 32.12
+        }
+      },
+      "productExists30DaysBeforePromotion": false,
+      "weight": {
+        "weight_float": 0,
+        "weight": "0 kg"
+      },
+      "producer": {
+        "name": "SYNTHETIKA",
+        "id": 13,
+        "img": "https://synthetikaeu.com/userdata/public/producers/13.jpg"
+      },
+      "newProduct": false,
+      "shortDescription": "",
+      "main_image": "3126",
+      "main_image_filename": "3126.jpg",
+      "historical_lowest_price": "€39.50",
+      "net_historical_lowest_price": "€32.12",
+      "is_notification_enabled": false
+    },
+    {
+      "id": 825,
+      "name": "Citric Acid Monohydrate - 1000g",
+      "can_buy": true,
+      "ean": "5906288603528",
+      "code": "231141735",
+      "package": "0",
+      "unit": {
+        "name": "szt.",
+        "floating_point": false
+      },
+      "rate": 0,
+      "votes": 0,
+      "stockId": 913,
+      "url": "https://synthetikaeu.com/en_US/p/Citric-Acid-Monohydrate-1000g/825",
+      "category": {
+        "name": "Carboxylic Acids",
+        "id": 53
+      },
+      "availability": {
+        "name": "Large quantity"
+      },
+      "visibility": {
+        "status": 1,
+        "cart_status": 1,
+        "search_status": 1
+      },
+      "delivery": {
+        "name": "7 days ",
+        "hours": "168"
+      },
+      "price": {
+        "gross": {
+          "base": "€8.29",
+          "base_float": 8.29,
+          "final": "€8.29",
+          "final_float": 8.29,
+          "historical_lowest_price": "€9.02",
+          "historical_lowest_price_float": 9.02
+        },
+        "net": {
+          "base": "€6.74",
+          "base_float": 6.74,
+          "final": "€6.74",
+          "final_float": 6.74,
+          "historical_lowest_price": "€7.33",
+          "historical_lowest_price_float": 7.33
+        }
+      },
+      "productExists30DaysBeforePromotion": false,
+      "weight": {
+        "weight_float": 0,
+        "weight": "0 kg"
+      },
+      "producer": {
+        "name": "SYNTHETIKA",
+        "id": 13,
+        "img": "https://synthetikaeu.com/userdata/public/producers/13.jpg"
+      },
+      "newProduct": false,
+      "shortDescription": "",
+      "main_image": "3127",
+      "main_image_filename": "3127.jpg",
+      "historical_lowest_price": "€9.02",
+      "net_historical_lowest_price": "€7.33",
+      "is_notification_enabled": false
+    },
+    {
+      "id": 826,
+      "name": "Citric Acid Monohydrate - 500g",
+      "can_buy": true,
+      "ean": "5906288622499",
+      "code": "231141739",
+      "package": "0",
+      "unit": {
+        "name": "szt.",
+        "floating_point": false
+      },
+      "rate": 0,
+      "votes": 0,
+      "stockId": 914,
+      "url": "https://synthetikaeu.com/en_US/p/Citric-Acid-Monohydrate-500g/826",
+      "category": {
+        "name": "Carboxylic Acids",
+        "id": 53
+      },
+      "availability": {
+        "name": "Large quantity"
+      },
+      "visibility": {
+        "status": 1,
+        "cart_status": 1,
+        "search_status": 1
+      },
+      "delivery": {
+        "name": "7 days ",
+        "hours": "168"
+      },
+      "price": {
+        "gross": {
+          "base": "€4.66",
+          "base_float": 4.66,
+          "final": "€4.66",
+          "final_float": 4.66,
+          "historical_lowest_price": "€5.06",
+          "historical_lowest_price_float": 5.06
+        },
+        "net": {
+          "base": "€3.79",
+          "base_float": 3.79,
+          "final": "€3.79",
+          "final_float": 3.79,
+          "historical_lowest_price": "€4.12",
+          "historical_lowest_price_float": 4.12
+        }
+      },
+      "productExists30DaysBeforePromotion": false,
+      "weight": {
+        "weight_float": 0,
+        "weight": "0 kg"
+      },
+      "producer": {
+        "name": "SYNTHETIKA",
+        "id": 13,
+        "img": "https://synthetikaeu.com/userdata/public/producers/13.jpg"
+      },
+      "newProduct": false,
+      "shortDescription": "",
+      "main_image": "3128",
+      "main_image_filename": "3128.jpg",
+      "historical_lowest_price": "€5.06",
+      "net_historical_lowest_price": "€4.12",
+      "is_notification_enabled": false
+    },
+    {
+      "id": 827,
+      "name": "Citric Acid Monohydrate - 100g",
+      "can_buy": true,
+      "ean": "5906288622482",
+      "code": "231141743",
+      "package": "0",
+      "unit": {
+        "name": "szt.",
+        "floating_point": false
+      },
+      "rate": 0,
+      "votes": 0,
+      "stockId": 915,
+      "url": "https://synthetikaeu.com/en_US/p/Citric-Acid-Monohydrate-100g/827",
+      "category": {
+        "name": "Carboxylic Acids",
+        "id": 53
+      },
+      "availability": {
+        "name": "Large quantity"
+      },
+      "visibility": {
+        "status": 1,
+        "cart_status": 1,
+        "search_status": 1
+      },
+      "delivery": {
+        "name": "7 days ",
+        "hours": "168"
+      },
+      "price": {
+        "gross": {
+          "base": "€1.94",
+          "base_float": 1.94,
+          "final": "€1.94",
+          "final_float": 1.94,
+          "historical_lowest_price": "€5,771.16",
+          "historical_lowest_price_float": 5771.16
+        },
+        "net": {
+          "base": "€1.57",
+          "base_float": 1.57,
+          "final": "€1.57",
+          "final_float": 1.57,
+          "historical_lowest_price": "€4,692.00",
+          "historical_lowest_price_float": 4692
+        }
+      },
+      "productExists30DaysBeforePromotion": false,
+      "weight": {
+        "weight_float": 0,
+        "weight": "0 kg"
+      },
+      "producer": {
+        "name": "SYNTHETIKA",
+        "id": 13,
+        "img": "https://synthetikaeu.com/userdata/public/producers/13.jpg"
+      },
+      "newProduct": false,
+      "shortDescription": "",
+      "main_image": "3129",
+      "main_image_filename": "3129.jpg",
+      "historical_lowest_price": "€5,771.16",
+      "net_historical_lowest_price": "€4,692.00",
+      "is_notification_enabled": false
+    },
+    {
+      "id": 8402,
+      "name": "Potassium Citrate",
+      "can_buy": true,
+      "ean": "5908164021198",
+      "code": "B5B2-89676",
+      "package": "0",
+      "unit": {
+        "name": "szt.",
+        "floating_point": false
+      },
+      "rate": 0,
+      "votes": 0,
+      "stockId": 11068,
+      "url": "https://synthetikaeu.com/en_US/p/Potassium-Citrate/8402",
+      "category": {
+        "name": "Organic salts",
+        "id": 112
+      },
+      "availability": {
+        "name": "Large quantity"
+      },
+      "visibility": {
+        "status": 1,
+        "cart_status": 1,
+        "search_status": 1
+      },
+      "delivery": {
+        "name": "7 days ",
+        "hours": "168"
+      },
+      "price": {
+        "gross": {
+          "base": "€2.27",
+          "base_float": 2.27,
+          "final": "€2.27",
+          "final_float": 2.27,
+          "historical_lowest_price": "€129.75",
+          "historical_lowest_price_float": 129.75
+        },
+        "net": {
+          "base": "€1.84",
+          "base_float": 1.84,
+          "final": "€1.84",
+          "final_float": 1.84,
+          "historical_lowest_price": "€105.49",
+          "historical_lowest_price_float": 105.49
+        }
+      },
+      "productExists30DaysBeforePromotion": false,
+      "weight": {
+        "weight_float": 0,
+        "weight": "0 kg"
+      },
+      "newProduct": false,
+      "shortDescription": "",
+      "main_image": "17226",
+      "main_image_filename": "17226.png",
+      "historical_lowest_price": "€129.75",
+      "net_historical_lowest_price": "€105.49",
+      "is_notification_enabled": false
+    },
+    {
+      "id": 7670,
+      "name": "Sodium Dichromate",
+      "can_buy": true,
+      "ean": "",
+      "code": "SYNTH_20241118121011",
+      "package": "0",
+      "unit": {
+        "name": "szt.",
+        "floating_point": false
+      },
+      "rate": 0,
+      "votes": 0,
+      "stockId": 8522,
+      "url": "https://synthetikaeu.com/en_US/p/Sodium-Dichromate/7670",
+      "category": {
+        "name": "Oxidizing agents",
+        "id": 298
+      },
+      "availability": {
+        "name": "Large quantity"
+      },
+      "visibility": {
+        "status": 1,
+        "cart_status": 1,
+        "search_status": 1
+      },
+      "delivery": {
+        "name": "10 days",
+        "hours": "240"
+      },
+      "price": {
+        "gross": {
+          "base": "€7.60",
+          "base_float": 7.6,
+          "final": "€7.60",
+          "final_float": 7.6,
+          "historical_lowest_price": "€7.60",
+          "historical_lowest_price_float": 7.6
+        },
+        "net": {
+          "base": "€6.18",
+          "base_float": 6.18,
+          "final": "€6.18",
+          "final_float": 6.18,
+          "historical_lowest_price": "€6.18",
+          "historical_lowest_price_float": 6.18
+        }
+      },
+      "productExists30DaysBeforePromotion": false,
+      "weight": {
+        "weight_float": 0,
+        "weight": "0 kg"
+      },
+      "producer": {
+        "name": "SYNTHETIKA",
+        "id": 13,
+        "img": "https://synthetikaeu.com/userdata/public/producers/13.jpg"
+      },
+      "newProduct": false,
+      "shortDescription": "<p>⚠️ EU: This product is  classified as CMR in category 1A/1B Annex VI. CLP Regulation (EC) No. 1272/2008 and therefore <strong>can</strong> <strong>only be purchased by registered business or government entities.</strong></p>",
+      "main_image": "15767",
+      "main_image_filename": "15767.png",
+      "historical_lowest_price": "€7.60",
+      "net_historical_lowest_price": "€6.18",
+      "is_notification_enabled": false
+    }
+  ]
+}
