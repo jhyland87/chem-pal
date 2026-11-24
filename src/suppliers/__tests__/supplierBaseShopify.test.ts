@@ -1,7 +1,11 @@
-import { AVAILABILITY } from '@/constants/common';
+import { AVAILABILITY, PRODUCT_REFRESH_STATUS } from '@/constants/common';
+import type { ProductRef } from '@/helpers/productRef';
+import { productSeriesKey, variantSeriesKey } from '@/helpers/priceHistory';
 import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
 import { ProductBuilder } from '@/utils/ProductBuilder';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import withVariantsResponse from '../__fixtures__/thelabstockroom/product-with-variants.json';
+import byIdResponse from '../__fixtures__/thelabstockroom/products-by-id.json';
 
 // initProductBuilders is pure parsing (no cache/network); a light SupplierCache
 // stub keeps the constructor happy.
@@ -387,4 +391,145 @@ describe('SupplierTheLabStockroom SDS probe', () => {
     expect(supplier.requestedUrls).toEqual([]);
     expect(builder.get('sdsUrl')).toBeUndefined();
   });
+});
+
+describe('SupplierBaseShopify queryProductsById', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  const [found1, missing, found2] = byIdResponse.data.nodes;
+  const GID_1 = 'gid://shopify/Product/453463801884';
+  const GID_MISSING = 'gid://shopify/Product/1';
+  const GID_2 = 'gid://shopify/Product/453463834652';
+
+  const ref = (cacheKey: string): ProductRef => ({
+    cacheKey,
+    title: cacheKey,
+    url: `https://shop.example/${cacheKey}`,
+    variants: [],
+  });
+
+  /** A supplier whose Storefront API answers with `response`. */
+  const makeSupplier = (response: unknown) => {
+    const supplier = new TestShopify('', 5, new AbortController());
+    const post = vi.spyOn(supplier as never, 'httpPostJson').mockResolvedValue(response as never);
+    return { supplier, post };
+  };
+
+  it('has the fixture shape the tests rely on', () => {
+    expect(found1?.id).toBe(GID_1);
+    expect(missing).toBeNull();
+    expect(found2?.id).toBe(GID_2);
+  });
+
+  it('requests the ids in one call, with the product fields fragment printed into the query', async () => {
+    const { supplier, post } = makeSupplier(byIdResponse);
+
+    await supplier.refreshProducts([ref(GID_1), ref(GID_MISSING), ref(GID_2)]);
+
+    expect(post).toHaveBeenCalledTimes(1);
+    const call = post.mock.calls[0][0] as {
+      path: string;
+      host: string;
+      body: { query: string; variables: { ids: string[] } };
+    };
+    expect(call.path).toBe('/api/2026-04/graphql.json');
+    expect(call.host).toBe('test.myshopify.com');
+    expect(call.body.variables).toEqual({ ids: [GID_1, GID_MISSING, GID_2] });
+    expect(call.body.query).toContain('nodes(ids: $ids)');
+    expect(call.body.query).toMatch(/fragment ShopifyProductFields on Product/);
+    expect(call.body.query).toContain('...ShopifyProductFields');
+  });
+
+  it('maps found products to OK and a null node to UNAVAILABLE, in ref order', async () => {
+    const { supplier } = makeSupplier(byIdResponse);
+
+    const results = await supplier.refreshProducts([ref(GID_1), ref(GID_MISSING), ref(GID_2)]);
+
+    expect(results.map((r) => [r.ref.cacheKey, r.status])).toEqual([
+      [GID_1, PRODUCT_REFRESH_STATUS.OK],
+      [GID_MISSING, PRODUCT_REFRESH_STATUS.UNAVAILABLE],
+      [GID_2, PRODUCT_REFRESH_STATUS.OK],
+    ]);
+    const [first] = results;
+    expect(first.status === PRODUCT_REFRESH_STATUS.OK && first.product.title).toBe(
+      'Laboratory Grade Acetone, 1L',
+    );
+  });
+
+  it('marks a malformed node FAILED without affecting its neighbours', async () => {
+    const response = { data: { nodes: [{ id: GID_1, title: 'no variants' }, found2] } };
+    const { supplier } = makeSupplier(response);
+
+    const results = await supplier.refreshProducts([ref(GID_1), ref(GID_2)]);
+
+    expect(results.map((r) => r.status)).toEqual([
+      PRODUCT_REFRESH_STATUS.FAILED,
+      PRODUCT_REFRESH_STATUS.OK,
+    ]);
+  });
+
+  it.each([
+    ['no data', { errors: [{ message: 'Throttled' }] }],
+    ['nodes is not a list', { data: { nodes: null } }],
+    ['not an object', 'oops'],
+  ])('fails every ref when the response is invalid (%s)', async (_label, response) => {
+    const { supplier } = makeSupplier(response);
+
+    const results = await supplier.refreshProducts([ref(GID_1), ref(GID_2)]);
+
+    expect(results.map((r) => r.status)).toEqual([
+      PRODUCT_REFRESH_STATUS.FAILED,
+      PRODUCT_REFRESH_STATUS.FAILED,
+    ]);
+    expect(results[0]).toMatchObject({ reason: 'Invalid Shopify products response' });
+  });
+
+  it('does not apply filterProducts to refetched products', async () => {
+    const { supplier } = makeSupplier(byIdResponse);
+    const filter = vi
+      .spyOn(supplier as never, 'filterProducts')
+      .mockImplementation(() => [] as never);
+
+    const results = await supplier.refreshProducts([ref(GID_1)]);
+
+    expect(filter).not.toHaveBeenCalled();
+    expect(results[0].status).toBe(PRODUCT_REFRESH_STATUS.OK);
+  });
+
+  it.each([
+    ['a single-size product', byIdResponse.data.nodes[0]],
+    ['a product with sizes', withVariantsResponse.data.nodes[0]],
+  ])(
+    'keeps the same product and variant series as a search of the same node (%s)',
+    async (_label, node) => {
+      const searchResponse = { data: { products: { edges: [{ node }], pageInfo: {} } } };
+      const search = new TestShopify('acetone', 5, new AbortController());
+      vi.spyOn(search as never, 'httpPostJson').mockResolvedValue(searchResponse as never);
+      vi.spyOn(search as never, 'fuzzyFilterAst').mockImplementation((items: unknown) => items);
+      const searched = await (
+        search as unknown as {
+          queryProducts: (q: string, l: number) => Promise<ProductBuilder<Product>[]>;
+        }
+      ).queryProducts('acetone', 5);
+      const searchedProduct = await searched[0].build();
+
+      const { supplier } = makeSupplier({ data: { nodes: [node] } });
+      const [result] = await supplier.refreshProducts([ref(String(node?.id))]);
+
+      if (result.status !== PRODUCT_REFRESH_STATUS.OK || !searchedProduct) {
+        throw new Error('expected both routes to produce a product');
+      }
+      expect(productSeriesKey(result.product)).toBeDefined();
+      expect(productSeriesKey(result.product)).toBe(productSeriesKey(searchedProduct));
+      const keys = (product: Product) =>
+        (product.variants ?? []).map((variant) => variantSeriesKey(product, variant));
+      expect(keys(result.product)).toEqual(keys(searchedProduct));
+      if (node === withVariantsResponse.data.nodes[0]) {
+        const variantKeys = keys(result.product);
+        expect(variantKeys).toHaveLength(2);
+        expect(new Set(variantKeys).size).toBe(2);
+        expect(variantKeys.every((key) => key !== undefined)).toBe(true);
+      }
+    },
+  );
 });

@@ -48,4 +48,7 @@ export class SupplierCarolinaChemical extends SupplierBaseWoocommerce implements
 
   // The payment methods accepted by the supplier.
   public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+
+  // Specific products can be refetched by id, so they can be watched for price drops.
+  public static readonly supportsPriceAlerts: boolean = true;
 }

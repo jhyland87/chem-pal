@@ -1,0 +1,117 @@
+{
+  "data": {
+    "nodes": [
+      {
+        "id": "gid://shopify/Product/8563856179392",
+        "handle": "1-0m-hydrochloric-acid-solution",
+        "title": "1.0M Hydrochloric Acid Solution",
+        "vendor": "Innovating Science",
+        "productType": "Stocked",
+        "tags": [
+          "Capacity_1000mL",
+          "Capacity_500mL",
+          "Category_Chemicals",
+          "Chemical_Hydrochloric Acid",
+          "Chemicals_Acids & Bases",
+          "Chemistry",
+          "Chemistry_Chemicals",
+          "Hazardous-Shipping",
+          "Manufacturer_Innovating Science",
+          "Moles_1M",
+          "Pack Size_Single",
+          "State_Liquid",
+          "StockedLY9121",
+          "Subcategory_Acids and Bases",
+          "Subject_Chemistry"
+        ],
+        "descriptionHtml": "Standardized 1.0 M hydrochloric acid working solution for acid-base titrations, pH adjustment, and general reagent needs in analytical chemistry labs.",
+        "availableForSale": true,
+        "onlineStoreUrl": "https://www.thelabstockroom.com/products/1-0m-hydrochloric-acid-solution",
+        "featuredImage": {
+          "url": "https://cdn.shopify.com/s/files/1/0250/0623/files/5a1a85b5c20e8e42d39680be41fa51e4dee5bbc1_150x150_crop_center.jpg?v=1776557271",
+          "altText": null
+        },
+        "priceRange": {
+          "minVariantPrice": {
+            "amount": "24.59",
+            "currencyCode": "USD"
+          },
+          "maxVariantPrice": {
+            "amount": "27.09",
+            "currencyCode": "USD"
+          }
+        },
+        "media": {
+          "edges": [
+            {
+              "node": {
+                "id": "gid://shopify/MediaImage/42401498824896",
+                "mediaContentType": "IMAGE",
+                "alt": "",
+                "image": {
+                  "url": "https://cdn.shopify.com/s/files/1/0250/0623/files/5a1a85b5c20e8e42d39680be41fa51e4dee5bbc1.jpg?v=1776557271",
+                  "width": 1096,
+                  "height": 2492
+                }
+              }
+            }
+          ]
+        },
+        "variants": {
+          "edges": [
+            {
+              "node": {
+                "id": "gid://shopify/ProductVariant/48212932952256",
+                "title": "1L",
+                "sku": "IS17012",
+                "availableForSale": true,
+                "currentlyNotInStock": false,
+                "weight": 2.3,
+                "weightUnit": "POUNDS",
+                "price": {
+                  "amount": "27.09",
+                  "currencyCode": "USD"
+                },
+                "compareAtPrice": {
+                  "amount": "27.09",
+                  "currencyCode": "USD"
+                },
+                "selectedOptions": [
+                  {
+                    "name": "Size",
+                    "value": "1L"
+                  }
+                ]
+              }
+            },
+            {
+              "node": {
+                "id": "gid://shopify/ProductVariant/48212932985024",
+                "title": "500mL",
+                "sku": "IS17013",
+                "availableForSale": true,
+                "currentlyNotInStock": false,
+                "weight": 1.2,
+                "weightUnit": "POUNDS",
+                "price": {
+                  "amount": "24.59",
+                  "currencyCode": "USD"
+                },
+                "compareAtPrice": {
+                  "amount": "24.59",
+                  "currencyCode": "USD"
+                },
+                "selectedOptions": [
+                  {
+                    "name": "Size",
+                    "value": "500mL"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

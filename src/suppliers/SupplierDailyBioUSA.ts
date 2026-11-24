@@ -35,6 +35,9 @@ export class SupplierDailyBioUSA extends SupplierBaseWix implements ISupplier {
   // The payment methods accepted by the supplier.
   public static readonly paymentMethods: PaymentMethod[] = ['ebayonly'];
 
+  // Specific products can be refetched by id, so they can be watched for price drops.
+  public static readonly supportsPriceAlerts: boolean = true;
+
   public readonly ebayStoreURL: string = 'https://www.ebay.com/str/dailybiousa';
 
   // Pure-search supplier: the initial search returns every field and

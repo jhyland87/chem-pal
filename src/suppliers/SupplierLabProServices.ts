@@ -1,8 +1,8 @@
+import labproProductsBySkuQuery from '@/queries/labpro-products-by-sku.gql';
 import labproProductsQuery from '@/queries/labpro-products.gql';
 import { ProductBuilder } from '@/utils/ProductBuilder';
 import { extractAllPositiveTerms } from '@/utils/search-query/extractPositiveTerms';
-import { isValidMagento2SearchResponse } from '@/utils/typeGuards/magento2';
-import { print } from 'graphql';
+import type { DocumentNode } from 'graphql';
 import { SupplierBaseMagento2 } from './SupplierBaseMagento2';
 
 /**
@@ -48,6 +48,14 @@ export class SupplierLabProServices extends SupplierBaseMagento2 implements ISup
   // The payment methods accepted by the supplier.
   public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
+  // Specific products can be refetched by id, so they can be watched for price drops.
+  public static readonly supportsPriceAlerts: boolean = true;
+
+  protected readonly productsBySkuQuery: DocumentNode = labproProductsBySkuQuery;
+
+  // LabPro has a single storefront.
+  protected storeCode: string = '';
+
   /** Magento category the search is scoped to ("Chemicals"; includes all descendants). */
   protected readonly categoryId: string = '8295';
 
@@ -92,39 +100,17 @@ export class SupplierLabProServices extends SupplierBaseMagento2 implements ISup
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    // The .gql import is a parsed DocumentNode (vite-plugin-graphql-loader); the Magento 2
-    // endpoint wants the raw query text, so print it and pass the variables alongside.
-    const graphQLQuery = print(labproProductsQuery);
     const parsed = this.getAst();
     const search = parsed.isAdvanced
       ? extractAllPositiveTerms(parsed.ast).join(' ') || query
       : query;
 
-    const searchRequest = await this.httpPostJson({
-      path: this.graphQLPath,
-      body: {
-        query: graphQLQuery,
-        variables: {
-          search,
-          categoryId: this.categoryId,
-          pageSize: limit,
-          currentPage: this.currentPage,
-        },
-      },
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    const items = await this.fetchItems(labproProductsQuery, {
+      search,
+      categoryId: this.categoryId,
+      pageSize: limit,
+      currentPage: this.currentPage,
     });
-
-    this.logger.debug('Received search response', { searchRequest });
-    if (!isValidMagento2SearchResponse(searchRequest)) {
-      this.logger.error('Invalid LabPro search response', { response: searchRequest });
-      throw new Error('Invalid LabPro search response', {
-        cause: { searchRequest, query, supplier: this.supplierName },
-      });
-    }
-
-    const items = searchRequest.data.products.items;
 
     if (items.length === 0) {
       this.logger.warn('LabPro search returned no products', { query });

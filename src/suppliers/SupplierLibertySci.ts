@@ -44,6 +44,9 @@ export class SupplierLibertySci extends SupplierBaseWoocommerce implements ISupp
   // The payment methods accepted by the supplier.
   public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
+  // Specific products can be refetched by id, so they can be watched for price drops.
+  public static readonly supportsPriceAlerts: boolean = true;
+
   /**
    * Builds the base WooCommerce product builders, then enriches each with the chemical formula and
    * molecular weight that LibertySci embeds in the product description (e.g. "KClO<sub>3</sub>,

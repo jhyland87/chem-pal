@@ -1,0 +1,10 @@
+#import "./labpro-product-fields.gql"
+
+# Fetches specific products by SKU in one request. A missing SKU is simply absent.
+query productsBySku($skus: [String!]!, $pageSize: Int!) {
+  products(filter: { sku: { in: $skus } }, pageSize: $pageSize, currentPage: 1) {
+    items {
+      ...LabproProductFields
+    }
+  }
+}

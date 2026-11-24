@@ -34,6 +34,7 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     displayName: 'Albo Chemicals',
     country: 'US',
     shipping: 'domestic',
+    supportsPriceAlerts: true,
   },
   SupplierAlchemieLabs: {
     displayName: 'Alchemie Labs',
@@ -44,6 +45,7 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     displayName: 'Alliance Chemical',
     country: 'US',
     shipping: 'domestic',
+    supportsPriceAlerts: true,
   },
   SupplierAmarisChemicalSolutions: {
     displayName: 'Amaris Chemical Solutions',
@@ -112,6 +114,7 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     displayName: 'AsesChem',
     country: 'IN',
     shipping: 'domestic',
+    supportsPriceAlerts: true,
   },
   SupplierBioFuranChem: {
     displayName: 'BioFuran Chem',
@@ -122,6 +125,7 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     displayName: 'BVV',
     country: 'US',
     shipping: 'domestic',
+    supportsPriceAlerts: true,
   },
   SupplierCarolina: {
     displayName: 'Carolina',
@@ -132,6 +136,7 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     displayName: 'Carolina Chemical',
     country: 'US',
     shipping: 'domestic',
+    supportsPriceAlerts: true,
   },
   SupplierChemsavers: {
     displayName: 'Chemsavers',
@@ -142,11 +147,13 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     displayName: 'Consolidated Chemical & Solvents',
     country: 'US',
     shipping: 'domestic',
+    supportsPriceAlerts: true,
   },
   SupplierDailyBioUSA: {
     displayName: 'Daily Bio USA',
     country: 'US',
     shipping: 'domestic',
+    supportsPriceAlerts: true,
   },
   SupplierDiyChemicals: {
     displayName: 'DIY Chemicals',
@@ -162,6 +169,7 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     displayName: 'Gold and Silver Testing',
     country: 'US',
     shipping: 'domestic',
+    supportsPriceAlerts: true,
   },
   SupplierHimedia: {
     displayName: 'Himedia',
@@ -172,6 +180,7 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     displayName: 'HyperFuels',
     country: 'US',
     shipping: 'domestic',
+    supportsPriceAlerts: true,
   },
   SupplierInnovatingScience: {
     displayName: 'Innovating Science',
@@ -182,6 +191,7 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     displayName: 'Laballey',
     country: 'US',
     shipping: 'international',
+    supportsPriceAlerts: true,
   },
   SupplierLabChem: {
     displayName: 'LabChem',
@@ -197,6 +207,7 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     displayName: 'LabPro Services',
     country: 'US',
     shipping: 'domestic',
+    supportsPriceAlerts: true,
   },
   SupplierLabStuff: {
     displayName: 'LabStuff',
@@ -212,6 +223,7 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     displayName: 'LibertySci',
     country: 'US',
     shipping: 'worldwide',
+    supportsPriceAlerts: true,
   },
   SupplierLiMac: {
     displayName: 'LiMac',
@@ -257,6 +269,7 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     displayName: 'The Lab Stockroom',
     country: 'US',
     shipping: 'international',
+    supportsPriceAlerts: true,
   },
   SupplierVWR: {
     displayName: 'VWR',

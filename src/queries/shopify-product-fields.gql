@@ -1,0 +1,67 @@
+fragment ShopifyProductFields on Product {
+  id
+  handle
+  title
+  vendor
+  productType
+  tags
+  descriptionHtml
+  availableForSale
+  onlineStoreUrl
+  featuredImage {
+    # Use the transform argument to request a specific thumbnail size
+    url(transform: { maxWidth: 150, maxHeight: 150, crop: CENTER })
+    altText
+  }
+  priceRange {
+    minVariantPrice {
+      amount
+      currencyCode
+    }
+    maxVariantPrice {
+      amount
+      currencyCode
+    }
+  }
+  media(first: 10) {
+    edges {
+      node {
+        id
+        mediaContentType
+        ... on MediaImage {
+          alt
+          image {
+            url
+            width
+            height
+          }
+        }
+      }
+    }
+  }
+  variants(first: 100) {
+    edges {
+      node {
+        id
+        title
+        sku
+        availableForSale
+        currentlyNotInStock
+        weight
+        weightUnit
+        price {
+          amount
+          currencyCode
+        }
+        compareAtPrice {
+          amount
+          currencyCode
+        }
+        selectedOptions {
+          name
+          value
+        }
+      }
+    }
+  }
+}

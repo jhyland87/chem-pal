@@ -1,0 +1,35 @@
+{
+ "totalItems": 2,
+ "hasItems": true,
+ "startIndex": 0,
+ "itemsPerPage": 200,
+ "currentItemCount": 2,
+ "items": [
+  {
+   "product_id": "6703",
+   "original_product_id": "6703",
+   "title": "Acetone 99.5% Lab Grade",
+   "description": "",
+   "link": "https://www.laballey.com/catalog/product/view/id/6703/",
+   "price": "1039.7600",
+   "list_price": "1039.7600",
+   "quantity": "1",
+   "product_code": "ACEL-55GAL",
+   "image_link": "https://www.laballey.com/media/catalog/product/a/c/acetone_99.5__lab_acel_55_gallon_2025.jpg?width=300&height=300&canvas=300,300&optimize=medium&bg-color=255,255,255&fit=bounds",
+   "categories": "Bulk & Custom Chemicals[:ATTR:]Drums[:ATTR:]Pallets[:ATTR:]Totes[:ATTR:]Essential Chemicals (Top Sellers)[:ATTR:]Acetone[:ATTR:]Lab Grade[:ATTR:]Cannabis & Hemp[:ATTR:]Education[:ATTR:]Energy, Oil & Gas[:ATTR:]Food & Beverage[:ATTR:]Government[:ATTR:]Healthcare[:ATTR:]Manufacturing & Industrial[:ATT"
+  },
+  {
+   "product_id": "6706",
+   "original_product_id": "6706",
+   "title": "Acetone 99.5% Lab Grade",
+   "description": "",
+   "link": "https://www.laballey.com/catalog/product/view/id/6706/",
+   "price": "72.3100",
+   "list_price": "72.3100",
+   "quantity": "1",
+   "product_code": "ACEL-1GAL",
+   "image_link": "https://www.laballey.com/media/catalog/product/a/c/acetone_99.5__lab_acel_1_gallon_2025.jpg?width=300&height=300&canvas=300,300&optimize=medium&bg-color=255,255,255&fit=bounds",
+   "categories": "Bulk & Custom Chemicals[:ATTR:]Drums[:ATTR:]Pallets[:ATTR:]Totes[:ATTR:]Essential Chemicals (Top Sellers)[:ATTR:]Acetone[:ATTR:]Lab Grade[:ATTR:]Cannabis & Hemp[:ATTR:]Education[:ATTR:]Energy, Oil & Gas[:ATTR:]Food & Beverage[:ATTR:]Government[:ATTR:]Healthcare[:ATTR:]Manufacturing & Industrial[:ATT"
+  }
+ ]
+}

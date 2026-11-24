@@ -1,9 +1,10 @@
 import { CACHE } from '@/constants/common';
 import { findCAS } from '@/helpers/cas';
 import { HttpError, getErrorMessage, isExpectedAbort } from '@/helpers/exceptions';
+import type { ProductLookup, ProductRef } from '@/helpers/productRef';
 import { parseQuantity } from '@/helpers/quantity';
 import { findMolarity, findMolarMass, findPurity } from '@/helpers/science';
-import { firstMap } from '@/helpers/utils';
+import { firstMap, mapDefined } from '@/helpers/utils';
 import { ProductBuilder } from '@/utils/ProductBuilder';
 import { cstorage } from '@/utils/storage';
 import {
@@ -93,6 +94,9 @@ export abstract class SupplierBaseSearchanise
   // Scraped from the storefront and cached in storage; empty until ensureCredentials() runs.
   protected apiKey: string = '';
 
+  // Below httpRequestHardLimit: a product with no stored id needs a request of its own.
+  protected refreshBatchSize: number = 40;
+
   // Hostname requests are sent to; one of SEARCHANISE_API_HOSTS.
   protected apiHost: string = SEARCHANISE_DEFAULT_API_HOST;
 
@@ -158,6 +162,32 @@ export abstract class SupplierBaseSearchanise
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
+    const items = await this.fetchItems({ queryBy: { title: query } });
+    if (!items) return;
+
+    if (items.length === 0) {
+      this.logger.error('Search response items is empty', { items });
+      return;
+    }
+
+    const validItems = this.inStockItems(items);
+    const fuzzResults = this.fuzzyFilterAst<ItemListing>(validItems);
+    this.logger.debug('Applied fuzzy filter to search results', { fuzzResults });
+
+    return this.initProductBuilders(fuzzResults.slice(0, limit));
+  }
+
+  /**
+   * Runs one `/getresults` query and returns its items. A rejected api key is re-scraped once.
+   * @param query - The parameters that select the items
+   * @returns The items found, or undefined when the request failed (already logged)
+   * @example
+   * ```typescript
+   * await this.fetchItems({ queryBy: { title: 'acetone' } }); // [{ product_code: 'C1234', … }]
+   * ```
+   * @source
+   */
+  private async fetchItems(query: RequestParams): Promise<ItemListing[] | undefined> {
     // curl -s --get https://searchserverapi.com/getresults \
     //   --data-urlencode "api_key=<api_key>" \
     //   --data-urlencode "q=sulf" \
@@ -190,39 +220,65 @@ export abstract class SupplierBaseSearchanise
       return;
     }
 
-    const searchRequest = outcome.json;
-
-    if (!isValidSearchResponse(searchRequest)) {
-      this.logger.error('Invalid search response', { response: searchRequest });
+    if (!isValidSearchResponse(outcome.json)) {
+      this.logger.error('Invalid search response', { response: outcome.json });
       return;
     }
+    return outcome.json.items?.filter((item) => item !== null);
+  }
 
-    if (!('items' in searchRequest)) {
-      this.logger.error('Invalid search response', { response: searchRequest });
-      return;
+  /**
+   * Keeps the items that are in stock.
+   * @param items - The items to filter
+   * @returns The items with a positive quantity
+   * @example
+   * ```typescript
+   * this.inStockItems([{ quantity: '2', … }, { quantity: '0', … }]); // [{ quantity: '2', … }]
+   * ```
+   * @source
+   */
+  private inStockItems(items: ItemListing[]): ItemListing[] {
+    return items.filter((item) => 'quantity' in item && Number(item.quantity) > 0);
+  }
+
+  /**
+   * Fetches specific products in one request by their product ids. Products cached before the id
+   * was stored are looked up one at a time by product code, which the API can't filter on.
+   *
+   * @param refs - The products to fetch
+   * @returns Builders for the products found, and the refs whose request failed
+   * @throws Error when the batched request fails
+   * @example
+   * ```typescript
+   * const { builders } = await this.queryProductsById(refs);
+   * ```
+   * @source
+   */
+  protected override async queryProductsById(
+    refs: readonly ProductRef[],
+  ): Promise<ProductLookup<Product>> {
+    const items: ItemListing[] = [];
+    const failed = new Set<string>();
+
+    const ids = mapDefined([...refs], (ref) => ref.id);
+    if (ids.length > 0) {
+      const found = await this.fetchItems({ restrictBy: { product_id: ids.join('|') } });
+      if (!found) {
+        throw new Error('Searchanise products request failed');
+      }
+      items.push(...found);
     }
 
-    if ('items' in searchRequest === false || !Array.isArray(searchRequest.items)) {
-      this.logger.error('Search response items is not an array', { items: searchRequest.items });
-      return;
+    for (const ref of refs.filter(({ id }) => id === undefined)) {
+      const found = await this.fetchItems({ q: ref.cacheKey });
+      if (!found) {
+        failed.add(ref.cacheKey);
+        continue;
+      }
+      items.push(...found.filter((item) => this.getUniqueProductKey(item) === ref.cacheKey));
     }
 
-    if (searchRequest.items.length === 0) {
-      this.logger.error('Search response items is empty', { items: searchRequest.items });
-      return;
-    }
-
-    const validItems = (searchRequest.items ?? []).filter(
-      (item): item is ItemListing =>
-        item !== null &&
-        typeof item === 'object' &&
-        'quantity' in item &&
-        Number(item.quantity) > 0,
-    );
-    const fuzzResults = this.fuzzyFilterAst<ItemListing>(validItems);
-    this.logger.debug('Applied fuzzy filter to search results', { fuzzResults });
-
-    return this.initProductBuilders(fuzzResults.slice(0, limit));
+    return { builders: this.initProductBuilders(this.inStockItems(items)), failed };
   }
 
   /**
@@ -277,6 +333,7 @@ export abstract class SupplierBaseSearchanise
           )
           .setDescription(item.description)
           .setSku(item.product_code)
+          .setID(item.product_id)
           .setVendor(item.vendor)
           .setImage(item.image_link)
           .setCAS(firstMap(findCAS, [item.title, item.description]))
@@ -373,17 +430,17 @@ export abstract class SupplierBaseSearchanise
   }
 
   /**
-   * Builds the `/getresults` query string parameters for a search.
-   * @param query - The product title to search for
+   * Builds the `/getresults` query string parameters.
+   * @param query - The parameters that select the items
    * @returns Request params using the current {@link apiKey}
    * @example
    * ```typescript
-   * this.buildResultsParams('acetone');
+   * this.buildResultsParams({ queryBy: { title: 'acetone' } });
    * // { api_key: '4p4M0R6q0N', maxResults: 200, queryBy: { title: 'acetone' }, ... }
    * ```
    * @source
    */
-  private buildResultsParams(query: string): RequestParams {
+  private buildResultsParams(query: RequestParams): RequestParams {
     return {
       // The limit applies to the products returned from the supplier, not to this request.
       api_key: this.apiKey,
@@ -392,9 +449,7 @@ export abstract class SupplierBaseSearchanise
       sortBy: 'relevance',
       items: true,
       pageStartIndex: 0,
-      queryBy: {
-        title: query,
-      },
+      ...query,
       pagesMaxResults: 1,
       vendorsMaxResults: 200,
       output: 'json',
@@ -412,7 +467,7 @@ export abstract class SupplierBaseSearchanise
    * @returns `ok` with the parsed body, `expired` when the key was rejected, or `failed`
    * @example
    * ```typescript
-   * await this.fetchResults(this.buildResultsParams('acetone'));
+   * await this.fetchResults(this.buildResultsParams({ queryBy: { title: 'acetone' } }));
    * // { kind: 'ok', json: { totalItems: 12, items: [...] } }
    * // { kind: 'expired' }   (api key was rejected)
    * // { kind: 'failed' }    (network error, abort, or a body that is not JSON)

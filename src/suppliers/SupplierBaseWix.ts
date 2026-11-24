@@ -1,5 +1,6 @@
 import { UOM } from '@/constants/common';
 import { parsePrice } from '@/helpers/currency';
+import type { ProductLookup, ProductRef } from '@/helpers/productRef';
 import { parseQuantity } from '@/helpers/quantity';
 import { parseChemicalSpecs } from '@/helpers/science';
 import { findPdfHref, htmlToAscii, mapDefined } from '@/helpers/utils';
@@ -45,6 +46,9 @@ export abstract class SupplierBaseWix
   // Wix's catalog filter supports and/or/not, so advanced queries are translated
   // server-side instead of using the keyword-only fallback.
   protected readonly supportsNativeAdvancedSearch: boolean = true;
+
+  // One request fetches the whole batch.
+  protected refreshBatchSize: number = 100;
 
   /**
    * Derives the unique product key from a Wix product object: its stable
@@ -128,13 +132,36 @@ export abstract class SupplierBaseWix
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
+    const productResults = await this.fetchProducts(this.getGraphQLVariables(query));
+    const fuzzResults = this.fuzzyFilterAst<ProductObject>(productResults);
+
+    this.logger.debug('Applied fuzzy filter to product results', {
+      query,
+      productResults,
+      fuzzResults,
+    });
+
+    return this.initProductBuilders(fuzzResults.slice(0, limit));
+  }
+
+  /**
+   * Runs the catalog query.
+   *
+   * @param graphQLVariables - The query's variables, including its filter
+   * @returns The matching products
+   * @throws Error when the response is invalid
+   * @example
+   * ```typescript
+   * await this.fetchProducts(this.getGraphQLVariables('acetone')); // [{ id: 'd1e2…', … }]
+   * ```
+   * @source
+   */
+  private async fetchProducts(graphQLVariables: GraphQLQueryVariables): Promise<ProductObject[]> {
     // The .gql import is a parsed DocumentNode (vite-plugin-graphql-loader);
     // the Wix endpoint wants the raw query text in the `q` param, so print it.
     const graphQLQuery = print(getFilteredProductsWithHasDiscount);
 
-    const graphQLVariables = this.getGraphQLVariables(query);
-
-    const searchRequest = await this.httpGetJson({
+    const response = await this.httpGetJson({
       path: '_api/wix-ecommerce-storefront-web/api',
       params: {
         o: 'getFilteredProducts',
@@ -144,29 +171,37 @@ export abstract class SupplierBaseWix
       },
     });
 
-    if (isValidSearchResponse(searchRequest) === false) {
-      throw new Error(`Invalid or empty Wix query response for ${query}`, {
-        cause: {
-          searchRequest,
-          graphQLQuery,
-          graphQLVariables,
-          query,
-          supplier: this.supplierName,
-        },
+    if (!isValidSearchResponse(response)) {
+      throw new Error('Invalid or empty Wix query response', {
+        cause: { response, graphQLQuery, graphQLVariables, supplier: this.supplierName },
       });
     }
+    return response.data.catalog.category.productsWithMetaData.list;
+  }
 
-    const fuzzResults = this.fuzzyFilterAst<ProductObject>(
-      searchRequest.data.catalog.category.productsWithMetaData.list,
-    );
-
-    this.logger.debug('Applied fuzzy filter to product results', {
-      query,
-      productResults: searchRequest.data.catalog.category.productsWithMetaData.list,
-      fuzzResults,
+  /**
+   * Fetches specific products in one request by their catalog ids.
+   *
+   * @param refs - The products to fetch
+   * @returns Builders for the products found
+   * @throws Error when the response is invalid
+   * @example
+   * ```typescript
+   * const { builders } = await this.queryProductsById(refs);
+   * ```
+   * @source
+   */
+  protected override async queryProductsById(
+    refs: readonly ProductRef[],
+  ): Promise<ProductLookup<Product>> {
+    const products = await this.fetchProducts({
+      mainCollectionId: this.categories.all,
+      offset: 0,
+      limit: refs.length,
+      sort: null,
+      filters: { term: { field: 'id', op: 'IN', values: refs.map((ref) => ref.cacheKey) } },
     });
-
-    return this.initProductBuilders(fuzzResults.slice(0, limit));
+    return { builders: this.initProductBuilders(products) };
   }
 
   /**

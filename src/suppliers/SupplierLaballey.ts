@@ -22,6 +22,9 @@ export class SupplierLaballey extends SupplierBaseSearchanise implements ISuppli
   // The payment methods accepted by the supplier.
   public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
+  // Specific products can be refetched by id, so they can be watched for price drops.
+  public static readonly supportsPriceAlerts: boolean = true;
+
   // Pure-search supplier: the initial search returns every field and
   // getProductData is a passthrough, so there's no per-product detail to cache.
   protected readonly skipProductDetailCache: boolean = true;

@@ -1,0 +1,418 @@
+{
+ "data": {
+  "products": {
+   "items": [
+    {
+     "__typename": "SimpleProduct",
+     "uid": "OTY0NTA=",
+     "sku": "B1085-500GM-EA",
+     "name": "Benzoic Acid, Crystal, Reagent, ACS, 500g, CAS# 65-85-0",
+     "url_key": "buy-benzoic-acid-crystal-reagent-acs-500g-cas-65-85-0-b1085-500gm-ea",
+     "url_suffix": ".html",
+     "stock_status": "IN_STOCK",
+     "short_description": {
+      "html": "Benzoic Acid, Crystal, Reagent, ACS an aromatic crystalline solid that is colorless. It is used as a standard for calibrating bomb calorimeters in teaching laboratories and as a synthetic precursor to a series of plasticizers. As an ACS grade quality reagent, its chemical specifications are the de f"
+     },
+     "description": {
+      "html": "Benzoic Acid, Crystal, Reagent, ACS an aromatic crystalline solid that is colorless. It is used as a standard for calibrating bomb calorimeters in teaching laboratories and as a synthetic precursor to a series of plasticizers. As an ACS grade quality reagent, its chemical specifications are the de f"
+     },
+     "image": {
+      "url": "https://www.labproservices.com/media/catalog/product/cache/74c1057f7991b4edb2bc7bdaa94de933/s/p/spectrum_chemical--b1085-500gm--benzoic_acid_crystal_reagent.png",
+      "label": "Benzoic Acid, Crystal, Reagent, ACS, 500g, CAS# 65-85-0"
+     },
+     "thumbnail": {
+      "url": "https://www.labproservices.com/media/catalog/product/cache/74c1057f7991b4edb2bc7bdaa94de933/s/p/spectrum_chemical--b1085-500gm--benzoic_acid_crystal_reagent.png"
+     },
+     "media_gallery": [
+      {
+       "url": "https://www.labproservices.com/media/catalog/product/cache/74c1057f7991b4edb2bc7bdaa94de933/s/p/spectrum_chemical--b1085-500gm--benzoic_acid_crystal_reagent.png",
+       "label": "",
+       "position": 1
+      }
+     ],
+     "price_range": {
+      "minimum_price": {
+       "regular_price": {
+        "value": 280.5,
+        "currency": "USD"
+       },
+       "final_price": {
+        "value": 166,
+        "currency": "USD"
+       },
+       "discount": {
+        "amount_off": 114.5,
+        "percent_off": 40.82
+       }
+      },
+      "maximum_price": {
+       "regular_price": {
+        "value": 280.5,
+        "currency": "USD"
+       },
+       "final_price": {
+        "value": 166,
+        "currency": "USD"
+       }
+      }
+     },
+     "price_tiers": [],
+     "brand_sku": null,
+     "attach_file": null,
+     "attach_title": "Details & Specifications",
+     "country_of_manufacture": null,
+     "product_zoho_id": "5703559000021652844",
+     "meta_title": null,
+     "meta_keyword": null,
+     "custom_attributesV2": {
+      "items": [
+       {
+        "code": "name",
+        "value": "Benzoic Acid, Crystal, Reagent, ACS, 500g, CAS# 65-85-0"
+       },
+       {
+        "code": "description",
+        "value": "Benzoic Acid, Crystal, Reagent, ACS an aromatic crystalline solid that is colorless. It is used as a standard for calibrating bomb calorimeters in teaching laboratories and as a synthetic precursor to a series of plasticizers. As an ACS grade quality reagent, its chemical specifications are the de facto standards for chemicals used in many high-purity applications and typically designate the highest quality chemical available for laboratory use. Spectrum Chemical manufactured Reagent ACS grade products meet the toughest regulatory standards for quality and purity.</p><p>CAS Number: 65-85-0</p><p>Manufacturer Part Number/SKU: B1085-500GM-EA</p><p>Tags: Spectrum Chemical</p>"
+       },
+       {
+        "code": "short_description",
+        "value": "Benzoic Acid, Crystal, Reagent, ACS an aromatic crystalline solid that is colorless. It is used as a standard for calibrating bomb calorimeters in teaching laboratories and as a synthetic precursor to a series of plasticizers. As an ACS grade quality reagent, its chemical specifications are the de facto standards for chemicals used in many high-purity applications and typically designate the highest quality chemical available for laboratory use. Spectrum Chemical manufactured Reagent ACS grade products meet the toughest regulatory standards for quality and purity.</p> (1 per EA )"
+       },
+       {
+        "code": "price",
+        "value": "280.500000"
+       },
+       {
+        "code": "special_price",
+        "value": "166.000000"
+       },
+       {
+        "code": "weight",
+        "value": "1.400000"
+       },
+       {
+        "code": "manufacturer",
+        "selected_options": [
+         {
+          "label": "Spectrum Chemical",
+          "value": "38"
+         }
+        ]
+       },
+       {
+        "code": "image",
+        "value": "/s/p/spectrum_chemical--b1085-500gm--benzoic_acid_crystal_reagent.png"
+       },
+       {
+        "code": "small_image",
+        "value": "/s/p/spectrum_chemical--b1085-500gm--benzoic_acid_crystal_reagent.png"
+       },
+       {
+        "code": "thumbnail",
+        "value": "/s/p/spectrum_chemical--b1085-500gm--benzoic_acid_crystal_reagent.png"
+       },
+       {
+        "code": "tier_price",
+        "value": ""
+       },
+       {
+        "code": "status",
+        "selected_options": [
+         {
+          "label": "Enabled",
+          "value": "1"
+         }
+        ]
+       },
+       {
+        "code": "visibility",
+        "selected_options": [
+         {
+          "label": "Catalog, Search",
+          "value": "4"
+         }
+        ]
+       },
+       {
+        "code": "options_container",
+        "selected_options": [
+         {
+          "label": "Block after Info Column",
+          "value": "container2"
+         }
+        ]
+       },
+       {
+        "code": "msrp_display_actual_price_type",
+        "selected_options": [
+         {
+          "label": "Use config",
+          "value": "0"
+         }
+        ]
+       },
+       {
+        "code": "url_key",
+        "value": "buy-benzoic-acid-crystal-reagent-acs-500g-cas-65-85-0-b1085-500gm-ea"
+       },
+       {
+        "code": "tax_class_id",
+        "selected_options": [
+         {
+          "label": "Taxable Goods",
+          "value": "10"
+         }
+        ]
+       },
+       {
+        "code": "msrp_enabled",
+        "selected_options": []
+       },
+       {
+        "code": "configurable",
+        "selected_options": []
+       },
+       {
+        "code": "canonical_cross_domain",
+        "selected_options": []
+       },
+       {
+        "code": "exclude_from_crosslinking",
+        "value": "0"
+       },
+       {
+        "code": "exclude_from_sitemap",
+        "value": "0"
+       },
+       {
+        "code": "exclude_from_html_sitemap",
+        "value": "0"
+       },
+       {
+        "code": "attach_title",
+        "value": "Details & Specifications"
+       },
+       {
+        "code": "att_asin",
+        "value": "12352301"
+       },
+       {
+        "code": "call_for_price_active",
+        "value": "0"
+       },
+       {
+        "code": "product_zoho_id",
+        "value": "5703559000021652844"
+       }
+      ]
+     }
+    },
+    {
+     "__typename": "SimpleProduct",
+     "uid": "ODg0NzY=",
+     "sku": "H4026-1GM-EA",
+     "name": "2-(4-Hydroxybenzoyl)benzoic Acid, 98 Percent, 1g, CAS# 85-57-4",
+     "url_key": "buy-2-4-hydroxybenzoyl-benzoic-acid-98-percent-1g-cas-85-57-4-h4026-1gm-ea",
+     "url_suffix": ".html",
+     "stock_status": "IN_STOCK",
+     "short_description": {
+      "html": "2-(4-Hydroxybenzoyl)benzoic Acid, 98 Percent (1 per EA )"
+     },
+     "description": {
+      "html": "2-(4-Hydroxybenzoyl)benzoic Acid, 98 Percent<p>CAS Number: 85-57-4</p><p>Manufacturer Part Number/SKU: H4026-1GM-EA</p><p>Tags: Spectrum Chemical</p>"
+     },
+     "image": {
+      "url": "https://www.labproservices.com/media/catalog/product/cache/74c1057f7991b4edb2bc7bdaa94de933/s/p/spectrum_chemical.jpg",
+      "label": "2-(4-Hydroxybenzoyl)benzoic Acid, 98 Percent, 1g, CAS# 85-57-4"
+     },
+     "thumbnail": {
+      "url": "https://www.labproservices.com/media/catalog/product/cache/74c1057f7991b4edb2bc7bdaa94de933/s/p/spectrum_chemical.jpg"
+     },
+     "media_gallery": [
+      {
+       "url": "https://www.labproservices.com/media/catalog/product/cache/74c1057f7991b4edb2bc7bdaa94de933/s/p/spectrum_chemical.jpg",
+       "label": "",
+       "position": 1
+      }
+     ],
+     "price_range": {
+      "minimum_price": {
+       "regular_price": {
+        "value": 117.95,
+        "currency": "USD"
+       },
+       "final_price": {
+        "value": 117.95,
+        "currency": "USD"
+       },
+       "discount": {
+        "amount_off": 0,
+        "percent_off": 0
+       }
+      },
+      "maximum_price": {
+       "regular_price": {
+        "value": 117.95,
+        "currency": "USD"
+       },
+       "final_price": {
+        "value": 117.95,
+        "currency": "USD"
+       }
+      }
+     },
+     "price_tiers": [],
+     "brand_sku": null,
+     "attach_file": null,
+     "attach_title": "Details & Specifications",
+     "country_of_manufacture": null,
+     "product_zoho_id": "5703559000021638138",
+     "meta_title": null,
+     "meta_keyword": null,
+     "custom_attributesV2": {
+      "items": [
+       {
+        "code": "name",
+        "value": "2-(4-Hydroxybenzoyl)benzoic Acid, 98 Percent, 1g, CAS# 85-57-4"
+       },
+       {
+        "code": "description",
+        "value": "2-(4-Hydroxybenzoyl)benzoic Acid, 98 Percent<p>CAS Number: 85-57-4</p><p>Manufacturer Part Number/SKU: H4026-1GM-EA</p><p>Tags: Spectrum Chemical</p>"
+       },
+       {
+        "code": "short_description",
+        "value": "2-(4-Hydroxybenzoyl)benzoic Acid, 98 Percent (1 per EA )"
+       },
+       {
+        "code": "price",
+        "value": "117.950000"
+       },
+       {
+        "code": "special_price",
+        "value": "117.950000"
+       },
+       {
+        "code": "weight",
+        "value": "0.300000"
+       },
+       {
+        "code": "manufacturer",
+        "selected_options": [
+         {
+          "label": "Spectrum Chemical",
+          "value": "38"
+         }
+        ]
+       },
+       {
+        "code": "image",
+        "value": "/s/p/spectrum_chemical.jpg"
+       },
+       {
+        "code": "small_image",
+        "value": "/s/p/spectrum_chemical.jpg"
+       },
+       {
+        "code": "thumbnail",
+        "value": "/s/p/spectrum_chemical.jpg"
+       },
+       {
+        "code": "tier_price",
+        "value": ""
+       },
+       {
+        "code": "status",
+        "selected_options": [
+         {
+          "label": "Enabled",
+          "value": "1"
+         }
+        ]
+       },
+       {
+        "code": "visibility",
+        "selected_options": [
+         {
+          "label": "Catalog, Search",
+          "value": "4"
+         }
+        ]
+       },
+       {
+        "code": "options_container",
+        "selected_options": [
+         {
+          "label": "Block after Info Column",
+          "value": "container2"
+         }
+        ]
+       },
+       {
+        "code": "msrp_display_actual_price_type",
+        "selected_options": [
+         {
+          "label": "Use config",
+          "value": "0"
+         }
+        ]
+       },
+       {
+        "code": "url_key",
+        "value": "buy-2-4-hydroxybenzoyl-benzoic-acid-98-percent-1g-cas-85-57-4-h4026-1gm-ea"
+       },
+       {
+        "code": "tax_class_id",
+        "selected_options": [
+         {
+          "label": "Taxable Goods",
+          "value": "10"
+         }
+        ]
+       },
+       {
+        "code": "msrp_enabled",
+        "selected_options": []
+       },
+       {
+        "code": "configurable",
+        "selected_options": []
+       },
+       {
+        "code": "canonical_cross_domain",
+        "selected_options": []
+       },
+       {
+        "code": "exclude_from_crosslinking",
+        "value": "0"
+       },
+       {
+        "code": "exclude_from_sitemap",
+        "value": "0"
+       },
+       {
+        "code": "exclude_from_html_sitemap",
+        "value": "0"
+       },
+       {
+        "code": "attach_title",
+        "value": "Details & Specifications"
+       },
+       {
+        "code": "att_asin",
+        "value": "51000000"
+       },
+       {
+        "code": "call_for_price_active",
+        "value": "0"
+       },
+       {
+        "code": "product_zoho_id",
+        "value": "5703559000021638138"
+       }
+      ]
+     }
+    }
+   ]
+  }
+ }
+}

@@ -35,17 +35,17 @@ const SUPPLIERS_DIR = "src/suppliers";
 const REQUIRED_FIELDS = ["supplierName", "country", "shipping"];
 
 /** Static fields extracted into the registry; the rest of a class is ignored. */
-const EXTRACTED_FIELDS = [...REQUIRED_FIELDS, "shipsTo"];
+const EXTRACTED_FIELDS = [...REQUIRED_FIELDS, "shipsTo", "supportsPriceAlerts"];
 
 /**
  * Reads a property initializer as a plain JS value, unwrapping `as const` /
- * parenthesized expressions first. Only string literals and arrays of string
- * literals are supported — everything else is reported as unextractable so a
+ * parenthesized expressions first. Only strings, booleans and arrays of
+ * strings are supported — everything else is reported as unextractable so a
  * supplier that computes a field fails the build loudly instead of silently
  * landing `undefined` in the registry.
  *
  * @param {import("typescript").Expression} node - The initializer expression.
- * @returns {string | string[] | undefined} The literal value, or undefined when it isn't one.
+ * @returns {string | boolean | string[] | undefined} The literal value, or undefined when it isn't one.
  */
 function literalValue(node) {
   let expr = node;
@@ -54,6 +54,12 @@ function literalValue(node) {
   }
   if (ts.isStringLiteral(expr)) {
     return expr.text;
+  }
+  if (expr.kind === ts.SyntaxKind.TrueKeyword) {
+    return true;
+  }
+  if (expr.kind === ts.SyntaxKind.FalseKeyword) {
+    return false;
   }
   if (ts.isArrayLiteralExpression(expr) && expr.elements.every(ts.isStringLiteral)) {
     return expr.elements.map((element) => element.text);
@@ -66,7 +72,7 @@ function literalValue(node) {
  *
  * @param {string} className - The supplier's class name, which is also its filename.
  * @param {string} source - The file's contents.
- * @returns {{supplierName: string, country: string, shipping: string, shipsTo?: string[]}} The extracted fields.
+ * @returns {{supplierName: string, country: string, shipping: string, shipsTo?: string[], supportsPriceAlerts?: boolean}} The extracted fields.
  * @throws When a required field is missing or isn't a literal.
  */
 function extractSupplierMeta(className, source) {
@@ -125,6 +131,9 @@ function renderModule(entries) {
         // prettier would reformat this to anyway.
         const codes = meta.shipsTo.map((code) => `      '${code}',`).join("\n");
         lines.push(`    shipsTo: [\n${codes}\n    ],`);
+      }
+      if (meta.supportsPriceAlerts) {
+        lines.push("    supportsPriceAlerts: true,");
       }
       return `  ${className}: {\n${lines.join("\n")}\n  },`;
     })

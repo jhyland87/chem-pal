@@ -43,6 +43,8 @@ export interface SupplierMetaEntry {
   readonly shipping: ShippingRange;
   /** Explicit destination allowlist; overrides {@link SupplierMetaEntry.shipping} when set. */
   readonly shipsTo?: readonly CountryCode[];
+  /** Whether its products can be refetched individually; absent means no. */
+  readonly supportsPriceAlerts?: boolean;
 }
 
 /** Reverse index of {@link SUPPLIER_META}, display name to class name; built on first use. */
@@ -110,6 +112,25 @@ export function supplierShippingMeta(): Record<
       key,
       { country: meta.country, shipping: meta.shipping },
     ]),
+  );
+}
+
+/**
+ * Whether a supplier's products can be watched for price drops.
+ * @param supplier - The supplier's display name, as stored on a product
+ * @returns True when its products can be refetched individually
+ * @example
+ * ```ts
+ * supplierSupportsPriceAlerts('Carolina Chemical'); // => true
+ * supplierSupportsPriceAlerts('Warchem'); // => false
+ * ```
+ * @category Constants
+ * @group Suppliers
+ * @source
+ */
+export function supplierSupportsPriceAlerts(supplier: string): boolean {
+  return Object.values(SUPPLIER_META).some(
+    (meta) => meta.displayName === supplier && meta.supportsPriceAlerts === true,
   );
 }
 
