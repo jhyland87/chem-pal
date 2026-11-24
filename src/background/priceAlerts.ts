@@ -195,8 +195,17 @@ async function checkSupplier(
     const results = await refreshAlerts(supplierName, alerts);
     const found: AlertDrops[] = [];
     for (const [index, alert] of alerts.entries()) {
-      const drops = await applyResult(alert, results[index], settings);
-      if (drops.length > 0) found.push({ alert, drops });
+      try {
+        const drops = await applyResult(alert, results[index], settings);
+        if (drops.length > 0) found.push({ alert, drops });
+      } catch (error) {
+        // The drops already found are saved as the new prices, so they must still be reported.
+        logger.error(`Failed to apply a refreshed price: ${getErrorMessage(error)}`, {
+          error,
+          supplier: supplierName,
+          title: alert.title,
+        });
+      }
     }
     await notifyDrops(supplierName, found);
   } catch (error) {
@@ -378,6 +387,25 @@ async function openNotification(
 }
 
 /**
+ * Runs a task started by a browser event, where nothing is there to catch an error.
+ * @param action - What the task does, for the log message
+ * @param task - The task
+ * @returns Resolves once the task is done; never rejects
+ * @example
+ * ```ts
+ * await logFailure('check prices', runPriceCheck);
+ * ```
+ * @source
+ */
+async function logFailure(action: string, task: () => Promise<void>): Promise<void> {
+  try {
+    await task();
+  } catch (error) {
+    logger.error(`Failed to ${action}: ${getErrorMessage(error)}`, { error });
+  }
+}
+
+/**
  * Registers the price check listeners. Must be called synchronously when the worker starts, or the
  * event that woke it is missed.
  * @param openApp - Opens ChemPal, for a notification that isn't about a single product
@@ -391,7 +419,7 @@ export function registerPriceAlerts(openApp: () => Promise<void>): void {
   runInBackgroundContext();
   disableStatsRecording();
 
-  const schedule = (): void => void scheduleChecks();
+  const schedule = (): void => void logFailure('schedule price checks', scheduleChecks);
   chrome.runtime.onInstalled.addListener(schedule);
   chrome.runtime.onStartup.addListener(schedule);
 
@@ -407,10 +435,13 @@ export function registerPriceAlerts(openApp: () => Promise<void>): void {
   });
 
   chrome.alarms.onAlarm.addListener(({ name }) => {
-    if (name === CHECK_ALARM || name === RESUME_ALARM) void runPriceCheck();
+    if (name === CHECK_ALARM || name === RESUME_ALARM) {
+      void logFailure('check prices', runPriceCheck);
+    }
   });
 
-  const handleClick = (id: string): void => void openNotification(id, openApp);
+  const handleClick = (id: string): void =>
+    void logFailure('open a notification', () => openNotification(id, openApp));
   // The API appears when the optional permission is granted, possibly while the worker is running.
   const listenForClicks = (): void => chrome.notifications?.onClicked.addListener(handleClick);
   listenForClicks();

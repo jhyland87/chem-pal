@@ -406,6 +406,23 @@ describe('price alert background checks', () => {
       expect((await alertFor('a')).lastCheckedAt).toBe(NOW);
     });
 
+    it('still reports a drop when another product of the supplier cannot be applied', async () => {
+      await addPriceAlert(item('a', 24));
+      await addPriceAlert(item('b', 24));
+      ctl.refresh['Fake One'] = vi.fn(async (refs: ProductRef[]) =>
+        refs.map((ref) => ({
+          status: PRODUCT_REFRESH_STATUS.OK,
+          ref,
+          product: ref.cacheKey === 'a' ? item('a', 12) : undefined,
+        })),
+      );
+
+      await runPriceCheck();
+
+      expect(env.notifications.create).toHaveBeenCalledTimes(1);
+      expect((await alertFor('a')).lastDrop).toMatchObject({ from: 24, to: 12 });
+    });
+
     it('fails every alert of a supplier without host permission', async () => {
       await addPriceAlert(item('a', 24));
       env.permissions.contains.mockResolvedValue(false);

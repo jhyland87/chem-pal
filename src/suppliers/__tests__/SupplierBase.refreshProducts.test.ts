@@ -281,6 +281,46 @@ describe('SupplierBase.refreshProducts', () => {
     }
   });
 
+  it('still refreshes the batches after one that timed out, with a new setup', async () => {
+    vi.useFakeTimers();
+    const supplier = make();
+    supplier.setBatchSize(1);
+    supplier.setSupplierSearchTimeBudgetSec(2);
+    const abortedAtStart: boolean[] = [];
+    supplier.hook = ([{ cacheKey }]) => {
+      abortedAtStart.push(supplier.stoppedEarly);
+      return cacheKey === 'a'
+        ? new Promise(() => undefined)
+        : Promise.resolve({ builders: [makeBuilder(cacheKey)] });
+    };
+
+    const pending = supplier.refreshProducts([makeRef('a'), makeRef('b')]);
+    await vi.advanceTimersByTimeAsync(2_100);
+
+    expect((await pending).map((r) => r.status)).toEqual([
+      PRODUCT_REFRESH_STATUS.FAILED,
+      PRODUCT_REFRESH_STATUS.OK,
+    ]);
+    expect(abortedAtStart).toEqual([false, false]);
+    expect(supplier.setupCalls).toBe(2);
+  });
+
+  it('never un-aborts itself once the caller has aborted', async () => {
+    const controller = new AbortController();
+    const supplier = new RefreshSupplier('', 5, controller);
+    supplier.setBatchSize(1);
+    const abortedAtStart: boolean[] = [];
+    supplier.hook = async () => {
+      abortedAtStart.push(supplier.stoppedEarly);
+      controller.abort('user_aborted');
+      throw new Error('aborted');
+    };
+
+    await supplier.refreshProducts([makeRef('a'), makeRef('b')]);
+
+    expect(abortedAtStart).toEqual([false, true]);
+  });
+
   it('does not time out a batch that finishes inside the budget', async () => {
     const supplier = make();
     supplier.setSupplierSearchTimeBudgetSec(2);
@@ -350,6 +390,19 @@ describe('SupplierBase.refreshViaDetail', () => {
 
     expect(builders.map((b) => b.get('cacheKey'))).toEqual(['c']);
     expect(failed).toEqual(new Set(['a', 'b']));
+  });
+
+  it('fetches nothing for the refs still queued when the batch is aborted', async () => {
+    const controller = new AbortController();
+    const supplier = new RefreshSupplier('', 5, controller);
+    controller.abort('time_budget');
+    const fetchDetail = vi.fn();
+
+    const { builders, failed } = await supplier.callRefreshViaDetail([makeRef('a')], fetchDetail);
+
+    expect(fetchDetail).not.toHaveBeenCalled();
+    expect(builders).toEqual([]);
+    expect(failed).toEqual(new Set(['a']));
   });
 
   it('feeds refreshProducts: a failed detail is FAILED and the rest are unaffected', async () => {

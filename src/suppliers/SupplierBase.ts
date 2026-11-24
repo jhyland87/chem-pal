@@ -464,6 +464,9 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    */
   protected controller: AbortController;
 
+  // The caller's controller, which `controller` follows.
+  private readonly parentController?: AbortController;
+
   /**
    * The maximum number of results to return for a search query.
    * This is not a limit on HTTP requests, but rather the number of
@@ -764,6 +767,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     // Initialize required properties
     this.query = query;
     this.limit = limit;
+    this.parentController = controller;
     this.controller = this.createLinkedController(controller);
     this.logger = new Logger(this.stableClassName, undefined, this.color);
     // Snapshot the active search's context (its trace id) so logs made after it ends keep it.
@@ -2685,6 +2689,12 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     const failAll = (reason: string): ProductRefreshResult[] =>
       refs.map((ref) => ({ status: PRODUCT_REFRESH_STATUS.FAILED, ref, reason }));
 
+    // A batch that timed out must not fail the ones after it, nor leave them its aborted setup.
+    if (this.controller.signal.aborted) {
+      this.controller = this.createLinkedController(this.parentController);
+      this.setupPromise = null;
+    }
+
     const timedOut = Symbol('refreshTimeout');
     const { promise, handle } = this.armSearchTimeout(timedOut, undefined, 'Product refresh');
     // The hard limit guards one search; each batch gets its own allowance.
@@ -2789,9 +2799,15 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   ): Promise<ProductLookup<T>> {
     const queue = new Queue(this.maxConcurrentRequests, this.minConcurrentCycle);
     const failed = new Set<string>();
+    // Captured because a later batch gets its own controller, which mustn't revive this one.
+    const { signal } = this.controller;
     const found = await Promise.all(
       refs.map((ref) =>
         queue.run(async () => {
+          if (signal.aborted) {
+            failed.add(ref.cacheKey);
+            return undefined;
+          }
           const [seed] = ProductBuilder.createFromCache<T>(this.baseURL, [
             { ...omit(ref, 'variants'), supplier: this.supplierName },
           ]);

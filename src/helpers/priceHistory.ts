@@ -61,7 +61,7 @@ export function isRecordablePrice(value: unknown): value is number {
  * Round an amount to 2 decimals so equality checks (dedup) aren't defeated
  * by floating-point noise.
  * @category Helpers
- * @param usd - The amount to round.
+ * @param amount - The amount to round.
  * @returns The amount rounded to 2 decimal places.
  * @example
  * ```ts
@@ -69,8 +69,8 @@ export function isRecordablePrice(value: unknown): value is number {
  * ```
  * @source
  */
-export function round2(usd: number): number {
-  return Number(usd.toFixed(2));
+export function round2(amount: number): number {
+  return Number(amount.toFixed(2));
 }
 
 /**
