@@ -1150,6 +1150,41 @@ export async function putPriceSeries(entry: PriceHistoryEntry): Promise<void> {
 }
 
 /**
+ * Read, change and write a price-history series in one transaction, so the page and the background
+ * worker can't overwrite each other's points.
+ * @category Utils
+ * @param id - The series id.
+ * @param update - Returns the series to store, given the stored one (if any). Return `undefined` to
+ *   leave it unchanged. Must be synchronous, or the transaction would close.
+ * @returns Resolves once the write completes; errors are logged, not thrown.
+ * @example
+ * ```ts
+ * await updatePriceSeries("3f9c2a…", (series) =>
+ *   series && { ...series, points: [...series.points, { t: Date.now(), usd: 19.99 }] },
+ * );
+ * ```
+ * @source
+ */
+export async function updatePriceSeries(
+  id: string,
+  update: (existing: PriceHistoryEntry | undefined) => PriceHistoryEntry | undefined,
+): Promise<void> {
+  try {
+    const db = await getDB();
+    const tx = db.transaction(IDB_STORE.PRICE_HISTORY, 'readwrite');
+    const updated = update(await tx.store.get(id));
+    if (updated) {
+      await tx.store.put(updated);
+    }
+    await tx.done;
+  } catch (error) {
+    logger.error(`Failed to update price series in IndexedDB: ${getErrorMessage(error)}`, {
+      error,
+    });
+  }
+}
+
+/**
  * Read every price-history series belonging to a product — its base row plus
  * one row per tracked variant — via the `productKey` index. Used by the detail
  * panel to render a product's full price history in one query. Returns `[]`

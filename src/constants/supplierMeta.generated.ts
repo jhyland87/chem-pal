@@ -51,6 +51,7 @@ export const SUPPLIER_META: Readonly<Record<SupplierClassName, SupplierMetaEntry
     displayName: 'Amaris Chemical Solutions',
     country: 'US',
     shipping: 'international',
+    supportsPriceAlerts: true,
   },
   SupplierAmbeed: {
     displayName: 'Ambeed',

@@ -28,6 +28,7 @@ type PriceSettings = Pick<UserSettings, 'currency' | 'currencyRate'>;
  * proper glyph (ANG → "ƒ"), matching the drawer's price-range adornment. The number
  * is grouped/decimal-formatted in the runtime locale; falls back to the raw code
  * when no symbol is known.
+ * @category Helpers
  * @param currency - The ISO currency code (e.g. `"ANG"`).
  * @param amount - The numeric amount to format.
  * @param maximumFractionDigits - Upper bound on decimal places (default 2). Raise it
@@ -41,7 +42,11 @@ type PriceSettings = Pick<UserSettings, 'currency' | 'currencyRate'>;
  * ```
  * @source
  */
-function formatWithSymbol(currency: string, amount: number, maximumFractionDigits = 2): string {
+export function formatWithSymbol(
+  currency: string,
+  amount: number,
+  maximumFractionDigits = 2,
+): string {
   const symbol = CURRENCY_SYMBOL_MAP[currency] ?? currency;
   const formatted = new Intl.NumberFormat(undefined, {
     minimumFractionDigits: 2,

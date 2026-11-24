@@ -18,6 +18,7 @@ import {
   putPriceSeries,
   putSupplierProductDataCacheEntry,
   setSearchResults,
+  updatePriceSeries,
 } from '@/utils/idbCache';
 import { storage } from '@/../config.json';
 import { Logger } from '@/utils/Logger';
@@ -200,6 +201,51 @@ describe('price history store', () => {
 
     const series = await getPriceSeriesByProduct('pk-1');
     expect(series.map((s) => s.id).sort()).toEqual(['pk-1', 'pk-1::A']);
+  });
+
+  it('updatePriceSeries passes undefined for a missing series and writes what is returned', async () => {
+    let seen: unknown = 'unset';
+    await updatePriceSeries('pk-1', (existing) => {
+      seen = existing;
+      return entry('pk-1', 'pk-1', 7);
+    });
+
+    expect(seen).toBeUndefined();
+    expect((await getPriceSeries('pk-1'))?.points).toEqual([{ t: 1, usd: 7 }]);
+  });
+
+  it('updatePriceSeries hands the stored series to the callback', async () => {
+    await putPriceSeries(entry('pk-1', 'pk-1', 20));
+
+    await updatePriceSeries(
+      'pk-1',
+      (existing) => existing && { ...existing, points: [...existing.points, { t: 2, usd: 18 }] },
+    );
+
+    expect((await getPriceSeries('pk-1'))?.points.map((p) => p.usd)).toEqual([20, 18]);
+  });
+
+  it('updatePriceSeries writes nothing when the callback returns undefined', async () => {
+    await putPriceSeries(entry('pk-1', 'pk-1', 20));
+
+    await updatePriceSeries('pk-1', () => undefined);
+    await updatePriceSeries('pk-2', () => undefined);
+
+    expect((await getPriceSeries('pk-1'))?.points).toEqual([{ t: 1, usd: 20 }]);
+    expect(await getPriceSeries('pk-2')).toBeUndefined();
+  });
+
+  it('updatePriceSeries keeps both of two concurrent updates', async () => {
+    await putPriceSeries(entry('pk-1', 'pk-1', 20));
+    const append = (usd: number) =>
+      updatePriceSeries(
+        'pk-1',
+        (existing) => existing && { ...existing, points: [...existing.points, { t: usd, usd }] },
+      );
+
+    await Promise.all([append(18), append(17)]);
+
+    expect((await getPriceSeries('pk-1'))?.points.map((p) => p.usd).sort()).toEqual([17, 18, 20]);
   });
 
   it('clearPriceHistory empties the store', async () => {

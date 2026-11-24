@@ -15,6 +15,14 @@ declare global {
     maxDataPoints?: number;
   };
 
+  /** How often watched products are checked, and which price drops are worth an alert. */
+  type PriceAlertSettings = {
+    /** Hours between checks. */
+    checkIntervalHours?: number;
+    /** Smallest drop to report, as a percentage. `0` reports any drop. */
+    minDropPercent?: number;
+  };
+
   /** Query-cache config: whether caching is on, empty-result handling, and TTL. */
   type CacheSettings = {
     /** Master switch; caching is on unless explicitly `false`. */
@@ -91,6 +99,7 @@ declare global {
     | { type: typeof ACTION_TYPE.INPUT_CHANGE; name: string; value: string }
     | { type: typeof ACTION_TYPE.SUPPLIER_TOGGLE; value: Array<SupplierClassName> }
     | { type: typeof ACTION_TYPE.PRICE_TRACKING_CHANGE; value: PriceTracking }
+    | { type: typeof ACTION_TYPE.PRICE_ALERTS_CHANGE; value: PriceAlertSettings }
     | { type: typeof ACTION_TYPE.CACHE_CHANGE; value: CacheSettings }
     | {
         type: typeof ACTION_TYPE.REMOTE_LOG_LEVELS_CHANGE;
@@ -150,6 +159,16 @@ declare global {
      * ```
      */
     priceTracking?: PriceTracking;
+
+    /**
+     * Background price checks for watched products (see `helpers/priceAlerts.ts`). Defaults to
+     * `{ checkIntervalHours: 12, minDropPercent: 0 }`.
+     * @example
+     * ```ts
+     * const priceAlerts = { checkIntervalHours: 12, minDropPercent: 5 };
+     * ```
+     */
+    priceAlerts?: PriceAlertSettings;
 
     /**
      * HTTP status codes that, when hit while fetching a product's detail/enrichment data,

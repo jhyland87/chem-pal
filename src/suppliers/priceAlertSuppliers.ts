@@ -8,6 +8,7 @@
  */
 export { SupplierAlboChemicals } from './SupplierAlboChemicals';
 export { SupplierAllianceChemical } from './SupplierAllianceChemical';
+export { SupplierAmarisChemicalSolutions } from './SupplierAmarisChemicalSolutions';
 export { SupplierAsesChem } from './SupplierAsesChem';
 export { SupplierBVV } from './SupplierBVV';
 export { SupplierCarolinaChemical } from './SupplierCarolinaChemical';

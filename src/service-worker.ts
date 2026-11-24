@@ -14,6 +14,7 @@
  * @source
  */
 
+import { registerPriceAlerts } from '@/background/priceAlerts';
 import { defaultSettings, extension } from '@/../config.json';
 import { CACHE, MESSAGE_TYPE } from '@/constants/common';
 import { trackInstallOrUpgrade } from '@/helpers/analytics';
@@ -252,6 +253,8 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 chrome.action.onClicked.addListener(() => {
   void openOrFocusExtensionTab(chrome.runtime.getURL(TAB_VIEW_PATH));
 });
+
+registerPriceAlerts(() => openOrFocusExtensionTab(chrome.runtime.getURL(TAB_VIEW_PATH)));
 
 /** Message the background fetch proxy accepts; mirrors src/helpers/backgroundFetch.ts. */
 interface BackgroundFetchRequest {
