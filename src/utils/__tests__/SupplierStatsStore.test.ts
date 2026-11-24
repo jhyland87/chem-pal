@@ -79,6 +79,17 @@ describe('SupplierStatsStore', () => {
     expect(stats[today]['Ambeed'].successCount).toBe(3);
   });
 
+  it('records nothing once recording is disabled', async () => {
+    vi.resetModules();
+    const fresh = await import('../SupplierStatsStore');
+    fresh.disableStatsRecording();
+    fresh.incrementSuccess('Ambeed');
+    vi.useRealTimers();
+    await fresh.flushPendingStats();
+
+    expect(await fresh.getStats()).toEqual({});
+  });
+
   it('increments failureCount for a supplier', async () => {
     incrementFailure('LibertySci');
     incrementFailure('LibertySci');

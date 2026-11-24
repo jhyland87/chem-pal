@@ -72,4 +72,19 @@ describe('backgroundFetch', () => {
 
     await expect(backgroundFetch('https://example.com/')).rejects.toThrow(message);
   });
+
+  it('fetches directly inside the service worker instead of messaging it', async () => {
+    vi.resetModules();
+    const fresh = await import('@/helpers/backgroundFetch');
+    const directFetch = vi.fn(async () => new Response('direct'));
+    vi.stubGlobal('fetch', directFetch);
+
+    fresh.runInBackgroundContext();
+    const response = await fresh.backgroundFetch('https://example.com/', { method: 'GET' });
+    vi.unstubAllGlobals();
+
+    expect(await response.text()).toBe('direct');
+    expect(directFetch).toHaveBeenCalledWith('https://example.com/', { method: 'GET' });
+    expect(sendMessage).not.toHaveBeenCalled();
+  });
 });

@@ -61,11 +61,29 @@ const EMPTY_STATS: SupplierDayStats = {
   parseErrorCount: 0,
 };
 
+/** Whether increments are recorded; see {@link disableStatsRecording}. */
+let recordingEnabled = true;
+
+/**
+ * Stops recording supplier stats in this context. The service worker calls this so scheduled
+ * price checks don't inflate stats that describe the user's own searches.
+ * @category Utils
+ * @example
+ * ```ts
+ * disableStatsRecording();
+ * ```
+ * @source
+ */
+export function disableStatsRecording(): void {
+  recordingEnabled = false;
+}
+
 /**
  * Buffer an increment in memory and schedule a debounced flush to storage.
  * @source
  */
 function bufferIncrement(supplier: string, field: keyof SupplierDayStats): void {
+  if (!recordingEnabled) return;
   const key = `${todayDateKey()}:${supplier}:${field}`;
   pendingIncrements.set(key, (pendingIncrements.get(key) ?? 0) + 1);
   scheduleFlush();

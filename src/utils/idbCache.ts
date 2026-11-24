@@ -217,16 +217,19 @@ function getDB(): Promise<IDBPDatabase<ChemPalDBSchema>> {
   return dbPromise;
 }
 
-function emitSearchResultsCleared(): void {
-  window.dispatchEvent(new CustomEvent(IDB_SEARCH_RESULTS_CLEARED));
-}
-
-function emitSupplierStatsUpdated(): void {
-  window.dispatchEvent(new CustomEvent(IDB_SUPPLIER_STATS_UPDATED));
-}
-
-function emitExportsUpdated(): void {
-  window.dispatchEvent(new CustomEvent(IDB_EXPORTS_UPDATED));
+/**
+ * Notifies open surfaces in this context of an IndexedDB change. A no-op in the service worker,
+ * which has no `window` and no React tree listening.
+ * @param eventName - The event to dispatch
+ * @example
+ * ```ts
+ * emitIdbEvent(IDB_EXPORTS_UPDATED);
+ * ```
+ * @source
+ */
+function emitIdbEvent(eventName: string): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent(eventName));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -367,7 +370,7 @@ export async function setSearchResults(results: Product[], query?: string): Prom
     }
     await db.put(IDB_STORE.SEARCH_RESULTS, { id: 'current', data: results, query });
     if (results.length === 0) {
-      emitSearchResultsCleared();
+      emitIdbEvent(IDB_SEARCH_RESULTS_CLEARED);
     }
   } catch (error) {
     logger.error(`Failed to set search results in IndexedDB: ${getErrorMessage(error)}`, { error });
@@ -397,7 +400,7 @@ export async function clearSearchResults(options: { notify?: boolean } = {}): Pr
     const db = await getDB();
     await db.delete(IDB_STORE.SEARCH_RESULTS, 'current');
     if (notify) {
-      emitSearchResultsCleared();
+      emitIdbEvent(IDB_SEARCH_RESULTS_CLEARED);
     }
   } catch (error) {
     logger.error(`Failed to clear search results from IndexedDB: ${getErrorMessage(error)}`, {
@@ -918,7 +921,7 @@ export async function putSupplierStatsEntry(
   try {
     const db = await getDB();
     await db.put(IDB_STORE.SUPPLIER_STATS, { dateKey, suppliers });
-    emitSupplierStatsUpdated();
+    emitIdbEvent(IDB_SUPPLIER_STATS_UPDATED);
   } catch (error) {
     logger.error(`Failed to put supplier stats entry in IndexedDB: ${getErrorMessage(error)}`, {
       error,
@@ -1346,7 +1349,7 @@ export async function putExport(record: ExportRecord): Promise<void> {
     }
 
     await tx.done;
-    emitExportsUpdated();
+    emitIdbEvent(IDB_EXPORTS_UPDATED);
   } catch (error) {
     logger.error(`Failed to put export in IndexedDB: ${getErrorMessage(error)}`, { error });
   }
@@ -1389,7 +1392,7 @@ export async function deleteExport(id: string): Promise<void> {
   try {
     const db = await getDB();
     await db.delete(IDB_STORE.EXPORTS, id);
-    emitExportsUpdated();
+    emitIdbEvent(IDB_EXPORTS_UPDATED);
   } catch (error) {
     logger.error(`Failed to delete export from IndexedDB: ${getErrorMessage(error)}`, { error });
   }
@@ -1409,7 +1412,7 @@ export async function clearExports(): Promise<void> {
   try {
     const db = await getDB();
     await db.clear(IDB_STORE.EXPORTS);
-    emitExportsUpdated();
+    emitIdbEvent(IDB_EXPORTS_UPDATED);
   } catch (error) {
     logger.error(`Failed to clear exports from IndexedDB: ${getErrorMessage(error)}`, { error });
   }
@@ -1530,7 +1533,7 @@ export async function clearAllCaches(): Promise<void> {
       tx.objectStore(IDB_STORE.CHEMICAL_DB).clear(),
       tx.done,
     ]);
-    emitSearchResultsCleared();
+    emitIdbEvent(IDB_SEARCH_RESULTS_CLEARED);
   } catch (error) {
     logger.error(`Failed to clear all IndexedDB caches: ${getErrorMessage(error)}`, { error });
   }
