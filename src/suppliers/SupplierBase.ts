@@ -2782,7 +2782,8 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * builder with no price or variants, so a request that yields no price can't pass off the old one.
    *
    * @param refs - The products to refetch
-   * @param fetchDetail - Fills a seeded builder from the supplier's detail endpoint
+   * @param fetchDetail - Fills a seeded builder from the supplier's detail endpoint. Throw an
+   * `HttpError` with `NOT_FOUND` when the supplier no longer has the product.
    * @returns The builders found, and the `cacheKey`s whose request failed
    * @example
    * ```typescript
@@ -2815,6 +2816,13 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
             const builder = await fetchDetail(seed, ref);
             if (builder) return builder;
           } catch (error) {
+            // The supplier answered that it doesn't have the product, so it's unavailable.
+            if (
+              error instanceof HttpError &&
+              (error.status === HttpStatus.NOT_FOUND || error.status === HttpStatus.GONE)
+            ) {
+              return undefined;
+            }
             this.logger.warn(`Failed to refresh a product: ${getErrorMessage(error)}`, {
               error,
               ref,

@@ -1,5 +1,7 @@
 // ProductBuilder must be imported before SupplierBase (module-init cycle).
 import { PRODUCT_REFRESH_STATUS } from '@/constants/common';
+import { HttpStatus } from '@/constants/httpStatus';
+import { HttpError } from '@/helpers/exceptions';
 import type { ProductLookup, ProductRef } from '@/helpers/productRef';
 import { Logger } from '@/utils/Logger';
 import { ProductBuilder } from '@/utils/ProductBuilder';
@@ -391,6 +393,18 @@ describe('SupplierBase.refreshViaDetail', () => {
     expect(builders.map((b) => b.get('cacheKey'))).toEqual(['c']);
     expect(failed).toEqual(new Set(['a', 'b']));
   });
+
+  it.each([HttpStatus.NOT_FOUND, HttpStatus.GONE])(
+    'treats a %i as unavailable rather than failed',
+    async (status) => {
+      const { builders, failed } = await make().callRefreshViaDetail([makeRef('a')], async () => {
+        throw new HttpError(status, 'Gone');
+      });
+
+      expect(builders).toEqual([]);
+      expect(failed).toEqual(new Set());
+    },
+  );
 
   it('fetches nothing for the refs still queued when the batch is aborted', async () => {
     const controller = new AbortController();
