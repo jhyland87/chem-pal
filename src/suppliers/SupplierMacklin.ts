@@ -1,6 +1,8 @@
 import { AVAILABILITY } from '@/constants/common';
 import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
 import { HttpStatus } from '@/constants/httpStatus';
+import { HttpError } from '@/helpers/exceptions';
+import type { ProductLookup, ProductRef } from '@/helpers/productRef';
 import { parseQuantity } from '@/helpers/quantity';
 import { mapDefined } from '@/helpers/utils';
 import { ProductBuilder } from '@/utils/ProductBuilder';
@@ -185,6 +187,9 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
 
   // The payment methods accepted by the supplier.
   public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
+
+  // Specific products can be refetched by id, so they can be watched for price drops.
+  public static readonly supportsPriceAlerts: boolean = true;
 
   /** Override the type of queryResults to use our specific type */
   protected queryResults: Array<Product> = [];
@@ -375,38 +380,14 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
       // `/api/product/list` returns every pack-size variant of the product.
       const listVariants = (await this.getProductListBatch()).get(itemCode);
 
-      // Keep only purchasable variants (in stock), then map each to a Variant.
-      // A product with no in-stock variant has nothing to show.
-      const variants = mapDefined(
-        (listVariants ?? [])
-          .filter((detail) => Number(detail.product_stock) > 0)
-          .sort((a, b) => Number(a.product_price) - Number(b.product_price)),
-        (detail) => {
-          const built = this.toVariant(detail);
-          return built ? { detail, variant: built } : undefined;
-        },
-      );
-
       // Bail with `void` (not the half-built builder) when there's nothing
       // usable. Returning the builder here would cache a price-less product
       // (see getProductDataWithCache), poisoning the cache so the product stays
       // broken on every later search. `void` skips the cache write and lets the
       // next search retry.
-      if (variants.length === 0) {
-        this.logger.warn('No in-stock product/list variants for product', { itemCode });
+      if (!this.applyListVariants(builder, itemCode, listVariants ?? [])) {
         return undefined;
       }
-
-      // The cheapest in-stock variant is the product's headline price/size; the
-      // rest are attached as selectable variants.
-      const [primary] = variants;
-      builder.setPricing(primary.detail.product_price, 'CNY', CURRENCY_SYMBOL_MAP.CNY);
-      if (primary.variant.quantity != null && primary.variant.uom != null) {
-        builder.setQuantity(primary.variant.quantity, primary.variant.uom);
-      }
-      builder.setAvailability(AVAILABILITY.IN_STOCK);
-      builder.setDescription(primary.detail.item_en_specification);
-      builder.setVariants(variants.map(({ variant }) => variant));
 
       // Molecular weight comes from `/api/product/info`.
       const info = (await this.getProductInfoBatch()).get(itemCode);
@@ -421,6 +402,121 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
 
       return builder;
     });
+  }
+
+  /**
+   * Fills a builder's price, size, availability and variants from a product's
+   * `/api/product/list` rows. Only in-stock sizes count, cheapest first; the
+   * cheapest is the headline. Shared by the search and by-id routes.
+   *
+   * @param builder - The builder to fill
+   * @param itemCode - The product's item code, for log messages
+   * @param listVariants - The product's `/api/product/list` rows
+   * @returns The builder, or `undefined` when no in-stock size could be priced
+   * @example
+   * ```ts
+   * this.applyListVariants(builder, 'T819228', rows)?.get('price'); // 30
+   * ```
+   * @source
+   */
+  private applyListVariants(
+    builder: ProductBuilder<Product>,
+    itemCode: string,
+    listVariants: MacklinProductDetails[],
+  ): ProductBuilder<Product> | undefined {
+    // Keep only purchasable variants (in stock), then map each to a Variant.
+    // A product with no in-stock variant has nothing to show.
+    const variants = mapDefined(
+      listVariants
+        .filter((detail) => Number(detail.product_stock) > 0)
+        .sort((a, b) => Number(a.product_price) - Number(b.product_price)),
+      (detail) => {
+        const built = this.toVariant(detail);
+        return built ? { detail, variant: built } : undefined;
+      },
+    );
+
+    if (variants.length === 0) {
+      this.logger.warn('No in-stock product/list variants for product', { itemCode });
+      return undefined;
+    }
+
+    // The cheapest in-stock variant is the product's headline price/size; the
+    // rest are attached as selectable variants.
+    const [primary] = variants;
+    builder.setPricing(primary.detail.product_price, 'CNY', CURRENCY_SYMBOL_MAP.CNY);
+    if (primary.variant.quantity != null && primary.variant.uom != null) {
+      builder.setQuantity(primary.variant.quantity, primary.variant.uom);
+    }
+    builder.setAvailability(AVAILABILITY.IN_STOCK);
+    builder.setDescription(primary.detail.item_en_specification);
+    builder.setVariants(variants.map(({ variant }) => variant));
+    return builder;
+  }
+
+  /**
+   * Refetches specific products with one signed `/api/product/list` request each (the endpoint
+   * takes a single item code). The info and SDS requests are skipped as they don't affect price.
+   *
+   * @param refs - The products to refetch
+   * @returns The builders found, and the `cacheKey`s whose request failed
+   * @example
+   * ```ts
+   * const { builders, failed } = await this.queryProductsById(refs);
+   * ```
+   * @source
+   */
+  protected override async queryProductsById(
+    refs: readonly ProductRef[],
+  ): Promise<ProductLookup<Product>> {
+    return this.refreshViaDetail(refs, (builder) => this.refreshPrices(builder));
+  }
+
+  /**
+   * Prices a seeded builder from its live `/api/product/list` rows.
+   *
+   * @param builder - A builder seeded from a product ref
+   * @returns The same builder, priced
+   * @throws HttpError `NOT_FOUND` when no size is in stock, as a search drops such a product
+   * @throws Error when the response is invalid
+   * @example
+   * ```ts
+   * await this.refreshPrices(seed); // seed.get('price') === 30
+   * ```
+   * @source
+   */
+  private async refreshPrices(builder: ProductBuilder<Product>): Promise<ProductBuilder<Product>> {
+    const itemCode = builder.get('uuid');
+    if (typeof itemCode !== 'string') {
+      throw new Error('Macklin product ref has no item code');
+    }
+    const listVariants = await this.fetchProductList(itemCode);
+    if (!listVariants) {
+      throw new Error('Invalid Macklin product list response');
+    }
+    const priced = this.applyListVariants(builder, itemCode, listVariants);
+    if (!priced) {
+      throw new HttpError(HttpStatus.NOT_FOUND, 'Macklin has no in-stock size of the product');
+    }
+    return priced;
+  }
+
+  /**
+   * Requests one product's `/api/product/list` rows.
+   *
+   * @param code - The product's item code
+   * @returns The rows (empty when Macklin has none), or `undefined` when the response is invalid
+   * @example
+   * ```ts
+   * (await this.fetchProductList('T819228'))?.length; // 4
+   * ```
+   * @source
+   */
+  private async fetchProductList(code: string): Promise<MacklinProductDetails[] | undefined> {
+    const response = await this.request<MacklinProductDetails>('/api/product/list', {
+      params: { code },
+    });
+    return isMacklinProductDetailsResponse(response) ? response.list : undefined;
   }
 
   /**
@@ -490,11 +586,9 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
         await Promise.all(
           codes.map((code) =>
             queue.run(async () => {
-              const response = await this.request<MacklinProductDetails>('/api/product/list', {
-                params: { code },
-              });
-              if (isMacklinProductDetailsResponse(response) && response.list.length > 0) {
-                variantsByCode.set(code, response.list);
+              const listVariants = await this.fetchProductList(code);
+              if (listVariants && listVariants.length > 0) {
+                variantsByCode.set(code, listVariants);
               }
             }),
           ),

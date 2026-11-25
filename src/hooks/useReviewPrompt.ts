@@ -1,5 +1,6 @@
 import { reviewPrompt } from '@/../config.json';
 import { CHROME_WEBSTORE_REVIEWS_URL } from '@/constants/common';
+import { isFirefoxRuntime } from '@/helpers/runtime';
 import { getInstallSource } from '@/helpers/updates';
 import {
   ensureInstallDate,
@@ -46,20 +47,6 @@ interface UseReviewPrompt {
   onReview: () => void;
   /** Snoozes (first time) or silences (thereafter) the prompt. */
   onDismiss: () => void;
-}
-
-/**
- * Detects a Firefox runtime by its extension URL scheme. The reviews link is
- * Chrome-specific, so the prompt stays hidden on Firefox builds.
- * @returns True when running as a `moz-extension://` add-on.
- * @source
- */
-function isFirefoxRuntime(): boolean {
-  try {
-    return chrome.runtime.getURL('').startsWith('moz-extension://');
-  } catch {
-    return false;
-  }
 }
 
 /**

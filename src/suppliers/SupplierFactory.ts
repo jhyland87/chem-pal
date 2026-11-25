@@ -11,6 +11,7 @@ import {
 } from '@/constants/common';
 import { HttpStatus } from '@/constants/httpStatus';
 import { recordException } from '@/helpers/errorBuffer';
+import { hasHostPermissions } from '@/helpers/permissions';
 import { resolveIdentifierNames } from '@/helpers/pubchem';
 import { filterRestrictedProduct } from '@/helpers/purchaseRestriction';
 import {
@@ -394,9 +395,8 @@ export class SupplierFactory<P extends Product> {
   ): Promise<SupplierBase<unknown, P>[]> {
     const results = await Promise.all(
       instances.map(async (instance) => {
-        if (instance.requiredHosts.length === 0) return { instance, granted: true };
         try {
-          const granted = await chrome.permissions.contains({ origins: instance.requiredHosts });
+          const granted = await hasHostPermissions(instance.requiredHosts);
           if (!granted) {
             this.logger.warn('Permission check failed for supplier', {
               supplier: instance.supplierName,

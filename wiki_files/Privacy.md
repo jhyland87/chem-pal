@@ -10,7 +10,7 @@ to the developer:
 
 - Your [settings](Settings) (currency, location, enabled suppliers, theme, etc.)
 - Your [search history](Search-History)
-- Your [price history](Price-Tracking)
+- Your [price history](Price-Tracking) and [price alerts](Price-Tracking#price-alerts) watchlist
 - Cached [search results](Caching)
 - Your [excluded products](Results-Table#ignored-excluded-products)
 
@@ -24,14 +24,16 @@ does when you visit a website:
 
 - **Supplier websites** — your search term is sent to each enabled supplier so they
   can return matching products. This is exactly what would happen if you searched
-  each site yourself.
+  each site yourself. Background [price alert](Price-Tracking#price-alerts) checks
+  send only the normal product requests to the supplier.
 - **PubChem** — used to look up chemical details and suggest alternative search
   terms when a search finds nothing.
 - **Exchange-rate service** — used to convert supplier prices into your chosen
   currency.
 - **PostHog** — basic usage and error stats (which searches are run, how
   many results they return, how long they take, whether you stopped one early,
-  when the extension is installed or updated, and when it hits an error), plus
+  when a price alert is added, removed or finds a drop (the supplier, never the
+  product), when the extension is installed or updated, and when it hits an error), plus
   short diagnostic logs of warnings and errors from the extension's own code
   (you can choose which levels in Advanced settings), tied
   only to a random identifier — no account, no name.

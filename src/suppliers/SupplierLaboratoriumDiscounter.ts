@@ -1,6 +1,7 @@
 import { AVAILABILITY, CACHE, type Availability } from '@/constants/common';
 import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
 import { parsePrice } from '@/helpers/currency';
+import type { ProductLookup, ProductRef } from '@/helpers/productRef';
 import { parseQuantity } from '@/helpers/quantity';
 import { createDOM, urlencode } from '@/helpers/request';
 import { formatFormula, parseChemicalSpecs, parsePurity } from '@/helpers/science';
@@ -75,6 +76,9 @@ export class SupplierLaboratoriumDiscounter
 
   // The payment methods accepted by the supplier.
   public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa', 'paypal', 'ach'];
+
+  // Specific products can be refetched by id, so they can be watched for price drops.
+  public static readonly supportsPriceAlerts: boolean = true;
 
   // Override the type of queryResults to use our specific type
   protected queryResults: Array<LaboratoriumDiscounterProductObject> = [];
@@ -454,29 +458,92 @@ export class SupplierLaboratoriumDiscounter
   }
 
   /**
-   * Fetches product data from the JSON product endpoint and populates the builder
-   * with pricing and variants. Returns void if the response is missing or fails the
-   * product typeguard, signaling the caller to fall back to HTML scraping.
-   * @param builder - The ProductBuilder to populate with parsed data
-   * @returns Promise resolving to the populated builder, or void on failure
+   * Builds the language-prefixed path of a product's page, which also serves its JSON.
+   * @param builder - The product's builder
+   * @returns The path, without a leading slash
+   * @example
+   * ```typescript
+   * this.getProductPagePath(builder); // "en/nitric-acid-5.html"
+   * ```
    * @source
    */
-  private async getProductDataFromJSON(
-    builder: ProductBuilder<Product>,
-  ): Promise<ProductBuilder<Product> | void> {
+  private getProductPagePath(builder: ProductBuilder<Product>): string {
     // The builder stores absolute URLs, so extract just the pathname
     // before applying the locale prefix.
     let urlPath = builder.get('url');
     if (isFullURL(urlPath)) {
       urlPath = new URL(urlPath).pathname.replace(/^\//, '');
     }
-    const path = urlPath.startsWith('en/') ? urlPath : `en/${urlPath}`;
+    return urlPath.startsWith('en/') ? urlPath : `en/${urlPath}`;
+  }
 
+  /**
+   * Fetches product data from the JSON product endpoint and populates the builder
+   * with pricing and variants. Returns void if the response is missing or fails the
+   * product typeguard, signaling the caller to fall back to HTML scraping.
+   * @param builder - The ProductBuilder to populate with parsed data
+   * @returns Promise resolving to the populated builder, or void on failure
+   * @example
+   * ```typescript
+   * const populated = await this.getProductDataFromJSON(builder);
+   * ```
+   * @source
+   */
+  private async getProductDataFromJSON(
+    builder: ProductBuilder<Product>,
+  ): Promise<ProductBuilder<Product> | void> {
+    const path = this.getProductPagePath(builder);
     const productResponse = await this.httpGetJson({
       path,
       params: { format: 'json' },
     });
+    return this.applyProductJSON(builder, productResponse, path);
+  }
 
+  /**
+   * Refetches a product from the JSON product endpoint for a price check. Unlike
+   * `getProductDataFromJSON` it surfaces HTTP errors, so a product the shop no longer has
+   * (404) is told apart from a failed request, and it has no HTML fallback.
+   * @param builder - A builder seeded from the product's ref
+   * @returns Promise resolving to the populated builder, or void when the response is unusable
+   * @throws HttpError when the request fails, e.g. 404 for a removed product
+   * @example
+   * ```typescript
+   * const populated = await this.refetchProductJSON(builder);
+   * ```
+   * @source
+   */
+  private async refetchProductJSON(
+    builder: ProductBuilder<Product>,
+  ): Promise<ProductBuilder<Product> | void> {
+    const path = this.getProductPagePath(builder);
+    const response = await this.httpGet({
+      path,
+      params: { format: 'json' },
+      headers: { accept: 'application/json,text/plain,*/*' },
+      rethrowErrors: true,
+    });
+    const productResponse: unknown = await response?.json();
+    return this.applyProductJSON(builder, productResponse, path);
+  }
+
+  /**
+   * Applies a JSON product response to the builder: its price, variants and content specs.
+   * @param builder - The ProductBuilder to populate with parsed data
+   * @param productResponse - The parsed JSON response
+   * @param path - The path it came from, for logging
+   * @returns Promise resolving to the populated builder, or void when the response isn't a product
+   * @example
+   * ```typescript
+   * await this.applyProductJSON(builder, response, 'en/nitric-acid-5.html');
+   * ```
+   * @source
+   */
+  private async applyProductJSON(
+    builder: ProductBuilder<Product>,
+    productResponse: unknown,
+    path: string,
+  ): Promise<ProductBuilder<Product> | void> {
     if (!productResponse || !isProductObject(productResponse)) {
       this.logger.warn('Invalid JSON product data - did not pass typeguard', {
         path,
@@ -681,5 +748,22 @@ export class SupplierLaboratoriumDiscounter
       this.logger.debug('Parsed product data from HTML', { htmlResponse });
       return htmlResponse;
     });
+  }
+
+  /**
+   * Refetches watched products from their JSON pages, one request each. It skips the HTML
+   * fallback, so a product whose JSON is unusable fails rather than being scraped.
+   * @param refs - The watched products
+   * @returns The builders found, and the `cacheKey`s whose request failed
+   * @example
+   * ```typescript
+   * const { builders } = await this.queryProductsById(refs);
+   * ```
+   * @source
+   */
+  protected override async queryProductsById(
+    refs: readonly ProductRef[],
+  ): Promise<ProductLookup<Product>> {
+    return this.refreshViaDetail(refs, (builder) => this.refetchProductJSON(builder));
   }
 }

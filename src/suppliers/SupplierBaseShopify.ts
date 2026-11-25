@@ -1,15 +1,22 @@
 import { AVAILABILITY, UOM } from '@/constants/common';
+import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
 import { findCAS } from '@/helpers/cas';
 import { parsePrice } from '@/helpers/currency';
+import type { ProductLookup, ProductRef } from '@/helpers/productRef';
 import { parseQuantity, standardizeUom, toMetricQuantity } from '@/helpers/quantity';
 import { findMolarity, parseChemicalSpecs } from '@/helpers/science';
 import { firstMap, htmlToAscii, mapDefined } from '@/helpers/utils';
 import searchProductsQuery from '@/queries/shopify-product-query.gql';
+import productsByIdQuery from '@/queries/shopify-products-by-id.gql';
 import { ProductBuilder } from '@/utils/ProductBuilder';
 import { translateAstToShopifyQuery } from '@/utils/search-query/translators/translateAstToShopifyQuery';
 import { isQuantityObject } from '@/utils/typeGuards/common';
-import { isValidShopifySearchResponse } from '@/utils/typeGuards/shopify';
-import { print } from 'graphql';
+import {
+  isShopifyNodesResponse,
+  isShopifyProductNode,
+  isValidShopifySearchResponse,
+} from '@/utils/typeGuards/shopify';
+import { print, type DocumentNode } from 'graphql';
 import { SupplierBase } from './SupplierBase';
 
 /** Width (px) requested from the Shopify CDN for derived image thumbnails. */
@@ -55,6 +62,9 @@ export abstract class SupplierBaseShopify
   // Shopify's search DSL supports AND/OR/NOT, so advanced queries are translated
   // server-side instead of using the keyword-only fallback.
   protected readonly supportsNativeAdvancedSearch: boolean = true;
+
+  // One request fetches the whole batch.
+  protected refreshBatchSize: number = 100;
 
   /**
    * Derives the unique product key from a Shopify product node: its globally
@@ -119,29 +129,12 @@ export abstract class SupplierBaseShopify
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     this.logger.info('Starting product search', { query, limit });
-    // The .gql import is a parsed DocumentNode (vite-plugin-graphql-loader); the Shopify endpoint
-    // wants the raw query text, so print it and pass the variables alongside. The `first` over-fetch
-    // (200) gives the fuzzy filter a wide candidate pool before slicing back down to `limit`.
-    const graphQLQuery = print(searchProductsQuery);
-    const graphQLVariables = this.getGraphQLVariables(query, 200);
-    this.logger.debug('Sending Shopify GraphQL product query', {
-      query,
-      limit,
-      graphQLQuery,
-      apiURL: this.apiURL,
-      apiVersion: this.apiVersion,
-    });
-
-    const searchRequest = await this.httpPostJson({
-      path: `/api/${this.apiVersion}/graphql.json`,
-      host: this.apiURL,
-      body: { query: graphQLQuery, variables: graphQLVariables },
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    this.logger.debug('Received search response', { searchRequest });
+    // The `first` over-fetch (200) gives the fuzzy filter a wide candidate pool before slicing back
+    // down to `limit`.
+    const searchRequest = await this.postGraphQL(
+      searchProductsQuery,
+      this.getGraphQLVariables(query, 200),
+    );
     if (!isValidShopifySearchResponse(searchRequest)) {
       this.logger.error('Invalid Shopify search response', { response: searchRequest });
       throw new Error('Invalid Shopify search response', { cause: { searchRequest } });
@@ -168,6 +161,79 @@ export abstract class SupplierBaseShopify
     });
 
     return this.initProductBuilders(filteredResults.slice(0, limit));
+  }
+
+  /**
+   * Posts a query to the Storefront API.
+   *
+   * @param document - The parsed query
+   * @param variables - Its variables
+   * @returns The unvalidated response
+   * @example
+   * ```typescript
+   * await this.postGraphQL(productsByIdQuery, { ids: ['gid://shopify/Product/1'] });
+   * // { data: { nodes: [{ id: 'gid://shopify/Product/1', … }] } }
+   * ```
+   * @source
+   */
+  private async postGraphQL(document: DocumentNode, variables: object): Promise<unknown> {
+    // The .gql import is a parsed DocumentNode (vite-plugin-graphql-loader); the Shopify endpoint
+    // wants the raw query text, so print it and pass the variables alongside.
+    const query = print(document);
+    this.logger.debug('Sending Shopify GraphQL query', {
+      query,
+      variables,
+      apiURL: this.apiURL,
+      apiVersion: this.apiVersion,
+    });
+
+    const response = await this.httpPostJson({
+      path: `/api/${this.apiVersion}/graphql.json`,
+      host: this.apiURL,
+      body: { query, variables },
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    this.logger.debug('Received Shopify GraphQL response', { response });
+    return response;
+  }
+
+  /**
+   * Fetches specific products in one request by their GIDs (their {@link getUniqueProductKey}).
+   * {@link filterProducts} is skipped, since it only decides what a search surfaces.
+   *
+   * @param refs - The products to fetch
+   * @returns Builders for the products found; one the store no longer sells comes back as `null`
+   * @throws Error when the response is invalid
+   * @example
+   * ```typescript
+   * const { builders } = await this.queryProductsById(refs);
+   * ```
+   * @source
+   */
+  protected override async queryProductsById(
+    refs: readonly ProductRef[],
+  ): Promise<ProductLookup<Product>> {
+    const response = await this.postGraphQL(productsByIdQuery, {
+      ids: refs.map((ref) => ref.cacheKey),
+    });
+    if (!isShopifyNodesResponse(response)) {
+      throw new Error('Invalid Shopify products response', { cause: { response } });
+    }
+
+    // Nodes come back in request order.
+    const nodes: ShopifyProductNode[] = [];
+    const failed = new Set<string>();
+    response.data.nodes.forEach((node, index) => {
+      if (isShopifyProductNode(node)) {
+        nodes.push(node);
+      } else if (node !== null && refs[index]) {
+        failed.add(refs[index].cacheKey);
+      }
+    });
+    return { builders: this.initProductBuilders(nodes), failed };
   }
 
   /**
@@ -243,6 +309,8 @@ export abstract class SupplierBaseShopify
 
       const parsedPrice = parsePrice(`$${primaryVariant.price.amount}`);
       if (!parsedPrice) return;
+      // Stores price in their own currency (AsesChem is INR), which the `$` above doesn't know.
+      const currencyCode = primaryVariant.price.currencyCode ?? parsedPrice.currencyCode;
 
       // onlineStoreUrl is null for products not published to the online store;
       // fall back to the canonical product path built from the handle.
@@ -257,7 +325,11 @@ export abstract class SupplierBaseShopify
       builder
         .setBasicInfo(product.title, url, this.supplierName)
         .setMatchPercentage(this.matchScoreOf(product))
-        .setPricing(parsedPrice)
+        .setPricing(
+          parsedPrice.price,
+          currencyCode,
+          CURRENCY_SYMBOL_MAP[currencyCode] ?? currencyCode,
+        )
         .setAvailability(
           primaryVariant.currentlyNotInStock ? AVAILABILITY.OUT_OF_STOCK : AVAILABILITY.IN_STOCK,
         )

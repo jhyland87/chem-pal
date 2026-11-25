@@ -1,9 +1,10 @@
 import { search } from '@/../config.json';
-import { SEARCH_ABORT_REASON, UOM } from '@/constants/common';
+import { PRODUCT_REFRESH_STATUS, SEARCH_ABORT_REASON, UOM } from '@/constants/common';
 import { FUZZ_SCORERS, isFuzzScorerName, type FuzzScorerFn } from '@/constants/fuzzScorers';
 import { HttpStatus } from '@/constants/httpStatus';
 import { supplierClassNameFor } from '@/constants/supplierMeta';
 import { backgroundFetch, type BackgroundFetchInit } from '@/helpers/backgroundFetch';
+import { omit } from '@/helpers/collectionUtils';
 import { setCookie } from '@/helpers/cookies';
 import {
   EmptyResponseError,
@@ -17,6 +18,7 @@ import {
   loadExcludedProductKeys,
 } from '@/helpers/excludedProducts';
 import { fetchDecorator, type FetchDecoratorResponse } from '@/helpers/fetch';
+import type { ProductLookup, ProductRef, ProductRefreshResult } from '@/helpers/productRef';
 import { stripQuantityFromString } from '@/helpers/quantity';
 import { pickBroadestName } from '@/helpers/science';
 import { shipsToCountry } from '@/helpers/shipping';
@@ -49,6 +51,7 @@ import {
 } from '@/utils/typeGuards/common';
 import { isCachedProductData } from '@/utils/typeGuards/productbuilder';
 import { Queue } from 'async-await-queue';
+import chunk from 'lodash/chunk';
 import {
   distance,
   extract,
@@ -162,6 +165,13 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * that filter by structure (currently Ambeed) read this; others ignore it.
    */
   protected resolvedStructures?: ReadonlyMap<string, ResolvedStructure>;
+
+  /**
+   * Whether specific products can be refetched through an API (see {@link refreshProducts}), so the
+   * background price check can watch them. Set literally on each concrete class: the supplier
+   * registry is generated from a class's own statics and doesn't see inherited ones.
+   */
+  public static readonly supportsPriceAlerts: boolean = false;
 
   /**
    * Whether this supplier can search its own site by a CAS number / molecular
@@ -454,6 +464,9 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    */
   protected controller: AbortController;
 
+  // The caller's controller, which `controller` follows.
+  private readonly parentController?: AbortController;
+
   /**
    * The maximum number of results to return for a search query.
    * This is not a limit on HTTP requests, but rather the number of
@@ -550,6 +563,16 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * @source
    */
   protected minConcurrentCycle: number = 100;
+
+  /**
+   * How many products one {@link queryProductsById} call is given. The default suits suppliers that
+   * need a request or more per product, keeping a batch under {@link httpRequestHardLimit};
+   * suppliers that fetch many products in one request raise it.
+   *
+   * @defaultValue 8
+   * @source
+   */
+  protected refreshBatchSize: number = 8;
 
   /**
    * Maximum wall-clock time (in seconds) a single supplier's `execute()` search may run.
@@ -744,6 +767,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     // Initialize required properties
     this.query = query;
     this.limit = limit;
+    this.parentController = controller;
     this.controller = this.createLinkedController(controller);
     this.logger = new Logger(this.stableClassName, undefined, this.color);
     // Snapshot the active search's context (its trace id) so logs made after it ends keep it.
@@ -2310,6 +2334,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * @param getProgress - Reads how many products the search has found and fully finished so far,
    * so the timeout warning can say how many results are being returned. Called when the budget
    * elapses; defaults to no progress.
+   * @param action - What ran out of time, for the warning.
    * @returns `{ promise, handle }`; both `undefined` when no budget is set (`supplierSearchTimeBudgetSec <= 0`).
    * @example
    * ```typescript
@@ -2327,6 +2352,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   private armSearchTimeout<S extends symbol>(
     sentinel: S,
     getProgress: () => { found: number; completed: number } = () => ({ found: 0, completed: 0 }),
+    action: string = 'Search',
   ): { promise?: Promise<S>; handle?: ReturnType<typeof setTimeout> } {
     if (this.supplierSearchTimeBudgetSec <= 0) {
       return {};
@@ -2338,7 +2364,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
         // data from the search listing.
         const { found, completed } = getProgress();
         this.logger.warn(
-          `Search exceeded supplierSearchTimeBudgetSec (${this.supplierSearchTimeBudgetSec}s); ` +
+          `${action} exceeded supplierSearchTimeBudgetSec (${this.supplierSearchTimeBudgetSec}s); ` +
             `aborting outstanding requests and returning ${found} collected ` +
             `result${found === 1 ? '' : 's'}`,
           {
@@ -2622,6 +2648,193 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     query: string,
     limit: number,
   ): Promise<ProductBuilder<T>[] | void>;
+
+  /**
+   * Refetches specific products and returns one result per ref, without running a search. This is
+   * the entry point for the background price check; suppliers implement {@link queryProductsById}.
+   *
+   * @remarks
+   * Call `initCache(false)` first. The product-detail cache has no expiry and would replace the
+   * fresh prices with old ones.
+   *
+   * @param refs - The products to refetch
+   * @returns One result per ref. Never rejects: a failed batch yields `FAILED` results.
+   * @example
+   * ```typescript
+   * supplier.initCache(false);
+   * const [result] = await supplier.refreshProducts([ref]);
+   * if (result.status === PRODUCT_REFRESH_STATUS.OK) console.log(result.product.price);
+   * ```
+   * @source
+   */
+  public async refreshProducts(refs: readonly ProductRef[]): Promise<ProductRefreshResult[]> {
+    const results: ProductRefreshResult[] = [];
+    for (const batch of chunk(refs, this.refreshBatchSize)) {
+      results.push(...(await this.refreshBatch(batch)));
+    }
+    return results;
+  }
+
+  /**
+   * Refetches one batch of products, bounded by the supplier's time budget.
+   * @param refs - The batch of products
+   * @returns One result per ref
+   * @example
+   * ```typescript
+   * await this.refreshBatch(refs); // [{ status: 'ok', ref, product }, { status: 'unavailable', ref }]
+   * ```
+   * @source
+   */
+  private async refreshBatch(refs: readonly ProductRef[]): Promise<ProductRefreshResult[]> {
+    const failAll = (reason: string): ProductRefreshResult[] =>
+      refs.map((ref) => ({ status: PRODUCT_REFRESH_STATUS.FAILED, ref, reason }));
+
+    // A batch that timed out must not fail the ones after it, nor leave them its aborted setup.
+    if (this.controller.signal.aborted) {
+      this.controller = this.createLinkedController(this.parentController);
+      this.setupPromise = null;
+    }
+
+    const timedOut = Symbol('refreshTimeout');
+    const { promise, handle } = this.armSearchTimeout(timedOut, undefined, 'Product refresh');
+    // The hard limit guards one search; each batch gets its own allowance.
+    this.requestCount = 0;
+
+    try {
+      const query = async (): Promise<ProductLookup<T>> => {
+        await this.ensureSetup();
+        return this.queryProductsById(refs);
+      };
+      const pending = query();
+      const lookup = await Promise.race(promise ? [pending, promise] : [pending]);
+      if (typeof lookup === 'symbol') {
+        return failAll('Timed out');
+      }
+      return await Promise.all(refs.map((ref) => this.toRefreshResult(ref, lookup)));
+    } catch (error) {
+      this.logger.warn(`Failed to refresh products: ${getErrorMessage(error)}`, {
+        error,
+        supplier: this.supplierName,
+      });
+      return failAll(getErrorMessage(error));
+    } finally {
+      if (handle !== undefined) clearTimeout(handle);
+    }
+  }
+
+  /**
+   * Finalizes the builder found for one ref and names the outcome.
+   * @param ref - The product that was requested
+   * @param lookup - What the supplier found for the batch
+   * @returns The ref's result
+   * @example
+   * ```typescript
+   * await this.toRefreshResult(ref, { builders: [] }); // { status: 'unavailable', ref }
+   * ```
+   * @source
+   */
+  private async toRefreshResult(
+    ref: ProductRef,
+    lookup: ProductLookup<T>,
+  ): Promise<ProductRefreshResult> {
+    if (lookup.failed?.has(ref.cacheKey)) {
+      return { status: PRODUCT_REFRESH_STATUS.FAILED, ref, reason: 'Request failed' };
+    }
+    const builder = lookup.builders.find((item) => item.get('cacheKey') === ref.cacheKey);
+    if (!builder) {
+      return { status: PRODUCT_REFRESH_STATUS.UNAVAILABLE, ref };
+    }
+    try {
+      const product = await this.finishProduct(builder);
+      return product
+        ? { status: PRODUCT_REFRESH_STATUS.OK, ref, product }
+        : { status: PRODUCT_REFRESH_STATUS.FAILED, ref, reason: 'Incomplete product data' };
+    } catch (error) {
+      // build() needs an exchange rate for non-USD prices, so a rate outage lands here.
+      return { status: PRODUCT_REFRESH_STATUS.FAILED, ref, reason: getErrorMessage(error) };
+    }
+  }
+
+  /**
+   * Fetches specific products from the supplier's API. Suppliers that set
+   * {@link supportsPriceAlerts} override this, either with one request for the whole batch or with
+   * {@link refreshViaDetail} for one request per product.
+   *
+   * @param refs - Up to {@link refreshBatchSize} products
+   * @returns The builders found. Throw when the whole request fails; list individual failures in
+   * `failed`.
+   * @throws Error when the supplier doesn't support it
+   * @example
+   * ```typescript
+   * protected override async queryProductsById(refs: readonly ProductRef[]) {
+   *   const items = await this.fetchItems(refs.map((ref) => ref.cacheKey));
+   *   return { builders: this.initProductBuilders(items) };
+   * }
+   * ```
+   * @source
+   */
+  protected async queryProductsById(refs: readonly ProductRef[]): Promise<ProductLookup<T>> {
+    throw new Error(`${this.supplierName} cannot refetch specific products`, { cause: { refs } });
+  }
+
+  /**
+   * {@link queryProductsById} for suppliers with one detail request per product. Each ref becomes a
+   * builder with no price or variants, so a request that yields no price can't pass off the old one.
+   *
+   * @param refs - The products to refetch
+   * @param fetchDetail - Fills a seeded builder from the supplier's detail endpoint. Throw an
+   * `HttpError` with `NOT_FOUND` when the supplier no longer has the product.
+   * @returns The builders found, and the `cacheKey`s whose request failed
+   * @example
+   * ```typescript
+   * return this.refreshViaDetail(refs, (builder) => this.getProductData(builder));
+   * ```
+   * @source
+   */
+  protected async refreshViaDetail(
+    refs: readonly ProductRef[],
+    fetchDetail: (
+      builder: ProductBuilder<T>,
+      ref: ProductRef,
+    ) => Promise<ProductBuilder<T> | void> = (builder) => this.getProductData(builder),
+  ): Promise<ProductLookup<T>> {
+    const queue = new Queue(this.maxConcurrentRequests, this.minConcurrentCycle);
+    const failed = new Set<string>();
+    // Captured because a later batch gets its own controller, which mustn't revive this one.
+    const { signal } = this.controller;
+    const found = await Promise.all(
+      refs.map((ref) =>
+        queue.run(async () => {
+          if (signal.aborted) {
+            failed.add(ref.cacheKey);
+            return undefined;
+          }
+          const [seed] = ProductBuilder.createFromCache<T>(this.baseURL, [
+            { ...omit(ref, 'variants'), supplier: this.supplierName },
+          ]);
+          try {
+            const builder = await fetchDetail(seed, ref);
+            if (builder) return builder;
+          } catch (error) {
+            // The supplier answered that it doesn't have the product, so it's unavailable.
+            if (
+              error instanceof HttpError &&
+              (error.status === HttpStatus.NOT_FOUND || error.status === HttpStatus.GONE)
+            ) {
+              return undefined;
+            }
+            this.logger.warn(`Failed to refresh a product: ${getErrorMessage(error)}`, {
+              error,
+              ref,
+            });
+          }
+          failed.add(ref.cacheKey);
+          return undefined;
+        }),
+      ),
+    );
+    return { builders: found.filter((builder) => builder !== undefined), failed };
+  }
 
   /**
    * Finalizes a partial product by adding computed properties and validating the result.

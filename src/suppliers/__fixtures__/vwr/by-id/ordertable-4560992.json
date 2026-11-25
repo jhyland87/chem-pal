@@ -1,0 +1,118 @@
+{
+   "certificatesAvailable" : true,
+   "description" : "Sodium chloride ≥99.5%, granules, AR®, Macron Fine Chemicals™",
+   "downloadSDSLink" : "https://digitalassets.avantorsciences.com/adaptivemedia/rendition?id=d30237db388f3234d6a63c6ba1ca479f71151068&vid=d30237db388f3234d6a63c6ba1ca479f71151068&prid=original&clid=SAPDAM",
+   "hasItemDetailPage" : false,
+   "headers" : {
+      "columnNamesMap" : {
+         "entry" : [ {
+            "key" : "o_pack_type",
+            "value" : "Pack type"
+         }, {
+            "key" : "o_size",
+            "value" : "Size"
+         } ]
+      },
+      "displayOrderMap" : [ {
+         "key" : "o_pack_type",
+         "value" : 2
+      }, {
+         "key" : "o_size",
+         "value" : 1004
+      } ],
+      "showSupplierColumn" : false
+   },
+   "marketSource" : false,
+   "moduleNameArticle" : "",
+   "msdsAvailable" : true,
+   "noOfVariant" : 1,
+   "productRows" : [ {
+      "avltDays" : 2,
+      "blocked" : false,
+      "breakQuantity" : 0,
+      "catalogNumber" : "MK754406",
+      "certificatesAvailable" : true,
+      "clearance" : false,
+      "code" : "NA1985508",
+      "colCellMap" : {
+         "entry" : [ {
+            "key" : "o_pack_type",
+            "value" : "HDPE poly bottle"
+         }, {
+            "key" : "o_size",
+            "value" : "2.5 kg"
+         } ]
+      },
+      "dfsID" : false,
+      "discontinued" : false,
+      "downloadSDSLink" : "https://digitalassets.avantorsciences.com/adaptivemedia/rendition?id=d30237db388f3234d6a63c6ba1ca479f71151068&vid=d30237db388f3234d6a63c6ba1ca479f71151068&prid=original&clid=SAPDAM",
+      "inquireForPrice" : false,
+      "licenseRequired" : false,
+      "licenseType" : "",
+      "marketSource" : false,
+      "minPurchaseQty" : 0,
+      "mocInformation" : "N",
+      "msdsAvailable" : true,
+      "name" : "SODIUM CHLORIDE C.P. GRA 2.5K",
+      "newProduct" : false,
+      "prices" : [ {
+         "breakQuantity" : 0,
+         "callForPriceIndicator" : false,
+         "catalogNumber" : "MK754406",
+         "clearancePriceEnabled" : false,
+         "currencyCode" : "USD",
+         "expertPriceUsed" : false,
+         "formattedDisplayPrice" : "$209.07",
+         "formattedListPrice" : "$209.07",
+         "formattedValue" : "$209.07",
+         "listPrice" : 209.07,
+         "marketSourceItem" : false,
+         "minOrderQty" : 6,
+         "promoPriceUsed" : false,
+         "quantity" : 0,
+         "skuId" : "MK754406EA",
+         "skuUOM" : "EA",
+         "unicornInquireForPrice" : false,
+         "uomDescription" : "Each(1/Itm/Bx)"
+      }, {
+         "breakQuantity" : 0,
+         "callForPriceIndicator" : false,
+         "catalogNumber" : "MK754406",
+         "clearancePriceEnabled" : false,
+         "currencyCode" : "USD",
+         "expertPriceUsed" : false,
+         "formattedDisplayPrice" : "$1,254.31",
+         "formattedListPrice" : "$1,254.31",
+         "formattedValue" : "$1,254.31",
+         "listPrice" : 1254.31,
+         "marketSourceItem" : false,
+         "minOrderQty" : 1.0,
+         "promoPriceUsed" : false,
+         "quantity" : 0,
+         "skuId" : "MK754406CS",
+         "skuUOM" : "CS",
+         "unicornInquireForPrice" : false,
+         "uomDescription" : "Case of 6 (1/ Itm/Bx)"
+      } ],
+      "restricted" : false,
+      "restrictedProduct" : false,
+      "rowDisplayOrder" : 4076,
+      "saleTillEOS" : false,
+      "salesStatus" : "",
+      "salesStatusCode" : "",
+      "sellHold" : false,
+      "showFlagSensitiveProduct" : false,
+      "showPromo" : false,
+      "skuRowSpan" : 0,
+      "temperatureCondition" : "",
+      "txRestricted" : false,
+      "url" : "/us/en/product/NA1985508/sodium-chloride-99-1005-granular-ar-macron-fine-chemicals",
+      "vasCode" : 15,
+      "vendorCatalogNumber" : "7544-06",
+      "vendorId" : "VWR8860EDI",
+      "vwrArticleNumber" : "MACR7544-06",
+      "vwrHierarchyCode" : "1007101"
+   } ],
+   "specSelectProduct" : false,
+   "temperatureCondition" : ""
+}

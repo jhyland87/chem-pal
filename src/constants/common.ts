@@ -24,6 +24,8 @@ export const ACTION_TYPE = {
   SUPPLIER_TOGGLE: 'SUPPLIER_TOGGLE',
   /** Price-tracking config changed; replaces the nested `priceTracking` object */
   PRICE_TRACKING_CHANGE: 'PRICE_TRACKING_CHANGE',
+  /** Price-alert config changed; replaces the nested `priceAlerts` object */
+  PRICE_ALERTS_CHANGE: 'PRICE_ALERTS_CHANGE',
   /** Cache config changed; replaces the nested `caching` object */
   CACHE_CHANGE: 'CACHE_CHANGE',
   /** Diagnostic log levels changed; replaces the `remoteLogLevels` list */
@@ -42,6 +44,8 @@ export type ActionType = (typeof ACTION_TYPE)[keyof typeof ACTION_TYPE];
 export const MESSAGE_TYPE = {
   /** Proxied fetch request handled by the background worker; see helpers/backgroundFetch.ts. */
   BACKGROUND_FETCH: 'BACKGROUND_FETCH',
+  /** Asks whether an open page controls the toolbar badge; see utils/priceDropBadge.ts. */
+  BADGE_OWNER: 'BADGE_OWNER',
 } as const;
 
 export type MessageType = (typeof MESSAGE_TYPE)[keyof typeof MESSAGE_TYPE];
@@ -133,6 +137,8 @@ export const CACHE = {
   CHEMSAVERS_API_KEY: 'chemsavers_api_key',
   /** Scraped Searchanise `{ apiKey, host }`, stored per supplier as `<prefix>:<supplierName>` */
   SEARCHANISE_CREDENTIALS: 'searchanise_credentials',
+  /** Prefix of the per-product price alert keys; see helpers/priceAlerts.ts */
+  PRICE_ALERT: 'price_alert',
   /** LabChem full product catalog snapshot, cached for 24h (empty-query search) */
   LABCHEM_CATALOG: 'labchem_catalog',
   /** UI-owned update bookkeeping: GitHub poll throttle and per-version dismissal */
@@ -233,6 +239,23 @@ export const SUPPLIER_OUTCOME = {
 } as const;
 
 export type SupplierOutcomeStatus = (typeof SUPPLIER_OUTCOME)[keyof typeof SUPPLIER_OUTCOME];
+
+/**
+ * How refetching one specific product ended.
+ * @category Constants
+ * @source
+ */
+export const PRODUCT_REFRESH_STATUS = {
+  /** Refetched. */
+  OK: 'ok',
+  /** The supplier answered, but the product is missing or out of stock. Not an error. */
+  UNAVAILABLE: 'unavailable',
+  /** The request or its parsing failed, so nothing is known about the product. */
+  FAILED: 'failed',
+} as const;
+
+export type ProductRefreshStatus =
+  (typeof PRODUCT_REFRESH_STATUS)[keyof typeof PRODUCT_REFRESH_STATUS];
 
 /**
  * One supplier's result for the most recent search.

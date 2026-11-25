@@ -3,6 +3,7 @@
     "showHelp": false,
     "caching": { "enabled": true, "doNotCacheEmptyResults": true, "ttlMinutes": 7200 },
     "priceTracking": { "enabled": true, "maxDataPoints": 5 },
+    "priceAlerts": { "checkIntervalHours": 12, "minDropPercent": 0 },
     "currency": "USD",
     "location": "US",
     "language": "en-US",
@@ -52,6 +53,21 @@
     "unitPriceMinDisplay": 0.01,
     "unitPriceExactFractionDigits": 4,
     "priceHistoryReloadDelayMs": 300
+  },
+  "priceAlerts": {
+    "checkIntervalHours": { "min": 1, "max": 168 },
+    "minDropPercent": { "min": 0, "max": 90 },
+    "supplierConcurrency": 3,
+    "resumeDelayMinutes": 1,
+    "keepAliveSeconds": 20,
+    "maxNotificationsPerSupplier": 3,
+    "badge": {
+      "color": "#2e7d32",
+      "flashColor": "#f9a825",
+      "flashIntervalMs": 500,
+      "flashSeconds": 5,
+      "ownerTimeoutMs": 1000
+    }
   },
   "storage": {
     "maxSupplierQueryCacheEntries": 200,

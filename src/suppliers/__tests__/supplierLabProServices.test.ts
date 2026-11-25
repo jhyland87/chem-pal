@@ -1,7 +1,11 @@
 // ProductBuilder must be imported before SupplierBase/SupplierLabProServices to avoid a
 // module-initialization cycle.
+import { PRODUCT_REFRESH_STATUS } from '@/constants/common';
+import { productSeriesKey, variantSeriesKey } from '@/helpers/priceHistory';
+import type { ProductRef } from '@/helpers/productRef';
 import { ProductBuilder } from '@/utils/ProductBuilder';
 import { describe, expect, it, vi } from 'vitest';
+import bySku from '../__fixtures__/labproservices/products-by-sku.json';
 import benzoicSearch from '../__fixtures__/labproservices/benzoic-search.json';
 import { SupplierLabProServices } from '../SupplierLabProServices';
 
@@ -96,5 +100,91 @@ describe('SupplierLabProServices.queryProducts', () => {
 
     const builders = await asInternals(supplier).queryProducts('nonexistent', 20);
     expect(builders).toBeUndefined();
+  });
+});
+
+describe('SupplierLabProServices queryProductsById', () => {
+  const [first, second] = bySku.data.products.items;
+
+  const refFor = (item: { uid: string; sku: string }): ProductRef => ({
+    cacheKey: item.uid,
+    title: item.sku,
+    url: `${item.sku}.html`,
+    sku: item.sku,
+    variants: [],
+  });
+
+  const makeBySupplier = (response: unknown = bySku) => {
+    const supplier = makeSupplier('');
+    const post = vi.spyOn(supplier as never, 'httpPostJson').mockResolvedValue(response as never);
+    return { supplier, post };
+  };
+
+  it('uses its own by-SKU query and fragment, and sends no Store header', async () => {
+    const { supplier, post } = makeBySupplier();
+
+    await supplier.refreshProducts([refFor(first), refFor(second)]);
+
+    const call = post.mock.calls[0][0] as unknown as {
+      path: string;
+      body: { query: string; variables: unknown };
+      headers: Record<string, string>;
+    };
+    expect(call.path).toBe('/graphql');
+    expect(call.headers).not.toHaveProperty('Store');
+    expect(call.body.variables).toEqual({ skus: [first.sku, second.sku], pageSize: 2 });
+    expect(call.body.query).toMatch(/fragment LabproProductFields on ProductInterface/);
+    expect(call.body.query).not.toContain('Magento2ProductFields');
+  });
+
+  it('prices each product from final_price, as a search does', async () => {
+    const { supplier } = makeBySupplier();
+
+    const results = await supplier.refreshProducts([refFor(first), refFor(second)]);
+
+    const prices = results.map((r) => r.status === PRODUCT_REFRESH_STATUS.OK && r.product.price);
+    const finalPrices = [first, second].map(
+      (item) => item.price_range.minimum_price.final_price.value,
+    );
+    expect(prices).toEqual(finalPrices);
+    // Guards against reading regular_price instead.
+    expect(finalPrices.every((price) => price > 0)).toBe(true);
+  });
+
+  it('reports a SKU absent from the response as UNAVAILABLE', async () => {
+    const { supplier } = makeBySupplier();
+    const gone: ProductRef = { ...refFor(first), cacheKey: 'gone', sku: 'NOPE-0000' };
+
+    const results = await supplier.refreshProducts([refFor(first), gone, refFor(second)]);
+
+    expect(results.map((r) => r.status)).toEqual([
+      PRODUCT_REFRESH_STATUS.OK,
+      PRODUCT_REFRESH_STATUS.UNAVAILABLE,
+      PRODUCT_REFRESH_STATUS.OK,
+    ]);
+  });
+
+  it('keeps the same product series as a search of the same items', async () => {
+    const searcher = makeSupplier('benzoic');
+    vi.spyOn(searcher as never, 'httpPostJson').mockResolvedValue(bySku as never);
+    vi.spyOn(searcher as never, 'fuzzyFilterAst').mockImplementation((list: unknown) => list);
+    const searched = await asInternals(searcher).queryProducts('benzoic', 20);
+    const searchedProducts = await Promise.all((searched ?? []).map((b) => b.build()));
+    expect(searchedProducts).toHaveLength(2);
+
+    const { supplier } = makeBySupplier();
+    const results = await supplier.refreshProducts([refFor(first), refFor(second)]);
+
+    for (const result of results) {
+      const searchedProduct = searchedProducts.find((p) => p?.cacheKey === result.ref.cacheKey);
+      if (result.status !== PRODUCT_REFRESH_STATUS.OK || !searchedProduct) {
+        throw new Error(`expected both routes to produce ${result.ref.cacheKey}`);
+      }
+      expect(productSeriesKey(result.product)).toBeDefined();
+      expect(productSeriesKey(result.product)).toBe(productSeriesKey(searchedProduct));
+      const keys = (product: Product) =>
+        (product.variants ?? []).map((variant) => variantSeriesKey(product, variant));
+      expect(keys(result.product)).toEqual(keys(searchedProduct));
+    }
   });
 });

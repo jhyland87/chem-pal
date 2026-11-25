@@ -13,12 +13,29 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+### Added
+
+- Price reduction alerts: right-click a product in the results and choose **Enable price reduction
+  alerts**. ChemPal checks the product in the background and shows a notification when its price
+  drops. The toolbar icon also flashes, then shows how many products dropped (for example **↓2**)
+  until you look at them. Manage your alerts in **Settings → Price Alerts**.
+- **Settings → Advanced** now has a check interval and a minimum price drop for price alerts.
+- Usage statistics now count price alerts added, removed and triggered, with the supplier and the size
+  of the drop but never the product. Turn them off with **Share usage data** in Settings.
+
 ### Changed
 
 - The chemical details window (opened by clicking a chemical's name above the results) now shows
   each source's information as soon as it arrives. A slow or unavailable source no longer holds up
   the rest; it shows its own loading or "unavailable" note instead, and reopening the window is
   much faster.
+
+### Fixed
+
+- Sale prices are now used for suppliers that list them separately from the regular price (AladdinSci,
+  Chemsavers, and the Wix-based stores). Price charts for discounted products may show a one-time step.
+- AsesChem prices are shown in Indian rupees and converted correctly. They were previously read as
+  US dollars.
 
 ## [1.18.0] - 2026-11-15
 

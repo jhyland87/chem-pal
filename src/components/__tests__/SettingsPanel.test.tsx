@@ -30,6 +30,13 @@ const mocks = vi.hoisted(() => ({
   getAllPriceSeries: vi.fn(),
   getIdbStorageBreakdown: vi.fn(),
   storageClear: vi.fn(),
+  priceAlerts: [] as unknown[],
+}));
+
+vi.mock('@/hooks/usePriceAlerts', () => ({ usePriceAlerts: () => mocks.priceAlerts }));
+vi.mock('@/helpers/permissions', () => ({
+  hasNotificationPermission: vi.fn().mockResolvedValue(true),
+  requestNotificationPermission: vi.fn().mockResolvedValue(true),
 }));
 
 vi.mock('@/helpers/dom', () => ({ reloadPage: mocks.reloadPage }));
@@ -396,5 +403,84 @@ describe('SettingsPanel', () => {
 
     // 3 + 2 = 5 combined records shows up in the cache-stats line.
     expect(await screen.findByText(/settings_cache_stats:5/)).toBeInTheDocument();
+  });
+
+  describe('price alerts', () => {
+    const intervalInput = () =>
+      document.querySelector('input[name="priceAlerts.checkIntervalHours"]') as HTMLInputElement;
+    const minDropInput = () =>
+      document.querySelector('input[name="priceAlerts.minDropPercent"]') as HTMLInputElement;
+
+    beforeEach(() => {
+      mocks.priceAlerts = [];
+    });
+
+    it('shows the accordion without a count when nothing is watched', () => {
+      render(<SettingsPanel />);
+      expect(screen.getByText('settings_section_price_alerts')).toBeInTheDocument();
+      expect(screen.queryByText('settings_excluded_count:0')).toBeNull();
+    });
+
+    it('shows the number of watched products next to the title', () => {
+      mocks.priceAlerts = [
+        { id: 'a', title: 'A', supplier: 'S', lastPrices: {}, failures: 0 },
+        { id: 'b', title: 'B', supplier: 'S', lastPrices: {}, failures: 0 },
+      ];
+      render(<SettingsPanel />);
+      expect(screen.getByText('settings_excluded_count:2')).toBeInTheDocument();
+    });
+
+    it('dispatches the check interval into priceAlerts', async () => {
+      const ctx = setContext(baseSettings({ priceAlerts: { minDropPercent: 5 } }));
+      render(<SettingsPanel />);
+      openSection('settings_section_advanced');
+
+      fireEvent.change(intervalInput(), { target: { value: '6' } });
+
+      await waitFor(() =>
+        expect(ctx.setUserSettings).toHaveBeenCalledWith(
+          expect.objectContaining({ priceAlerts: { minDropPercent: 5, checkIntervalHours: 6 } }),
+        ),
+      );
+    });
+
+    it('dispatches the minimum drop into priceAlerts', async () => {
+      const ctx = setContext(baseSettings({ priceAlerts: { checkIntervalHours: 24 } }));
+      render(<SettingsPanel />);
+      openSection('settings_section_advanced');
+
+      fireEvent.change(minDropInput(), { target: { value: '10' } });
+
+      await waitFor(() =>
+        expect(ctx.setUserSettings).toHaveBeenCalledWith(
+          expect.objectContaining({
+            priceAlerts: { checkIntervalHours: 24, minDropPercent: 10 },
+          }),
+        ),
+      );
+    });
+
+    it('clears a value to undefined when the input is blank', async () => {
+      const ctx = setContext(baseSettings({ priceAlerts: { checkIntervalHours: 24 } }));
+      render(<SettingsPanel />);
+      openSection('settings_section_advanced');
+
+      fireEvent.change(intervalInput(), { target: { value: '' } });
+
+      await waitFor(() =>
+        expect(ctx.setUserSettings).toHaveBeenCalledWith(
+          expect.objectContaining({ priceAlerts: { checkIntervalHours: undefined } }),
+        ),
+      );
+    });
+
+    it('shows both inputs when advanced mode is off', () => {
+      setContext(baseSettings(), false);
+      render(<SettingsPanel />);
+      openSection('settings_section_advanced');
+
+      expect(intervalInput()).toBeInTheDocument();
+      expect(minDropInput()).toBeInTheDocument();
+    });
   });
 });

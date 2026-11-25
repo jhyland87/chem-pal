@@ -1,4 +1,5 @@
-import { defaultSettings, search } from '@/../config.json';
+import { defaultSettings, priceAlerts as priceAlertsConfig, search } from '@/../config.json';
+import { PriceAlertsPanel } from '@/components/PriceAlertsPanel';
 import { useAppContext } from '@/components/SearchPanel/hooks/useContext';
 import { ACTION_TYPE, IDB_STORE } from '@/constants/common';
 import { COUNTRIES } from '@/constants/countries';
@@ -12,11 +13,12 @@ import {
   type ExcludedProductsMap,
 } from '@/helpers/excludedProducts';
 import { getAvailableLocales, i18n } from '@/helpers/i18n';
-import { formatBytes, formatTimestamp, getLanguageName } from '@/helpers/utils';
+import { formatBytes, formatTimestamp, getLanguageName, toFiniteNumber } from '@/helpers/utils';
 // Names only, from a dependency-free constant — importing SupplierFactory here
 // would pull every supplier implementation into the options-page bundle.
 import { showReportDialog } from '@/components/ReportDialog';
 import { SUPPLIER_CLASS_NAMES } from '@/constants/suppliers';
+import { usePriceAlerts } from '@/hooks/usePriceAlerts';
 import {
   clearAllCaches,
   clearExcludedProducts,
@@ -179,6 +181,9 @@ export default function SettingsPanel() {
         case ACTION_TYPE.PRICE_TRACKING_CHANGE:
           newSettings = { ...currentSettings, priceTracking: action.value };
           break;
+        case ACTION_TYPE.PRICE_ALERTS_CHANGE:
+          newSettings = { ...currentSettings, priceAlerts: action.value };
+          break;
         case ACTION_TYPE.CACHE_CHANGE:
           newSettings = { ...currentSettings, caching: action.value };
           break;
@@ -269,6 +274,7 @@ export default function SettingsPanel() {
     updateSetting({ type: ACTION_TYPE.RESTORE_DEFAULTS });
   };
 
+  const priceAlerts = usePriceAlerts();
   const [excludedProducts, setExcludedProducts] = useState<ExcludedProductsMap>({});
   const [priceHistoryCleared, setPriceHistoryCleared] = useState(false);
   const [cacheCleared, setCacheCleared] = useState(false);
@@ -1074,6 +1080,33 @@ export default function SettingsPanel() {
           )}
         </AccordionDetails>
       </Accordion>
+      <Accordion
+        expanded={expanded === 'priceAlerts'}
+        onChange={handleAccordionChange('priceAlerts')}
+        disableGutters
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          className={styles['settings-panel__accordion-summary']}
+        >
+          <Typography variant="body2" fontWeight={500}>
+            {i18n('settings_section_price_alerts')}
+            {priceAlerts.length > 0 && (
+              <Typography
+                component="span"
+                variant="caption"
+                color="text.secondary"
+                sx={{ ml: 0.5, fontStyle: 'italic' }}
+              >
+                {i18n('settings_excluded_count', [String(priceAlerts.length)])}
+              </Typography>
+            )}
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails className={styles['settings-panel__accordion-details']}>
+          <PriceAlertsPanel alerts={priceAlerts} isOpen={expanded === 'priceAlerts'} />
+        </AccordionDetails>
+      </Accordion>
       {/* Per-supplier enable/disable. Each switch on = supplier enabled; toggling
           off adds it to the disabledSuppliers deny-list, excluding it from every
           search and hiding it from the search filter menu. */}
@@ -1226,6 +1259,62 @@ export default function SettingsPanel() {
               slotProps={{
                 formHelperText: { sx: { fontStyle: 'italic' } },
                 htmlInput: { min: 0, step: 1 },
+              }}
+            />
+          </Box>
+          <Box sx={{ p: 1 }}>
+            <TextField
+              fullWidth
+              size="small"
+              type="number"
+              name="priceAlerts.checkIntervalHours"
+              label={i18n('settings_price_alerts_interval')}
+              value={currentSettings.priceAlerts?.checkIntervalHours ?? ''}
+              placeholder={String(defaultSettings.priceAlerts.checkIntervalHours)}
+              onChange={(event) =>
+                updateSetting({
+                  type: ACTION_TYPE.PRICE_ALERTS_CHANGE,
+                  value: {
+                    ...currentSettings.priceAlerts,
+                    checkIntervalHours: toFiniteNumber(event.target.value),
+                  },
+                })
+              }
+              disabled={isPending}
+              helperText={i18n('settings_price_alerts_interval_helper', [
+                String(defaultSettings.priceAlerts.checkIntervalHours),
+              ])}
+              slotProps={{
+                formHelperText: { sx: { fontStyle: 'italic' } },
+                htmlInput: { ...priceAlertsConfig.checkIntervalHours, step: 1 },
+              }}
+            />
+          </Box>
+          <Box sx={{ p: 1 }}>
+            <TextField
+              fullWidth
+              size="small"
+              type="number"
+              name="priceAlerts.minDropPercent"
+              label={i18n('settings_price_alerts_min_drop')}
+              value={currentSettings.priceAlerts?.minDropPercent ?? ''}
+              placeholder={String(defaultSettings.priceAlerts.minDropPercent)}
+              onChange={(event) =>
+                updateSetting({
+                  type: ACTION_TYPE.PRICE_ALERTS_CHANGE,
+                  value: {
+                    ...currentSettings.priceAlerts,
+                    minDropPercent: toFiniteNumber(event.target.value),
+                  },
+                })
+              }
+              disabled={isPending}
+              helperText={i18n('settings_price_alerts_min_drop_helper', [
+                String(defaultSettings.priceAlerts.minDropPercent),
+              ])}
+              slotProps={{
+                formHelperText: { sx: { fontStyle: 'italic' } },
+                htmlInput: { ...priceAlertsConfig.minDropPercent, step: 1 },
               }}
             />
           </Box>

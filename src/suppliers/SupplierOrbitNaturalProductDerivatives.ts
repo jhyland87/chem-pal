@@ -36,6 +36,9 @@ export class SupplierOrbitNaturalProductDerivatives
   // informational notice (more products available there), not a restriction.
   public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa', 'ebay'];
 
+  // Specific products can be refetched by id, so they can be watched for price drops.
+  public static readonly supportsPriceAlerts: boolean = true;
+
   // The supplier's eBay storefront, surfaced via the "more products" notice.
   public readonly ebayStoreURL: string = 'https://www.ebay.com/usr/orbitnaturalproductderivatives';
 }

@@ -31,6 +31,13 @@ A caption here also shows how much cached data you currently have.
 | **Max price points per product** | Caps how many data points to keep per product (`0` = unlimited). |
 | **Clear price history** | Erases all recorded price history. Separate from **Clear cache**. |
 
+## Price Alerts
+
+The products you're watching for price drops (set up by right-clicking a result;
+see [Price Tracking](Price-Tracking#price-alerts)). Each entry can be removed, or
+select several and delete them together, or use **Delete all**. If notifications
+are off, a button here lets you allow them; price drops show in this list either way.
+
 ## Display
 
 | Setting | What it does |
@@ -57,6 +64,8 @@ permanently exclude suppliers you never want to see.
 |---------|--------------|
 | **Fuzz match method** | How closely a product title must match your query to be kept. "Default (per supplier)" is recommended; other options change the matching algorithm. |
 | **Max search time (ms)** | Caps how long each supplier gets before ChemPal stops waiting and shows what it has. Empty = each supplier's own default; `0` = no limit. |
+| **Price alert check interval (hours)** | How often watched products are checked while the browser is open. Empty = default (12). |
+| **Minimum price drop (%)** | Only alert when a price falls by at least this much. Empty = default (0, any drop). |
 | **Disable fuzzy filtering** | Shows raw results without relevance ranking — every plain match, or (in [advanced search](Advanced-Search)) every result satisfying your boolean logic. |
 
 ## Actions

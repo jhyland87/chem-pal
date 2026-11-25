@@ -1,0 +1,1278 @@
+[
+ {
+  "id": 16118,
+  "name": "Alpha-Pinene &#8211; Natural",
+  "slug": "alpha-pinene-natural",
+  "parent": 0,
+  "type": "variable",
+  "variation": "",
+  "permalink": "https://consolidated-chemical.com/product/alpha-pinene-natural/",
+  "sku": "",
+  "short_description": "<h4 data-assistant-stream-block-index=\"0\">Alpha-Pinene \u2014 Product Specifications</h4>\n<p data-assistant-stream-block=\"\" data-assistant-stream-block-index=\"1\"><strong>Product Name:</strong> Alpha-Pinene<br />\n<strong>Product Type:</strong> Natural Monoterpene<br />\n<strong>CAS No.:</strong> 80-56-8<br",
+  "description": "<div class=\"_wdUoQG_assistantMessage\">\n<div>\n<div class=\"_wdUoQG_messageCopy _A1mksG_dilContent _pKBN-W_sportsContent\" data-assistant-markdown=\"\">\n<p>Alpha-Pinene is a naturally occurring monoterpene found in many coniferous plants, including pine, fir, and cedar. It has a fresh, crisp, woody aroma ",
+  "on_sale": false,
+  "prices": {
+   "price": "999",
+   "regular_price": "999",
+   "sale_price": "999",
+   "price_range": {
+    "min_amount": "999",
+    "max_amount": "1499"
+   },
+   "currency_code": "USD",
+   "currency_symbol": "$",
+   "currency_minor_unit": 2,
+   "currency_decimal_separator": ".",
+   "currency_thousand_separator": ",",
+   "currency_prefix": "$",
+   "currency_suffix": ""
+  },
+  "price_html": "<span class=\"woocommerce-Price-amount amount\" aria-hidden=\"true\"><span class=\"woocommerce-Price-currencySymbol\" dir=\"auto\">&#036;</span>9.99</span> <span aria-hidden=\"true\">&ndash;</span> <span class=\"woocommerce-Price-amount amount\" aria-hidden=\"true\"><span class=\"woocommerce-Price-currencySymbol\" dir=\"auto\">&#036;</span>14.99</span><span class=\"screen-reader-text\">Price range: &#036;9.99 through &#036;14.99</span>",
+  "average_rating": "0",
+  "review_count": 0,
+  "images": [
+   {
+    "id": 16121,
+    "src": "https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-scaled.jpg",
+    "thumbnail": "https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-300x300.jpg",
+    "srcset": "https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-scaled.jpg 1080w, https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-300x300.jpg 300w, https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-1024x1024.jpg 1024w, https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-150x150.jpg 150w, https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-768x768.jpg 768w, https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-1536x1536.jpg 1536w, https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-2048x2048.jpg 2048w, https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-600x600.jpg 600w, https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-100x100.jpg 100w, https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-64x64.jpg 64w",
+    "sizes": "(max-width: 1080px) 100vw, 1080px",
+    "thumbnail_srcset": "https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-300x300.jpg 300w, https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-1024x1024.jpg 1024w, https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-150x150.jpg 150w, https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-768x768.jpg 768w, https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-1536x1536.jpg 1536w, https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-2048x2048.jpg 2048w, https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-600x600.jpg 600w, https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-100x100.jpg 100w, https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-64x64.jpg 64w, https://consolidated-chemical.com/wp-content/uploads/2026/08/Render_Mockup_4000_4000_2026-08-27-scaled.jpg 1080w",
+    "thumbnail_sizes": "(max-width: 300px) 100vw, 300px",
+    "name": "Render_Mockup_4000_4000_2026-08-27",
+    "alt": ""
+   }
+  ],
+  "categories": [
+   {
+    "id": 461,
+    "name": "Essential Oils",
+    "slug": "essential-oils",
+    "link": "https://consolidated-chemical.com/product-category/fragrances-aromas-15/essential-oils/"
+   },
+   {
+    "id": 1844,
+    "name": "Flavoring Agent",
+    "slug": "flavoring-agent",
+    "link": "https://consolidated-chemical.com/product-category/flavoring-agent/"
+   },
+   {
+    "id": 3823,
+    "name": "Food Additive",
+    "slug": "food-additive",
+    "link": "https://consolidated-chemical.com/product-category/food-additive/"
+   },
+   {
+    "id": 100,
+    "name": "Fragrance Chemical",
+    "slug": "fragrance-chemical",
+    "link": "https://consolidated-chemical.com/product-category/fragrance-chemical/"
+   },
+   {
+    "id": 204,
+    "name": "Fragrances &amp; Aromas (15)",
+    "slug": "fragrances-aromas-15",
+    "link": "https://consolidated-chemical.com/product-category/fragrances-aromas-15/"
+   }
+  ],
+  "tags": [
+   {
+    "id": 38019,
+    "name": "Alpha Pinene",
+    "slug": "alpha-pinene",
+    "link": "https://consolidated-chemical.com/product-tag/alpha-pinene/"
+   },
+   {
+    "id": 38076,
+    "name": "Alpha-Pinene Bulk",
+    "slug": "alpha-pinene-bulk",
+    "link": "https://consolidated-chemical.com/product-tag/alpha-pinene-bulk/"
+   },
+   {
+    "id": 38033,
+    "name": "Alpha-Pinene CAS 80-56-8",
+    "slug": "alpha-pinene-cas-80-56-8",
+    "link": "https://consolidated-chemical.com/product-tag/alpha-pinene-cas-80-56-8/"
+   },
+   {
+    "id": 38085,
+    "name": "Alpha-Pinene Chemical",
+    "slug": "alpha-pinene-chemical",
+    "link": "https://consolidated-chemical.com/product-tag/alpha-pinene-chemical/"
+   },
+   {
+    "id": 38078,
+    "name": "Alpha-Pinene Distributor",
+    "slug": "alpha-pinene-distributor",
+    "link": "https://consolidated-chemical.com/product-tag/alpha-pinene-distributor/"
+   },
+   {
+    "id": 38083,
+    "name": "Alpha-Pinene for Formulation",
+    "slug": "alpha-pinene-for-formulation",
+    "link": "https://consolidated-chemical.com/product-tag/alpha-pinene-for-formulation/"
+   },
+   {
+    "id": 38082,
+    "name": "Alpha-Pinene for Fragrance",
+    "slug": "alpha-pinene-for-fragrance",
+    "link": "https://consolidated-chemical.com/product-tag/alpha-pinene-for-fragrance/"
+   },
+   {
+    "id": 38081,
+    "name": "Alpha-Pinene for Research",
+    "slug": "alpha-pinene-for-research",
+    "link": "https://consolidated-chemical.com/product-tag/alpha-pinene-for-research/"
+   },
+   {
+    "id": 38086,
+    "name": "Alpha-Pinene Ingredient",
+    "slug": "alpha-pinene-ingredient",
+    "link": "https://consolidated-chemical.com/product-tag/alpha-pinene-ingredient/"
+   },
+   {
+    "id": 38075,
+    "name": "Alpha-Pinene Manufacturer",
+    "slug": "alpha-pinene-manufacturer",
+    "link": "https://consolidated-chemical.com/product-tag/alpha-pinene-manufacturer/"
+   },
+   {
+    "id": 38020,
+    "name": "Alpha-Pinene Natural",
+    "slug": "alpha-pinene-natural",
+    "link": "https://consolidated-chemical.com/product-tag/alpha-pinene-natural/"
+   },
+   {
+    "id": 38087,
+    "name": "Alpha-Pinene Natural Product",
+    "slug": "alpha-pinene-natural-product",
+    "link": "https://consolidated-chemical.com/product-tag/alpha-pinene-natural-product/"
+   },
+   {
+    "id": 38079,
+    "name": "Alpha-Pinene Product",
+    "slug": "alpha-pinene-product",
+    "link": "https://consolidated-chemical.com/product-tag/alpha-pinene-product/"
+   },
+   {
+    "id": 38084,
+    "name": "Alpha-Pinene Raw Material",
+    "slug": "alpha-pinene-raw-material",
+    "link": "https://consolidated-chemical.com/product-tag/alpha-pinene-raw-material/"
+   },
+   {
+    "id": 38074,
+    "name": "Alpha-Pinene Supplier",
+    "slug": "alpha-pinene-supplier",
+    "link": "https://consolidated-chemical.com/product-tag/alpha-pinene-supplier/"
+   },
+   {
+    "id": 38022,
+    "name": "Alpha-Pinene Terpene",
+    "slug": "alpha-pinene-terpene",
+    "link": "https://consolidated-chemical.com/product-tag/alpha-pinene-terpene/"
+   },
+   {
+    "id": 38077,
+    "name": "Alpha-Pinene Wholesale",
+    "slug": "alpha-pinene-wholesale",
+    "link": "https://consolidated-chemical.com/product-tag/alpha-pinene-wholesale/"
+   },
+   {
+    "id": 38052,
+    "name": "Analytical Standard",
+    "slug": "analytical-standard",
+    "link": "https://consolidated-chemical.com/product-tag/analytical-standard/"
+   },
+   {
+    "id": 38048,
+    "name": "Analytical Terpene",
+    "slug": "analytical-terpene",
+    "link": "https://consolidated-chemical.com/product-tag/analytical-terpene/"
+   },
+   {
+    "id": 38058,
+    "name": "Aroma Formulation",
+    "slug": "aroma-formulation",
+    "link": "https://consolidated-chemical.com/product-tag/aroma-formulation/"
+   },
+   {
+    "id": 565,
+    "name": "Aromatic Compound",
+    "slug": "aromatic-compound",
+    "link": "https://consolidated-chemical.com/product-tag/aromatic-compound/"
+   },
+   {
+    "id": 38064,
+    "name": "Bio-Based Ingredient",
+    "slug": "bio-based-ingredient",
+    "link": "https://consolidated-chemical.com/product-tag/bio-based-ingredient/"
+   },
+   {
+    "id": 38044,
+    "name": "Botanical Extract Component",
+    "slug": "botanical-extract-component",
+    "link": "https://consolidated-chemical.com/product-tag/botanical-extract-component/"
+   },
+   {
+    "id": 38061,
+    "name": "Botanical Formulation",
+    "slug": "botanical-formulation",
+    "link": "https://consolidated-chemical.com/product-tag/botanical-formulation/"
+   },
+   {
+    "id": 38097,
+    "name": "Botanical Raw Material",
+    "slug": "botanical-raw-material",
+    "link": "https://consolidated-chemical.com/product-tag/botanical-raw-material/"
+   },
+   {
+    "id": 38055,
+    "name": "Botanical Research",
+    "slug": "botanical-research",
+    "link": "https://consolidated-chemical.com/product-tag/botanical-research/"
+   },
+   {
+    "id": 38028,
+    "name": "Botanical Terpene",
+    "slug": "botanical-terpene",
+    "link": "https://consolidated-chemical.com/product-tag/botanical-terpene/"
+   },
+   {
+    "id": 38080,
+    "name": "Buy Alpha-Pinene",
+    "slug": "buy-alpha-pinene",
+    "link": "https://consolidated-chemical.com/product-tag/buy-alpha-pinene/"
+   },
+   {
+    "id": 38035,
+    "name": "C10H16",
+    "slug": "c10h16",
+    "link": "https://consolidated-chemical.com/product-tag/c10h16/"
+   },
+   {
+    "id": 38034,
+    "name": "CAS 80-56-8",
+    "slug": "cas-80-56-8",
+    "link": "https://consolidated-chemical.com/product-tag/cas-80-56-8/"
+   },
+   {
+    "id": 38018,
+    "name": "ChatGPT said: Alpha-Pinene",
+    "slug": "chatgpt-said-alpha-pinene",
+    "link": "https://consolidated-chemical.com/product-tag/chatgpt-said-alpha-pinene/"
+   },
+   {
+    "id": 491,
+    "name": "Chemical Intermediate",
+    "slug": "chemical-intermediate",
+    "link": "https://consolidated-chemical.com/product-tag/chemical-intermediate/"
+   },
+   {
+    "id": 38053,
+    "name": "Chemical Reference Material",
+    "slug": "chemical-reference-material",
+    "link": "https://consolidated-chemical.com/product-tag/chemical-reference-material/"
+   },
+   {
+    "id": 38051,
+    "name": "Chemical Research",
+    "slug": "chemical-research",
+    "link": "https://consolidated-chemical.com/product-tag/chemical-research/"
+   },
+   {
+    "id": 38045,
+    "name": "Conifer Terpene",
+    "slug": "conifer-terpene",
+    "link": "https://consolidated-chemical.com/product-tag/conifer-terpene/"
+   },
+   {
+    "id": 38067,
+    "name": "Coniferous Plant Compound",
+    "slug": "coniferous-plant-compound",
+    "link": "https://consolidated-chemical.com/product-tag/coniferous-plant-compound/"
+   },
+   {
+    "id": 570,
+    "name": "Essential Oil Component",
+    "slug": "essential-oil-component",
+    "link": "https://consolidated-chemical.com/product-tag/essential-oil-component/"
+   },
+   {
+    "id": 36828,
+    "name": "Essential Oil Terpene",
+    "slug": "essential-oil-terpene",
+    "link": "https://consolidated-chemical.com/product-tag/essential-oil-terpene/"
+   },
+   {
+    "id": 38059,
+    "name": "Flavor Formulation",
+    "slug": "flavor-formulation",
+    "link": "https://consolidated-chemical.com/product-tag/flavor-formulation/"
+   },
+   {
+    "id": 6411,
+    "name": "Flavor Ingredient",
+    "slug": "flavor-ingredient",
+    "link": "https://consolidated-chemical.com/product-tag/flavor-ingredient/"
+   },
+   {
+    "id": 38038,
+    "name": "Flavoring Terpene",
+    "slug": "flavoring-terpene",
+    "link": "https://consolidated-chemical.com/product-tag/flavoring-terpene/"
+   },
+   {
+    "id": 38043,
+    "name": "Forest Aroma",
+    "slug": "forest-aroma",
+    "link": "https://consolidated-chemical.com/product-tag/forest-aroma/"
+   },
+   {
+    "id": 38071,
+    "name": "Forest-Inspired Fragrance",
+    "slug": "forest-inspired-fragrance",
+    "link": "https://consolidated-chemical.com/product-tag/forest-inspired-fragrance/"
+   },
+   {
+    "id": 38056,
+    "name": "Fragrance Formulation",
+    "slug": "fragrance-formulation",
+    "link": "https://consolidated-chemical.com/product-tag/fragrance-formulation/"
+   },
+   {
+    "id": 569,
+    "name": "Fragrance Ingredient",
+    "slug": "fragrance-ingredient",
+    "link": "https://consolidated-chemical.com/product-tag/fragrance-ingredient/"
+   },
+   {
+    "id": 38037,
+    "name": "Fragrance Terpene",
+    "slug": "fragrance-terpene",
+    "link": "https://consolidated-chemical.com/product-tag/fragrance-terpene/"
+   },
+   {
+    "id": 38070,
+    "name": "Fresh Botanical Aroma",
+    "slug": "fresh-botanical-aroma",
+    "link": "https://consolidated-chemical.com/product-tag/fresh-botanical-aroma/"
+   },
+   {
+    "id": 38041,
+    "name": "Fresh Pine Aroma",
+    "slug": "fresh-pine-aroma",
+    "link": "https://consolidated-chemical.com/product-tag/fresh-pine-aroma/"
+   },
+   {
+    "id": 38042,
+    "name": "Fresh Woody Aroma",
+    "slug": "fresh-woody-aroma",
+    "link": "https://consolidated-chemical.com/product-tag/fresh-woody-aroma/"
+   },
+   {
+    "id": 38069,
+    "name": "Green Aroma",
+    "slug": "green-aroma",
+    "link": "https://consolidated-chemical.com/product-tag/green-aroma/"
+   },
+   {
+    "id": 38032,
+    "name": "High Purity Alpha-Pinene",
+    "slug": "high-purity-alpha-pinene",
+    "link": "https://consolidated-chemical.com/product-tag/high-purity-alpha-pinene/"
+   },
+   {
+    "id": 13106,
+    "name": "High-Purity Terpene",
+    "slug": "high-purity-terpene",
+    "link": "https://consolidated-chemical.com/product-tag/high-purity-terpene/"
+   },
+   {
+    "id": 13107,
+    "name": "Industrial Terpene",
+    "slug": "industrial-terpene",
+    "link": "https://consolidated-chemical.com/product-tag/industrial-terpene/"
+   },
+   {
+    "id": 38049,
+    "name": "Laboratory Terpene",
+    "slug": "laboratory-terpene",
+    "link": "https://consolidated-chemical.com/product-tag/laboratory-terpene/"
+   },
+   {
+    "id": 13100,
+    "name": "Monoterpene",
+    "slug": "monoterpene",
+    "link": "https://consolidated-chemical.com/product-tag/monoterpene/"
+   },
+   {
+    "id": 38021,
+    "name": "Natural Alpha-Pinene",
+    "slug": "natural-alpha-pinene",
+    "link": "https://consolidated-chemical.com/product-tag/natural-alpha-pinene/"
+   },
+   {
+    "id": 38089,
+    "name": "Natural Alpha-Pinene Bulk",
+    "slug": "natural-alpha-pinene-bulk",
+    "link": "https://consolidated-chemical.com/product-tag/natural-alpha-pinene-bulk/"
+   },
+   {
+    "id": 38088,
+    "name": "Natural Alpha-Pinene Supplier",
+    "slug": "natural-alpha-pinene-supplier",
+    "link": "https://consolidated-chemical.com/product-tag/natural-alpha-pinene-supplier/"
+   },
+   {
+    "id": 38090,
+    "name": "Natural Alpha-Pinene Wholesale",
+    "slug": "natural-alpha-pinene-wholesale",
+    "link": "https://consolidated-chemical.com/product-tag/natural-alpha-pinene-wholesale/"
+   },
+   {
+    "id": 38039,
+    "name": "Natural Aromatic Compound",
+    "slug": "natural-aromatic-compound",
+    "link": "https://consolidated-chemical.com/product-tag/natural-aromatic-compound/"
+   },
+   {
+    "id": 38062,
+    "name": "Natural Chemical Compound",
+    "slug": "natural-chemical-compound",
+    "link": "https://consolidated-chemical.com/product-tag/natural-chemical-compound/"
+   },
+   {
+    "id": 38065,
+    "name": "Natural Flavor Ingredient",
+    "slug": "natural-flavor-ingredient",
+    "link": "https://consolidated-chemical.com/product-tag/natural-flavor-ingredient/"
+   },
+   {
+    "id": 1022,
+    "name": "Natural Fragrance Ingredient",
+    "slug": "natural-fragrance-ingredient",
+    "link": "https://consolidated-chemical.com/product-tag/natural-fragrance-ingredient/"
+   },
+   {
+    "id": 1025,
+    "name": "Natural Monoterpene",
+    "slug": "natural-monoterpene",
+    "link": "https://consolidated-chemical.com/product-tag/natural-monoterpene/"
+   },
+   {
+    "id": 38073,
+    "name": "Natural Pine Compound",
+    "slug": "natural-pine-compound",
+    "link": "https://consolidated-chemical.com/product-tag/natural-pine-compound/"
+   },
+   {
+    "id": 38054,
+    "name": "Natural Product Research",
+    "slug": "natural-product-research",
+    "link": "https://consolidated-chemical.com/product-tag/natural-product-research/"
+   },
+   {
+    "id": 38098,
+    "name": "Natural Raw Material",
+    "slug": "natural-raw-material",
+    "link": "https://consolidated-chemical.com/product-tag/natural-raw-material/"
+   },
+   {
+    "id": 13103,
+    "name": "Natural Terpene",
+    "slug": "natural-terpene",
+    "link": "https://consolidated-chemical.com/product-tag/natural-terpene/"
+   },
+   {
+    "id": 38093,
+    "name": "Natural Terpene Bulk",
+    "slug": "natural-terpene-bulk",
+    "link": "https://consolidated-chemical.com/product-tag/natural-terpene-bulk/"
+   },
+   {
+    "id": 38094,
+    "name": "Natural Terpene Ingredient",
+    "slug": "natural-terpene-ingredient",
+    "link": "https://consolidated-chemical.com/product-tag/natural-terpene-ingredient/"
+   },
+   {
+    "id": 38092,
+    "name": "Natural Terpene Manufacturer",
+    "slug": "natural-terpene-manufacturer",
+    "link": "https://consolidated-chemical.com/product-tag/natural-terpene-manufacturer/"
+   },
+   {
+    "id": 38091,
+    "name": "Natural Terpene Supplier",
+    "slug": "natural-terpene-supplier",
+    "link": "https://consolidated-chemical.com/product-tag/natural-terpene-supplier/"
+   },
+   {
+    "id": 38030,
+    "name": "Naturally Derived Terpene",
+    "slug": "naturally-derived-terpene",
+    "link": "https://consolidated-chemical.com/product-tag/naturally-derived-terpene/"
+   },
+   {
+    "id": 38057,
+    "name": "Perfume Formulation",
+    "slug": "perfume-formulation",
+    "link": "https://consolidated-chemical.com/product-tag/perfume-formulation/"
+   },
+   {
+    "id": 1116,
+    "name": "Perfume Ingredient",
+    "slug": "perfume-ingredient",
+    "link": "https://consolidated-chemical.com/product-tag/perfume-ingredient/"
+   },
+   {
+    "id": 38024,
+    "name": "Pine Aroma",
+    "slug": "pine-aroma",
+    "link": "https://consolidated-chemical.com/product-tag/pine-aroma/"
+   },
+   {
+    "id": 38026,
+    "name": "Pine Fragrance",
+    "slug": "pine-fragrance",
+    "link": "https://consolidated-chemical.com/product-tag/pine-fragrance/"
+   },
+   {
+    "id": 38066,
+    "name": "Pine Needle Aroma",
+    "slug": "pine-needle-aroma",
+    "link": "https://consolidated-chemical.com/product-tag/pine-needle-aroma/"
+   },
+   {
+    "id": 38027,
+    "name": "Pine Oil Compound",
+    "slug": "pine-oil-compound",
+    "link": "https://consolidated-chemical.com/product-tag/pine-oil-compound/"
+   },
+   {
+    "id": 38025,
+    "name": "Pine Scent",
+    "slug": "pine-scent",
+    "link": "https://consolidated-chemical.com/product-tag/pine-scent/"
+   },
+   {
+    "id": 38023,
+    "name": "Pine Terpene",
+    "slug": "pine-terpene",
+    "link": "https://consolidated-chemical.com/product-tag/pine-terpene/"
+   },
+   {
+    "id": 38046,
+    "name": "Pine Tree Terpene",
+    "slug": "pine-tree-terpene",
+    "link": "https://consolidated-chemical.com/product-tag/pine-tree-terpene/"
+   },
+   {
+    "id": 38040,
+    "name": "Pine-Like Aroma",
+    "slug": "pine-like-aroma",
+    "link": "https://consolidated-chemical.com/product-tag/pine-like-aroma/"
+   },
+   {
+    "id": 38072,
+    "name": "Pine-Scented Ingredient",
+    "slug": "pine-scented-ingredient",
+    "link": "https://consolidated-chemical.com/product-tag/pine-scented-ingredient/"
+   },
+   {
+    "id": 38063,
+    "name": "Plant-Based Chemical",
+    "slug": "plant-based-chemical",
+    "link": "https://consolidated-chemical.com/product-tag/plant-based-chemical/"
+   },
+   {
+    "id": 38029,
+    "name": "Plant-Derived Terpene",
+    "slug": "plant-derived-terpene",
+    "link": "https://consolidated-chemical.com/product-tag/plant-derived-terpene/"
+   },
+   {
+    "id": 38095,
+    "name": "Premium Alpha-Pinene",
+    "slug": "premium-alpha-pinene",
+    "link": "https://consolidated-chemical.com/product-tag/premium-alpha-pinene/"
+   },
+   {
+    "id": 38031,
+    "name": "Pure Alpha-Pinene",
+    "slug": "pure-alpha-pinene",
+    "link": "https://consolidated-chemical.com/product-tag/pure-alpha-pinene/"
+   },
+   {
+    "id": 38096,
+    "name": "Pure Natural Terpene",
+    "slug": "pure-natural-terpene",
+    "link": "https://consolidated-chemical.com/product-tag/pure-natural-terpene/"
+   },
+   {
+    "id": 38047,
+    "name": "Research Terpene",
+    "slug": "research-terpene",
+    "link": "https://consolidated-chemical.com/product-tag/research-terpene/"
+   },
+   {
+    "id": 38068,
+    "name": "Resinous Aroma",
+    "slug": "resinous-aroma",
+    "link": "https://consolidated-chemical.com/product-tag/resinous-aroma/"
+   },
+   {
+    "id": 7085,
+    "name": "Specialty chemical",
+    "slug": "specialty-chemical",
+    "link": "https://consolidated-chemical.com/product-tag/specialty-chemical/"
+   },
+   {
+    "id": 38099,
+    "name": "Specialty Terpene Ingredient",
+    "slug": "specialty-terpene-ingredient",
+    "link": "https://consolidated-chemical.com/product-tag/specialty-terpene-ingredient/"
+   },
+   {
+    "id": 13102,
+    "name": "Terpene Compound",
+    "slug": "terpene-compound",
+    "link": "https://consolidated-chemical.com/product-tag/terpene-compound/"
+   },
+   {
+    "id": 38060,
+    "name": "Terpene Formulation",
+    "slug": "terpene-formulation",
+    "link": "https://consolidated-chemical.com/product-tag/terpene-formulation/"
+   },
+   {
+    "id": 38036,
+    "name": "Terpene Ingredient",
+    "slug": "terpene-ingredient",
+    "link": "https://consolidated-chemical.com/product-tag/terpene-ingredient/"
+   },
+   {
+    "id": 38050,
+    "name": "Terpene Research",
+    "slug": "terpene-research",
+    "link": "https://consolidated-chemical.com/product-tag/terpene-research/"
+   },
+   {
+    "id": 950,
+    "name": "Woody Aroma",
+    "slug": "woody-aroma",
+    "link": "https://consolidated-chemical.com/product-tag/woody-aroma/"
+   }
+  ],
+  "brands": [],
+  "attributes": [
+   {
+    "id": 0,
+    "name": "Size",
+    "taxonomy": null,
+    "has_variations": true,
+    "terms": [
+     {
+      "id": 0,
+      "name": "30mL (1 Fl Oz)",
+      "slug": "30mL (1 Fl Oz)"
+     },
+     {
+      "id": 0,
+      "name": "120mL (4 Fl Oz)",
+      "slug": "120mL (4 Fl Oz)"
+     }
+    ]
+   }
+  ],
+  "variations": [
+   {
+    "id": 16122,
+    "attributes": [
+     {
+      "name": "Size",
+      "value": "30mL (1 Fl Oz)"
+     }
+    ]
+   },
+   {
+    "id": 16123,
+    "attributes": [
+     {
+      "name": "Size",
+      "value": "120mL (4 Fl Oz)"
+     }
+    ]
+   }
+  ],
+  "grouped_products": [],
+  "has_options": true,
+  "is_purchasable": true,
+  "is_in_stock": true,
+  "is_on_backorder": false,
+  "low_stock_remaining": null,
+  "stock_availability": {
+   "text": "",
+   "class": "in-stock"
+  },
+  "sold_individually": false,
+  "weight": "",
+  "dimensions": {
+   "length": "",
+   "width": "",
+   "height": ""
+  },
+  "formatted_weight": "N/A",
+  "formatted_dimensions": "N/A",
+  "add_to_cart": {
+   "text": "Select options",
+   "description": "Select options for &ldquo;Alpha-Pinene &#8211; Natural&rdquo;",
+   "url": "https://consolidated-chemical.com/product/alpha-pinene-natural/",
+   "single_text": "Add to cart",
+   "minimum": 1,
+   "maximum": 9999,
+   "multiple_of": 1
+  },
+  "is_password_protected": false,
+  "extensions": {},
+  "_links": {
+   "self": [
+    {
+     "href": "https://consolidated-chemical.com/wp-json/wc/store/v1/products/16118",
+     "targetHints": {
+      "allow": [
+       "GET"
+      ]
+     }
+    }
+   ],
+   "collection": [
+    {
+     "href": "https://consolidated-chemical.com/wp-json/wc/store/v1/products"
+    }
+   ],
+   "related": [
+    {
+     "embeddable": true,
+     "href": "https://consolidated-chemical.com/wp-json/wc/store/v1/products?related=16118&per_page=10"
+    }
+   ]
+  }
+ },
+ {
+  "id": 15449,
+  "name": "Diethyl Carbonate (DEC)",
+  "slug": "diethyl-carbonate-dec",
+  "parent": 0,
+  "type": "variable",
+  "variation": "",
+  "permalink": "https://consolidated-chemical.com/product/diethyl-carbonate-dec/",
+  "sku": "",
+  "short_description": "<h4 data-section-id=\"f8b1ob\" data-start=\"169\" data-end=\"197\"><strong>Product Identification</strong></h4>\n<ul data-start=\"198\" data-end=\"390\">\n<li data-section-id=\"9f7ok0\" data-start=\"198\" data-end=\"244\"><strong data-start=\"200\" data-end=\"218\">Chemical Name:</strong> Diethyl Carbonate (DEC)</li>\n<li",
+  "description": "<div class=\"relative basis-auto flex-col -mb-(--composer-overlap-px) pb-(--composer-overlap-px) [--composer-overlap-px:28px] grow flex\" data-voice-floating-orb-focus-background=\"\">\n<div class=\"flex flex-col text-sm\">\n<div class=\"qMYqUG_convSearchResultHighlightRoot\">\n<div class=\"\" data-turn-id-conta",
+  "on_sale": false,
+  "prices": {
+   "price": "2499",
+   "regular_price": "2499",
+   "sale_price": "2499",
+   "price_range": {
+    "min_amount": "2499",
+    "max_amount": "3499"
+   },
+   "currency_code": "USD",
+   "currency_symbol": "$",
+   "currency_minor_unit": 2,
+   "currency_decimal_separator": ".",
+   "currency_thousand_separator": ",",
+   "currency_prefix": "$",
+   "currency_suffix": ""
+  },
+  "price_html": "<span class=\"woocommerce-Price-amount amount\" aria-hidden=\"true\"><span class=\"woocommerce-Price-currencySymbol\" dir=\"auto\">&#036;</span>24.99</span> <span aria-hidden=\"true\">&ndash;</span> <span class=\"woocommerce-Price-amount amount\" aria-hidden=\"true\"><span class=\"woocommerce-Price-currencySymbol\" dir=\"auto\">&#036;</span>34.99</span><span class=\"screen-reader-text\">Price range: &#036;24.99 through &#036;34.99</span>",
+  "average_rating": "0",
+  "review_count": 0,
+  "images": [],
+  "categories": [
+   {
+    "id": 37824,
+    "name": "Organic Chemical",
+    "slug": "organic-chemical",
+    "link": "https://consolidated-chemical.com/product-category/organic-chemical/"
+   },
+   {
+    "id": 134,
+    "name": "Solvents (3)",
+    "slug": "solvents-3",
+    "link": "https://consolidated-chemical.com/product-category/solvents-3/"
+   }
+  ],
+  "tags": [
+   {
+    "id": 497,
+    "name": "Adhesive Solvent",
+    "slug": "adhesive-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/adhesive-solvent/"
+   },
+   {
+    "id": 38016,
+    "name": "advanced materials chemical",
+    "slug": "advanced-materials-chemical",
+    "link": "https://consolidated-chemical.com/product-tag/advanced-materials-chemical/"
+   },
+   {
+    "id": 37991,
+    "name": "battery electrolyte solvent",
+    "slug": "battery-electrolyte-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/battery-electrolyte-solvent/"
+   },
+   {
+    "id": 37997,
+    "name": "battery grade solvent",
+    "slug": "battery-grade-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/battery-grade-solvent/"
+   },
+   {
+    "id": 38010,
+    "name": "battery manufacturing chemical",
+    "slug": "battery-manufacturing-chemical",
+    "link": "https://consolidated-chemical.com/product-tag/battery-manufacturing-chemical/"
+   },
+   {
+    "id": 37474,
+    "name": "bulk chemical supply",
+    "slug": "bulk-chemical-supply",
+    "link": "https://consolidated-chemical.com/product-tag/bulk-chemical-supply/"
+   },
+   {
+    "id": 37987,
+    "name": "C5H10O3",
+    "slug": "c5h10o3",
+    "link": "https://consolidated-chemical.com/product-tag/c5h10o3/"
+   },
+   {
+    "id": 38006,
+    "name": "carbonate ester compound",
+    "slug": "carbonate-ester-compound",
+    "link": "https://consolidated-chemical.com/product-tag/carbonate-ester-compound/"
+   },
+   {
+    "id": 37989,
+    "name": "carbonate solvent",
+    "slug": "carbonate-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/carbonate-solvent/"
+   },
+   {
+    "id": 38000,
+    "name": "carbonylation agent",
+    "slug": "carbonylation-agent",
+    "link": "https://consolidated-chemical.com/product-tag/carbonylation-agent/"
+   },
+   {
+    "id": 37986,
+    "name": "CAS 105-58-8",
+    "slug": "cas-105-58-8",
+    "link": "https://consolidated-chemical.com/product-tag/cas-105-58-8/"
+   },
+   {
+    "id": 36612,
+    "name": "chemical feedstock",
+    "slug": "chemical-feedstock",
+    "link": "https://consolidated-chemical.com/product-tag/chemical-feedstock/"
+   },
+   {
+    "id": 638,
+    "name": "Chemical Reagent",
+    "slug": "chemical-reagent",
+    "link": "https://consolidated-chemical.com/product-tag/chemical-reagent/"
+   },
+   {
+    "id": 1355,
+    "name": "chemical solvent",
+    "slug": "chemical-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/chemical-solvent/"
+   },
+   {
+    "id": 38005,
+    "name": "CO2 derived chemical",
+    "slug": "co2-derived-chemical",
+    "link": "https://consolidated-chemical.com/product-tag/co2-derived-chemical/"
+   },
+   {
+    "id": 732,
+    "name": "Coating Solvent",
+    "slug": "coating-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/coating-solvent/"
+   },
+   {
+    "id": 37983,
+    "name": "DEC",
+    "slug": "dec",
+    "link": "https://consolidated-chemical.com/product-tag/dec/"
+   },
+   {
+    "id": 37985,
+    "name": "DEC solvent",
+    "slug": "dec-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/dec-solvent/"
+   },
+   {
+    "id": 37982,
+    "name": "diethyl carbonate",
+    "slug": "diethyl-carbonate",
+    "link": "https://consolidated-chemical.com/product-tag/diethyl-carbonate/"
+   },
+   {
+    "id": 37984,
+    "name": "diethyl carbonate solvent",
+    "slug": "diethyl-carbonate-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/diethyl-carbonate-solvent/"
+   },
+   {
+    "id": 37995,
+    "name": "EC DMC EMC solvent blend",
+    "slug": "ec-dmc-emc-solvent-blend",
+    "link": "https://consolidated-chemical.com/product-tag/ec-dmc-emc-solvent-blend/"
+   },
+   {
+    "id": 975,
+    "name": "Eco-Friendly Solvent",
+    "slug": "eco-friendly-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/eco-friendly-solvent/"
+   },
+   {
+    "id": 37842,
+    "name": "electrochemistry solvent",
+    "slug": "electrochemistry-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/electrochemistry-solvent/"
+   },
+   {
+    "id": 38011,
+    "name": "electrolyte additive",
+    "slug": "electrolyte-additive",
+    "link": "https://consolidated-chemical.com/product-tag/electrolyte-additive/"
+   },
+   {
+    "id": 37994,
+    "name": "electrolyte co-solvent",
+    "slug": "electrolyte-co-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/electrolyte-co-solvent/"
+   },
+   {
+    "id": 37999,
+    "name": "electronic grade solvent",
+    "slug": "electronic-grade-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/electronic-grade-solvent/"
+   },
+   {
+    "id": 37996,
+    "name": "energy storage chemical",
+    "slug": "energy-storage-chemical",
+    "link": "https://consolidated-chemical.com/product-tag/energy-storage-chemical/"
+   },
+   {
+    "id": 38001,
+    "name": "ethylating agent",
+    "slug": "ethylating-agent",
+    "link": "https://consolidated-chemical.com/product-tag/ethylating-agent/"
+   },
+   {
+    "id": 37898,
+    "name": "fine chemical intermediate",
+    "slug": "fine-chemical-intermediate",
+    "link": "https://consolidated-chemical.com/product-tag/fine-chemical-intermediate/"
+   },
+   {
+    "id": 38009,
+    "name": "flammable liquid solvent",
+    "slug": "flammable-liquid-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/flammable-liquid-solvent/"
+   },
+   {
+    "id": 1056,
+    "name": "Green Solvent",
+    "slug": "green-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/green-solvent/"
+   },
+   {
+    "id": 478,
+    "name": "High Purity Solvent",
+    "slug": "high-purity-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/high-purity-solvent/"
+   },
+   {
+    "id": 680,
+    "name": "High-Performance Solvent",
+    "slug": "high-performance-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/high-performance-solvent/"
+   },
+   {
+    "id": 36968,
+    "name": "industrial chemical raw material",
+    "slug": "industrial-chemical-raw-material",
+    "link": "https://consolidated-chemical.com/product-tag/industrial-chemical-raw-material/"
+   },
+   {
+    "id": 6681,
+    "name": "Industrial Chemical Supplier",
+    "slug": "industrial-chemical-supplier",
+    "link": "https://consolidated-chemical.com/product-tag/industrial-chemical-supplier/"
+   },
+   {
+    "id": 474,
+    "name": "Industrial Solvent",
+    "slug": "industrial-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/industrial-solvent/"
+   },
+   {
+    "id": 13079,
+    "name": "ink formulation solvent",
+    "slug": "ink-formulation-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/ink-formulation-solvent/"
+   },
+   {
+    "id": 38014,
+    "name": "lab reagent chemical",
+    "slug": "lab-reagent-chemical",
+    "link": "https://consolidated-chemical.com/product-tag/lab-reagent-chemical/"
+   },
+   {
+    "id": 980,
+    "name": "Laboratory Solvent",
+    "slug": "laboratory-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/laboratory-solvent/"
+   },
+   {
+    "id": 37993,
+    "name": "lithium battery electrolyte",
+    "slug": "lithium-battery-electrolyte",
+    "link": "https://consolidated-chemical.com/product-tag/lithium-battery-electrolyte/"
+   },
+   {
+    "id": 37992,
+    "name": "lithium ion battery material",
+    "slug": "lithium-ion-battery-material",
+    "link": "https://consolidated-chemical.com/product-tag/lithium-ion-battery-material/"
+   },
+   {
+    "id": 38007,
+    "name": "low viscosity solvent",
+    "slug": "low-viscosity-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/low-viscosity-solvent/"
+   },
+   {
+    "id": 13047,
+    "name": "low-toxicity solvent",
+    "slug": "low-toxicity-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/low-toxicity-solvent/"
+   },
+   {
+    "id": 38017,
+    "name": "manufacturing chemical raw material",
+    "slug": "manufacturing-chemical-raw-material",
+    "link": "https://consolidated-chemical.com/product-tag/manufacturing-chemical-raw-material/"
+   },
+   {
+    "id": 37988,
+    "name": "organic carbonate ester",
+    "slug": "organic-carbonate-ester",
+    "link": "https://consolidated-chemical.com/product-tag/organic-carbonate-ester/"
+   },
+   {
+    "id": 2246,
+    "name": "Organic synthesis solvent",
+    "slug": "organic-synthesis-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/organic-synthesis-solvent/"
+   },
+   {
+    "id": 37852,
+    "name": "oxygenated solvent",
+    "slug": "oxygenated-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/oxygenated-solvent/"
+   },
+   {
+    "id": 38012,
+    "name": "paint formulation chemical",
+    "slug": "paint-formulation-chemical",
+    "link": "https://consolidated-chemical.com/product-tag/paint-formulation-chemical/"
+   },
+   {
+    "id": 38003,
+    "name": "pharma grade solvent",
+    "slug": "pharma-grade-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/pharma-grade-solvent/"
+   },
+   {
+    "id": 37839,
+    "name": "pharmaceutical intermediate solvent",
+    "slug": "pharmaceutical-intermediate-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/pharmaceutical-intermediate-solvent/"
+   },
+   {
+    "id": 1850,
+    "name": "Polar aprotic solvent",
+    "slug": "polar-aprotic-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/polar-aprotic-solvent/"
+   },
+   {
+    "id": 37822,
+    "name": "purification solvent",
+    "slug": "purification-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/purification-solvent/"
+   },
+   {
+    "id": 37990,
+    "name": "research solvent",
+    "slug": "research-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/research-solvent/"
+   },
+   {
+    "id": 38002,
+    "name": "resin processing solvent",
+    "slug": "resin-processing-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/resin-processing-solvent/"
+   },
+   {
+    "id": 38015,
+    "name": "solvent for extraction processes",
+    "slug": "solvent-for-extraction-processes",
+    "link": "https://consolidated-chemical.com/product-tag/solvent-for-extraction-processes/"
+   },
+   {
+    "id": 38013,
+    "name": "solvent for organic reactions",
+    "slug": "solvent-for-organic-reactions",
+    "link": "https://consolidated-chemical.com/product-tag/solvent-for-organic-reactions/"
+   },
+   {
+    "id": 1256,
+    "name": "solvent for resins",
+    "slug": "solvent-for-resins",
+    "link": "https://consolidated-chemical.com/product-tag/solvent-for-resins/"
+   },
+   {
+    "id": 2415,
+    "name": "Specialty chemical solvent",
+    "slug": "specialty-chemical-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/specialty-chemical-solvent/"
+   },
+   {
+    "id": 38004,
+    "name": "sustainable chemistry solvent",
+    "slug": "sustainable-chemistry-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/sustainable-chemistry-solvent/"
+   },
+   {
+    "id": 37857,
+    "name": "synthesis grade solvent",
+    "slug": "synthesis-grade-solvent",
+    "link": "https://consolidated-chemical.com/product-tag/synthesis-grade-solvent/"
+   },
+   {
+    "id": 37998,
+    "name": "ultra pure diethyl carbonate",
+    "slug": "ultra-pure-diethyl-carbonate",
+    "link": "https://consolidated-chemical.com/product-tag/ultra-pure-diethyl-carbonate/"
+   },
+   {
+    "id": 38008,
+    "name": "volatile organic compound VOC",
+    "slug": "volatile-organic-compound-voc",
+    "link": "https://consolidated-chemical.com/product-tag/volatile-organic-compound-voc/"
+   }
+  ],
+  "brands": [],
+  "attributes": [
+   {
+    "id": 0,
+    "name": "Size",
+    "taxonomy": null,
+    "has_variations": true,
+    "terms": [
+     {
+      "id": 0,
+      "name": "100mL (3.3 Fl Oz)",
+      "slug": "100mL (3.3 Fl Oz)"
+     },
+     {
+      "id": 0,
+      "name": "250mL (8 Fl Oz)",
+      "slug": "250mL (8 Fl Oz)"
+     }
+    ]
+   }
+  ],
+  "variations": [
+   {
+    "id": 15451,
+    "attributes": [
+     {
+      "name": "Size",
+      "value": "100mL (3.3 Fl Oz)"
+     }
+    ]
+   },
+   {
+    "id": 15452,
+    "attributes": [
+     {
+      "name": "Size",
+      "value": "250mL (8 Fl Oz)"
+     }
+    ]
+   }
+  ],
+  "grouped_products": [],
+  "has_options": true,
+  "is_purchasable": true,
+  "is_in_stock": true,
+  "is_on_backorder": false,
+  "low_stock_remaining": null,
+  "stock_availability": {
+   "text": "",
+   "class": "in-stock"
+  },
+  "sold_individually": false,
+  "weight": "",
+  "dimensions": {
+   "length": "",
+   "width": "",
+   "height": ""
+  },
+  "formatted_weight": "N/A",
+  "formatted_dimensions": "N/A",
+  "add_to_cart": {
+   "text": "Select options",
+   "description": "Select options for &ldquo;Diethyl Carbonate (DEC)&rdquo;",
+   "url": "https://consolidated-chemical.com/product/diethyl-carbonate-dec/",
+   "single_text": "Add to cart",
+   "minimum": 1,
+   "maximum": 9999,
+   "multiple_of": 1
+  },
+  "is_password_protected": false,
+  "extensions": {},
+  "_links": {
+   "self": [
+    {
+     "href": "https://consolidated-chemical.com/wp-json/wc/store/v1/products/15449",
+     "targetHints": {
+      "allow": [
+       "GET"
+      ]
+     }
+    }
+   ],
+   "collection": [
+    {
+     "href": "https://consolidated-chemical.com/wp-json/wc/store/v1/products"
+    }
+   ],
+   "related": [
+    {
+     "embeddable": true,
+     "href": "https://consolidated-chemical.com/wp-json/wc/store/v1/products?related=15449&per_page=10"
+    }
+   ]
+  }
+ }
+]

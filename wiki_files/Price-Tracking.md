@@ -34,6 +34,30 @@ Variant price trend history available on hover.
 
 ![Variant price trend history available on hover](images/variant-price-trend-history.png)
 
+## Price alerts
+
+Want to know when a price drops? Right-click a product in the results and choose
+**Enable price reduction alerts**. The option is greyed out when ChemPal can't
+check that supplier (see [Supported Suppliers](Supported-Suppliers#price-alerts)).
+
+- **A whole product is watched**, including all its sizes.
+- **ChemPal checks in the background**, every 12 hours by default, and only while
+  your browser is open. A check that was missed runs the next time the browser starts.
+- **A drop is logged** in the product's price history and shows a notification.
+  Notifications are optional: ChemPal asks for the permission when you enable your
+  first alert, and if you decline, drops still show on the toolbar icon and in
+  **Settings → Price Alerts**.
+- **The toolbar icon flashes green and amber** for a few seconds, then shows how many
+  products dropped, for example **↓2**. It clears when you open **Settings → Price
+  Alerts** or click the notification. Search progress takes priority while a search
+  is running. Pin ChemPal to your toolbar to see it.
+- **Prices are compared in the supplier's own currency**, so exchange-rate changes
+  never trigger an alert.
+
+Review your alerts in **Settings → Price Alerts**, where you can remove one, several,
+or all of them. Change how often products are checked, and how big a drop must be,
+in **Settings → Advanced** (see [Settings](Settings#advanced)).
+
 ## Turning it off or clearing it
 
 Everything lives under **Settings → Price History**:
@@ -45,7 +69,7 @@ Everything lives under **Settings → Price History**:
   [clearing the cache](Caching) — clearing the cache does **not** erase your price
   history, and vice-versa.
 
-All of this data stays **on your device** — see [Privacy](Privacy).
+Your watchlist is stored locally in your browser too. All of this data stays **on your device** — see [Privacy](Privacy).
 
 ---
 

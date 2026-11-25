@@ -1,0 +1,300 @@
+{
+ "data": {
+  "catalog": {
+   "category": {
+    "numOfProducts": 209,
+    "productsWithMetaData": {
+     "totalCount": 2,
+     "list": [
+      {
+       "id": "5a1f8d7f-816b-85f9-4991-256e679efecf",
+       "handleId": "product_5a1f8d7f-816b-85f9-4991-256e679efecf",
+       "name": "HEPES, free acid B775 CAS:[7365-45-9]",
+       "description": "<p>Product Description:HEPES, free acid: HEPES has been described as one of the best all-purpose buffers available for biological research. At most biological pHs the molecule is zwitterionic, and is effective as a buffer at pH 6.8 to 8.2. HEPES has been used in a wide variety of applications, inclu",
+       "price": 38.0,
+       "comparePrice": 0.0,
+       "discountedPrice": 38.0,
+       "pricePerUnit": null,
+       "formattedPrice": "$38.00",
+       "formattedComparePrice": "",
+       "formattedDiscountedPrice": "$38.00",
+       "formattedPricePerUnit": null,
+       "ribbon": "B775",
+       "discountPercentRate": 0.0,
+       "currency": "USD",
+       "sku": "",
+       "isManageProductItems": true,
+       "isVisible": true,
+       "isInStock": true,
+       "isSellable": true,
+       "hasOptions": true,
+       "productItemsPreOrderAvailability": "no_variants",
+       "isTrackingInventory": false,
+       "weight": 0.0,
+       "productType": "physical",
+       "seoTitle": null,
+       "seoDescription": null,
+       "seoJson": null,
+       "urlPart": "hepes-free-acid-b775",
+       "creationDate": 1649385213974,
+       "lastUpdated": 1782009606513,
+       "brand": null,
+       "mainCategoryId": null,
+       "isV3": false,
+       "categoryIds": [
+        "440b693e-d591-6605-5672-efe6db5a2aa3"
+       ],
+       "formattedMinPriceWithSubscription": null,
+       "formattedMinComparePriceWithSubscription": null,
+       "additionalInfo": [],
+       "customTextFields": [],
+       "tags": null,
+       "digitalProductFileItems": [],
+       "options": [
+        {
+         "id": "82bbf785-440e-47a1-8e4b-4a5a9adca566",
+         "key": "Weight",
+         "title": "Weight",
+         "optionType": "DROP_DOWN",
+         "selections": [
+          {
+           "id": 3,
+           "value": "50G",
+           "description": "50G",
+           "key": "50G",
+           "inStock": null
+          },
+          {
+           "id": 1,
+           "value": "100G",
+           "description": "100G",
+           "key": "100G",
+           "inStock": null
+          },
+          {
+           "id": 2,
+           "value": "250g",
+           "description": "250g",
+           "key": "250g",
+           "inStock": null
+          }
+         ]
+        }
+       ],
+       "productItems": [
+        {
+         "id": "490be515-e5d7-4c66-a1e0-e55cfa494fa1",
+         "optionsSelections": [
+          3
+         ],
+         "isVisible": true,
+         "availableForPreOrder": false,
+         "sku": "B775.SIZE.50G",
+         "surcharge": 0.0,
+         "weight": 0.05,
+         "price": 38.0,
+         "comparePrice": 0.0,
+         "discountedPrice": 38.0,
+         "pricePerUnit": null,
+         "formattedPrice": "$38.00",
+         "formattedComparePrice": "$0.00",
+         "formattedDiscountedPrice": "$38.00",
+         "formattedPricePerUnit": null,
+         "isTrackingInventory": null,
+         "hasDiscount": false,
+         "inventory": {
+          "status": "in_stock",
+          "quantity": 0
+         },
+         "productDimensions": null,
+         "packageDimensions": null
+        },
+        {
+         "id": "288cd998-061e-400d-a9b7-3e6e9f53e705",
+         "optionsSelections": [
+          1
+         ],
+         "isVisible": true,
+         "availableForPreOrder": false,
+         "sku": "B775.SIZE.100G",
+         "surcharge": 23.0,
+         "weight": 0.1,
+         "price": 61.0,
+         "comparePrice": 0.0,
+         "discountedPrice": 61.0,
+         "pricePerUnit": null,
+         "formattedPrice": "$61.00",
+         "formattedComparePrice": "$0.00",
+         "formattedDiscountedPrice": "$61.00",
+         "formattedPricePerUnit": null,
+         "isTrackingInventory": null,
+         "hasDiscount": false,
+         "inventory": {
+          "status": "in_stock",
+          "quantity": 0
+         },
+         "productDimensions": null,
+         "packageDimensions": null
+        },
+        {
+         "id": "2821c9df-a7b3-48ee-b666-93261fe1e6ec",
+         "optionsSelections": [
+          2
+         ],
+         "isVisible": true,
+         "availableForPreOrder": false,
+         "sku": "B775.SIZE.250G",
+         "surcharge": 52.0,
+         "weight": 0.25,
+         "price": 90.0,
+         "comparePrice": 0.0,
+         "discountedPrice": 90.0,
+         "pricePerUnit": null,
+         "formattedPrice": "$90.00",
+         "formattedComparePrice": "$0.00",
+         "formattedDiscountedPrice": "$90.00",
+         "formattedPricePerUnit": null,
+         "isTrackingInventory": null,
+         "hasDiscount": false,
+         "inventory": {
+          "status": "in_stock",
+          "quantity": 0
+         },
+         "productDimensions": null,
+         "packageDimensions": null
+        }
+       ],
+       "media": [
+        {
+         "id": "3d8337_4e3caf922d434e34b9044ab8a64205c9~mv2.jpg",
+         "url": "3d8337_4e3caf922d434e34b9044ab8a64205c9~mv2.jpg",
+         "fullUrl": "https://static.wixstatic.com/media/3d8337_4e3caf922d434e34b9044ab8a64205c9~mv2.jpg/v1/fit/w_500,h_500,q_90/file.jpg",
+         "index": 0,
+         "mediaType": "PHOTO",
+         "width": 964,
+         "height": 966,
+         "title": "IMG_1351.JPG",
+         "altText": null,
+         "videoType": null,
+         "videoFiles": []
+        }
+       ],
+       "discount": {
+        "mode": "PERCENT",
+        "value": 0.0
+       },
+       "pricePerUnitData": null,
+       "inventory": {
+        "status": "in_stock",
+        "quantity": 0,
+        "availableForPreOrder": false,
+        "preOrderInfoView": {
+         "preOrder": false,
+         "message": null,
+         "limit": null
+        }
+       },
+       "productDimensions": null,
+       "packageDimensions": null,
+       "ribbonWithId": {
+        "id": "ribbon-263",
+        "name": "B775",
+        "productAmount": 1
+       },
+       "breadcrumbs": null,
+       "groupInfo": null,
+       "minPriceVariant": null
+      },
+      {
+       "id": "833ac157-761e-ded9-0e2c-343a27844304",
+       "handleId": "product_833ac157-761e-ded9-0e2c-343a27844304",
+       "name": "Gallic acid, 250g  B987.SIZE.250G CAS:[149-91-7]",
+       "description": "<p>Product Description:<strong>Gallic acid</strong></p><p>Total Product Size:<strong>250g</strong></p><p>CAS#[149-91-7]</p><p>Shipping Conditions:<strong>RT</strong></p><p>UNSPSC Code:<strong>12352200</strong></p><p>UNSPSC Category:<strong>Inhibitors</strong></p>",
+       "price": 55.0,
+       "comparePrice": 0.0,
+       "discountedPrice": 55.0,
+       "pricePerUnit": null,
+       "formattedPrice": "$55.00",
+       "formattedComparePrice": "",
+       "formattedDiscountedPrice": "$55.00",
+       "formattedPricePerUnit": null,
+       "ribbon": "B987.SIZE.250G",
+       "discountPercentRate": 0.0,
+       "currency": "USD",
+       "sku": "B987.SIZE.250G",
+       "isManageProductItems": false,
+       "isVisible": true,
+       "isInStock": true,
+       "isSellable": true,
+       "hasOptions": false,
+       "productItemsPreOrderAvailability": "no_variants",
+       "isTrackingInventory": true,
+       "weight": 0.25,
+       "productType": "physical",
+       "seoTitle": null,
+       "seoDescription": null,
+       "seoJson": null,
+       "urlPart": "gallic-acid-250g-b987-size-250g",
+       "creationDate": 1644467131398,
+       "lastUpdated": 1782827896492,
+       "brand": null,
+       "mainCategoryId": null,
+       "isV3": false,
+       "categoryIds": [
+        "607c4c3b-1c28-6073-a5fa-0254536ad9b4"
+       ],
+       "formattedMinPriceWithSubscription": null,
+       "formattedMinComparePriceWithSubscription": null,
+       "additionalInfo": [],
+       "customTextFields": [],
+       "tags": null,
+       "digitalProductFileItems": [],
+       "options": [],
+       "productItems": [],
+       "media": [
+        {
+         "id": "3d8337_9fc59b38317a4b718f6747f0afcc9b5d~mv2.jpg",
+         "url": "3d8337_9fc59b38317a4b718f6747f0afcc9b5d~mv2.jpg",
+         "fullUrl": "https://static.wixstatic.com/media/3d8337_9fc59b38317a4b718f6747f0afcc9b5d~mv2.jpg/v1/fit/w_500,h_500,q_90/file.jpg",
+         "index": 0,
+         "mediaType": "PHOTO",
+         "width": 600,
+         "height": 601,
+         "title": "IMG_1313.JPG",
+         "altText": null,
+         "videoType": null,
+         "videoFiles": []
+        }
+       ],
+       "discount": {
+        "mode": "PERCENT",
+        "value": 0.0
+       },
+       "pricePerUnitData": null,
+       "inventory": {
+        "status": "in_stock",
+        "quantity": 39,
+        "availableForPreOrder": false,
+        "preOrderInfoView": {
+         "preOrder": false,
+         "message": null,
+         "limit": null
+        }
+       },
+       "productDimensions": null,
+       "packageDimensions": null,
+       "ribbonWithId": {
+        "id": "ribbon-256",
+        "name": "B987.SIZE.250G",
+        "productAmount": 1
+       },
+       "breadcrumbs": null,
+       "groupInfo": null,
+       "minPriceVariant": null
+      }
+     ]
+    }
+   }
+  }
+ }
+}

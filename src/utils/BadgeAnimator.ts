@@ -1,4 +1,16 @@
 import { recordError } from '@/helpers/errorBuffer';
+import { getErrorMessage } from '@/helpers/exceptions';
+import { isFirefoxRuntime } from '@/helpers/runtime';
+import { sleep } from '@/helpers/utils';
+
+/** A badge color: a CSS color string or RGBA values. */
+type BadgeColor = chrome.action.BadgeColorDetails['color'];
+
+/** Makes Chrome use its default badge color; Firefox would show a transparent badge. */
+const CHROME_DEFAULT_COLOR: BadgeColor = [0, 0, 0, 0];
+
+/** Firefox's default badge color. */
+const FIREFOX_DEFAULT_COLOR: BadgeColor = [217, 0, 0, 255];
 
 /**
  * A utility class for managing Chrome extension badge animations and styling.
@@ -19,7 +31,7 @@ import { recordError } from '@/helpers/errorBuffer';
  * BadgeAnimator.animate('hourglass', 300);
  *
  * // Set badge colors
- * BadgeAnimator.setColor('#FFFFFF', '#FF0000');
+ * void BadgeAnimator.setColor('#FFFFFF', '#FF0000');
  *
  * // Clear the badge with a final message
  * void BadgeAnimator.clear('✓', 2000);
@@ -118,20 +130,50 @@ export class BadgeAnimator {
    * Set the colors of the badge
    * @param fgColor - The foreground (text) color of the badge (hex color code)
    * @param bgColor - The background color of the badge (hex color code)
+   * @returns A promise that resolves once the attempt settles — never rejects.
    * @source
    */
-  static setColor(fgColor?: string, bgColor?: string): void {
-    if (fgColor) {
-      chrome.action.setBadgeTextColor({
-        color: fgColor,
-      });
+  static async setColor(fgColor?: BadgeColor, bgColor?: BadgeColor): Promise<void> {
+    try {
+      await Promise.all([
+        fgColor && chrome.action.setBadgeTextColor({ color: fgColor }),
+        bgColor && chrome.action.setBadgeBackgroundColor({ color: bgColor }),
+      ]);
+    } catch (error) {
+      void recordError({ source: 'chrome-api', message: getErrorMessage(error) });
     }
+  }
 
-    if (bgColor) {
-      chrome.action.setBadgeBackgroundColor({
-        color: bgColor,
-      });
+  /**
+   * Restore the browser's default badge background color
+   * @returns A promise that resolves once the attempt settles — never rejects.
+   * @source
+   */
+  static async resetColor(): Promise<void> {
+    await this.setColor(
+      undefined,
+      isFirefoxRuntime() ? FIREFOX_DEFAULT_COLOR : CHROME_DEFAULT_COLOR,
+    );
+  }
+
+  /**
+   * Flash the badge between background colors, ending on the first one. Stops early when the badge
+   * is changed in the meantime.
+   * @param colors - The colors to cycle through
+   * @param delay - Delay between colors in milliseconds
+   * @param duration - How long to flash for in milliseconds
+   * @returns A promise that resolves once the flashing ends — never rejects.
+   * @source
+   */
+  static async flash(colors: BadgeColor[], delay: number, duration: number): Promise<void> {
+    const generation = ++this.#generation;
+    const steps = Math.ceil(duration / delay);
+    for (let step = 1; step <= steps; step++) {
+      await this.setColor(undefined, colors[step % colors.length]);
+      await sleep(delay);
+      if (generation !== this.#generation) return;
     }
+    await this.setColor(undefined, colors[0]);
   }
 
   /**
@@ -156,10 +198,7 @@ export class BadgeAnimator {
     try {
       await chrome.action.setBadgeText({ text });
     } catch (error) {
-      void recordError({
-        source: 'chrome-api',
-        message: error instanceof Error ? error.message : String(error),
-      });
+      void recordError({ source: 'chrome-api', message: getErrorMessage(error) });
     }
   }
 

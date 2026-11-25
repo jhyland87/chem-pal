@@ -3,11 +3,13 @@ import { HttpStatus } from '@/constants/httpStatus';
 import { HttpError, getErrorMessage } from '@/helpers/exceptions';
 import { parseQuantity } from '@/helpers/quantity';
 import { parseChemicalSpecs, parseGrade, parsePurity } from '@/helpers/science';
+import type { ProductLookup, ProductRef } from '@/helpers/productRef';
 import { mapDefined } from '@/helpers/utils';
 import { ProductBuilder } from '@/utils/ProductBuilder';
 import { translateAstToTypesenseFilter } from '@/utils/search-query/translators/translateAstToTypesenseFilter';
 import { cstorage } from '@/utils/storage';
 import { assertValidSearchResponse } from '@/utils/typeGuards/chemsavers';
+import chunk from 'lodash/chunk';
 import { SupplierBase } from './SupplierBase';
 
 /**
@@ -40,6 +42,9 @@ export class SupplierChemsavers
   // The payment methods accepted by the supplier.
   public static readonly paymentMethods: PaymentMethod[] = ['amazononly'];
 
+  // Specific products can be refetched by id, so they can be watched for price drops.
+  public static readonly supportsPriceAlerts: boolean = true;
+
   public readonly amazonStoreURL: string = 'https://www.amazon.com/s?rh=p_89%3AChemsavers';
 
   // The API URL for the Typesense search API.
@@ -67,6 +72,12 @@ export class SupplierChemsavers
   protected static readonly supportsCAS: boolean = true;
   // protected static readonly supportsFormula: boolean = true;
   // protected static readonly supportsSMILES: boolean = true;
+
+  // Products per refresh batch. A grouped product costs its head plus its sizes in one request.
+  protected refreshBatchSize: number = 20;
+
+  // Typesense's cap on `per_page`, so the most ids one by-id request can return.
+  protected readonly maxIdsPerRequest: number = 250;
 
   /**
    * Derives the unique product key from a Chemsavers product object: its `id`
@@ -222,42 +233,19 @@ export class SupplierChemsavers
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    // Prefer a previously rehydrated key from storage; fall back to the hardcoded default.
-    await this.loadStoredApiKey();
-
     const body = this.makeRequestBody(query);
-
-    let searchRequest: unknown;
-    try {
-      // Try the search with the current API key first. The key is only rehydrated when
-      // the server rejects it, avoiding the scrape on every search.
-      searchRequest = await this.searchTypesense(body);
-    } catch (error) {
-      if (!this.isUnauthorized(error)) {
-        this.logger.error(`Error querying products: ${getErrorMessage(error)}`, { error });
-        return;
-      }
-
-      // 401: the key is stale. Drop the dead stored key, rehydrate once, and retry. A
-      // second 401 (or any retry failure) propagates — we stop the search rather than
-      // continue with a dead key.
-      this.logger.warn('Search returned 401; rehydrating API key and retrying');
-      await this.clearStoredApiKey();
-      await this.rehydrateApiKey();
-      searchRequest = await this.searchTypesense(body);
-    }
+    const searchRequest = await this.searchWithKeyRefresh(body, true);
+    if (searchRequest === undefined) return;
 
     try {
       this.logger.debug('Received search response', { searchRequest });
 
       assertValidSearchResponse(searchRequest);
 
-      // Keep in-stock products, plus untracked ones: BigCommerce reports
-      // inventory_tracking "none" with inventoryLevel 0, but those are always purchasable.
       const products = searchRequest.results[0].hits
         .flat()
         .map((hit) => hit.document)
-        .filter((p) => p.inventory_tracking === 'none' || p.inventoryLevel > 0);
+        .filter((product) => this.isInStock(product));
 
       this.logger.debug('Mapped search hits to products', { products });
 
@@ -275,6 +263,109 @@ export class SupplierChemsavers
     } catch (error) {
       this.logger.error(`Error querying products: ${getErrorMessage(error)}`, { error });
       return;
+    }
+  }
+
+  /**
+   * Refetches products by id in one Typesense request per 250 ids. A grouped product is rebuilt
+   * from the ref's own head and sizes rather than regrouped, so a fuzzy regroup can't pick another
+   * head.
+   * @param refs - The products to refetch
+   * @returns The builders found; a head that is gone or out of stock is left out, a missing size
+   * is just dropped, and a head that no longer parses is `failed`
+   * @throws Error when a request fails or returns an invalid response
+   * @example
+   * ```typescript
+   * const { builders } = await this.queryProductsById(refs);
+   * ```
+   * @source
+   */
+  protected override async queryProductsById(
+    refs: readonly ProductRef[],
+  ): Promise<ProductLookup<Product>> {
+    const ids = new Set(refs.flatMap((ref) => this.refIds(ref)));
+    const documents = new Map<string, ChemsaversProductObject>();
+    for (const batch of chunk([...ids], this.maxIdsPerRequest)) {
+      const response = await this.searchWithKeyRefresh(this.makeIdsRequestBody(batch), false);
+      assertValidSearchResponse(response);
+      for (const hit of response.results[0].hits.flat()) {
+        documents.set(String(hit.document.id), hit.document);
+      }
+    }
+
+    const heads: ChemsaversProductObject[] = [];
+    for (const ref of refs) {
+      const head = documents.get(ref.cacheKey);
+      if (!head || !this.isInStock(head)) continue;
+      const sizes = mapDefined(ref.variants, ({ id }) => documents.get(String(id)));
+      heads.push({ ...head, variants: sizes.filter((size) => this.isInStock(size)) });
+    }
+
+    const builders = this.initProductBuilders(heads);
+    const found = new Set(builders.map((builder) => builder.get('cacheKey')));
+    const failed = new Set(
+      heads.map((head) => this.getUniqueProductKey(head)).filter((key) => !found.has(key)),
+    );
+    return { builders, failed };
+  }
+
+  /**
+   * Lists the ids to request for a product: its head and every size it had when it was saved.
+   * @param ref - The product reference
+   * @returns The head's id followed by its sizes' ids
+   * @example
+   * ```typescript
+   * this.refIds({ cacheKey: '49171', variants: [{ id: '49170' }] }); // ['49171', '49170']
+   * ```
+   * @source
+   */
+  private refIds(ref: ProductRef): string[] {
+    return [ref.cacheKey, ...mapDefined(ref.variants, ({ id }) => id)].map(String);
+  }
+
+  /**
+   * Whether a product can be bought: in stock, or untracked (BigCommerce reports
+   * inventory_tracking "none" with inventoryLevel 0, but those are always purchasable).
+   * @param product - A product or size from the search response
+   * @returns `true` when it can be bought
+   * @example
+   * ```typescript
+   * this.isInStock({ inventory_tracking: 'none', inventoryLevel: 0 }); // true
+   * ```
+   * @source
+   */
+  private isInStock(product: ChemsaversProductVariant): boolean {
+    return product.inventory_tracking === 'none' || product.inventoryLevel > 0;
+  }
+
+  /**
+   * Runs a Typesense search with the stored API key, rehydrating the key once on a 401. A second
+   * 401, or any failure of the retry, propagates.
+   * @param body - The Typesense multi-search request body
+   * @param swallowErrors - Log and return `undefined` for a non-401 first failure instead of throwing
+   * @returns The raw (unvalidated) response, or `undefined` when swallowed
+   * @example
+   * ```typescript
+   * const raw = await this.searchWithKeyRefresh(this.makeRequestBody('acid'), true);
+   * ```
+   * @source
+   */
+  private async searchWithKeyRefresh(body: object, swallowErrors: boolean): Promise<unknown> {
+    // Prefer a previously rehydrated key from storage; fall back to the hardcoded default.
+    await this.loadStoredApiKey();
+    try {
+      // The key is only rehydrated when the server rejects it, avoiding the scrape on every search.
+      return await this.searchTypesense(body);
+    } catch (error) {
+      if (!this.isUnauthorized(error)) {
+        if (!swallowErrors) throw error;
+        this.logger.error(`Error querying products: ${getErrorMessage(error)}`, { error });
+        return undefined;
+      }
+      this.logger.warn('Search returned 401; rehydrating API key and retrying');
+      await this.clearStoredApiKey();
+      await this.rehydrateApiKey();
+      return this.searchTypesense(body);
     }
   }
 
@@ -422,7 +513,7 @@ export class SupplierChemsavers
         .setID(result.id)
         .setCacheKey(this.getUniqueProductKey(result))
         .setSku(result.sku)
-        .setPricing(result.price, 'USD', '$')
+        .setPricing(this.currentPrice(result), 'USD', '$')
         .setQuantity(quantity.quantity, quantity.uom)
         .setCAS(result.CAS)
         .setPurity(parsePurity(result.name))
@@ -440,7 +531,7 @@ export class SupplierChemsavers
               id: variant.id,
               sku: variant.sku,
               title: variant.name,
-              price: variant.price,
+              price: this.currentPrice(variant),
               url: variant.url,
               ...quantity,
             };
@@ -450,6 +541,22 @@ export class SupplierChemsavers
 
       return builder;
     });
+  }
+
+  /**
+   * Reads what a customer pays today: the sale price when one is set (Chemsavers reports `0` when
+   * there is none), otherwise the list price.
+   * @param item - A product or variant from the search response
+   * @returns The current price in USD
+   * @example
+   * ```typescript
+   * this.currentPrice({ price: 50, salePrice: 40 }); // 40
+   * this.currentPrice({ price: 50, salePrice: 0 }); // 50
+   * ```
+   * @source
+   */
+  private currentPrice(item: { price: number; salePrice?: number }): number {
+    return item.salePrice !== undefined && item.salePrice > 0 ? item.salePrice : item.price;
   }
 
   /**
@@ -483,6 +590,30 @@ export class SupplierChemsavers
           ...search,
           page: 0,
           per_page: limit,
+        },
+      ],
+    };
+  }
+
+  /**
+   * Creates the request body that fetches products by id, with no text query.
+   * @param ids - Product ids, at most {@link maxIdsPerRequest}
+   * @returns The Typesense multi-search request body
+   * @example
+   * ```typescript
+   * this.makeIdsRequestBody(['121408', '121409']); // filter_by: 'id:[`121408`,`121409`]'
+   * ```
+   * @source
+   */
+  protected makeIdsRequestBody(ids: readonly string[]): object {
+    return {
+      searches: [
+        {
+          collection: 'products',
+          q: '*',
+          filter_by: `id:[${ids.map((id) => `\`${id}\``).join(',')}]`,
+          page: 0,
+          per_page: ids.length,
         },
       ],
     };

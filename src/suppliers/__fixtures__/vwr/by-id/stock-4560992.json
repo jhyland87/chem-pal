@@ -1,0 +1,12 @@
+{
+   "articleAvailabilityDetails" : {
+      "articleAvailabilityDetail" : [ {
+         "availability" : {
+            "availabilityMessage" : "Usually ships next day",
+            "stockStatus" : "inStock",
+            "vendorStock" : false
+         },
+         "catalogNumber" : "MK754406"
+      } ]
+   }
+}

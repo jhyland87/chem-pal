@@ -1,7 +1,8 @@
 import { UOM } from '@/constants/common';
 import { parsePrice } from '@/helpers/currency';
 import { parseQuantity, toBaseQuantity } from '@/helpers/quantity';
-import { htmlToAscii, mapDefined } from '@/helpers/utils';
+import type { ProductLookup, ProductRef } from '@/helpers/productRef';
+import { htmlToAscii, mapDefined, toFiniteNumber } from '@/helpers/utils';
 import { ProductBuilder } from '@/utils/ProductBuilder';
 import { isValidSearchResponse, isProductDetail } from '@/utils/typeGuards/mysimplestore';
 import { isValidVariant } from '@/utils/typeGuards/productbuilder';
@@ -286,6 +287,76 @@ export abstract class SupplierBaseMySimpleStore
   }
 
   /**
+   * Fetches a product's detail record. Unlike {@link getProductData}, failures propagate, so a
+   * 404 reaches the caller as an `HttpError`.
+   * @param slug - The product slug (last segment of its page URL)
+   * @returns The validated detail record
+   * @throws Error when the request fails or the response isn't a product detail
+   * @example
+   * ```typescript
+   * const detail = await this.fetchProductDetail('geraniol-60');
+   * detail.variants?.length; // 4
+   * ```
+   * @source
+   */
+  private async fetchProductDetail(slug: string): Promise<MySimpleStoreProductDetail> {
+    const response = await this.httpGet({
+      host: this.apiHost,
+      path: `/api/v2/products/${slug}`,
+      params: { app: 'vnext' },
+      headers: { accept: 'application/json' },
+      rethrowErrors: true,
+    });
+    const detail: unknown = await response?.json();
+    if (!isProductDetail(detail)) {
+      throw new Error(`Invalid MySimpleStore product detail for ${slug}`);
+    }
+    return detail;
+  }
+
+  /**
+   * Gets the slug the detail endpoint is keyed by: the last segment of the product page URL.
+   * @param url - The product page URL
+   * @returns The slug, or `undefined` when the URL has none
+   * @example
+   * ```typescript
+   * this.slugFromUrl('https://onpd.com/products/ols/products/geraniol-60'); // "geraniol-60"
+   * ```
+   * @source
+   */
+  private slugFromUrl(url: string): string | undefined {
+    return url.split('/').pop() || undefined;
+  }
+
+  /**
+   * Refetches specific products, one detail request each. Prices come from the same detail
+   * record the search path reads, so the products keep their price-history series.
+   * @param refs - The products to refetch
+   * @returns The builders found, and the refs whose request failed
+   * @example
+   * ```typescript
+   * const { builders } = await this.queryProductsById(refs);
+   * ```
+   * @source
+   */
+  protected override async queryProductsById(
+    refs: readonly ProductRef[],
+  ): Promise<ProductLookup<Product>> {
+    return this.refreshViaDetail(refs, async (builder) => {
+      const url = builder.get('url');
+      const slug = typeof url === 'string' ? this.slugFromUrl(url) : undefined;
+      if (!slug || typeof url !== 'string') {
+        throw new Error('MySimpleStore product has no slug');
+      }
+      this.applyDetail(builder, await this.fetchProductDetail(slug), url);
+      if (typeof builder.get('price') !== 'number') {
+        throw new Error(`MySimpleStore product ${slug} has no price`);
+      }
+      return builder;
+    });
+  }
+
+  /**
    * Enriches a partial product (from {@link queryProducts}) with its detail-page
    * data. Fetches `/api/v2/products/{slug}`, parses every variant, sorts them
    * ascending by chemical quantity, promotes the smallest to the parent-level
@@ -312,19 +383,15 @@ export abstract class SupplierBaseMySimpleStore
 
       // The product page URL ends in the slug (".../ols/products/{slug}"); the
       // detail endpoint is keyed by that slug.
-      const slug = url.split('/').pop();
+      const slug = this.slugFromUrl(url);
       if (!slug) {
         this.logger.error('[MySimpleStore] Could not derive slug from URL', { url });
         return builder;
       }
 
-      let detail: unknown;
+      let detail: MySimpleStoreProductDetail;
       try {
-        detail = await this.httpGetJson({
-          host: this.apiHost,
-          path: `/api/v2/products/${slug}`,
-          params: { app: 'vnext' },
-        });
+        detail = await this.fetchProductDetail(slug);
       } catch (error) {
         this.logger.warn(
           `[MySimpleStore] Detail fetch failed; keeping listing data: ${getErrorMessage(error)}`,
@@ -336,65 +403,82 @@ export abstract class SupplierBaseMySimpleStore
         return builder;
       }
 
-      if (!isProductDetail(detail)) {
-        this.logger.warn('[MySimpleStore] Invalid product detail; keeping listing data', {
-          slug,
-          detail,
-        });
-        return builder;
-      }
-
-      // Enrich product-wide fields from the detail response.
-      if (detail.description) {
-        builder.setDescription(htmlToAscii(detail.description));
-      }
-      builder.setCAS(detail.description_text ?? detail.name);
-      // Add every product photo as a gallery image so the detail-panel carousel can cycle them.
-      // The first asset becomes the primary image; the rest are appended.
-      (detail.assets ?? []).forEach((asset, index) => {
-        const src = asset.large_url ?? asset.small_url;
-        if (!src) return;
-        if (index === 0) {
-          builder.setImage(src, detail.name);
-        } else {
-          builder.addImage(src, detail.name);
-        }
-      });
-      if (typeof detail.in_stock === 'boolean') {
-        builder.setAvailability(detail.in_stock);
-      }
-
-      const variants = (detail.variants ?? [])
-        .map((variant) => this.parseVariant(variant, url))
-        .sort((a, b) => {
-          const rankDiff = this.variantSortRank(a) - this.variantSortRank(b);
-          if (rankDiff !== 0) return rankDiff;
-          return (a.price ?? Number.POSITIVE_INFINITY) - (b.price ?? Number.POSITIVE_INFINITY);
-        });
-
-      const primary = variants[0];
-      if (primary) {
-        if (typeof primary.price === 'number') builder.setPrice(primary.price);
-        if (primary.currencyCode) builder.setCurrencyCode(primary.currencyCode);
-        if (primary.currencySymbol) builder.setCurrencySymbol(primary.currencySymbol);
-        if (typeof primary.quantity === 'number' && primary.uom) {
-          builder.setQuantity(primary.quantity, primary.uom);
-        }
-        if (primary.sku) builder.setSku(primary.sku);
-      } else {
-        // Single-size products carry no variants; recover the size from the name
-        // or description so the product isn't dropped for lacking a quantity.
-        const fallback = parseQuantity(detail.name) ?? parseQuantity(detail.description_text ?? '');
-        if (fallback) {
-          builder.setQuantity(fallback.quantity, fallback.uom);
-        }
-      }
-
-      if (variants.length > 1) {
-        builder.setVariants(variants.filter(isValidVariant));
-      }
-
+      this.applyDetail(builder, detail, url);
       return builder;
     });
+  }
+
+  /**
+   * Fills a builder from a product detail record: description, CAS, images, availability, the
+   * sorted variants, and the headline price/size from the smallest one. A product with no
+   * variants takes the detail's own price.
+   * @param builder - The builder to fill
+   * @param detail - The product's detail record
+   * @param url - The product page URL, used to build the variant URLs
+   * @example
+   * ```typescript
+   * this.applyDetail(builder, detail, url);
+   * ```
+   * @source
+   */
+  private applyDetail(
+    builder: ProductBuilder<Product>,
+    detail: MySimpleStoreProductDetail,
+    url: string,
+  ): void {
+    // Enrich product-wide fields from the detail response.
+    if (detail.description) {
+      builder.setDescription(htmlToAscii(detail.description));
+    }
+    builder.setCAS(detail.description_text ?? detail.name);
+    // Add every product photo as a gallery image so the detail-panel carousel can cycle them.
+    // The first asset becomes the primary image; the rest are appended.
+    (detail.assets ?? []).forEach((asset, index) => {
+      const src = asset.large_url ?? asset.small_url;
+      if (!src) return;
+      if (index === 0) {
+        builder.setImage(src, detail.name);
+      } else {
+        builder.addImage(src, detail.name);
+      }
+    });
+    if (typeof detail.in_stock === 'boolean') {
+      builder.setAvailability(detail.in_stock);
+    }
+
+    const variants = (detail.variants ?? [])
+      .map((variant) => this.parseVariant(variant, url))
+      .sort((a, b) => {
+        const rankDiff = this.variantSortRank(a) - this.variantSortRank(b);
+        if (rankDiff !== 0) return rankDiff;
+        return (a.price ?? Number.POSITIVE_INFINITY) - (b.price ?? Number.POSITIVE_INFINITY);
+      });
+
+    const primary = variants[0];
+    if (primary) {
+      if (typeof primary.price === 'number') builder.setPrice(primary.price);
+      if (primary.currencyCode) builder.setCurrencyCode(primary.currencyCode);
+      if (primary.currencySymbol) builder.setCurrencySymbol(primary.currencySymbol);
+      if (typeof primary.quantity === 'number' && primary.uom) {
+        builder.setQuantity(primary.quantity, primary.uom);
+      }
+      if (primary.sku) builder.setSku(primary.sku);
+    } else {
+      // The search path takes this price from the listing; a refetch has no listing.
+      const price = toFiniteNumber(String(detail.price ?? ''));
+      if (price !== undefined) {
+        builder.setPricing(price, detail.currency ?? 'USD', '$');
+      }
+      // Single-size products carry no variants; recover the size from the name
+      // or description so the product isn't dropped for lacking a quantity.
+      const fallback = parseQuantity(detail.name) ?? parseQuantity(detail.description_text ?? '');
+      if (fallback) {
+        builder.setQuantity(fallback.quantity, fallback.uom);
+      }
+    }
+
+    if (variants.length > 1) {
+      builder.setVariants(variants.filter(isValidVariant));
+    }
   }
 }

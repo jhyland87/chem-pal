@@ -123,6 +123,8 @@ Right-clicking a result row opens a menu with quick actions:
 - **Create Bookmark** / **Share**
 - **Expand all** / **Collapse all** visible rows
 - **Ignore Product** — hide this exact product from future searches (see below)
+- **Enable / Disable price reduction alerts** — watch the product for price drops
+  (greyed out when the supplier can't be checked; see [Price Tracking](Price-Tracking#price-alerts))
 - **Remove Product from Cache** — forget ChemPal's saved copy so it's re-fetched
   fresh next time (see [Caching](Caching))
 

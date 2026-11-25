@@ -4,10 +4,13 @@ import {
   resetChromeStorageMock,
   setupChromeStorageMock,
 } from '@/__fixtures__/helpers/chrome/storageMock';
-import { AVAILABILITY } from '@/constants/common';
+import { AVAILABILITY, PRODUCT_REFRESH_STATUS } from '@/constants/common';
+import { productSeriesKey, variantSeriesKey } from '@/helpers/priceHistory';
+import type { ProductRef } from '@/helpers/productRef';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import byIdResponse from '../__fixtures__/dailybiousa/products-by-id.json';
 import { SupplierDailyBioUSA } from '../SupplierDailyBioUSA';
 
 beforeAll(() => {
@@ -81,6 +84,14 @@ describe('SupplierDailyBioUSA initProductBuilders', () => {
     expect(product.availability).toBe(AVAILABILITY.IN_STOCK);
   });
 
+  it('uses the discounted price when the product is on sale', () => {
+    const supplier = makeSupplier() as unknown as DailyBioUSAInternals;
+
+    const onSale = { ...products.skuSize, formattedDiscountedPrice: '$17.50' };
+    const product = supplier.initProductBuilders([onSale])[0].dump();
+    expect(product.price).toBe(17.5);
+  });
+
   it('marks a product out of stock when isInStock is false', () => {
     const supplier = makeSupplier() as unknown as DailyBioUSAInternals;
 
@@ -122,5 +133,120 @@ describe('SupplierDailyBioUSA initProductBuilders', () => {
       { quantity: 100, uom: 'g', price: 61 },
       { quantity: 250, uom: 'g', price: 90 },
     ]);
+  });
+});
+
+describe('SupplierDailyBioUSA queryProductsById', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  const [first, second] = byIdResponse.data.catalog.category.productsWithMetaData.list;
+
+  const ref = (cacheKey: string): ProductRef => ({
+    cacheKey,
+    title: cacheKey,
+    url: `https://www.dailybiousa.com/product-page/${cacheKey}`,
+    variants: [],
+  });
+
+  /** A supplier whose Wix API answers with `response`, with the access-token step skipped. */
+  const makeBySupplier = (response: unknown = byIdResponse) => {
+    const supplier = makeSupplier();
+    const setup = vi.spyOn(supplier as never, 'setup').mockResolvedValue(undefined as never);
+    const get = vi.spyOn(supplier as never, 'httpGetJson').mockResolvedValue(response as never);
+    return { supplier, get, setup };
+  };
+
+  it('filters the catalog by id IN the refs, in one request', async () => {
+    const { supplier, get } = makeBySupplier();
+
+    await supplier.refreshProducts([ref(first.id), ref('missing-id'), ref(second.id)]);
+
+    expect(get).toHaveBeenCalledTimes(1);
+    const call = get.mock.calls[0][0] as unknown as {
+      path: string;
+      params: { o: string; q: string; v: string };
+    };
+    expect(call.path).toBe('_api/wix-ecommerce-storefront-web/api');
+    expect(call.params.o).toBe('getFilteredProducts');
+    const variables = JSON.parse(call.params.v);
+    expect(variables.filters).toEqual({
+      term: { field: 'id', op: 'IN', values: [first.id, 'missing-id', second.id] },
+    });
+    expect(variables.mainCollectionId).toBe('00000000-000000-000000-000000000001');
+    expect(variables.limit).toBe(3);
+    expect(variables.offset).toBe(0);
+  });
+
+  it('runs setup once before the request', async () => {
+    const { supplier, setup } = makeBySupplier();
+    await supplier.refreshProducts([ref(first.id)]);
+    expect(setup).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns OK for a found product and UNAVAILABLE for an id the catalog no longer has', async () => {
+    const { supplier } = makeBySupplier({
+      data: {
+        catalog: {
+          category: {
+            productsWithMetaData: {
+              totalCount: 1,
+              list: [byIdResponse.data.catalog.category.productsWithMetaData.list[1]],
+            },
+          },
+        },
+      },
+    });
+
+    const results = await supplier.refreshProducts([ref(second.id), ref('gone')]);
+
+    expect(results.map((r) => r.status)).toEqual([
+      PRODUCT_REFRESH_STATUS.OK,
+      PRODUCT_REFRESH_STATUS.UNAVAILABLE,
+    ]);
+    const [ok] = results;
+    expect(ok.status === PRODUCT_REFRESH_STATUS.OK && ok.product.quantity).toBe(250);
+  });
+
+  it('fails every ref when the response is invalid', async () => {
+    const { supplier } = makeBySupplier({ errors: [{ message: 'GQL_QUERY_ANALYSIS_ERROR' }] });
+
+    const results = await supplier.refreshProducts([ref(first.id), ref(second.id)]);
+
+    expect(results.map((r) => r.status)).toEqual([
+      PRODUCT_REFRESH_STATUS.FAILED,
+      PRODUCT_REFRESH_STATUS.FAILED,
+    ]);
+    expect(results[0]).toMatchObject({ reason: 'Invalid or empty Wix query response' });
+  });
+
+  it('keeps the same product and variant series as a search of the same products', async () => {
+    const { supplier: searcher } = makeBySupplier();
+    vi.spyOn(searcher as never, 'fuzzyFilterAst').mockImplementation((items: unknown) => items);
+    const searched = await (
+      searcher as unknown as {
+        queryProducts: (q: string, l: number) => Promise<ProductBuilder<Product>[]>;
+      }
+    ).queryProducts('acid', 5);
+    const searchedProducts = await Promise.all(searched.map((builder) => builder.build()));
+    expect(searchedProducts.length).toBeGreaterThan(0);
+
+    const { supplier } = makeBySupplier();
+    const results = await supplier.refreshProducts([ref(first.id), ref(second.id)]);
+
+    let compared = 0;
+    for (const result of results) {
+      if (result.status === PRODUCT_REFRESH_STATUS.UNAVAILABLE) continue;
+      compared++;
+      const searchedProduct = searchedProducts.find((p) => p?.cacheKey === result.ref.cacheKey);
+      if (result.status !== PRODUCT_REFRESH_STATUS.OK || !searchedProduct) {
+        throw new Error(`expected both routes to produce ${result.ref.cacheKey}`);
+      }
+      expect(productSeriesKey(result.product)).toBeDefined();
+      expect(productSeriesKey(result.product)).toBe(productSeriesKey(searchedProduct));
+      const keys = (product: Product) =>
+        (product.variants ?? []).map((variant) => variantSeriesKey(product, variant));
+      expect(keys(result.product)).toEqual(keys(searchedProduct));
+    }
+    expect(compared).toBeGreaterThan(0);
   });
 });

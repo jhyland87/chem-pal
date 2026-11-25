@@ -1,14 +1,16 @@
 import { UOM } from '@/constants/common';
 import { parsePrice } from '@/helpers/currency';
+import type { ProductLookup, ProductRef } from '@/helpers/productRef';
 import { parseQuantity } from '@/helpers/quantity';
 import { findFormulaInHtml } from '@/helpers/science';
 import { firstMap, mapDefined } from '@/helpers/utils';
 import searchProductsQuery from '@/queries/magento2-product-query.gql';
+import productsBySkuQuery from '@/queries/magento2-products-by-sku.gql';
 import { ProductBuilder } from '@/utils/ProductBuilder';
 import { extractAllPositiveTerms } from '@/utils/search-query/extractPositiveTerms';
 import { isQuantityObject } from '@/utils/typeGuards/common';
 import { isValidMagento2SearchResponse } from '@/utils/typeGuards/magento2';
-import { print } from 'graphql';
+import { print, type DocumentNode } from 'graphql';
 import { SupplierBase } from './SupplierBase';
 
 /**
@@ -67,11 +69,20 @@ export abstract class SupplierBaseMagento2
   extends SupplierBase<Magento2ProductItem, Product>
   implements ISupplier
 {
-  /** Magento store code passed via the `Store` request header (selects locale/storefront) */
+  /**
+   * Magento store code passed via the `Store` request header (selects locale/storefront). Empty
+   * sends no header.
+   */
   protected storeCode: string = 'us_en';
 
   /** Path to the Magento 2 GraphQL endpoint, relative to {@link baseURL} */
   protected graphQLPath: string = '/graphql';
+
+  /** Query that fetches specific products by SKU. */
+  protected readonly productsBySkuQuery: DocumentNode = productsBySkuQuery;
+
+  // One request fetches the whole batch.
+  protected refreshBatchSize: number = 50;
 
   protected limit: number = 50;
 
@@ -198,30 +209,10 @@ export abstract class SupplierBaseMagento2
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    // The .gql import is a parsed DocumentNode (vite-plugin-graphql-loader); the Magento 2
-    // endpoint wants the raw query text, so print it and pass the variables alongside.
-    const graphQLQuery = print(searchProductsQuery);
-    const graphQLVariables = this.getGraphQLVariables(query, limit);
-
-    const searchRequest = await this.httpPostJson({
-      path: this.graphQLPath,
-      body: { query: graphQLQuery, variables: graphQLVariables },
-      headers: {
-        'Content-Type': 'application/json',
-
-        Store: this.storeCode,
-      },
-    });
-
-    this.logger.debug('Received search response', { searchRequest });
-    if (!isValidMagento2SearchResponse(searchRequest)) {
-      this.logger.error('Invalid Magento2 search response', { response: searchRequest });
-      throw new Error('Invalid Magento2 search response', {
-        cause: { searchRequest, query, supplier: this.supplierName },
-      });
-    }
-
-    const items = searchRequest.data.products.items;
+    const items = await this.fetchItems(
+      searchProductsQuery,
+      this.getGraphQLVariables(query, limit),
+    );
 
     if (items.length === 0) {
       this.logger.warn('Magento2 search returned no products', { query });
@@ -234,6 +225,93 @@ export abstract class SupplierBaseMagento2
     this.logger.debug('Applied fuzzy filter to search items', { query, items, fuzzResults });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));
+  }
+
+  /**
+   * Posts a `products` query and returns its items.
+   *
+   * @param document - The parsed query
+   * @param variables - Its variables
+   * @returns The product items in the response
+   * @throws Error when the response is invalid
+   * @example
+   * ```typescript
+   * await this.fetchItems(searchProductsQuery, { search: 'sodium', pageSize: 20 });
+   * // [{ __typename: 'SimpleProduct', sku: 'S-100', … }]
+   * ```
+   * @source
+   */
+  protected async fetchItems(
+    document: DocumentNode,
+    variables: object,
+  ): Promise<Magento2ProductItem[]> {
+    // The .gql import is a parsed DocumentNode (vite-plugin-graphql-loader); the Magento 2
+    // endpoint wants the raw query text, so print it and pass the variables alongside.
+    const response = await this.httpPostJson({
+      path: this.graphQLPath,
+      body: { query: print(document), variables },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(this.storeCode && { Store: this.storeCode }),
+      },
+    });
+
+    this.logger.debug('Received products response', { response });
+    if (!isValidMagento2SearchResponse(response)) {
+      this.logger.error('Invalid Magento2 products response', { response, variables });
+      throw new Error('Invalid Magento2 products response', {
+        cause: { response, variables, supplier: this.supplierName },
+      });
+    }
+    return response.data.products.items;
+  }
+
+  /**
+   * Fetches specific products in one request by SKU; the `uid` in their
+   * {@link getUniqueProductKey} isn't filterable.
+   *
+   * @param refs - The products to fetch
+   * @returns Builders for the products found; a ref with no SKU is reported as failed
+   * @throws Error when the response is invalid
+   * @example
+   * ```typescript
+   * const { builders } = await this.queryProductsById(refs);
+   * ```
+   * @source
+   */
+  protected override async queryProductsById(
+    refs: readonly ProductRef[],
+  ): Promise<ProductLookup<Product>> {
+    const failed = new Set(refs.filter((ref) => !ref.sku).map((ref) => ref.cacheKey));
+    const skus = mapDefined([...refs], (ref) => (ref.sku ? String(ref.sku) : undefined));
+    if (skus.length === 0) return { builders: [], failed };
+
+    const items = await this.fetchItems(this.productsBySkuQuery, { skus, pageSize: skus.length });
+    return { builders: this.initProductBuilders(items), failed };
+  }
+
+  /**
+   * Reads what a customer pays today from a Magento 2 price range: `final_price` (after any sale or
+   * discount), or `regular_price` when the store doesn't return one.
+   *
+   * @param range - The price range of a product, sub-product or variant
+   * @returns The money value, or undefined when the range carries neither
+   * @example
+   * ```typescript
+   * this.currentPrice({
+   *   minimum_price: {
+   *     regular_price: { value: 100, currency: 'USD' },
+   *     final_price: { value: 85, currency: 'USD' },
+   *   },
+   * }); // { value: 85, currency: 'USD' }
+   * ```
+   * @source
+   */
+  protected currentPrice(
+    range: Pick<Magento2PriceRange, 'minimum_price'> | undefined,
+  ): Magento2Money | undefined {
+    const bound = range?.minimum_price;
+    return bound?.final_price ?? bound?.regular_price;
   }
 
   /**
@@ -254,7 +332,7 @@ export abstract class SupplierBaseMagento2
   protected collectRawVariants(item: Magento2ProductItem): RawMagento2Variant[] {
     if (item.__typename === 'GroupedProduct' && Array.isArray(item.items)) {
       return mapDefined(item.items, (sub) => {
-        const money = sub.product.price_range.minimum_price.regular_price;
+        const money = this.currentPrice(sub.product.price_range);
         if (typeof money?.value !== 'number') return;
         return {
           sku: sub.product.sku,
@@ -267,7 +345,7 @@ export abstract class SupplierBaseMagento2
 
     if (item.__typename === 'ConfigurableProduct' && Array.isArray(item.variants)) {
       return mapDefined(item.variants, (variant) => {
-        const money = variant.product.price_range.minimum_price.regular_price;
+        const money = this.currentPrice(variant.product.price_range);
         if (typeof money?.value !== 'number') return;
         return {
           sku: variant.product.sku,
@@ -278,7 +356,7 @@ export abstract class SupplierBaseMagento2
       });
     }
 
-    const money = item.price_range?.minimum_price?.regular_price;
+    const money = this.currentPrice(item.price_range);
     if (typeof money?.value !== 'number') return [];
     return [
       {

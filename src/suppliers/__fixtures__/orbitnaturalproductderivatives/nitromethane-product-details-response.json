@@ -1,0 +1,90 @@
+{
+  "id": "01a073c9-449f-71ff-841b-fec560936396",
+  "name": "NITROMETHANE",
+  "description": "<p><strong>NITROMETHANE (99+%)</strong></p>\n<p><strong>CAS# 75-52-5</strong></p>\n<p>Packaged in an HDPE container. Stored and packed under argon.</p>",
+  "price": "85.00",
+  "slug": "nitromethane",
+  "total_on_hand": 3,
+  "available": true,
+  "sku": "NTRMTHN-1-KG",
+  "updated_at": "2026-09-05T22:56:05.656Z",
+  "on_sale?": false,
+  "sale_price": "0.00",
+  "source": null,
+  "source_url": null,
+  "description_text": "NITROMETHANE (99+%)\nCAS# 75-52-5\nPackaged in an HDPE container. Stored and packed under argon.",
+  "product_type": "physical",
+  "description_raw": "<p><strong>NITROMETHANE (99+%)</strong></p>\n<p><strong>CAS# 75-52-5</strong></p>\n<p>Packaged in an HDPE container. Stored and packed under argon.</p>",
+  "currency": "USD",
+  "ship_free": true,
+  "relative_url": "/ols/products/nitromethane",
+  "has_variants": false,
+  "has_price_range": false,
+  "variant_count": 0,
+  "track_inventory": true,
+  "in_stock": true,
+  "backorderable": false,
+  "measurement_system": "imperial",
+  "limited_edition": false,
+  "free_return": false,
+  "low_inventory_threshold": null,
+  "new_product?": true,
+  "bestseller?": false,
+  "assets": [
+    {
+      "id": "01a073c9-44a1-7707-9ee8-02360aa8b6b4",
+      "small_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/Nitromethane_MeNO2_1Kg_090526.jpg",
+      "large_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/Nitromethane_MeNO2_1Kg_090526.jpg",
+      "original_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/Nitromethane_MeNO2_1Kg_090526.jpg/:/rs=w:600,h:600",
+      "product_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/Nitromethane_MeNO2_1Kg_090526.jpg/:/",
+      "zoom_image_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/Nitromethane_MeNO2_1Kg_090526.jpg",
+      "attachment_height": null,
+      "attachment_width": null,
+      "type": "image"
+    }
+  ],
+  "variants": [
+    {
+      "options_text": "SIZE: 1 Kg",
+      "in_stock": true,
+      "backorderable": false,
+      "asset_ids": [
+        "01a073c9-4b4a-77ec-8500-08c51a0a20dc"
+      ],
+      "option_values": [
+        {
+          "id": "01a073c9-44a1-7707-9ee7-fcc4ededbfb7",
+          "name": "1 Kg",
+          "presentation": "1 Kg",
+          "color": "",
+          "option_type_name": "SIZE",
+          "option_type_id": "01a073c9-449f-71ff-841c-00ab3e6a359b",
+          "option_type_presentation": "SIZE",
+          "valueId": "01a073c9-44a1-7707-9ee7-fcc4ededbfb7"
+        }
+      ],
+      "variant_properties": [],
+      "id": "01a073c9-4847-76e8-9bd8-06b8ff5600c6",
+      "sku": "NTRMTHN-1-KG",
+      "price": "85.00",
+      "on_sale?": false,
+      "sale_price": "",
+      "display_sale_price": "",
+      "display_price": "$85.00",
+      "total_on_hand": 3,
+      "weight": "0",
+      "height": "0",
+      "width": "0",
+      "depth": "0"
+    }
+  ],
+  "personalizations": [],
+  "product_option_order": [
+    {
+      "position": 1,
+      "reference_id": "01a073c9-449f-71ff-841c-00ab3e6a359b",
+      "reference_type": "Spree::OptionType"
+    }
+  ],
+  "ols_product_id": null
+}

@@ -1,4 +1,5 @@
 import { findCAS } from '@/helpers/cas';
+import type { ProductLookup, ProductRef } from '@/helpers/productRef';
 import { parseQuantity } from '@/helpers/quantity';
 import { findPurity, parseChemicalSpecs } from '@/helpers/science';
 import { firstMap, mapDefined } from '@/helpers/utils';
@@ -79,6 +80,9 @@ export abstract class SupplierBaseWoocommerce
    * @source
    */
   public readonly fetchObjectSizeLimit: number = 95;
+
+  // One request fetches the whole batch, plus the batched variant requests.
+  protected refreshBatchSize: number = this.fetchObjectSizeLimit;
 
   /**
    * The default product search filters to use for the WooCommerce API.
@@ -279,27 +283,70 @@ export abstract class SupplierBaseWoocommerce
 
     for (let offset = 0; offset < uniqueIds.length; offset += this.fetchObjectSizeLimit) {
       const chunk = uniqueIds.slice(offset, offset + this.fetchObjectSizeLimit);
-      const response = await this.httpGetJson({
-        path: `/wp-json/wc/store/v1/products`,
-
-        params: {
-          per_page: this.fetchObjectSizeLimit,
-          type: 'variation',
-          include: chunk.join(','),
-        },
-      });
-
-      if (!isSearchResponse(response)) {
-        this.logger.warn('Invalid variant batch response', { chunk, response });
-        continue;
-      }
-
-      for (const item of response) {
+      const items = await this.fetchItemBatch(chunk, 'variation');
+      for (const item of items ?? []) {
         variantData.set(item.id, item);
       }
     }
 
     return variantData;
+  }
+
+  /**
+   * Fetches up to {@link fetchObjectSizeLimit} products or variations in one request by id.
+   * @param ids - The ids to fetch
+   * @param type - Product type to restrict to; variations are only returned for `'variation'`
+   * @returns The items found, or undefined when the response is invalid
+   * @example
+   * ```typescript
+   * await this.fetchItemBatch([6981, 6982]); // [{ id: 6981, … }, { id: 6982, … }]
+   * ```
+   * @source
+   */
+  protected async fetchItemBatch(
+    ids: readonly number[],
+    type?: string,
+  ): Promise<WooCommerceSearchResponseItem[] | undefined> {
+    const response = await this.httpGetJson({
+      path: `/wp-json/wc/store/v1/products`,
+
+      params: {
+        per_page: this.fetchObjectSizeLimit,
+        ...(type && { type }),
+        include: ids.join(','),
+      },
+    });
+
+    if (!isSearchResponse(response)) {
+      this.logger.warn('Invalid product batch response', { ids, type, response });
+      return undefined;
+    }
+    return response;
+  }
+
+  /**
+   * Fetches specific products in one request by id, then their variants as a search does. Products
+   * that are out of stock or not purchasable are left out.
+   *
+   * @param refs - The products to fetch
+   * @returns Builders for the products found
+   * @throws Error when the response is invalid
+   * @example
+   * ```typescript
+   * const { builders } = await this.queryProductsById(refs);
+   * ```
+   * @source
+   */
+  protected override async queryProductsById(
+    refs: readonly ProductRef[],
+  ): Promise<ProductLookup<Product>> {
+    const items = await this.fetchItemBatch(refs.map((ref) => Number(ref.cacheKey)));
+    if (!items) {
+      throw new Error('Invalid WooCommerce products response');
+    }
+    const builders = this.initProductBuilders(this.stripInvalidResults(items));
+    await this.enrichVariants(builders);
+    return { builders };
   }
 
   /**

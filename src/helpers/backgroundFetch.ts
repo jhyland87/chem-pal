@@ -89,6 +89,24 @@ function isBackgroundFetchSuccess(result: unknown): result is BackgroundFetchSuc
   );
 }
 
+/** Whether this context is the service worker itself; see {@link runInBackgroundContext}. */
+let inBackgroundContext = false;
+
+/**
+ * Marks this context as the service worker, so {@link backgroundFetch} calls `fetch` directly. A
+ * worker's `runtime.sendMessage` is never delivered to itself. Set explicitly rather than detected,
+ * because Firefox runs the same script as an event page, which does have a `window`.
+ * @category Helpers
+ * @example
+ * ```ts
+ * runInBackgroundContext(); // once, from the service worker
+ * ```
+ * @source
+ */
+export function runInBackgroundContext(): void {
+  inBackgroundContext = true;
+}
+
 /**
  * Performs an HTTP request from the extension's background service worker instead of the
  * calling context, then reconstructs a real {@link Response} from the serialized reply.
@@ -122,6 +140,10 @@ function isBackgroundFetchSuccess(result: unknown): result is BackgroundFetchSuc
  * @source
  */
 export async function backgroundFetch(url: string, init?: BackgroundFetchInit): Promise<Response> {
+  if (inBackgroundContext) {
+    return fetch(url, init);
+  }
+
   const message: BackgroundFetchMessage = {
     type: MESSAGE_TYPE.BACKGROUND_FETCH,
     url,

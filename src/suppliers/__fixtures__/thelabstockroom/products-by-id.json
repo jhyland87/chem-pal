@@ -1,0 +1,179 @@
+{
+  "data": {
+    "nodes": [
+      {
+        "id": "gid://shopify/Product/453463801884",
+        "handle": "is10019",
+        "title": "Laboratory Grade Acetone, 1L",
+        "vendor": "Innovating Science",
+        "productType": "Stocked",
+        "tags": [
+          "Capacity_1000mL",
+          "Category_Chemicals",
+          "Chemical_Acetone",
+          "Chemicals_Disinfectants",
+          "Chemicals_Solvents",
+          "Chemistry",
+          "Chemistry_Chemicals",
+          "Essential Supply",
+          "Essential Supply_Disinfectants",
+          "Grade_Lab",
+          "Grade_Lab-Grade",
+          "Hazardous-Shipping",
+          "Manufacturer_Innovating Science",
+          "Pack Size_Single",
+          "State_Liquid",
+          "StockedLY9121",
+          "Subcategory_Solvents",
+          "Subject_Chemistry"
+        ],
+        "descriptionHtml": "<p>One-liter bottle of laboratory-grade acetone, the workhorse solvent for cleaning glassware, dissolving organic residues, and serving as a polar aprotic solvent in organic chemistry work.</p>",
+        "availableForSale": true,
+        "onlineStoreUrl": "https://www.thelabstockroom.com/products/is10019",
+        "featuredImage": {
+          "url": "https://cdn.shopify.com/s/files/1/0250/0623/files/tcop1dvsff6oxf6azeqd_150x150_crop_center.jpg?v=1776557172",
+          "altText": null
+        },
+        "priceRange": {
+          "minVariantPrice": {
+            "amount": "33.99",
+            "currencyCode": "USD"
+          },
+          "maxVariantPrice": {
+            "amount": "33.99",
+            "currencyCode": "USD"
+          }
+        },
+        "media": {
+          "edges": [
+            {
+              "node": {
+                "id": "gid://shopify/MediaImage/42395233386688",
+                "mediaContentType": "IMAGE",
+                "alt": "",
+                "image": {
+                  "url": "https://cdn.shopify.com/s/files/1/0250/0623/files/tcop1dvsff6oxf6azeqd.jpg?v=1776557172",
+                  "width": 1116,
+                  "height": 2440
+                }
+              }
+            }
+          ]
+        },
+        "variants": {
+          "edges": [
+            {
+              "node": {
+                "id": "gid://shopify/ProductVariant/6018164326428",
+                "title": "Default Title",
+                "sku": "IS10019",
+                "availableForSale": true,
+                "currentlyNotInStock": false,
+                "weight": 1.9,
+                "weightUnit": "POUNDS",
+                "price": {
+                  "amount": "33.99",
+                  "currencyCode": "USD"
+                },
+                "compareAtPrice": null,
+                "selectedOptions": [
+                  {
+                    "name": "Title",
+                    "value": "Default Title"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      null,
+      {
+        "id": "gid://shopify/Product/453463834652",
+        "handle": "is10020",
+        "title": "Laboratory Grade Acetone, 500mL",
+        "vendor": "Innovating Science",
+        "productType": "Stocked",
+        "tags": [
+          "Capacity_500mL",
+          "Category_Chemicals",
+          "Chemical_Acetone",
+          "Chemicals_Disinfectants",
+          "Chemicals_Solvents",
+          "Chemistry",
+          "Chemistry_Chemicals",
+          "Essential Supply",
+          "Essential Supply_Disinfectants",
+          "Grade_Lab",
+          "Grade_Lab-Grade",
+          "Hazardous-Shipping",
+          "Manufacturer_Innovating Science",
+          "Pack Size_Single",
+          "State_Liquid",
+          "StockedLY9121",
+          "Subcategory_Solvents",
+          "Subject_Chemistry"
+        ],
+        "descriptionHtml": "<p>Smaller 500mL laboratory-grade acetone bottle, the half-size variant of the 1L workhorse-solvent bottle for classrooms with lower throughput or limited solvent storage capacity.</p>",
+        "availableForSale": true,
+        "onlineStoreUrl": "https://www.thelabstockroom.com/products/is10020",
+        "featuredImage": {
+          "url": "https://cdn.shopify.com/s/files/1/0250/0623/files/scxj1apo6853gcqpwfa8_150x150_crop_center.jpg?v=1776557172",
+          "altText": null
+        },
+        "priceRange": {
+          "minVariantPrice": {
+            "amount": "24.99",
+            "currencyCode": "USD"
+          },
+          "maxVariantPrice": {
+            "amount": "24.99",
+            "currencyCode": "USD"
+          }
+        },
+        "media": {
+          "edges": [
+            {
+              "node": {
+                "id": "gid://shopify/MediaImage/42474940334272",
+                "mediaContentType": "IMAGE",
+                "alt": "",
+                "image": {
+                  "url": "https://cdn.shopify.com/s/files/1/0250/0623/files/scxj1apo6853gcqpwfa8.jpg?v=1776557172",
+                  "width": 1086,
+                  "height": 2709
+                }
+              }
+            }
+          ]
+        },
+        "variants": {
+          "edges": [
+            {
+              "node": {
+                "id": "gid://shopify/ProductVariant/6018164359196",
+                "title": "Default Title",
+                "sku": "IS10020",
+                "availableForSale": true,
+                "currentlyNotInStock": false,
+                "weight": 1.3,
+                "weightUnit": "POUNDS",
+                "price": {
+                  "amount": "24.99",
+                  "currencyCode": "USD"
+                },
+                "compareAtPrice": null,
+                "selectedOptions": [
+                  {
+                    "name": "Title",
+                    "value": "Default Title"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -31,6 +31,9 @@ export class SupplierAsesChem extends SupplierBaseShopify implements ISupplier {
   // The payment methods accepted by the supplier.
   public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
+  // Specific products can be refetched by id, so they can be watched for price drops.
+  public static readonly supportsPriceAlerts: boolean = true;
+
   // Shopify API URL for GraphQL queries
   protected static readonly apiURL: string = 'aseschem.myshopify.com';
 

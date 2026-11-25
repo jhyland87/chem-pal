@@ -608,6 +608,107 @@
     "placeholders": { "count": { "content": "$1" } },
     "description": "Italic badge by the Supplier Status header; placeholder is the number of disabled suppliers."
   },
+  "settings_section_price_alerts": {
+    "message": "Price Alerts",
+    "description": "Settings section header."
+  },
+  "settings_price_alerts_interval": {
+    "message": "Price alert check interval (hours)",
+    "description": "Setting label."
+  },
+  "settings_price_alerts_interval_helper": {
+    "message": "How often watched products are checked while the browser is open. Empty = default ($hours$)",
+    "placeholders": { "hours": { "content": "$1" } },
+    "description": "Helper text; the placeholder is the default interval in hours."
+  },
+  "settings_price_alerts_min_drop": {
+    "message": "Minimum price drop (%)",
+    "description": "Setting label."
+  },
+  "settings_price_alerts_min_drop_helper": {
+    "message": "Only alert when a price falls by at least this much. Empty = default ($percent$)",
+    "placeholders": { "percent": { "content": "$1" } },
+    "description": "Helper text; the placeholder is the default percentage."
+  },
+  "price_alerts_enabled": {
+    "message": "Price reduction alerts enabled",
+    "description": "Status text after watching a product."
+  },
+  "price_alerts_disabled": {
+    "message": "Price reduction alerts disabled",
+    "description": "Status text after no longer watching a product."
+  },
+  "price_alerts_enable_failed": {
+    "message": "This product can't be watched for price reductions",
+    "description": "Status text when a product can't be watched."
+  },
+  "price_alerts_empty": {
+    "message": "No price alerts. Right-click a search result to add one.",
+    "description": "Empty-state text."
+  },
+  "price_alerts_select_all": {
+    "message": "Select all",
+    "description": "Checkbox label."
+  },
+  "price_alerts_select_item": {
+    "message": "Select $item$",
+    "placeholders": { "item": { "content": "$1" } },
+    "description": "Accessible checkbox label; the placeholder is the product title."
+  },
+  "price_alerts_delete_selected": {
+    "message": "Delete selected ($count$)",
+    "placeholders": { "count": { "content": "$1" } },
+    "description": "Button label; the placeholder is how many are selected."
+  },
+  "price_alerts_delete_all": {
+    "message": "Delete all",
+    "description": "Button label."
+  },
+  "price_alerts_delete_all_title": {
+    "message": "Delete all price alerts?",
+    "description": "Confirmation dialog title."
+  },
+  "price_alerts_delete_all_body": {
+    "message": "ChemPal will stop checking the prices of all watched products ($count$).",
+    "placeholders": { "count": { "content": "$1" } },
+    "description": "Confirmation dialog text; the placeholder is how many products are watched."
+  },
+  "price_alerts_not_checked": {
+    "message": "Not checked yet",
+    "description": "Shown for a watched product that has not been checked."
+  },
+  "price_alerts_last_checked": {
+    "message": "Last checked $time$",
+    "placeholders": { "time": { "content": "$1" } },
+    "description": "Shown for a watched product; the placeholder is a date and time."
+  },
+  "price_alerts_last_drop": {
+    "message": "Dropped from $from$ to $to$ ($time$)",
+    "placeholders": { "from": { "content": "$1" }, "to": { "content": "$2" }, "time": { "content": "$3" } },
+    "description": "Latest price drop of a watched product; placeholders are both prices and a date and time."
+  },
+  "price_alerts_unavailable": {
+    "message": "Not currently available",
+    "description": "Shown when a watched product is out of stock or no longer listed."
+  },
+  "price_alerts_check_failed": {
+    "message": "Couldn't check the price (failed attempts: $count$)",
+    "placeholders": { "count": { "content": "$1" } },
+    "description": "Shown when checking a watched product failed; the placeholder is how many times in a row."
+  },
+  "price_alerts_notifications_off": {
+    "message": "Notifications are off, so price reductions only show here.",
+    "description": "Shown when the notification permission is missing."
+  },
+  "price_alerts_allow_notifications": {
+    "message": "Allow notifications",
+    "description": "Button that asks for the notification permission."
+  },
+  "price_alert_notification_title": {
+    "message": "Price reduced at $supplier$",
+    "placeholders": { "supplier": { "content": "$1" } },
+    "description": "Notification title; the placeholder is the supplier's name."
+  },
   "settings_section_supplier_status": {
     "message": "Supplier Status",
     "description": "Settings section header."
@@ -787,7 +888,7 @@
   "offline_title": { "message": "No internet connection", "description": "Title of the full-screen offline overlay." },
   "offline_message": { "message": "There's been a network connection issue. This message will disappear once your connection is restored.", "description": "Body of the offline overlay." },
   "settings_share_usage_data": { "message": "Share usage data", "description": "Settings toggle label: opt in/out of usage analytics." },
-  "settings_share_usage_data_desc": { "message": "Send usage and error statistics (searches, result counts, installs, updates, crashes) and diagnostic logs to help improve ChemPal, tied to a device identifier — not your name or account.", "description": "Description under the usage-data toggle." },
+  "settings_share_usage_data_desc": { "message": "Send usage and error statistics (searches, result counts, price alert counts, installs, updates, crashes) and diagnostic logs to help improve ChemPal, tied to a device identifier — not your name or account.", "description": "Description under the usage-data toggle." },
   "speed_dial_aria": {
     "message": "SpeedDial Menu",
     "description": "Accessible label for the speed dial."
@@ -816,6 +917,14 @@
   "context_menu_ignore_product": {
     "message": "Ignore Product",
     "description": "Context menu option to ignore the product."
+  },
+  "context_menu_enable_price_alerts": {
+    "message": "Enable price reduction alerts",
+    "description": "Context menu option to watch the product for price drops."
+  },
+  "context_menu_disable_price_alerts": {
+    "message": "Disable price reduction alerts",
+    "description": "Context menu option to stop watching the product for price drops."
   },
   "context_menu_remove_product_from_cache": {
     "message": "Remove Product from Cache",

@@ -100,7 +100,11 @@ function serviceWorkerBuildPlugin(options: {
         // would clobber it with the untransformed base manifest.json.
         publicDir: false,
         define: buildDefines(pkg, { isAggregate, isProd, isAnalyze, isE2e }),
-        resolve: { alias: { '@': _resolve('./src') } },
+        resolve: {
+          alias: { '@': _resolve('./src'), jszip: _resolve('./tools/stubs/jszip.js') },
+        },
+        // The worker bundles the suppliers that support price alerts, which import .gql queries.
+        plugins: [graphqlLoader()],
         esbuild: {
           //pure: isProd ? ['console.log', 'console.info', 'console.debug', 'console.trace'] : [],
           drop: isProd ? ['debugger'] : [],

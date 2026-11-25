@@ -92,6 +92,30 @@ export function isShopifyProductNode(product: unknown): product is ShopifyProduc
   return v.safeParse(shopifyProductNodeSchema, product).success;
 }
 
+const shopifyNodesResponseSchema = v.object({
+  data: v.object({ nodes: v.array(v.unknown()) }),
+});
+
+/**
+ * Type guard for a Storefront API `nodes(ids:)` response. The nodes themselves are not checked:
+ * a missing product is `null` there.
+ *
+ * @category Typeguards
+ * @param response - The response to validate
+ * @returns Whether the response carries a list of nodes
+ * @example
+ * ```typescript
+ * isShopifyNodesResponse({ data: { nodes: [null] } }); // true
+ * isShopifyNodesResponse({ errors: [] }); // false
+ * ```
+ * @source
+ */
+export function isShopifyNodesResponse(
+  response: unknown,
+): response is { data: { nodes: unknown[] } } {
+  return v.is(shopifyNodesResponseSchema, response);
+}
+
 const shopifySearchResponseSchema = v.object({
   data: v.object({
     products: v.object({

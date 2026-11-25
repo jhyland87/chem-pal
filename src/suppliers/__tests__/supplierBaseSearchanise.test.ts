@@ -1,6 +1,10 @@
-import { CACHE } from '@/constants/common';
+import { CACHE, PRODUCT_REFRESH_STATUS } from '@/constants/common';
+import { productSeriesKey, variantSeriesKey } from '@/helpers/priceHistory';
+import type { ProductRef } from '@/helpers/productRef';
 import { HttpError } from '@/helpers/exceptions';
+import type { ProductBuilder } from '@/utils/ProductBuilder';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import byIdResponse from '../__fixtures__/laballey/products-by-id.json';
 
 // In-memory stand-in for chrome.storage.local, shared by every supplier instance in a test.
 const storageState = { data: {} as Record<string, unknown>, failReads: false, failWrites: false };
@@ -397,5 +401,212 @@ describe('SupplierBaseSearchanise', () => {
       const instance = new SupplierLaballey('acetone', 10, new AbortController());
       expect((instance as any).apiKey).toBe('');
     });
+  });
+});
+
+describe('SupplierBaseSearchanise queryProductsById', () => {
+  const [acetone1, acetone2] = byIdResponse.items;
+
+  const ref = (item: { product_id: string; product_code: string }, withId = true): ProductRef => ({
+    cacheKey: item.product_code,
+    title: item.product_code,
+    url: `https://shop.example/${item.product_code}`,
+    ...(withId && { id: item.product_id }),
+    variants: [],
+  });
+
+  // Verbatim from the live API for a product id that no longer exists.
+  const empty = {
+    totalItems: 0,
+    hasItems: false,
+    startIndex: 0,
+    itemsPerPage: 200,
+    currentItemCount: 0,
+    items: [],
+  };
+
+  type GetCall = { path: string; host: string; params: Record<string, unknown> };
+  const paramsOf = (get: ReturnType<typeof vi.fn>, call: number) =>
+    (get.mock.calls[call][0] as GetCall).params;
+
+  beforeEach(() => {
+    storageState.data[STORAGE_KEY] = FRESH;
+  });
+
+  it('fetches every id in one request, restricted by product_id joined with a pipe', async () => {
+    const get = vi.fn(async () => reply(JSON.stringify(byIdResponse)));
+    const { supplier } = makeSupplier({ get });
+
+    const results = await supplier.refreshProducts([ref(acetone1), ref(acetone2)]);
+
+    expect(get).toHaveBeenCalledTimes(1);
+    const params = paramsOf(get, 0);
+    expect(params.restrictBy).toEqual({ product_id: '6703|6706' });
+    expect(params.api_key).toBe(FRESH.apiKey);
+    expect(params.q).toBeUndefined();
+    expect(results.map((r) => r.status)).toEqual([
+      PRODUCT_REFRESH_STATUS.OK,
+      PRODUCT_REFRESH_STATUS.OK,
+    ]);
+  });
+
+  it('reports a product the index no longer returns as UNAVAILABLE', async () => {
+    const get = vi.fn(async () =>
+      reply(JSON.stringify({ ...byIdResponse, items: [byIdResponse.items[1]] })),
+    );
+    const { supplier } = makeSupplier({ get });
+
+    const results = await supplier.refreshProducts([ref(acetone1), ref(acetone2)]);
+
+    expect(results.map((r) => r.status)).toEqual([
+      PRODUCT_REFRESH_STATUS.UNAVAILABLE,
+      PRODUCT_REFRESH_STATUS.OK,
+    ]);
+  });
+
+  it('reports an empty index answer as UNAVAILABLE', async () => {
+    const { supplier } = makeSupplier({ get: vi.fn(async () => reply(JSON.stringify(empty))) });
+    const [result] = await supplier.refreshProducts([ref(acetone1)]);
+    expect(result.status).toBe(PRODUCT_REFRESH_STATUS.UNAVAILABLE);
+  });
+
+  it('treats an item with no stock as UNAVAILABLE', async () => {
+    const soldOut = { ...acetone1, quantity: '0' };
+    const get = vi.fn(async () => reply(JSON.stringify({ ...byIdResponse, items: [soldOut] })));
+    const { supplier } = makeSupplier({ get });
+
+    const [result] = await supplier.refreshProducts([ref(acetone1)]);
+
+    expect(result.status).toBe(PRODUCT_REFRESH_STATUS.UNAVAILABLE);
+  });
+
+  it('fails every id-bearing ref when the batched request fails', async () => {
+    const get = vi.fn(async () => reply('<html>maintenance</html>'));
+    const { supplier } = makeSupplier({ get });
+
+    const results = await supplier.refreshProducts([ref(acetone1), ref(acetone2)]);
+
+    expect(results.map((r) => r.status)).toEqual([
+      PRODUCT_REFRESH_STATUS.FAILED,
+      PRODUCT_REFRESH_STATUS.FAILED,
+    ]);
+  });
+
+  describe('a ref with no stored id', () => {
+    it('is searched by its product code with q, apart from the batched refs', async () => {
+      const get = vi
+        .fn()
+        .mockImplementationOnce(async () =>
+          reply(JSON.stringify({ ...byIdResponse, items: [acetone1] })),
+        )
+        .mockImplementationOnce(async () =>
+          reply(JSON.stringify({ ...byIdResponse, items: [acetone2] })),
+        );
+      const { supplier } = makeSupplier({ get });
+
+      const results = await supplier.refreshProducts([ref(acetone1), ref(acetone2, false)]);
+
+      expect(get).toHaveBeenCalledTimes(2);
+      expect(paramsOf(get, 0).restrictBy).toEqual({ product_id: '6703' });
+      expect(paramsOf(get, 1).q).toBe('ACEL-1GAL');
+      expect(paramsOf(get, 1).restrictBy).toBeUndefined();
+      expect(results.map((r) => r.status)).toEqual([
+        PRODUCT_REFRESH_STATUS.OK,
+        PRODUCT_REFRESH_STATUS.OK,
+      ]);
+    });
+
+    it('keeps only the item whose product_code is exactly the requested one', async () => {
+      // A text search for one code also returns its sibling sizes.
+      const get = vi.fn(async () => reply(JSON.stringify(byIdResponse)));
+      const { supplier } = makeSupplier({ get });
+
+      const [result] = await supplier.refreshProducts([ref(acetone1, false)]);
+
+      expect(result.status).toBe(PRODUCT_REFRESH_STATUS.OK);
+      expect(result.status === PRODUCT_REFRESH_STATUS.OK && result.product.sku).toBe('ACEL-55GAL');
+    });
+
+    it('is UNAVAILABLE when the search finds no exact match', async () => {
+      const get = vi.fn(async () => reply(JSON.stringify({ ...byIdResponse, items: [acetone2] })));
+      const { supplier } = makeSupplier({ get });
+
+      const [result] = await supplier.refreshProducts([ref(acetone1, false)]);
+
+      expect(result.status).toBe(PRODUCT_REFRESH_STATUS.UNAVAILABLE);
+    });
+
+    it('is FAILED, alone, when its own request fails', async () => {
+      const get = vi
+        .fn()
+        .mockImplementationOnce(async () => reply(JSON.stringify(byIdResponse)))
+        .mockImplementationOnce(async () => reply('<html>maintenance</html>'));
+      const { supplier } = makeSupplier({ get });
+
+      const results = await supplier.refreshProducts([ref(acetone1), ref(acetone2, false)]);
+
+      expect(results.map((r) => r.status)).toEqual([
+        PRODUCT_REFRESH_STATUS.OK,
+        PRODUCT_REFRESH_STATUS.FAILED,
+      ]);
+    });
+  });
+
+  it('re-scrapes an expired api key once and retries the batch', async () => {
+    storageState.data[STORAGE_KEY] = STALE;
+    const get = vi
+      .fn()
+      .mockImplementationOnce(async () => reply('ENGINE_REMOVED'))
+      .mockImplementationOnce(async () => reply(JSON.stringify(byIdResponse)));
+    const { supplier, html } = makeSupplier({ get });
+
+    const results = await supplier.refreshProducts([ref(acetone1), ref(acetone2)]);
+
+    expect(html).toHaveBeenCalledTimes(1);
+    expect(get).toHaveBeenCalledTimes(2);
+    expect(paramsOf(get, 0).api_key).toBe(STALE.apiKey);
+    expect(paramsOf(get, 1).api_key).toBe(FRESH.apiKey);
+    expect(paramsOf(get, 1).restrictBy).toEqual({ product_id: '6703|6706' });
+    expect(results.map((r) => r.status)).toEqual([
+      PRODUCT_REFRESH_STATUS.OK,
+      PRODUCT_REFRESH_STATUS.OK,
+    ]);
+  });
+
+  it('gives up after one re-scrape when the new key is rejected too', async () => {
+    storageState.data[STORAGE_KEY] = STALE;
+    const get = vi.fn(async () => reply('ENGINE_REMOVED'));
+    const { supplier, html } = makeSupplier({ get });
+
+    const results = await supplier.refreshProducts([ref(acetone1)]);
+
+    expect(html).toHaveBeenCalledTimes(1);
+    expect(get).toHaveBeenCalledTimes(2);
+    expect(results[0].status).toBe(PRODUCT_REFRESH_STATUS.FAILED);
+  });
+
+  it('keeps the same product and variant series as a search of the same items', async () => {
+    const get = vi.fn(async () => reply(JSON.stringify(byIdResponse)));
+    const { anySupplier: searcher } = makeSupplier({ get });
+    const searched = await searcher.queryProducts('acetone');
+    const searchedProducts = await Promise.all(
+      (searched as ProductBuilder<Product>[]).map((builder) => builder.build()),
+    );
+    expect(searchedProducts).toHaveLength(2);
+
+    const { supplier } = makeSupplier({ get });
+    const results = await supplier.refreshProducts([ref(acetone1), ref(acetone2)]);
+
+    for (const result of results) {
+      const searchedProduct = searchedProducts.find((p) => p?.cacheKey === result.ref.cacheKey);
+      if (result.status !== PRODUCT_REFRESH_STATUS.OK || !searchedProduct) {
+        throw new Error(`expected both routes to produce ${result.ref.cacheKey}`);
+      }
+      expect(productSeriesKey(result.product)).toBeDefined();
+      expect(productSeriesKey(result.product)).toBe(productSeriesKey(searchedProduct));
+      const keys = (product: Product) =>
+        (product.variants ?? []).map((variant) => variantSeriesKey(product, variant));
+      expect(keys(result.product)).toEqual(keys(searchedProduct));
+    }
   });
 });

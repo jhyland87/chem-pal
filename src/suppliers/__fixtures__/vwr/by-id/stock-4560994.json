@@ -1,0 +1,46 @@
+{
+   "articleAvailabilityDetails" : {
+      "articleAvailabilityDetail" : [ {
+         "availability" : {
+            "availabilityMessage" : "Usually ships next day",
+            "stockStatus" : "inStock",
+            "vendorStock" : false
+         },
+         "catalogNumber" : "MK758106"
+      }, {
+         "availability" : {
+            "availabilityMessage" : "Usually ships next day",
+            "stockStatus" : "inStock",
+            "vendorStock" : false
+         },
+         "catalogNumber" : "MK758112"
+      }, {
+         "availability" : {
+            "availabilityMessage" : "Date provided after order",
+            "stockStatus" : "ON_ORDER",
+            "vendorStock" : false
+         },
+         "catalogNumber" : "MK758119"
+      }, {
+         "availability" : {
+            "availabilityMessage" : "Date provided after order",
+            "stockStatus" : "ON_ORDER",
+            "vendorStock" : false
+         },
+         "catalogNumber" : "MK758120"
+      }, {
+         "availability" : {
+            "stockStatus" : "discontinued",
+            "vendorStock" : false
+         },
+         "catalogNumber" : "MK758124"
+      }, {
+         "availability" : {
+            "availabilityMessage" : "Date provided after order",
+            "stockStatus" : "ON_ORDER",
+            "vendorStock" : false
+         },
+         "catalogNumber" : "MK758160"
+      } ]
+   }
+}

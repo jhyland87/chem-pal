@@ -910,6 +910,12 @@ function buildUserSettingsSchema() {
         maxDataPoints: v.optional(coercedNonnegativeInt),
       }),
     ),
+    priceAlerts: v.optional(
+      v.object({
+        checkIntervalHours: v.optional(coercedNonnegative),
+        minDropPercent: v.optional(coercedNonnegative),
+      }),
+    ),
     noCacheStatusCodes: v.optional(v.array(v.pipe(v.number(), v.integer(), v.minValue(1)))),
     supplierSearchTimeBudgetSec: v.optional(coercedNonnegative),
     currencyRate: v.optional(v.number()),

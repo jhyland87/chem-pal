@@ -1,14 +1,17 @@
 import { AVAILABILITY, CACHE, UOM } from '@/constants/common';
 import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
+import { HttpStatus } from '@/constants/httpStatus';
 import { findCAS } from '@/helpers/cas';
 import { parseQuantity } from '@/helpers/quantity';
 import { findFormulaInText, findMolarMass } from '@/helpers/science';
+import type { ProductLookup, ProductRef } from '@/helpers/productRef';
 import { firstMap, htmlToAscii, mapDefined } from '@/helpers/utils';
 import type {
   EpagesProductPage,
   EpagesSearchProduct,
   EpagesSearchResponse,
   EpagesVariationItem,
+  EpagesVariationsResponse,
 } from '@/types/labchem';
 import { ProductBuilder } from '@/utils/ProductBuilder';
 import { scoreAstMatch } from '@/utils/search-query/evaluateAst';
@@ -21,7 +24,7 @@ import {
 } from '@/utils/typeGuards/labchem';
 import { type JsonValue } from 'type-fest';
 import { SupplierBase } from './SupplierBase';
-import { getErrorMessage } from '@/helpers/exceptions';
+import { HttpError, getErrorMessage } from '@/helpers/exceptions';
 
 /** ePages catalog-search endpoint (relative to `baseURL`). */
 const SEARCH_PATH = '/api/v2/search';
@@ -108,6 +111,9 @@ export class SupplierLabChem
   /** The payment methods accepted by the supplier. */
   public static readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
+  // Specific products can be refetched by id, so they can be watched for price drops.
+  public static readonly supportsPriceAlerts: boolean = true;
+
   /** ePages shop id, used as the `shop` search parameter and in REST paths. */
   protected readonly shopId: string = '87762263';
 
@@ -122,6 +128,9 @@ export class SupplierLabChem
   // Budget: <=6 catalog pages once per 24h + up to 10 products x (1 variations +
   // <=4 variation pages) ~= 56.
   protected httpRequestHardLimit: number = 80;
+
+  // A refetch costs <=5 requests per product (1 variations + <=4 pages); 12 x 5 = 60 <= 80.
+  protected refreshBatchSize: number = 12;
 
   /**
    * Selects the title used for fuzzy matching from a raw catalog product.
@@ -442,42 +451,140 @@ export class SupplierLabChem
         return builder;
       }
 
-      // The variations list is size-ascending, so pages[0] is the cheapest — use it
-      // as the headline row (and its image set); the rest become variants.
-      pages.forEach((page, index) => {
-        const amount = page.priceInfo?.price?.amount;
-        const currency = page.priceInfo?.price?.currency ?? 'EUR';
-        const quantity = this.variantQuantity(page);
-        const title = page.productVariationSelection?.[0]?.displayValue ?? page.title;
-
-        if (index === 0) {
-          if (typeof amount === 'number') {
-            builder.setPricing(amount, currency, CURRENCY_SYMBOL_MAP[currency] ?? currency);
-          }
-          if (quantity) {
-            builder.setQuantity(quantity.quantity, quantity.uom);
-          } else {
-            builder.setQuantity(1, UOM.EA);
-          }
-          if (page.sfUrl) {
-            builder.setPermalink(page.sfUrl);
-          }
-          builder.addImages(this.productImages(page));
-          return;
-        }
-
-        builder.addVariant({
-          id: page.productId,
-          title,
-          sku: page.productNumber,
-          price: amount,
-          status: AVAILABILITY.IN_STOCK,
-          ...(quantity ?? { quantity: 1, uom: UOM.EA }),
-        });
-      });
-
+      this.applyPages(builder, pages);
       return builder;
     });
+  }
+
+  /**
+   * Refetches specific products. Each costs one variations request plus one per size.
+   * @param refs - The products to refetch
+   * @returns The builders found, and the refs whose request failed
+   * @example
+   * ```typescript
+   * const { builders } = await this.queryProductsById(refs);
+   * ```
+   * @source
+   */
+  protected override async queryProductsById(
+    refs: readonly ProductRef[],
+  ): Promise<ProductLookup<Product>> {
+    return this.refreshViaDetail(refs, (builder) => this.refetchProduct(builder));
+  }
+
+  /**
+   * Fills a seeded builder from its variations list and size pages. Unlike
+   * {@link getProductData}, any failed request fails the product, so a missing size can't change
+   * the headline price.
+   * @param builder - A builder seeded from the ref
+   * @returns The builder, with a price
+   * @throws HttpError with `NOT_FOUND` when LabChem no longer sells the product
+   * @throws Error when a request fails, a response is invalid or there is no price
+   * @example
+   * ```typescript
+   * const refreshed = await this.refetchProduct(builder);
+   * ```
+   * @source
+   */
+  private async refetchProduct(builder: ProductBuilder<Product>): Promise<ProductBuilder<Product>> {
+    const masterId = String(builder.get('id') ?? builder.get('cacheKey') ?? '');
+    if (!masterId) {
+      throw new Error('LabChem product has no id');
+    }
+
+    const variations = await this.fetchJsonStrict(`${this.apiUrl}products/${masterId}/variations`);
+    if (!isEpagesVariationsResponse(variations)) {
+      throw new Error(`Invalid LabChem variations for ${masterId}`);
+    }
+    const items = this.purchasableVariations(variations);
+
+    const fetched = await Promise.all(
+      items.map(async (item) => {
+        const page = await this.fetchJsonStrict(item.link.href);
+        if (!isEpagesProductPage(page)) {
+          throw new Error(`Invalid LabChem product page ${item.link.href}`);
+        }
+        return page;
+      }),
+    );
+    const pages = fetched.filter((page) => page.forSale === true);
+    if (pages.length === 0) {
+      // The search path drops a product with nothing for sale, so it is unavailable.
+      throw new HttpError(HttpStatus.NOT_FOUND, 'No LabChem variation for sale');
+    }
+
+    this.applyPages(builder, pages);
+    if (typeof builder.get('price') !== 'number') {
+      throw new Error(`LabChem product ${masterId} has no price`);
+    }
+    return builder;
+  }
+
+  /**
+   * Applies a product's for-sale size pages: the first (cheapest) is the headline price, size,
+   * permalink and image set, and the rest become variants.
+   * @param builder - The builder to fill
+   * @param pages - The for-sale variation pages, size-ascending
+   * @example
+   * ```typescript
+   * this.applyPages(builder, pages);
+   * ```
+   * @source
+   */
+  private applyPages(builder: ProductBuilder<Product>, pages: EpagesProductPage[]): void {
+    // The variations list is size-ascending, so pages[0] is the cheapest — use it
+    // as the headline row (and its image set); the rest become variants.
+    pages.forEach((page, index) => {
+      const amount = page.priceInfo?.price?.amount;
+      const currency = page.priceInfo?.price?.currency ?? 'EUR';
+      const quantity = this.variantQuantity(page);
+      const title = page.productVariationSelection?.[0]?.displayValue ?? page.title;
+
+      if (index === 0) {
+        if (typeof amount === 'number') {
+          builder.setPricing(amount, currency, CURRENCY_SYMBOL_MAP[currency] ?? currency);
+        }
+        if (quantity) {
+          builder.setQuantity(quantity.quantity, quantity.uom);
+        } else {
+          builder.setQuantity(1, UOM.EA);
+        }
+        if (page.sfUrl) {
+          builder.setPermalink(page.sfUrl);
+        }
+        builder.addImages(this.productImages(page));
+        return;
+      }
+
+      builder.addVariant({
+        id: page.productId,
+        title,
+        sku: page.productNumber,
+        price: amount,
+        status: AVAILABILITY.IN_STOCK,
+        ...(quantity ?? { quantity: 1, uom: UOM.EA }),
+      });
+    });
+  }
+
+  /**
+   * Keeps the entries of a variations response that are linked as a `variation` and not flagged
+   * `purchasable: false`, capped at `MAX_VARIANTS`.
+   * @param response - The validated variations response
+   * @returns The purchasable variation items (possibly empty)
+   * @example
+   * ```typescript
+   * this.purchasableVariations(response).length; // 4
+   * ```
+   * @source
+   */
+  private purchasableVariations(response: EpagesVariationsResponse): EpagesVariationItem[] {
+    return response.items
+      .filter(
+        (item) =>
+          item.link?.rel === 'variation' && item.additionalAttributes?.purchasable !== false,
+      )
+      .slice(0, MAX_VARIANTS);
   }
 
   /**
@@ -492,12 +599,7 @@ export class SupplierLabChem
     if (!isEpagesVariationsResponse(response)) {
       return [];
     }
-    return response.items
-      .filter(
-        (item) =>
-          item.link?.rel === 'variation' && item.additionalAttributes?.purchasable !== false,
-      )
-      .slice(0, MAX_VARIANTS);
+    return this.purchasableVariations(response);
   }
 
   /**
@@ -509,6 +611,30 @@ export class SupplierLabChem
   private async fetchProductPage(href: string): Promise<EpagesProductPage | undefined> {
     const response = await this.fetchJson(href);
     return isEpagesProductPage(response) ? response : undefined;
+  }
+
+  /**
+   * GET a JSON resource, letting failures propagate. A 404 arrives as an `HttpError`.
+   * @param url - The absolute resource URL
+   * @returns The parsed JSON value
+   * @throws HttpError when the request fails with a bad status
+   * @throws Error when the request doesn't return JSON
+   * @example
+   * ```typescript
+   * const json = await this.fetchJsonStrict(`${this.apiUrl}products/${id}/variations`);
+   * ```
+   * @source
+   */
+  private async fetchJsonStrict(url: string): Promise<unknown> {
+    const response = await this.httpGet({
+      path: url,
+      headers: { accept: 'application/json' },
+      rethrowErrors: true,
+    });
+    if (!response) {
+      throw new Error(`No response from ${url}`);
+    }
+    return response.json();
   }
 
   /**

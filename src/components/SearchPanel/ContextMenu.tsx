@@ -1,4 +1,5 @@
 import { useStatusBar } from '@/components/StatusBar';
+import { supplierSupportsPriceAlerts } from '@/constants/supplierMeta';
 import { useAppContext } from '@/context';
 import {
   buildResultsWorkbook,
@@ -8,8 +9,12 @@ import {
   type ExportGroup,
 } from '@/helpers/exportResults';
 import { i18n } from '@/helpers/i18n';
+import { requestNotificationPermission } from '@/helpers/permissions';
+import { addPriceAlert, removePriceAlerts } from '@/helpers/priceAlerts';
+import { productSeriesKey } from '@/helpers/priceHistory';
 import { getExportableProductData } from '@/helpers/product';
 import { getProductIdentityKey } from '@/helpers/productIdentity';
+import { usePriceAlerts } from '@/hooks/usePriceAlerts';
 import ArrowDropDownIcon from '@/icons/ArrowDropDownIcon';
 import ArrowDropUpIcon from '@/icons/ArrowDropUpIcon';
 import ArrowRightIcon from '@/icons/ArrowRightIcon';
@@ -21,6 +26,8 @@ import HttpIcon from '@/icons/HttpIcon';
 import SettingsIcon from '@/icons/SettingsIcon';
 import { deleteSupplierProductDataCacheEntry, putExport } from '@/utils/idbCache';
 import GridOnIcon from '@mui/icons-material/GridOn';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
+import NotificationsOffIcon from '@mui/icons-material/NotificationsOff';
 import Divider from '@mui/material/Divider';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -161,6 +168,7 @@ export default function ContextMenu({
 }: ContextMenuProps) {
   const { flashStatusText } = useStatusBar();
   const { bookmarksFolderId, setBookmarksFolderId } = useAppContext();
+  const priceAlerts = usePriceAlerts();
   if (!product) return null;
   const menuRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<ContextMenuPosition>({ x, y });
@@ -240,6 +248,9 @@ export default function ContextMenu({
   const anyExpanded = expandableRows.some((row) => row.getIsExpanded());
   const showExpandAll = expandableRows.length > 0 && !allExpanded;
   const showCollapseAll = anyExpanded;
+
+  const productKey = productSeriesKey(product);
+  const priceAlert = priceAlerts.find(({ id }) => id === productKey);
 
   /**
    * Expands every currently visible expandable row, then closes the menu.
@@ -465,6 +476,34 @@ export default function ContextMenu({
       logger.warn(`Failed to ignore product: ${getErrorMessage(error)}`, { error });
     }
     onClose();
+  };
+
+  /**
+   * Starts or stops watching the product for price drops. A row for a single size watches the whole
+   * product. The first alert also asks to show notifications, which must happen in the click itself.
+   * @source
+   */
+  const handleTogglePriceAlert = async () => {
+    onClose();
+    try {
+      if (priceAlert) {
+        await removePriceAlerts([priceAlert.id]);
+        flashStatusText(i18n('price_alerts_disabled'));
+        return;
+      }
+
+      const parent = table
+        .getCoreRowModel()
+        .rows.find(
+          ({ original }) => !original.parentProduct && productSeriesKey(original) === productKey,
+        );
+      const adding = addPriceAlert(parent?.original ?? product);
+      const requesting = priceAlerts.length === 0 ? requestNotificationPermission() : undefined;
+      const [added] = await Promise.all([adding, requesting]);
+      flashStatusText(i18n(added ? 'price_alerts_enabled' : 'price_alerts_enable_failed'));
+    } catch (error) {
+      logger.warn(`Failed to change price alert: ${getErrorMessage(error)}`, { error, product });
+    }
   };
 
   /**
@@ -716,6 +755,26 @@ export default function ContextMenu({
           <ListItemText
             className={styles['context-menu-option-text']}
             primary={i18n('context_menu_ignore_product')}
+          />
+        </MenuItem>
+
+        <MenuItem
+          className={styles['context-menu-item']}
+          onClick={() => void handleTogglePriceAlert()}
+          disabled={!priceAlert && !supplierSupportsPriceAlerts(product.supplier)}
+        >
+          <ListItemIcon>
+            {priceAlert ? (
+              <NotificationsOffIcon fontSize="small" />
+            ) : (
+              <NotificationsActiveIcon fontSize="small" />
+            )}
+          </ListItemIcon>
+          <ListItemText
+            className={styles['context-menu-option-text']}
+            primary={i18n(
+              priceAlert ? 'context_menu_disable_price_alerts' : 'context_menu_enable_price_alerts',
+            )}
           />
         </MenuItem>
 

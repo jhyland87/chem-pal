@@ -12,6 +12,21 @@ const mocks = vi.hoisted(() => ({
   downloadBlob: vi.fn(),
   deleteSupplierProductDataCacheEntry: vi.fn(),
   putExport: vi.fn(),
+  priceAlerts: [] as Array<{ id: string }>,
+  addPriceAlert: vi.fn(),
+  removePriceAlerts: vi.fn(),
+  requestNotificationPermission: vi.fn(),
+}));
+
+vi.mock('@/hooks/usePriceAlerts', () => ({ usePriceAlerts: () => mocks.priceAlerts }));
+
+vi.mock('@/helpers/priceAlerts', () => ({
+  addPriceAlert: mocks.addPriceAlert,
+  removePriceAlerts: mocks.removePriceAlerts,
+}));
+
+vi.mock('@/helpers/permissions', () => ({
+  requestNotificationPermission: mocks.requestNotificationPermission,
 }));
 
 vi.mock('@/components/StatusBar', () => ({
@@ -37,6 +52,7 @@ vi.mock('@/utils/idbCache', () => ({
 
 import ContextMenu from '../ContextMenu';
 import { i18n } from '@/helpers/i18n';
+import { productSeriesKey } from '@/helpers/priceHistory';
 
 const OPEN_URL = 'https://x.test/acetone';
 
@@ -68,6 +84,7 @@ function makeTable(opts: Record<string, unknown> = {}): Table<Product> {
   const rows = (opts.rows as unknown[]) ?? [];
   return {
     getRowModel: () => ({ rows }),
+    getCoreRowModel: () => ({ rows: (opts.coreRows as unknown[]) ?? rows }),
     getState: () => ({
       columnFilters: (opts.columnFilters as unknown[]) ?? [],
       globalFilter: (opts.globalFilter as string) ?? '',
@@ -107,6 +124,10 @@ const writeText = vi.fn().mockResolvedValue(undefined);
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.bookmarksFolderId = null;
+  mocks.priceAlerts = [];
+  mocks.addPriceAlert.mockResolvedValue(true);
+  mocks.removePriceAlerts.mockResolvedValue(undefined);
+  mocks.requestNotificationPermission.mockResolvedValue(true);
   mocks.buildResultsWorkbook.mockResolvedValue(new Blob(['x']));
   mocks.putExport.mockResolvedValue(undefined);
   mocks.deleteSupplierProductDataCacheEntry.mockResolvedValue(undefined);
@@ -441,5 +462,105 @@ describe('ContextMenu dismissal', () => {
     const { props } = renderMenu();
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(props.onClose).toHaveBeenCalled();
+  });
+});
+
+describe('ContextMenu price alerts', () => {
+  const SUPPORTED = 'Carolina Chemical';
+  const enableName = () => i18n('context_menu_enable_price_alerts');
+  const disableName = () => i18n('context_menu_disable_price_alerts');
+  const supported = (overrides: Record<string, unknown> = {}) =>
+    makeProduct({ supplier: SUPPORTED, ...overrides });
+  const alertFor = (product: Product) => ({ id: productSeriesKey(product) ?? '' });
+
+  it('offers to enable alerts when the product is not watched', () => {
+    renderMenu({ product: supported() });
+    expect(screen.getByRole('menuitem', { name: enableName() })).not.toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    expect(screen.queryByRole('menuitem', { name: disableName() })).toBeNull();
+  });
+
+  it('disables the item for a supplier without price alert support', () => {
+    renderMenu({ product: makeProduct({ supplier: 'Warchem' }) });
+    expect(screen.getByRole('menuitem', { name: enableName() })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+  });
+
+  it('stays enabled to turn off an existing alert on an unsupported supplier', () => {
+    const product = makeProduct({ supplier: 'Warchem' });
+    mocks.priceAlerts = [alertFor(product)];
+    renderMenu({ product });
+    expect(screen.getByRole('menuitem', { name: disableName() })).not.toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+  });
+
+  it('adds an alert for the product and asks for notifications on the first one', async () => {
+    const product = supported();
+    const { props } = renderMenu({ product });
+    fireEvent.click(screen.getByRole('menuitem', { name: enableName() }));
+
+    // Requested synchronously in the click, as the browser requires.
+    expect(mocks.requestNotificationPermission).toHaveBeenCalledTimes(1);
+    expect(props.onClose).toHaveBeenCalled();
+    await waitFor(() => expect(mocks.addPriceAlert).toHaveBeenCalledWith(product));
+    await waitFor(() =>
+      expect(mocks.flashStatusText).toHaveBeenCalledWith(i18n('price_alerts_enabled')),
+    );
+  });
+
+  it('does not ask for notifications when other alerts already exist', async () => {
+    mocks.priceAlerts = [{ id: 'other' }];
+    renderMenu({ product: supported() });
+    fireEvent.click(screen.getByRole('menuitem', { name: enableName() }));
+    await waitFor(() => expect(mocks.addPriceAlert).toHaveBeenCalled());
+    expect(mocks.requestNotificationPermission).not.toHaveBeenCalled();
+  });
+
+  it('still saves the alert when notifications are declined', async () => {
+    mocks.requestNotificationPermission.mockResolvedValue(false);
+    renderMenu({ product: supported() });
+    fireEvent.click(screen.getByRole('menuitem', { name: enableName() }));
+    await waitFor(() =>
+      expect(mocks.flashStatusText).toHaveBeenCalledWith(i18n('price_alerts_enabled')),
+    );
+    expect(mocks.addPriceAlert).toHaveBeenCalled();
+  });
+
+  it('reports when the alert could not be saved', async () => {
+    mocks.addPriceAlert.mockResolvedValue(false);
+    renderMenu({ product: supported() });
+    fireEvent.click(screen.getByRole('menuitem', { name: enableName() }));
+    await waitFor(() =>
+      expect(mocks.flashStatusText).toHaveBeenCalledWith(i18n('price_alerts_enable_failed')),
+    );
+  });
+
+  it('saves the parent product when a flattened size row is clicked', async () => {
+    const parent = supported({ title: 'Acetone parent', variants: [{ title: '1 L' }] });
+    const size = supported({ title: 'Acetone 1 L', parentProduct: parent });
+    renderMenu({
+      product: size,
+      table: makeTable({ coreRows: [makeRow(size), makeRow(parent)] }),
+    });
+    fireEvent.click(screen.getByRole('menuitem', { name: enableName() }));
+    await waitFor(() => expect(mocks.addPriceAlert).toHaveBeenCalledWith(parent));
+  });
+
+  it('removes an existing alert', async () => {
+    const product = supported();
+    mocks.priceAlerts = [alertFor(product)];
+    renderMenu({ product });
+    fireEvent.click(screen.getByRole('menuitem', { name: disableName() }));
+    await waitFor(() =>
+      expect(mocks.removePriceAlerts).toHaveBeenCalledWith([productSeriesKey(product)]),
+    );
+    expect(mocks.flashStatusText).toHaveBeenCalledWith(i18n('price_alerts_disabled'));
+    expect(mocks.addPriceAlert).not.toHaveBeenCalled();
   });
 });

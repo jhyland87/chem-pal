@@ -103,6 +103,14 @@ function makeChromeMock() {
       },
     },
     i18n: { getMessage: (key: string) => key },
+    // Used by the price alert checks, which the worker registers at import time.
+    alarms: {
+      get: vi.fn(async () => undefined),
+      create: vi.fn(async () => {}),
+      clear: vi.fn(async () => true),
+      onAlarm: { addListener: vi.fn() },
+    },
+    permissions: { contains: vi.fn(async () => true), onAdded: { addListener: vi.fn() } },
   };
 
   return {
@@ -331,6 +339,7 @@ describe('service worker toolbar-icon behavior', () => {
   it('re-applies the popup state when user settings change', async () => {
     mock.localGet.mockResolvedValueOnce({ user_settings: { display: { openInTab: true } } });
 
+    // The first of two storage listeners; the second belongs to the price alerts.
     const [onChanged] = mock.storageChanged;
     onChanged({ user_settings: { newValue: { display: { openInTab: true } } } }, 'local');
     // Let the async applyActionBehavior settle.
@@ -346,6 +355,12 @@ describe('service worker toolbar-icon behavior', () => {
     onChanged({ user_settings: { newValue: {} } }, 'session');
 
     expect(mock.setPopup).not.toHaveBeenCalled();
+  });
+
+  it('registers the price alert listeners alongside its own storage listener', () => {
+    expect(mock.storageChanged).toHaveLength(2);
+    expect(mock.chromeMock.alarms.onAlarm.addListener).toHaveBeenCalledTimes(1);
+    expect(mock.chromeMock.permissions.onAdded.addListener).toHaveBeenCalledTimes(1);
   });
 
   it('opens or focuses the full tab when the toolbar icon is clicked', async () => {

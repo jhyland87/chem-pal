@@ -1,7 +1,13 @@
+import { PRODUCT_REFRESH_STATUS } from '@/constants/common';
+import { productSeriesKey, variantSeriesKey } from '@/helpers/priceHistory';
+import type { ProductRef } from '@/helpers/productRef';
 import { getSupplierColor, SUPPLIER_COLORS } from '@/theme/colors';
 import { ProductBuilder } from '@/utils/ProductBuilder';
 import { type JsonValue } from 'type-fest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import outOfStock from '../__fixtures__/albochemicals/out-of-stock-product.json';
+import byIdProducts from '../__fixtures__/consolidatedchemical/products-by-id.json';
+import variations from '../__fixtures__/consolidatedchemical/variations.json';
 
 // Per-identity product-data cache, so one product can hit and another miss.
 const cacheState = { productDataByKey: {} as Record<string, Record<string, unknown>> };
@@ -29,12 +35,16 @@ vi.mock('@/utils/SupplierCache', () => ({
   },
 }));
 
-// Bypass the search-response schema check; we feed builders directly.
+// Bypass the search-response schema check unless a test turns it on; we feed builders directly.
+const schema = vi.hoisted(() => ({ bypass: true }));
 vi.mock('@/utils/typeGuards/woocommerce', async () => {
   const actual = await vi.importActual<typeof import('@/utils/typeGuards/woocommerce')>(
     '@/utils/typeGuards/woocommerce',
   );
-  return { ...actual, isSearchResponse: () => true };
+  return {
+    ...actual,
+    isSearchResponse: (response: unknown) => schema.bypass || actual.isSearchResponse(response),
+  };
 });
 
 const { SupplierBaseWoocommerce } = await import('@/suppliers/SupplierBaseWoocommerce');
@@ -135,5 +145,172 @@ describe('SupplierBaseWoocommerce cross-query hydration', () => {
     expect(supplier.color).toBe(getSupplierColor('TestWoo'));
     // Same class → same color on a second instance.
     expect(new TestWoo('other', 5, new AbortController()).color).toBe(supplier.color);
+  });
+});
+
+describe('SupplierBaseWoocommerce queryProductsById', () => {
+  beforeEach(() => {
+    cacheState.productDataByKey = {};
+    schema.bypass = false;
+  });
+  afterEach(() => {
+    schema.bypass = true;
+    vi.restoreAllMocks();
+  });
+
+  /** Real parsing; only the HTTP boundary is replaced. */
+  class RealWoo extends SupplierBaseWoocommerce {
+    public static readonly supplierName = 'RealWoo';
+    public static readonly baseURL = 'https://woo.example';
+    public static readonly shipping = 'worldwide' as ShippingRange;
+    public static readonly country = 'US' as CountryCode;
+    public static readonly paymentMethods = [] as PaymentMethod[];
+
+    protected override fuzzyFilterAst<X>(results: X[]): X[] {
+      return results;
+    }
+  }
+
+  type Call = { path: string; params: Record<string, unknown> };
+
+  /** A supplier whose Store API serves `products` and `variations` by their `include` param. */
+  const makeSupplier = (
+    products: unknown[] | unknown = byIdProducts,
+    variationItems: unknown[] = variations,
+  ) => {
+    const supplier = new RealWoo('', 5, new AbortController());
+    supplier.initCache();
+    const get = vi.spyOn(supplier as never, 'httpGetJson').mockImplementation((async (
+      call: Call,
+    ) => {
+      if (call.params.type !== 'variation') return products;
+      const wanted = String(call.params.include).split(',').map(Number);
+      return variationItems.filter((item) => wanted.includes((item as { id: number }).id));
+    }) as never);
+    return { supplier, get };
+  };
+
+  const ref = (id: number | string): ProductRef => ({
+    cacheKey: String(id),
+    title: String(id),
+    url: `https://woo.example/wp-json/wc/store/v1/products/${id}`,
+    variants: [],
+  });
+
+  it('requests the products in one call with an include param', async () => {
+    const { supplier, get } = makeSupplier();
+
+    await supplier.refreshProducts([ref(16118), ref(15449)]);
+
+    const first = get.mock.calls[0][0] as unknown as Call;
+    expect(first.path).toBe('/wp-json/wc/store/v1/products');
+    expect(first.params.include).toBe('16118,15449');
+    expect(first.params.type).toBeUndefined();
+  });
+
+  it('returns OK products with their variants enriched from a variation request', async () => {
+    const { supplier, get } = makeSupplier();
+
+    const results = await supplier.refreshProducts([ref(16118), ref(15449)]);
+
+    expect(results.map((r) => r.status)).toEqual([
+      PRODUCT_REFRESH_STATUS.OK,
+      PRODUCT_REFRESH_STATUS.OK,
+    ]);
+    const variationCall = get.mock.calls
+      .map(([call]) => call as unknown as Call)
+      .find((call) => call.params.type === 'variation');
+    expect(variationCall?.params.include).toBe('16122,16123,15451,15452');
+
+    const [pinene] = results;
+    if (pinene.status !== PRODUCT_REFRESH_STATUS.OK) throw new Error('expected OK');
+    expect(pinene.product.variants).toHaveLength(2);
+    expect(pinene.product.variants?.map((v) => v.id)).toEqual([16122, 16123]);
+    expect(pinene.product.variants?.every((v) => v.url?.endsWith(`/products/${v.id}`))).toBe(true);
+    expect(pinene.product.variants?.every((v) => typeof v.price === 'number')).toBe(true);
+  });
+
+  it('reports an out-of-stock product as UNAVAILABLE, not FAILED', async () => {
+    const { supplier } = makeSupplier(outOfStock);
+
+    const [result] = await supplier.refreshProducts([ref(37837)]);
+
+    expect(result.status).toBe(PRODUCT_REFRESH_STATUS.UNAVAILABLE);
+  });
+
+  it('reports a non-purchasable product as UNAVAILABLE', async () => {
+    const [first] = byIdProducts;
+    const { supplier } = makeSupplier([{ ...first, is_purchasable: false }]);
+
+    const [result] = await supplier.refreshProducts([ref(first.id)]);
+
+    expect(result.status).toBe(PRODUCT_REFRESH_STATUS.UNAVAILABLE);
+  });
+
+  it('treats an empty list, which is how the API answers all-missing ids, as UNAVAILABLE', async () => {
+    const { supplier } = makeSupplier([]);
+
+    const results = await supplier.refreshProducts([ref(999991), ref(999992)]);
+
+    expect(results.map((r) => r.status)).toEqual([
+      PRODUCT_REFRESH_STATUS.UNAVAILABLE,
+      PRODUCT_REFRESH_STATUS.UNAVAILABLE,
+    ]);
+  });
+
+  it('marks only the missing id UNAVAILABLE when the others are found', async () => {
+    const { supplier } = makeSupplier();
+
+    const results = await supplier.refreshProducts([ref(16118), ref(999991), ref(15449)]);
+
+    expect(results.map((r) => r.status)).toEqual([
+      PRODUCT_REFRESH_STATUS.OK,
+      PRODUCT_REFRESH_STATUS.UNAVAILABLE,
+      PRODUCT_REFRESH_STATUS.OK,
+    ]);
+  });
+
+  it.each([
+    ['an error object', { code: 'rest_no_route', message: 'No route' }],
+    ['a string', 'Service Unavailable'],
+    ['items missing prices', [{ id: 1 }]],
+  ])('fails every ref when the response is invalid (%s)', async (_label, response) => {
+    const { supplier } = makeSupplier(response);
+
+    const results = await supplier.refreshProducts([ref(16118), ref(15449)]);
+
+    expect(results.map((r) => r.status)).toEqual([
+      PRODUCT_REFRESH_STATUS.FAILED,
+      PRODUCT_REFRESH_STATUS.FAILED,
+    ]);
+    expect(results[0]).toMatchObject({ reason: 'Invalid WooCommerce products response' });
+  });
+
+  it('keeps the same product and variant series as a search of the same items', async () => {
+    const { supplier: searcher } = makeSupplier();
+    const searched = await (
+      searcher as unknown as {
+        queryProducts: (q: string, l: number) => Promise<ProductBuilder<Product>[]>;
+      }
+    ).queryProducts('pinene', 5);
+    const searchedProducts = await Promise.all(searched.map((builder) => builder.build()));
+
+    const { supplier } = makeSupplier();
+    const results = await supplier.refreshProducts([ref(16118), ref(15449)]);
+
+    expect(results).toHaveLength(2);
+    results.forEach((result, index) => {
+      const searchedProduct = searchedProducts.find((p) => p?.cacheKey === result.ref.cacheKey);
+      if (result.status !== PRODUCT_REFRESH_STATUS.OK || !searchedProduct) {
+        throw new Error(`expected both routes to produce product ${index}`);
+      }
+      expect(productSeriesKey(result.product)).toBeDefined();
+      expect(productSeriesKey(result.product)).toBe(productSeriesKey(searchedProduct));
+      const keys = (product: Product) =>
+        (product.variants ?? []).map((variant) => variantSeriesKey(product, variant));
+      expect(keys(result.product)).toEqual(keys(searchedProduct));
+      expect(keys(result.product).length).toBeGreaterThan(1);
+      expect(keys(result.product).every((key) => key !== undefined)).toBe(true);
+    });
   });
 });

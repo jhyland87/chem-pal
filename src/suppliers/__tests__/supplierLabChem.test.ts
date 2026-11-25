@@ -1,5 +1,9 @@
 // ProductBuilder must be imported before SupplierBase/SupplierLabChem to avoid a module-init cycle.
 import { ProductBuilder } from '@/utils/ProductBuilder';
+import { PRODUCT_REFRESH_STATUS } from '@/constants/common';
+import { HttpError } from '@/helpers/exceptions';
+import { collectNativePrices } from '@/helpers/priceAlerts';
+import { toProductRef } from '@/helpers/productRef';
 import {
   resetChromeStorageMock,
   setupChromeStorageMock,
@@ -10,7 +14,22 @@ import acetonSearch from '../__fixtures__/labchem/aceton-search.json';
 import acetonVariations from '../__fixtures__/labchem/aceton-variations.json';
 import acetonVariationProduct from '../__fixtures__/labchem/aceton-variation-product.json';
 import catalogAllProducts from '../__fixtures__/labchem/catalog-all-products.json';
+import acetonByIdVariations from '../__fixtures__/labchem/by-id/aceton-variations.json';
+import ethanolByIdVariations from '../__fixtures__/labchem/by-id/ethanol-variations.json';
+import acetonPage1 from '../__fixtures__/labchem/by-id/aceton-page-1.json';
+import acetonPage2 from '../__fixtures__/labchem/by-id/aceton-page-2.json';
+import acetonPage3 from '../__fixtures__/labchem/by-id/aceton-page-3.json';
+import acetonPage4 from '../__fixtures__/labchem/by-id/aceton-page-4.json';
+import ethanolPage1 from '../__fixtures__/labchem/by-id/ethanol-page-1.json';
+import ethanolPage2 from '../__fixtures__/labchem/by-id/ethanol-page-2.json';
+import ethanolPage3 from '../__fixtures__/labchem/by-id/ethanol-page-3.json';
 import { SupplierLabChem } from '../SupplierLabChem';
+
+// Fixed exchange rate so EUR prices can be converted offline.
+vi.mock('@/helpers/currency', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/helpers/currency')>()),
+  toUSD: vi.fn(async (amount: number) => amount * 1.1),
+}));
 
 type LabChemInternals = {
   titleSelector(data: unknown): string;
@@ -208,5 +227,168 @@ describe('SupplierLabChem', () => {
       // No price set -> the builder came back without pricing.
       expect(result?.dump().price).toBeUndefined();
     });
+  });
+});
+
+describe('SupplierLabChem refreshProducts', () => {
+  const ethanolMaster = catalogAllProducts.products.find(
+    (product) => product.productId === '5DEE78F5-91A7-93E2-9B69-0A0C6D120062',
+  );
+  const products = {
+    aceton: {
+      item: acetonSearch.products[0],
+      variations: acetonByIdVariations,
+      pages: [acetonPage1, acetonPage2, acetonPage3, acetonPage4],
+    },
+    ethanol: {
+      item: ethanolMaster,
+      variations: ethanolByIdVariations,
+      pages: [ethanolPage1, ethanolPage2, ethanolPage3],
+    },
+  };
+  type Key = keyof typeof products;
+
+  beforeAll(() => {
+    setupChromeStorageMock();
+  });
+
+  beforeEach(async () => {
+    vi.restoreAllMocks();
+    setupChromeStorageMock();
+    resetChromeStorageMock();
+    await clearAllCaches();
+  });
+
+  /** Serves a product's variations and size pages by URL. */
+  const serve = (key: Key, overrides: Record<string, unknown> = {}) => {
+    const { variations, pages } = products[key];
+    return (url: string): unknown => {
+      if (url in overrides) return overrides[url];
+      if (url.endsWith('/variations')) return variations;
+      return pages.find((page) => url.endsWith(page.productId));
+    };
+  };
+
+  /** The product as the search path builds it (variations + size pages). */
+  async function searchPath(key: Key): Promise<Product> {
+    const supplier = makeSupplier() as any;
+    const respond = serve(key);
+    vi.spyOn(supplier, 'getProductDataWithCache').mockImplementation((b: any, f: any) => f(b));
+    vi.spyOn(supplier, 'httpGetJson').mockImplementation(async ({ path }: any) => respond(path));
+    const [builder] = supplier.initProductBuilders([products[key].item]);
+    return supplier.finishProduct(await supplier.getProductData(builder));
+  }
+
+  /** Runs the refetch path and records the requests. */
+  async function refetch(product: Product, respond: (url: string) => unknown) {
+    const supplier = makeSupplier() as any;
+    const httpGet = vi.spyOn(supplier, 'httpGet').mockImplementation(async ({ path }: any) => {
+      const body = respond(path);
+      if (body instanceof Error) throw body;
+      return new Response(JSON.stringify(body));
+    });
+    const httpGetJson = vi.spyOn(supplier, 'httpGetJson');
+    const ref = toProductRef(product);
+    if (!ref) throw new Error('no ref');
+    const [result] = await supplier.refreshProducts([ref]);
+    return { result, httpGet, httpGetJson };
+  }
+
+  it('is enabled for price alerts and keeps a batch within the request limit', () => {
+    expect(SupplierLabChem.supportsPriceAlerts).toBe(true);
+    const supplier = makeSupplier() as any;
+    // At most 1 variations request + 4 size pages per product.
+    expect(supplier.refreshBatchSize * 5).toBeLessThanOrEqual(supplier.httpRequestHardLimit);
+  });
+
+  it.each(['aceton', 'ethanol'] as const)(
+    'keeps the same price series, price and size as the search path for %s',
+    async (key) => {
+      const searched = await searchPath(key);
+      const { result, httpGet, httpGetJson } = await refetch(searched, serve(key));
+
+      expect(result.status).toBe(PRODUCT_REFRESH_STATUS.OK);
+      expect(httpGet).toHaveBeenCalledTimes(1 + products[key].pages.length);
+      expect(httpGetJson).not.toHaveBeenCalled();
+
+      const fresh: Product = result.product;
+      expect(Object.keys(collectNativePrices(fresh))).toEqual(
+        Object.keys(collectNativePrices(searched)),
+      );
+      expect(collectNativePrices(fresh)).toEqual(collectNativePrices(searched));
+      expect(fresh.price).toBe(searched.price);
+      expect(fresh.currencyCode).toBe('EUR');
+      expect([fresh.quantity, fresh.uom]).toEqual([searched.quantity, searched.uom]);
+      expect(fresh.variants?.length).toBe(products[key].pages.length - 1);
+    },
+  );
+
+  it('picks up a price change on the headline size', async () => {
+    const searched = await searchPath('aceton');
+    const [first] = products.aceton.pages;
+    const cheaper = { ...first, priceInfo: { price: { ...first.priceInfo.price, amount: 9.99 } } };
+    const respond = serve('aceton', {
+      [`https://www.labchem.de/rs/shops/87762263/products/${first.productId}`]: cheaper,
+    });
+    const { result } = await refetch(searched, respond);
+    expect(result.product.price).toBe(9.99);
+  });
+
+  it('reports a 404 for the master as UNAVAILABLE', async () => {
+    const searched = await searchPath('aceton');
+    const { result } = await refetch(searched, () => new HttpError(404, 'Not Found'));
+    expect(result.status).toBe(PRODUCT_REFRESH_STATUS.UNAVAILABLE);
+  });
+
+  it('reports a product with nothing for sale as UNAVAILABLE', async () => {
+    const searched = await searchPath('aceton');
+    const soldOut = Object.fromEntries(
+      products.aceton.pages.map((page) => [
+        `https://www.labchem.de/rs/shops/87762263/products/${page.productId}`,
+        { ...page, forSale: false },
+      ]),
+    );
+    const { result } = await refetch(searched, serve('aceton', soldOut));
+    expect(result.status).toBe(PRODUCT_REFRESH_STATUS.UNAVAILABLE);
+  });
+
+  it('fails when one size page cannot be fetched, rather than shifting the headline', async () => {
+    const searched = await searchPath('aceton');
+    const [first] = products.aceton.pages;
+    const respond = serve('aceton', {
+      [`https://www.labchem.de/rs/shops/87762263/products/${first.productId}`]: new HttpError(
+        500,
+        'Server Error',
+      ),
+    });
+    const { result } = await refetch(searched, respond);
+    expect(result.status).toBe(PRODUCT_REFRESH_STATUS.FAILED);
+  });
+
+  it.each([
+    ['an invalid variations response', { nope: true }],
+    ['an invalid size page', 'page'],
+  ])('fails on %s', async (_name, bad) => {
+    const searched = await searchPath('aceton');
+    const [first] = products.aceton.pages;
+    const url =
+      bad === 'page'
+        ? `https://www.labchem.de/rs/shops/87762263/products/${first.productId}`
+        : `https://www.labchem.de/rs/shops/87762263/products/${searched.id}/variations`;
+    const { result } = await refetch(searched, serve('aceton', { [url]: { nope: true } }));
+    expect(result.status).toBe(PRODUCT_REFRESH_STATUS.FAILED);
+  });
+
+  it('fails when the headline page has no price', async () => {
+    const searched = await searchPath('aceton');
+    const [first] = products.aceton.pages;
+    const respond = serve('aceton', {
+      [`https://www.labchem.de/rs/shops/87762263/products/${first.productId}`]: {
+        ...first,
+        priceInfo: undefined,
+      },
+    });
+    const { result } = await refetch(searched, respond);
+    expect(result.status).toBe(PRODUCT_REFRESH_STATUS.FAILED);
   });
 });

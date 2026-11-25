@@ -3,6 +3,10 @@ import {
   resetChromeStorageMock,
   setupChromeStorageMock,
 } from '@/__fixtures__/helpers/chrome/storageMock';
+import { PRODUCT_REFRESH_STATUS } from '@/constants/common';
+import { HttpError } from '@/helpers/exceptions';
+import { collectNativePrices } from '@/helpers/priceAlerts';
+import { toProductRef } from '@/helpers/productRef';
 import { ProductBuilder } from '@/utils/ProductBuilder';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import stockFixture from '../__fixtures__/vwr/getAnonymousStockAvailability.json';
@@ -11,6 +15,14 @@ import ordertableFixture from '../__fixtures__/vwr/product-ordertable.json';
 import searchFixture from '../__fixtures__/vwr/product-search-sulfuric-acid.json';
 import specificationFixture from '../__fixtures__/vwr/product-specification.json';
 import substanceFixture from '../__fixtures__/vwr/product-substance.json';
+import byIdSearch from '../__fixtures__/vwr/by-id/search-sodium-chloride.json';
+import ordertableUnknown from '../__fixtures__/vwr/by-id/ordertable-unknown.json';
+import ordertable4560992 from '../__fixtures__/vwr/by-id/ordertable-4560992.json';
+import ordertable4560994 from '../__fixtures__/vwr/by-id/ordertable-4560994.json';
+import ordertable7422440 from '../__fixtures__/vwr/by-id/ordertable-7422440.json';
+import stock4560992 from '../__fixtures__/vwr/by-id/stock-4560992.json';
+import stock4560994 from '../__fixtures__/vwr/by-id/stock-4560994.json';
+import stock7422440 from '../__fixtures__/vwr/by-id/stock-7422440.json';
 import { SupplierVWR } from '../SupplierVWR';
 
 const CANONICAL_URL = 'https://www.vwr.com/us/en/product/11805968/sulphuric-acid-95-0-98-0-acs';
@@ -245,5 +257,153 @@ describe('SupplierVWR', () => {
       const product = await builder.build();
       expect(product?.coaUrl).toBe('https://us.vwr.com/coa/sulfuric-acid.pdf');
     });
+  });
+});
+
+describe('SupplierVWR refreshProducts', () => {
+  const byBase: Record<string, { ordertable: unknown; stock: unknown }> = {
+    '4560992': { ordertable: ordertable4560992, stock: stock4560992 },
+    '4560994': { ordertable: ordertable4560994, stock: stock4560994 },
+    '7422440': { ordertable: ordertable7422440, stock: stock7422440 },
+  };
+  const baseOf = (path: string, params?: { productId?: string }) => params?.productId ?? path;
+
+  beforeAll(() => {
+    setupChromeStorageMock();
+  });
+
+  beforeEach(() => {
+    resetChromeStorageMock();
+    vi.restoreAllMocks();
+  });
+
+  /** Stock replies keyed by the first catalog number in the request body. */
+  const stockFor = (body: { catalogNumber: string }[]) =>
+    Object.values(byBase).find(({ stock }) =>
+      JSON.stringify(stock).includes(`"${body[0].catalogNumber}"`),
+    )?.stock;
+
+  /** The product as the search path builds it: listing, then every detail endpoint. */
+  async function searchPath(base: string): Promise<Product> {
+    const supplier = new SupplierVWR('sodium chloride', 5) as any;
+    vi.spyOn(supplier, 'getProductDataWithCache').mockImplementation((b: any, f: any) => f(b));
+    vi.spyOn(supplier, 'httpGetJson').mockImplementation(async ({ path, params }: any) =>
+      path.includes('ordertable') ? byBase[baseOf(path, params)].ordertable : undefined,
+    );
+    vi.spyOn(supplier, 'httpPostJson').mockImplementation(async ({ body }: any) => stockFor(body));
+    vi.spyOn(supplier, 'httpGet').mockResolvedValue({ text: async () => '' });
+    const item = byIdSearch.products.find((p) => p.baseProduct === base);
+    const [builder] = supplier.initProductBuilders([item]);
+    return supplier.finishProduct(await supplier.getProductData(builder));
+  }
+
+  /** Runs the refetch path against the same fixtures and records the calls. */
+  async function refetch(product: Product, ordertable?: (base: string) => unknown) {
+    const supplier = new SupplierVWR('sodium chloride', 5) as any;
+    const httpGet = vi.spyOn(supplier, 'httpGet').mockImplementation(async ({ params }: any) => {
+      const body = ordertable ? ordertable(params.productId) : byBase[params.productId].ordertable;
+      return new Response(JSON.stringify(body));
+    });
+    const httpGetJson = vi.spyOn(supplier, 'httpGetJson');
+    const httpPostJson = vi
+      .spyOn(supplier, 'httpPostJson')
+      .mockImplementation(async ({ body }: any) => stockFor(body));
+    vi.spyOn(supplier, 'ensureAccessToken').mockResolvedValue(undefined);
+    const ref = toProductRef(product);
+    if (!ref) throw new Error('no ref');
+    const [result] = await supplier.refreshProducts([ref]);
+    return { result, httpGet, httpGetJson, httpPostJson };
+  }
+
+  it('is enabled for price alerts', () => {
+    expect(SupplierVWR.supportsPriceAlerts).toBe(true);
+  });
+
+  it.each(['4560992', '4560994', '7422440'])(
+    'keeps the same price series, price and size as the search path for %s',
+    async (base) => {
+      const searched = await searchPath(base);
+      const { result, httpGet, httpGetJson, httpPostJson } = await refetch(searched);
+
+      expect(result.status).toBe(PRODUCT_REFRESH_STATUS.OK);
+      // One ordertable request and one stock request; no SDS, spec, substance or asset calls.
+      expect(httpGet).toHaveBeenCalledTimes(1);
+      expect(httpGetJson).not.toHaveBeenCalled();
+      expect(httpPostJson).toHaveBeenCalledTimes(1);
+
+      const fresh: Product = result.product;
+      expect(Object.keys(collectNativePrices(fresh))).toEqual(
+        Object.keys(collectNativePrices(searched)),
+      );
+      expect(collectNativePrices(fresh)).toEqual(collectNativePrices(searched));
+      expect(fresh.price).toBe(searched.price);
+      expect(fresh.currencyCode).toBe(searched.currencyCode);
+      expect([fresh.quantity, fresh.uom]).toEqual([searched.quantity, searched.uom]);
+      expect(fresh.availability).toBe(searched.availability);
+      expect(fresh.variants?.length).toBe(searched.variants?.length);
+    },
+  );
+
+  it('headlines the size of the ref, not the first ordertable row', async () => {
+    const searched = await searchPath('7422440');
+    const { result } = await refetch(searched);
+    expect(result.product.quantity).toBe(10);
+    expect(result.product.price).toBe(274.38);
+  });
+
+  it('picks up a price change', async () => {
+    const searched = await searchPath('4560992');
+    const changed = structuredClone(ordertable4560992);
+    changed.productRows[0].prices[0].listPrice = 199.99;
+    const { result } = await refetch(searched, () => changed);
+    expect(result.product.price).toBe(199.99);
+  });
+
+  it('reads the base product from the canonical url too', async () => {
+    const searched = await searchPath('4560992');
+    const canonical = { ...searched, url: 'https://www.vwr.com/us/en/product/4560992/some-slug' };
+    const { result, httpGet } = await refetch(canonical);
+    expect(result.status).toBe(PRODUCT_REFRESH_STATUS.OK);
+    expect((httpGet.mock.calls[0][0] as any).params.productId).toBe('4560992');
+  });
+
+  it('reports an unknown product as UNAVAILABLE', async () => {
+    const searched = await searchPath('4560992');
+    const supplier = new SupplierVWR('sodium chloride', 5) as any;
+    vi.spyOn(supplier, 'ensureAccessToken').mockResolvedValue(undefined);
+    vi.spyOn(supplier, 'httpGet').mockRejectedValue(
+      new HttpError(400, 'Bad Request', JSON.stringify(ordertableUnknown)),
+    );
+    const ref = toProductRef(searched);
+    if (!ref) throw new Error('no ref');
+    const [result] = await supplier.refreshProducts([ref]);
+    expect(result.status).toBe(PRODUCT_REFRESH_STATUS.UNAVAILABLE);
+  });
+
+  it('fails on other HTTP errors', async () => {
+    const searched = await searchPath('4560992');
+    const supplier = new SupplierVWR('sodium chloride', 5) as any;
+    vi.spyOn(supplier, 'ensureAccessToken').mockResolvedValue(undefined);
+    vi.spyOn(supplier, 'httpGet').mockRejectedValue(new HttpError(500, 'Server Error', 'oops'));
+    const ref = toProductRef(searched);
+    if (!ref) throw new Error('no ref');
+    const [result] = await supplier.refreshProducts([ref]);
+    expect(result.status).toBe(PRODUCT_REFRESH_STATUS.FAILED);
+  });
+
+  it.each([
+    ['an invalid ordertable', () => ({ nope: true })],
+    ['an ordertable with no rows', () => ({ ...ordertable4560992, productRows: [] })],
+    [
+      'a row with no price',
+      () => ({
+        ...ordertable4560992,
+        productRows: ordertable4560992.productRows.map((row) => ({ ...row, prices: [] })),
+      }),
+    ],
+  ])('fails on %s', async (_name, body) => {
+    const searched = await searchPath('4560992');
+    const { result } = await refetch(searched, body);
+    expect(result.status).toBe(PRODUCT_REFRESH_STATUS.FAILED);
   });
 });

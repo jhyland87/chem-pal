@@ -18,6 +18,12 @@ vi.mock('@/suppliers/SupplierFactory', () => ({
   SupplierFactory: { supplierList: () => [] },
 }));
 
+vi.mock('@/hooks/usePriceAlerts', () => ({ usePriceAlerts: () => [] }));
+vi.mock('@/helpers/permissions', () => ({
+  hasNotificationPermission: vi.fn().mockResolvedValue(true),
+  requestNotificationPermission: vi.fn().mockResolvedValue(true),
+}));
+
 let advancedMode = false;
 vi.mock('@/components/SearchPanel/hooks/useContext', () => ({
   useAppContext: () => ({

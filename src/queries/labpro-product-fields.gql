@@ -1,0 +1,102 @@
+fragment LabproProductFields on ProductInterface {
+  __typename
+  uid
+  sku
+  name
+  url_key
+  url_suffix
+  stock_status
+
+  # --- quantity lives here, not in any attribute ---
+  # short_description tail "(N per UOM )" matched 900/900 sampled
+  # unit size ("500mL", "12kg") is in `name`, ~94% coverage
+  short_description {
+    html
+  }
+  description {
+    html
+  }
+
+  # --- images: fields work, but most are brand logos ---
+  # 108 distinct files across 300 products; dedupe by URL frequency
+  image {
+    url
+    label
+  }
+  thumbnail {
+    url
+  }
+  media_gallery {
+    url
+    label
+    position
+  }
+
+  # --- pricing ---
+  price_range {
+    minimum_price {
+      regular_price {
+        value
+        currency
+      }
+      final_price {
+        value
+        currency
+      }
+      discount {
+        amount_off
+        percent_off
+      }
+    }
+    maximum_price {
+      regular_price {
+        value
+        currency
+      }
+      final_price {
+        value
+        currency
+      }
+    }
+  }
+  price_tiers {
+    quantity
+    final_price {
+      value
+      currency
+    }
+    discount {
+      amount_off
+      percent_off
+    }
+  }
+
+  # --- store-specific attributes ---
+  # manufacturer resolves to an option ID as a scalar; the human-readable
+  # label comes back via custom_attributesV2 selected_options below
+  brand_sku
+  attach_file
+  attach_title
+  country_of_manufacture
+  product_zoho_id
+
+  # meta_keyword is the CAS source on aladdinsci.com but is null here;
+  # kept so one query shape works across both Magento suppliers
+  meta_title
+  meta_keyword
+
+  custom_attributesV2 {
+    items {
+      code
+      ... on AttributeValue {
+        value
+      }
+      ... on AttributeSelectedOptions {
+        selected_options {
+          label
+          value
+        }
+      }
+    }
+  }
+}

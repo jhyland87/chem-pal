@@ -1,0 +1,8 @@
+#import "./shopify-product-fields.gql"
+
+# Fetches specific products by GID in one request. A missing id comes back as null.
+query ProductsById($ids: [ID!]!) {
+  nodes(ids: $ids) {
+    ...ShopifyProductFields
+  }
+}

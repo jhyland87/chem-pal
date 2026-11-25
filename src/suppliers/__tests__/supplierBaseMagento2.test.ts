@@ -1,7 +1,10 @@
 // ProductBuilder must be imported before SupplierBase(Magento2) to avoid a
 // module-initialization cycle; the base class is then imported dynamically.
+import { PRODUCT_REFRESH_STATUS } from '@/constants/common';
+import type { ProductRef } from '@/helpers/productRef';
 import { ProductBuilder } from '@/utils/ProductBuilder';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import bySku from '../__fixtures__/labproservices/products-by-sku.json';
 
 const { SupplierBaseMagento2 } = await import('@/suppliers/SupplierBaseMagento2');
 
@@ -136,5 +139,136 @@ describe('SupplierBaseMagento2 wires getProductUrl into the product permalink', 
     const [builder] = supplier.callInitProductBuilders([item]);
 
     expect(builder.get('permalink')).toContain('potassium-nitrate.html');
+  });
+});
+
+describe('SupplierBaseMagento2 sale prices', () => {
+  const sale = {
+    minimum_price: {
+      regular_price: { value: 100, currency: 'USD' },
+      final_price: { value: 85, currency: 'USD' },
+    },
+  } as Magento2PriceRange;
+
+  it('prices a simple product from final_price', () => {
+    const [builder] = supplier.callInitProductBuilders([makeItem({ price_range: sale })]);
+    expect(builder.get('price')).toBe(85);
+  });
+
+  it('prices grouped sub-products from final_price, or regular_price without one', () => {
+    const item = makeItem({
+      __typename: 'GroupedProduct',
+      items: [
+        { product: { sku: 'S-5g', name: '5g', price_range: sale } },
+        {
+          product: {
+            sku: 'S-25g',
+            name: '25g',
+            price_range: { minimum_price: { regular_price: { value: 200, currency: 'USD' } } },
+          },
+        },
+      ] as Magento2GroupedItem[],
+    });
+    const [builder] = supplier.callInitProductBuilders([item]);
+    expect(builder.get('price')).toBe(85);
+    expect(builder.get('variants')?.[0]?.price).toBe(200);
+  });
+
+  it('prices configurable variants from final_price', () => {
+    const item = makeItem({
+      __typename: 'ConfigurableProduct',
+      variants: [
+        { attributes: [], product: { sku: 'S-5g', name: '5g', price_range: sale } },
+      ] as unknown as Magento2ConfigurableVariant[],
+    });
+    const [builder] = supplier.callInitProductBuilders([item]);
+    expect(builder.get('price')).toBe(85);
+  });
+});
+
+describe('SupplierBaseMagento2 queryProductsById', () => {
+  const items = bySku.data.products.items;
+  const [first, second] = items;
+
+  const refFor = (item: { uid: string; sku: string }, withSku = true): ProductRef => ({
+    cacheKey: item.uid,
+    title: item.sku,
+    url: `${item.sku}.html`,
+    ...(withSku && { sku: item.sku }),
+    variants: [],
+  });
+
+  /** A supplier whose GraphQL endpoint answers with `response`. */
+  const makeBySupplier = (response: unknown = bySku) => {
+    const by = new TestMagento2('', 5, new AbortController());
+    const post = vi.spyOn(by as never, 'httpPostJson').mockResolvedValue(response as never);
+    return { by, post };
+  };
+
+  type Post = {
+    path: string;
+    body: { query: string; variables: { skus: string[]; pageSize: number } };
+    headers: Record<string, string>;
+  };
+
+  it('requests the SKUs and a matching pageSize, with the Store header', async () => {
+    const { by, post } = makeBySupplier();
+
+    await by.refreshProducts([refFor(first), refFor(second)]);
+
+    expect(post).toHaveBeenCalledTimes(1);
+    const call = post.mock.calls[0][0] as unknown as Post;
+    expect(call.path).toBe('/graphql');
+    expect(call.body.variables).toEqual({ skus: [first.sku, second.sku], pageSize: 2 });
+    expect(call.body.query).toMatch(/sku:\s*\{\s*in:\s*\$skus\s*\}/);
+    expect(call.body.query).toMatch(/fragment Magento2ProductFields on ProductInterface/);
+    expect(call.headers.Store).toBe('us_en');
+  });
+
+  it('returns OK for found SKUs and UNAVAILABLE for a SKU the store no longer lists', async () => {
+    const { by } = makeBySupplier();
+    const gone: ProductRef = { ...refFor(first), cacheKey: 'gone', sku: 'GONE-1' };
+
+    const results = await by.refreshProducts([refFor(first), gone, refFor(second)]);
+
+    expect(results.map((r) => r.status)).toEqual([
+      PRODUCT_REFRESH_STATUS.OK,
+      PRODUCT_REFRESH_STATUS.UNAVAILABLE,
+      PRODUCT_REFRESH_STATUS.OK,
+    ]);
+  });
+
+  it('fails a ref that has no SKU without sending it, and still fetches the others', async () => {
+    const { by, post } = makeBySupplier();
+
+    const results = await by.refreshProducts([refFor(first, false), refFor(second)]);
+
+    expect(results.map((r) => r.status)).toEqual([
+      PRODUCT_REFRESH_STATUS.FAILED,
+      PRODUCT_REFRESH_STATUS.OK,
+    ]);
+    const call = post.mock.calls[0][0] as unknown as Post;
+    expect(call.body.variables).toEqual({ skus: [second.sku], pageSize: 1 });
+  });
+
+  it('makes no request when no ref has a SKU', async () => {
+    const { by, post } = makeBySupplier();
+
+    const results = await by.refreshProducts([refFor(first, false)]);
+
+    expect(post).not.toHaveBeenCalled();
+    expect(results.map((r) => r.status)).toEqual([PRODUCT_REFRESH_STATUS.FAILED]);
+  });
+
+  it('fails every ref when the response is invalid', async () => {
+    const { by } = makeBySupplier({ errors: [{ message: 'Internal server error' }] });
+
+    const results = await by.refreshProducts([refFor(first), refFor(second)]);
+
+    expect(results.map((r) => r.status)).toEqual([
+      PRODUCT_REFRESH_STATUS.FAILED,
+      PRODUCT_REFRESH_STATUS.FAILED,
+    ]);
+    expect(results[0]).toMatchObject({ reason: 'Invalid Magento2 products response' });
   });
 });

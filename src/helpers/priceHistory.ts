@@ -9,7 +9,7 @@
  */
 
 import { getProductIdentityKey } from '@/helpers/productIdentity';
-import { getPriceSeries, getPriceSeriesByProduct, putPriceSeries } from '@/utils/idbCache';
+import { getPriceSeriesByProduct, updatePriceSeries } from '@/utils/idbCache';
 
 /** The user settings that gate and bound price-history recording. */
 type PriceHistorySettings = Pick<UserSettings, 'priceTracking'>;
@@ -40,9 +40,10 @@ interface SeriesInput {
 }
 
 /**
- * Whether a value is a usable USD price: a finite, strictly-positive number.
+ * Whether a value is a usable price: a finite, strictly-positive number.
  * Guards against `undefined`, `NaN`, and zero/negative anchors that would make
  * a meaningless history point.
+ * @category Helpers
  * @param value - The candidate price.
  * @returns True when the value can be recorded as a price point.
  * @example
@@ -52,14 +53,15 @@ interface SeriesInput {
  * ```
  * @source
  */
-function isRecordablePrice(value: unknown): value is number {
+export function isRecordablePrice(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0;
 }
 
 /**
- * Round a USD amount to 2 decimals so equality checks (dedup) aren't defeated
+ * Round an amount to 2 decimals so equality checks (dedup) aren't defeated
  * by floating-point noise.
- * @param usd - The amount to round.
+ * @category Helpers
+ * @param amount - The amount to round.
  * @returns The amount rounded to 2 decimal places.
  * @example
  * ```ts
@@ -67,8 +69,8 @@ function isRecordablePrice(value: unknown): value is number {
  * ```
  * @source
  */
-function round2(usd: number): number {
-  return Number(usd.toFixed(2));
+export function round2(amount: number): number {
+  return Number(amount.toFixed(2));
 }
 
 /**
@@ -280,40 +282,38 @@ function collectSeriesInputs(product: Product): SeriesInput[] {
  */
 async function recordSeries(input: SeriesInput, maxPoints: number, now: number): Promise<void> {
   const usd = round2(input.usd);
-  const existing = await getPriceSeries(input.id);
+  await updatePriceSeries(input.id, (existing) => {
+    if (existing === undefined) {
+      return {
+        id: input.id,
+        productKey: input.productKey,
+        variantKey: input.variantKey,
+        variantId: input.variantId,
+        supplier: input.supplier,
+        title: input.title,
+        permalink: input.permalink,
+        points: [{ t: now, usd }],
+        updatedAt: now,
+      };
+    }
 
-  if (existing === undefined) {
-    await putPriceSeries({
-      id: input.id,
-      productKey: input.productKey,
-      variantKey: input.variantKey,
-      variantId: input.variantId,
-      supplier: input.supplier,
+    if (existing.points.at(-1)?.usd === usd) {
+      return undefined;
+    }
+
+    let points = [...existing.points, { t: now, usd }];
+    if (maxPoints > 0 && points.length > maxPoints) {
+      points = points.slice(points.length - maxPoints);
+    }
+
+    return {
+      ...existing,
+      // Refresh display fields in case the title/permalink changed since first seen.
       title: input.title,
       permalink: input.permalink,
-      points: [{ t: now, usd }],
+      points,
       updatedAt: now,
-    });
-    return;
-  }
-
-  const last = existing.points.at(-1);
-  if (last?.usd === usd) {
-    return;
-  }
-
-  let points = [...existing.points, { t: now, usd }];
-  if (maxPoints > 0 && points.length > maxPoints) {
-    points = points.slice(points.length - maxPoints);
-  }
-
-  await putPriceSeries({
-    ...existing,
-    // Refresh display fields in case the title/permalink changed since first seen.
-    title: input.title,
-    permalink: input.permalink,
-    points,
-    updatedAt: now,
+    };
   });
 }
 
