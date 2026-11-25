@@ -888,7 +888,7 @@
   "offline_title": { "message": "No internet connection", "description": "Title of the full-screen offline overlay." },
   "offline_message": { "message": "There's been a network connection issue. This message will disappear once your connection is restored.", "description": "Body of the offline overlay." },
   "settings_share_usage_data": { "message": "Share usage data", "description": "Settings toggle label: opt in/out of usage analytics." },
-  "settings_share_usage_data_desc": { "message": "Send usage and error statistics (searches, result counts, installs, updates, crashes) and diagnostic logs to help improve ChemPal, tied to a device identifier — not your name or account.", "description": "Description under the usage-data toggle." },
+  "settings_share_usage_data_desc": { "message": "Send usage and error statistics (searches, result counts, price alert counts, installs, updates, crashes) and diagnostic logs to help improve ChemPal, tied to a device identifier — not your name or account.", "description": "Description under the usage-data toggle." },
   "speed_dial_aria": {
     "message": "SpeedDial Menu",
     "description": "Accessible label for the speed dial."

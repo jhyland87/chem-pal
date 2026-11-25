@@ -888,7 +888,7 @@
   "offline_title": { "message": "Geen internetverbinding", "description": "Title of the full-screen offline overlay." },
   "offline_message": { "message": "Er is een probleem met de netwerkverbinding. Dit bericht verdwijnt zodra uw verbinding is hersteld.", "description": "Body of the offline overlay." },
   "settings_share_usage_data": { "message": "Gebruiksgegevens delen", "description": "Settings toggle label: opt in/out of usage analytics." },
-  "settings_share_usage_data_desc": { "message": "Verstuur gebruiks- en foutstatistieken (zoekopdrachten, aantallen resultaten, installaties, updates, crashes) en diagnostische logs om ChemPal te helpen verbeteren, gekoppeld aan een apparaat-ID — niet aan uw naam of account.", "description": "Description under the usage-data toggle." },
+  "settings_share_usage_data_desc": { "message": "Verstuur gebruiks- en foutstatistieken (zoekopdrachten, aantallen resultaten, aantallen prijsmeldingen, installaties, updates, crashes) en diagnostische logs om ChemPal te helpen verbeteren, gekoppeld aan een apparaat-ID — niet aan uw naam of account.", "description": "Description under the usage-data toggle." },
   "speed_dial_aria": {
     "message": "SpeedDial-menu",
     "description": "Accessible label for the speed dial."

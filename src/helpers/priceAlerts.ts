@@ -8,6 +8,7 @@
  */
 import { defaultSettings, priceAlerts as priceAlertsConfig } from '@/../config.json';
 import { CACHE, type ProductRefreshStatus } from '@/constants/common';
+import { trackEvent } from '@/helpers/analytics';
 import {
   isRecordablePrice,
   productSeriesKey,
@@ -179,6 +180,7 @@ export async function addPriceAlert(product: Product): Promise<boolean> {
     lastPrices: collectNativePrices(product),
   };
   await cstorage.local.set({ [priceAlertKey(id)]: alert });
+  void trackEvent('price_alert_created', { supplier: alert.supplier });
   return true;
 }
 
@@ -253,7 +255,12 @@ export async function markDropsSeen(alerts: readonly PriceAlert[]): Promise<void
  * @source
  */
 export async function removePriceAlerts(ids: readonly string[]): Promise<void> {
-  await cstorage.local.remove(ids.map(priceAlertKey));
+  const keys = ids.map(priceAlertKey);
+  const stored: Record<string, unknown> = await cstorage.local.get(keys);
+  await cstorage.local.remove(keys);
+  for (const { supplier } of Object.values(stored).filter(isPriceAlert)) {
+    void trackEvent('price_alert_removed', { supplier });
+  }
 }
 
 /**
@@ -378,6 +385,22 @@ function isComparable(
 }
 
 /**
+ * How far a price went down.
+ * @category Helpers
+ * @group Price Alerts
+ * @param drop - The prices before and after
+ * @returns The drop as a percentage of the earlier price
+ * @example
+ * ```ts
+ * dropPercent({ from: 24, to: 18 }); // 25
+ * ```
+ * @source
+ */
+export function dropPercent({ from, to }: Pick<PriceDrop, 'from' | 'to'>): number {
+  return ((from - to) / from) * 100;
+}
+
+/**
  * Compares fresh prices with an alert's last known ones.
  *
  * @remarks
@@ -420,8 +443,7 @@ export function detectPriceDrops(
     if (from !== to) changed = true;
 
     if (to < from) {
-      const percent = ((from - to) / from) * 100;
-      if (percent < minDropPercent) continue;
+      if (dropPercent({ from, to }) < minDropPercent) continue;
       drops.push({ title, from, to, currencyCode });
     }
     lastPrices[id] = fresh;

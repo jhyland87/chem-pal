@@ -1,6 +1,6 @@
 # ChemPal — Privacy Policy
 
-**Effective date:** October 8, 2026
+**Effective date:** November 25, 2026
 
 ChemPal ("the extension") is a browser extension that lets you search and compare
 laboratory chemical product listings across supported supplier websites. This
@@ -67,7 +67,8 @@ transmitted to the developer:
   price trends.
 - **Price alerts** — the list of products you chose to watch, and the results of
   the background price checks. Checks send only the normal product requests to
-  the supplier's website.
+  the supplier's website. Counts of alerts, without the products, are part of the
+  usage statistics in section 2.6.
 
 ### 2.4 Bookmarks
 
@@ -93,6 +94,9 @@ sends an event to PostHog when you:
   it returned, how long the search took, and how many suppliers it queried;
 - **stop a search early** — when you cancel a search, or it runs out of time,
   including why it ended along with the same details as above;
+- **add or remove a price alert, or one finds a price drop** — including the supplier's
+  name and, for a drop, its size as a percentage and how many of the product's prices
+  went down, but never which product it was;
 - **encounter an error** — including the extension version, the error type, and a
   short, truncated error message and a technical stack trace (code locations inside
   ChemPal itself, not personal data); and

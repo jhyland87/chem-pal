@@ -20,6 +20,8 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
   drops. The toolbar icon also flashes, then shows how many products dropped (for example **↓2**)
   until you look at them. Manage your alerts in **Settings → Price Alerts**.
 - **Settings → Advanced** now has a check interval and a minimum price drop for price alerts.
+- Usage statistics now count price alerts added, removed and triggered, with the supplier and the size
+  of the drop but never the product. Turn them off with **Share usage data** in Settings.
 
 ### Changed
 

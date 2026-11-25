@@ -8,6 +8,7 @@
  */
 import { priceAlerts as priceAlertsConfig } from '@/../config.json';
 import { CACHE, PRODUCT_REFRESH_STATUS } from '@/constants/common';
+import { trackEvent } from '@/helpers/analytics';
 import { runInBackgroundContext } from '@/helpers/backgroundFetch';
 import { getErrorMessage } from '@/helpers/exceptions';
 import { patchCachedProduct } from '@/helpers/patchCachedProduct';
@@ -16,6 +17,7 @@ import { formatWithSymbol } from '@/helpers/price';
 import {
   collectNativePrices,
   detectPriceDrops,
+  dropPercent,
   getUnseenDrops,
   isPriceAlertKey,
   loadPriceAlerts,
@@ -25,7 +27,7 @@ import {
   type PriceAlert,
   type PriceDrop,
 } from '@/helpers/priceAlerts';
-import { recordProductPrices } from '@/helpers/priceHistory';
+import { recordProductPrices, round2 } from '@/helpers/priceHistory';
 import { toProductRef, type ProductRefreshResult } from '@/helpers/productRef';
 import * as priceAlertSuppliers from '@/suppliers/priceAlertSuppliers';
 import { Logger } from '@/utils/Logger';
@@ -211,6 +213,7 @@ async function checkSupplier(
         });
       }
     }
+    for (const { drops } of found) trackTriggered(supplierName, drops);
     if (found.length > 0) await logFailure('flash the badge', () => updateBadge(true));
     await notifyDrops(supplierName, found);
   } catch (error) {
@@ -324,6 +327,25 @@ async function updateBadge(shouldFlash: boolean): Promise<void> {
   if (await isBadgeClaimed()) return;
   const unseen = getUnseenDrops(await loadPriceAlerts());
   await (unseen.length > 0 ? showDropBadge(unseen.length, shouldFlash) : clearDropBadge());
+}
+
+/**
+ * Reports a triggered alert to analytics. Leaves out the product, since the watchlist is private.
+ * @param supplier - Display name of the supplier
+ * @param drops - The product's drops, largest first
+ * @example
+ * ```ts
+ * trackTriggered('Carolina Chemical', [{ title: 'Acetone 500 g', from: 24, to: 18 }]);
+ * ```
+ * @source
+ */
+function trackTriggered(supplier: string, drops: PriceDrop[]): void {
+  const [largest] = drops;
+  void trackEvent('price_alert_triggered', {
+    supplier,
+    drop_percent: round2(dropPercent(largest)),
+    dropped_prices: drops.length,
+  });
 }
 
 /**

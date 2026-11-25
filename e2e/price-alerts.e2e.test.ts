@@ -3,7 +3,7 @@ import { execSync } from 'node:child_process';
 import path from 'node:path';
 import type { BrowserContext, Page, Route } from 'playwright';
 import { afterAll, beforeAll, describe, it, expect as vitestExpect } from 'vitest';
-import { priceAlerts } from '../config.json';
+import { analytics, priceAlerts } from '../config.json';
 import productFixture from '../src/suppliers/__fixtures__/thelabstockroom/product-with-variants.json';
 import { launchExtensionContext } from './helpers/launchOptions';
 import { setupMockRoutes } from './helpers/mockRoutes';
@@ -16,6 +16,7 @@ import { setupMockRoutes } from './helpers/mockRoutes';
 const buildDir = path.resolve(__dirname, '..', 'build');
 const mockResponsesDir = path.resolve(__dirname, 'mock-requests/responses');
 const shopifyUrl = 'https://hbarsci.myshopify.com/**';
+const posthogUrl = `${analytics.host}/**`;
 const { badge } = priceAlerts;
 const [product] = productFixture.data.nodes;
 // Prices the live store doesn't have, so a request that escaped the mock would fail the test.
@@ -34,6 +35,7 @@ async function fulfillShopify(route: Route): Promise<void> {
 describe('Chem-Pal price alerts', () => {
   let context: BrowserContext;
   let extensionId: string;
+  const events: Array<{ event: string; supplier: string; drop_percent?: number }> = [];
   let watched: Awaited<ReturnType<typeof readAlerts>>[number];
 
   beforeAll(async () => {
@@ -42,6 +44,13 @@ describe('Chem-Pal price alerts', () => {
     execSync('pnpm build:e2e', { cwd: path.resolve(__dirname, '..'), stdio: 'inherit' });
     context = await launchExtensionContext(buildDir);
     await context.route(shopifyUrl, fulfillShopify);
+    // The worker's events too, so a test run never reaches PostHog.
+    await context.route(posthogUrl, (route) => route.abort());
+    context.on('request', (request) => {
+      if (!request.url().startsWith(posthogUrl.slice(0, -2))) return;
+      const { event, properties } = JSON.parse(request.postData() ?? '{}');
+      if (String(event).startsWith('price_alert_')) events.push({ event, ...properties });
+    });
     const worker = context.serviceWorkers()[0] ?? (await context.waitForEvent('serviceworker'));
     extensionId = worker.url().split('/')[2];
   }, 60_000);
@@ -146,6 +155,11 @@ describe('Chem-Pal price alerts', () => {
       .poll(() => page.evaluate(async () => (await chrome.alarms.getAll()).length))
       .toBe(0);
     await playwrightExpect.poll(() => readBadge(page)).toEqual(resultsBadge);
+    await playwrightExpect
+      .poll(() => events.map(({ event }) => event))
+      .toEqual(['price_alert_created', 'price_alert_triggered', 'price_alert_removed']);
+    vitestExpect(events[1].drop_percent).toBe(50);
+    vitestExpect(JSON.stringify(events)).not.toContain(product.title);
   }, 200_000);
 
   it('flashes the badge from the background while ChemPal is closed', async () => {

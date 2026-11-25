@@ -32,7 +32,8 @@ does when you visit a website:
   currency.
 - **PostHog** — basic usage and error stats (which searches are run, how
   many results they return, how long they take, whether you stopped one early,
-  when the extension is installed or updated, and when it hits an error), plus
+  when a price alert is added, removed or finds a drop (the supplier, never the
+  product), when the extension is installed or updated, and when it hits an error), plus
   short diagnostic logs of warnings and errors from the extension's own code
   (you can choose which levels in Advanced settings), tied
   only to a random identifier — no account, no name.

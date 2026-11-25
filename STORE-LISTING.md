@@ -90,7 +90,8 @@ pushes back (it can flag an inert `new Function` string in a bundled dependency)
 
 Check the certification boxes yourself. Declare that ChemPal collects **User activity** — the
 search term entered and the number of results returned, plus the extension version and error
-type when it crashes, and an event when the extension is installed or updated (carrying the
+type when it crashes, an event when a price alert is added, removed or finds a drop (carrying the
+supplier and the size of the drop, not the product), and an event when the extension is installed or updated (carrying the
 version, and the previous version on an update), and short diagnostic logs of warnings and
 errors from the extension's own code — transmitted to PostHog, an independent
 analytics provider, tied only to a random per-install identifier and never to a name or

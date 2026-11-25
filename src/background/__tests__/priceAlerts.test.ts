@@ -14,6 +14,7 @@ import {
   updatePriceAlert,
   type PriceAlert,
 } from '@/helpers/priceAlerts';
+import { trackEvent } from '@/helpers/analytics';
 import { productSeriesKey } from '@/helpers/priceHistory';
 import type { ProductRef } from '@/helpers/productRef';
 import { BadgeAnimator } from '@/utils/BadgeAnimator';
@@ -538,6 +539,48 @@ describe('price alert background checks', () => {
 
       expect(env.alarmsApi.create).not.toHaveBeenCalled();
       expect(env.alarmsApi.clear).toHaveBeenCalledWith(RESUME_ALARM);
+    });
+  });
+
+  describe('analytics', () => {
+    beforeEach(() => {
+      vi.mocked(trackEvent).mockClear();
+    });
+
+    it('reports each triggered alert without its product', async () => {
+      await addPriceAlert(item('a', 24));
+      await addPriceAlert(item('b', 30));
+      await addPriceAlert(item('c', 10));
+      vi.mocked(trackEvent).mockClear();
+      serve({ a: item('a', 18), b: item('b', 20), c: item('c', 11) });
+
+      await runPriceCheck();
+
+      const calls = vi.mocked(trackEvent).mock.calls;
+      expect(calls).toHaveLength(2);
+      for (const drop_percent of [25, 33.33]) {
+        expect(calls).toContainEqual([
+          'price_alert_triggered',
+          { supplier: 'Fake One', drop_percent, dropped_prices: 1 },
+        ]);
+      }
+    });
+
+    it('reports nothing for an alert removed during the check', async () => {
+      await addPriceAlert(item('a', 24));
+      const { id } = await alertFor('a');
+      ctl.refresh['Fake One'] = vi.fn(async (refs: ProductRef[]) => {
+        await removePriceAlerts([id]);
+        return refs.map((ref) => ({
+          status: PRODUCT_REFRESH_STATUS.OK,
+          ref,
+          product: item('a', 10),
+        }));
+      });
+
+      await runPriceCheck();
+
+      expect(trackEvent).not.toHaveBeenCalledWith('price_alert_triggered', expect.anything());
     });
   });
 

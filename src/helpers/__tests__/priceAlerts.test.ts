@@ -1,9 +1,13 @@
+import { trackEvent } from '@/helpers/analytics';
 import {
   addPriceAlert,
   collectNativePrices,
   detectPriceDrops,
+  dropPercent,
+  getUnseenDrops,
   isPriceAlertKey,
   loadPriceAlerts,
+  markDropsSeen,
   removePriceAlerts,
   resolvePriceAlertSettings,
   updatePriceAlert,
@@ -155,6 +159,70 @@ describe('price alert watchlist', () => {
     await removePriceAlerts([first.id]);
 
     expect((await loadPriceAlerts()).map(({ id }) => id)).toEqual([second.id]);
+  });
+});
+
+describe('analytics', () => {
+  beforeEach(() => {
+    installStorage();
+    vi.mocked(trackEvent).mockClear();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('reports a created alert with its supplier only', async () => {
+    await addPriceAlert(baseProduct());
+    expect(vi.mocked(trackEvent).mock.calls).toEqual([
+      ['price_alert_created', { supplier: 'Loudwolf' }],
+    ]);
+  });
+
+  it('reports nothing when the product cannot be watched', async () => {
+    await addPriceAlert(baseProduct({ cacheKey: undefined }));
+    expect(trackEvent).not.toHaveBeenCalled();
+  });
+
+  it('reports each removed alert, but not ids that were not stored', async () => {
+    await addPriceAlert(baseProduct({ cacheKey: 'a' }));
+    await addPriceAlert(baseProduct({ cacheKey: 'b', supplier: 'LabChem' }));
+    const ids = (await loadPriceAlerts()).map(({ id }) => id);
+    vi.mocked(trackEvent).mockClear();
+
+    await removePriceAlerts([...ids, 'missing']);
+
+    const calls = vi.mocked(trackEvent).mock.calls;
+    expect(calls).toHaveLength(2);
+    expect(calls).toContainEqual(['price_alert_removed', { supplier: 'Loudwolf' }]);
+    expect(calls).toContainEqual(['price_alert_removed', { supplier: 'LabChem' }]);
+  });
+});
+
+describe('unseen drops', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('are the only alerts marked as seen', async () => {
+    const { set } = installStorage();
+    await addPriceAlert(baseProduct({ cacheKey: 'a' }));
+    await addPriceAlert(baseProduct({ cacheKey: 'b' }));
+    const [{ id }] = await loadPriceAlerts();
+    await updatePriceAlert(id, { hasUnseenDrop: true });
+    expect(getUnseenDrops(await loadPriceAlerts()).map((alert) => alert.id)).toEqual([id]);
+    set.mockClear();
+
+    await markDropsSeen(await loadPriceAlerts());
+
+    expect(set).toHaveBeenCalledTimes(1);
+    expect(getUnseenDrops(await loadPriceAlerts())).toEqual([]);
+  });
+});
+
+describe('dropPercent', () => {
+  it('is relative to the earlier price', () => {
+    expect(dropPercent({ from: 24, to: 18 })).toBe(25);
   });
 });
 

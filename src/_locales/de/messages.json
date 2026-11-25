@@ -912,7 +912,7 @@
   "offline_title": { "message": "Keine Internetverbindung", "description": "Title of the full-screen offline overlay." },
   "offline_message": { "message": "Es gab ein Problem mit der Netzwerkverbindung. Diese Meldung verschwindet, sobald die Verbindung wiederhergestellt ist.", "description": "Body of the offline overlay." },
   "settings_share_usage_data": { "message": "Nutzungsdaten teilen", "description": "Settings toggle label: opt in/out of usage analytics." },
-  "settings_share_usage_data_desc": { "message": "Nutzungs- und Fehlerstatistiken (Suchen, Ergebnisanzahl, Installationen, Updates, Abstürze) sowie Diagnoseprotokolle senden, um ChemPal zu verbessern – verknüpft mit einer Gerätekennung, nicht mit deinem Namen oder Konto.", "description": "Description under the usage-data toggle." },
+  "settings_share_usage_data_desc": { "message": "Nutzungs- und Fehlerstatistiken (Suchen, Ergebnisanzahl, Anzahl der Preisalarme, Installationen, Updates, Abstürze) sowie Diagnoseprotokolle senden, um ChemPal zu verbessern – verknüpft mit einer Gerätekennung, nicht mit deinem Namen oder Konto.", "description": "Description under the usage-data toggle." },
   "speed_dial_aria": {
     "message": "SpeedDial-Menü",
     "description": "Accessible label for the speed dial."
