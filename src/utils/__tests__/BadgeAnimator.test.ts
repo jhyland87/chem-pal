@@ -162,6 +162,56 @@ describe('BadgeAnimator', () => {
     });
   });
 
+  describe('resetColor', () => {
+    it.each([
+      ['Chrome', 'chrome-extension://abc/', [0, 0, 0, 0]],
+      ['Firefox', 'moz-extension://abc/', [217, 0, 0, 255]],
+    ])('restores the default color in %s', async (_browser, url, color) => {
+      const { runtime } = chrome;
+      chrome.runtime = { getURL: () => url } as unknown as typeof chrome.runtime;
+      try {
+        await BadgeAnimator.resetColor();
+      } finally {
+        chrome.runtime = runtime;
+      }
+      expect(mockChromeAction.setBadgeBackgroundColor).toHaveBeenCalledWith({ color });
+    });
+  });
+
+  describe('flash', () => {
+    const colors = () =>
+      mockChromeAction.setBadgeBackgroundColor.mock.calls.map(([{ color }]) => color);
+
+    it('alternates the colors and ends on the first one', async () => {
+      const flashing = BadgeAnimator.flash(['green', 'amber'], 100, 400);
+      await vi.advanceTimersByTimeAsync(400);
+      await flashing;
+      expect(colors()).toEqual(['amber', 'green', 'amber', 'green', 'green']);
+    });
+
+    it.each<[string, () => void]>([
+      ['setText', () => void BadgeAnimator.setText('5')],
+      ['clear', () => void BadgeAnimator.clear()],
+      ['animate', () => BadgeAnimator.animate('ellipsis', 100)],
+      ['another flash', () => void BadgeAnimator.flash(['blue'], 100, 100)],
+    ])('stops when interrupted by %s', async (_name, interrupt) => {
+      const flashing = BadgeAnimator.flash(['green', 'amber'], 100, 1000);
+      await vi.advanceTimersByTimeAsync(50);
+      interrupt();
+      await vi.advanceTimersByTimeAsync(100);
+      await flashing;
+      expect(colors().filter((color) => color !== 'blue')).toEqual(['amber']);
+    });
+
+    it('records a failure instead of rejecting', async () => {
+      mockChromeAction.setBadgeBackgroundColor.mockRejectedValueOnce(new Error('gone'));
+      const flashing = BadgeAnimator.flash(['green'], 100, 100);
+      await vi.advanceTimersByTimeAsync(100);
+      await expect(flashing).resolves.toBeUndefined();
+      expect(recordError).toHaveBeenCalledWith({ source: 'chrome-api', message: 'gone' });
+    });
+  });
+
   describe('setBadgeText failures', () => {
     it('records a chrome-api error instead of letting a rejection float unhandled', async () => {
       mockChromeAction.setBadgeText.mockRejectedValueOnce(

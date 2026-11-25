@@ -1,6 +1,6 @@
 /**
- * Background price checks: refetches watched products on a schedule, logs price changes and shows a
- * notification when one gets cheaper.
+ * Background price checks: refetches watched products on a schedule, logs price changes, and flashes
+ * the toolbar badge and shows a notification when one gets cheaper.
  *
  * @module
  * @category Background
@@ -16,8 +16,10 @@ import { formatWithSymbol } from '@/helpers/price';
 import {
   collectNativePrices,
   detectPriceDrops,
+  getUnseenDrops,
   isPriceAlertKey,
   loadPriceAlerts,
+  markDropsSeen,
   resolvePriceAlertSettings,
   updatePriceAlert,
   type PriceAlert,
@@ -27,9 +29,11 @@ import { recordProductPrices } from '@/helpers/priceHistory';
 import { toProductRef, type ProductRefreshResult } from '@/helpers/productRef';
 import * as priceAlertSuppliers from '@/suppliers/priceAlertSuppliers';
 import { Logger } from '@/utils/Logger';
+import { clearDropBadge, isBadgeClaimed, showDropBadge } from '@/utils/priceDropBadge';
 import { cstorage } from '@/utils/storage';
 import { disableStatsRecording } from '@/utils/SupplierStatsStore';
 import { isValidUserSettings } from '@/utils/typeGuards/common';
+import { isPriceAlert } from '@/utils/typeGuards/priceAlerts';
 import { Queue } from 'async-await-queue';
 
 const logger = new Logger('priceAlerts');
@@ -207,6 +211,7 @@ async function checkSupplier(
         });
       }
     }
+    if (found.length > 0) await logFailure('flash the badge', () => updateBadge(true));
     await notifyDrops(supplierName, found);
   } catch (error) {
     logger.error(`Failed to check prices: ${getErrorMessage(error)}`, {
@@ -299,9 +304,41 @@ async function applyResult(
     failures: 0,
     lastPrices,
     ref: toProductRef(product) ?? alert.ref,
-    ...(largest && { lastDrop: { ...largest, at: Date.now() } }),
+    ...(largest && { lastDrop: { ...largest, at: Date.now() }, hasUnseenDrop: true }),
   });
   return isWatched ? drops : [];
+}
+
+/**
+ * Shows the number of products with an unseen drop on the toolbar badge, or removes it when there
+ * are none. Leaves the badge to a page that is visible or searching.
+ * @param shouldFlash - Whether to flash the badge for a moment
+ * @returns Resolves once the badge is up to date
+ * @example
+ * ```ts
+ * await updateBadge(true);
+ * ```
+ * @source
+ */
+async function updateBadge(shouldFlash: boolean): Promise<void> {
+  if (await isBadgeClaimed()) return;
+  const unseen = getUnseenDrops(await loadPriceAlerts());
+  await (unseen.length > 0 ? showDropBadge(unseen.length, shouldFlash) : clearDropBadge());
+}
+
+/**
+ * Whether a changed alert no longer has a drop to show on the badge.
+ * @param change - The alert's stored values
+ * @returns True when its drop was seen, or the alert was removed
+ * @example
+ * ```ts
+ * isDropCleared({ oldValue: { hasUnseenDrop: true, … } }); // true
+ * ```
+ * @source
+ */
+function isDropCleared({ oldValue, newValue }: chrome.storage.StorageChange): boolean {
+  const isUnseen = (value: unknown): boolean => isPriceAlert(value) && value.hasUnseenDrop === true;
+  return isUnseen(oldValue) && !isUnseen(newValue);
 }
 
 /**
@@ -360,7 +397,7 @@ async function notifyDrops(supplierName: string, found: AlertDrops[]): Promise<v
 
 /**
  * Opens the page a clicked notification is about: the product, or the supplier's products in
- * ChemPal when it sums up several.
+ * ChemPal when it sums up several. The drops it reported count as seen.
  * @param notificationId - Id of the notification
  * @param openApp - Opens ChemPal
  * @returns Resolves once the page is open
@@ -375,10 +412,14 @@ async function openNotification(
   openApp: () => Promise<void>,
 ): Promise<void> {
   if (notificationId.startsWith(SUMMARY_PREFIX)) {
+    const supplierName = notificationId.slice(SUMMARY_PREFIX.length);
+    const alerts = await loadPriceAlerts();
+    await markDropsSeen(alerts.filter(({ supplier }) => supplier === supplierName));
     await openApp();
   } else if (notificationId.startsWith(NOTIFICATION_PREFIX)) {
     const id = notificationId.slice(NOTIFICATION_PREFIX.length);
     const alert = (await loadPriceAlerts()).find((candidate) => candidate.id === id);
+    if (alert) await markDropsSeen([alert]);
     if (alert?.permalink) await chrome.tabs.create({ url: alert.permalink });
   } else {
     return;
@@ -420,8 +461,12 @@ export function registerPriceAlerts(openApp: () => Promise<void>): void {
   disableStatsRecording();
 
   const schedule = (): void => void logFailure('schedule price checks', scheduleChecks);
-  chrome.runtime.onInstalled.addListener(schedule);
-  chrome.runtime.onStartup.addListener(schedule);
+  const refreshBadge = (): void => void logFailure('update the badge', () => updateBadge(false));
+  // The badge doesn't survive a restart.
+  for (const event of [chrome.runtime.onInstalled, chrome.runtime.onStartup]) {
+    event.addListener(schedule);
+    event.addListener(refreshBadge);
+  }
 
   cstorage.onChanged.addListener((changes, areaName) => {
     if (areaName !== 'local') return;
@@ -432,6 +477,12 @@ export function registerPriceAlerts(openApp: () => Promise<void>): void {
         (isPriceAlertKey(key) && (oldValue === undefined || newValue === undefined)),
     );
     if (isRelevant) schedule();
+
+    // New drops are shown by the check that found them.
+    const hasClearedDrop = Object.entries(changes).some(
+      ([key, change]) => isPriceAlertKey(key) && isDropCleared(change),
+    );
+    if (hasClearedDrop) refreshBadge();
   });
 
   chrome.alarms.onAlarm.addListener(({ name }) => {

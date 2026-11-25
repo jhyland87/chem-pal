@@ -80,6 +80,8 @@ export interface PriceAlert {
   lastPrices: Record<string, PriceSnapshot>;
   /** The latest drop found. */
   lastDrop?: PriceDrop & { at: number };
+  /** Whether the user hasn't seen {@link lastDrop} yet. */
+  hasUnseenDrop?: boolean;
 }
 
 /**
@@ -202,6 +204,40 @@ export async function updatePriceAlert(
   if (!isPriceAlert(current)) return false;
   await cstorage.local.set({ [key]: { ...current, ...changes } });
   return true;
+}
+
+/**
+ * Picks the alerts with a drop the user hasn't seen.
+ * @category Helpers
+ * @group Price Alerts
+ * @param alerts - The alerts
+ * @returns Those with an unseen drop
+ * @example
+ * ```ts
+ * getUnseenDrops(await loadPriceAlerts()).length; // 2
+ * ```
+ * @source
+ */
+export function getUnseenDrops(alerts: readonly PriceAlert[]): PriceAlert[] {
+  return alerts.filter(({ hasUnseenDrop }) => hasUnseenDrop);
+}
+
+/**
+ * Marks products' latest drops as seen, so the badge stops counting them.
+ * @category Helpers
+ * @group Price Alerts
+ * @param alerts - The alerts; those without an unseen drop are left alone
+ * @returns Resolves once they are updated
+ * @example
+ * ```ts
+ * await markDropsSeen(alerts);
+ * ```
+ * @source
+ */
+export async function markDropsSeen(alerts: readonly PriceAlert[]): Promise<void> {
+  await Promise.all(
+    getUnseenDrops(alerts).map(({ id }) => updatePriceAlert(id, { hasUnseenDrop: false })),
+  );
 }
 
 /**

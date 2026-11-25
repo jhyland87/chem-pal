@@ -16,6 +16,7 @@ import {
 } from '@/helpers/priceAlerts';
 import { productSeriesKey } from '@/helpers/priceHistory';
 import type { ProductRef } from '@/helpers/productRef';
+import { BadgeAnimator } from '@/utils/BadgeAnimator';
 import {
   clearAllCaches,
   clearPriceHistory,
@@ -120,6 +121,18 @@ function installChrome({ withNotifications = true } = {}) {
     onAdded: { addListener: (fn: () => void) => listeners.permissionsAdded.push(fn) },
   };
   const tabs = { create: vi.fn(async () => ({})) };
+  const badge = { text: '' };
+  const action = {
+    getBadgeText: vi.fn(async () => badge.text),
+    setBadgeText: vi.fn(async ({ text }: { text: string }) => {
+      badge.text = text;
+    }),
+    setBadgeBackgroundColor: vi.fn(async () => {}),
+  };
+  // Rejects when no page is open, like the browser does.
+  const sendMessage = vi.fn(async (): Promise<unknown> => {
+    throw new Error('Receiving end does not exist.');
+  });
 
   const chromeMock: Record<string, unknown> = {
     storage: {
@@ -132,12 +145,14 @@ function installChrome({ withNotifications = true } = {}) {
     alarms: alarmsApi,
     permissions,
     tabs,
+    action,
     i18n: {
       getMessage: (key: string, subs?: string[]) => `${key}:${(subs ?? []).join(',')}`,
     },
     runtime: {
       getURL: (path: string) => `chrome-extension://id/${path}`,
       getPlatformInfo: vi.fn(async () => ({})),
+      sendMessage,
       onInstalled: { addListener: (fn: () => void) => listeners.installed.push(fn) },
       onStartup: { addListener: (fn: () => void) => listeners.startup.push(fn) },
     },
@@ -145,7 +160,18 @@ function installChrome({ withNotifications = true } = {}) {
   if (withNotifications) chromeMock.notifications = notifications;
   vi.stubGlobal('chrome', chromeMock);
 
-  return { chromeMock, data, alarms, alarmsApi, notifications, permissions, tabs, listeners };
+  return {
+    chromeMock,
+    data,
+    alarms,
+    alarmsApi,
+    notifications,
+    permissions,
+    tabs,
+    badge,
+    sendMessage,
+    listeners,
+  };
 }
 
 /** Lets fire-and-forget work in listeners finish. */
@@ -177,8 +203,10 @@ const alertFor = async (cacheKey: string): Promise<PriceAlert> => {
 
 describe('price alert background checks', () => {
   let env: ReturnType<typeof installChrome>;
+  const flash = vi.spyOn(BadgeAnimator, 'flash').mockResolvedValue(undefined);
 
   beforeEach(async () => {
+    flash.mockClear();
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(NOW);
     env = installChrome();
@@ -513,12 +541,107 @@ describe('price alert background checks', () => {
     });
   });
 
+  describe('badge', () => {
+    it('flashes the number of products with an unseen drop', async () => {
+      await addPriceAlert(item('a', 24));
+      await addPriceAlert(item('b', 24));
+      await addPriceAlert(item('c', 24));
+      await updatePriceAlert((await alertFor('c')).id, { hasUnseenDrop: true, lastCheckedAt: NOW });
+      serve({ a: item('a', 12), b: item('b', 30) });
+
+      await runPriceCheck();
+
+      expect(env.badge.text).toBe('↓2');
+      expect(flash).toHaveBeenCalledTimes(1);
+      expect((await alertFor('a')).hasUnseenDrop).toBe(true);
+      expect((await alertFor('b')).hasUnseenDrop).toBeUndefined();
+    });
+
+    it('works without the notification permission', async () => {
+      env = installChrome({ withNotifications: false });
+      await addPriceAlert(item('a', 24));
+      serve({ a: item('a', 12) });
+
+      await runPriceCheck();
+
+      expect(env.badge.text).toBe('↓1');
+    });
+
+    it('is left alone when nothing dropped, or a page controls it', async () => {
+      await addPriceAlert(item('a', 24));
+      serve({ a: item('a', 24) });
+      await runPriceCheck();
+      expect(env.sendMessage).not.toHaveBeenCalled();
+
+      env.sendMessage.mockResolvedValue(true);
+      await updatePriceAlert((await alertFor('a')).id, { lastCheckedAt: 0 });
+      serve({ a: item('a', 12) });
+      await runPriceCheck();
+
+      expect(env.badge.text).toBe('');
+      expect(env.notifications.create).toHaveBeenCalledTimes(1);
+    });
+
+    it.each<[string, () => Promise<unknown>]>([
+      ['does not answer', async () => undefined],
+      ['is frozen', () => new Promise(() => {})],
+    ])('is set when an open page %s', async (_name, reply) => {
+      env.sendMessage.mockImplementation(reply);
+      await addPriceAlert(item('a', 24));
+      serve({ a: item('a', 12) });
+
+      await runPriceCheck();
+
+      expect(env.badge.text).toBe('↓1');
+      expect(env.notifications.create).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not stop the notification when it fails', async () => {
+      delete env.chromeMock.action;
+      await addPriceAlert(item('a', 24));
+      serve({ a: item('a', 12) });
+
+      await runPriceCheck();
+
+      expect(env.notifications.create).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('registerPriceAlerts', () => {
     let openApp: ReturnType<typeof vi.fn<() => Promise<void>>>;
 
     beforeEach(() => {
       openApp = vi.fn(async () => {});
       registerPriceAlerts(openApp);
+    });
+
+    it('marks the drops of a clicked notification as seen', async () => {
+      const keys = ['a', 'b', 'c'];
+      for (const key of keys) {
+        await addPriceAlert(item(key, 24, key === 'c' ? { supplier: 'Fake Two' } : {}));
+        await updatePriceAlert((await alertFor(key)).id, { hasUnseenDrop: true });
+      }
+      const unseen = async () =>
+        Promise.all(keys.map(async (key) => (await alertFor(key)).hasUnseenDrop));
+
+      env.listeners.clicked[0](`price_alert:${(await alertFor('a')).id}`);
+      await settle();
+      expect(await unseen()).toEqual([false, true, true]);
+
+      env.listeners.clicked[0]('price_alerts:Fake One');
+      await settle();
+      expect(await unseen()).toEqual([false, false, true]);
+    });
+
+    it('restores the badge on startup, without flashing', async () => {
+      await addPriceAlert(item('a', 24));
+      await updatePriceAlert((await alertFor('a')).id, { hasUnseenDrop: true });
+
+      for (const listener of env.listeners.startup) listener();
+      await settle();
+
+      expect(env.badge.text).toBe('↓1');
+      expect(flash).not.toHaveBeenCalled();
     });
 
     it('opens a product notification at its permalink and clears it', async () => {
@@ -582,12 +705,42 @@ describe('price alert background checks', () => {
       await settle();
 
       expect(env.alarmsApi.create).toHaveBeenCalledWith(CHECK_ALARM, expect.any(Object));
-      expect(env.listeners.installed).toHaveLength(1);
+      expect(env.listeners.installed.length).toBe(env.listeners.startup.length);
     });
 
     describe('storage changes', () => {
       const change = (changes: Record<string, object>, area = 'local') =>
         env.listeners.storage.forEach((listener) => listener(changes, area));
+
+      it.each<[string, string, string, (id: string) => Promise<void>]>([
+        ['counts down', '↓2', '↓1', async () => {}],
+        ['is removed with the last drop', '↓1', '', (id) => removePriceAlerts([id])],
+        ['keeps a result count', '7', '7', (id) => removePriceAlerts([id])],
+      ])('updates the badge when a drop is seen: %s', async (_name, before, after, prepare) => {
+        await addPriceAlert(item('a', 24));
+        const { id } = await alertFor('a');
+        await updatePriceAlert(id, { hasUnseenDrop: true });
+        const oldValue = await alertFor('a');
+        env.badge.text = before;
+        await prepare(id);
+
+        change({
+          'price_alert:b': { oldValue, newValue: { ...oldValue, hasUnseenDrop: false } },
+        });
+        await settle();
+
+        expect(env.badge.text).toBe(after);
+      });
+
+      it('leaves a new drop to the check that found it', async () => {
+        await addPriceAlert(item('a', 24));
+        const oldValue = await alertFor('a');
+
+        change({ 'price_alert:a': { oldValue, newValue: { ...oldValue, hasUnseenDrop: true } } });
+        await settle();
+
+        expect(env.sendMessage).not.toHaveBeenCalled();
+      });
 
       it('reschedules when an alert is added', async () => {
         await addPriceAlert(item('a', 24));

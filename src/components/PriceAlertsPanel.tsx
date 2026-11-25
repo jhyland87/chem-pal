@@ -3,7 +3,7 @@ import { getErrorMessage } from '@/helpers/exceptions';
 import { i18n } from '@/helpers/i18n';
 import { hasNotificationPermission, requestNotificationPermission } from '@/helpers/permissions';
 import { formatWithSymbol } from '@/helpers/price';
-import { removePriceAlerts, type PriceAlert } from '@/helpers/priceAlerts';
+import { markDropsSeen, removePriceAlerts, type PriceAlert } from '@/helpers/priceAlerts';
 import { formatTimestamp } from '@/helpers/utils';
 import { Logger } from '@/utils/Logger';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -33,6 +33,8 @@ const logger = new Logger('PriceAlertsPanel');
 interface PriceAlertsPanelProps {
   /** The alerts to list. */
   alerts: PriceAlert[];
+  /** Whether the list is showing, rather than collapsed. */
+  isOpen: boolean;
 }
 
 /**
@@ -96,11 +98,11 @@ function describeAlert(alert: PriceAlert): string[] {
  * @returns The panel
  * @example
  * ```tsx
- * <PriceAlertsPanel alerts={usePriceAlerts()} />
+ * <PriceAlertsPanel alerts={usePriceAlerts()} isOpen={expanded === 'priceAlerts'} />
  * ```
  * @source
  */
-export function PriceAlertsPanel({ alerts }: PriceAlertsPanelProps) {
+export function PriceAlertsPanel({ alerts, isOpen }: PriceAlertsPanelProps) {
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   // Assume granted until known, so the prompt doesn't flash.
@@ -118,6 +120,23 @@ export function PriceAlertsPanel({ alerts }: PriceAlertsPanelProps) {
     };
     void load();
   }, []);
+
+  // Drops listed here are seen, once the page itself is showing.
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleVisible = async () => {
+      if (document.visibilityState !== 'visible') return;
+      try {
+        await markDropsSeen(alerts);
+      } catch (error) {
+        logger.warn(`Failed to mark price drops as seen: ${getErrorMessage(error)}`, { error });
+      }
+    };
+    const listener = () => void handleVisible();
+    listener();
+    document.addEventListener('visibilitychange', listener);
+    return () => document.removeEventListener('visibilitychange', listener);
+  }, [alerts, isOpen]);
 
   // Alerts can be removed elsewhere while selected.
   const selectedIds = alerts.map(({ id }) => id).filter((id) => selected.has(id));

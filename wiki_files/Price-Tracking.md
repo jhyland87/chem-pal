@@ -45,7 +45,12 @@ check that supplier (see [Supported Suppliers](Supported-Suppliers#price-alerts)
   your browser is open. A check that was missed runs the next time the browser starts.
 - **A drop is logged** in the product's price history and shows a notification.
   Notifications are optional: ChemPal asks for the permission when you enable your
-  first alert, and if you decline, drops still show in **Settings → Price Alerts**.
+  first alert, and if you decline, drops still show on the toolbar icon and in
+  **Settings → Price Alerts**.
+- **The toolbar icon flashes green and amber** for a few seconds, then shows how many
+  products dropped, for example **↓2**. It clears when you open **Settings → Price
+  Alerts** or click the notification. Search progress takes priority while a search
+  is running. Pin ChemPal to your toolbar to see it.
 - **Prices are compared in the supplier's own currency**, so exchange-rate changes
   never trigger an alert.
 

@@ -44,6 +44,8 @@ export type ActionType = (typeof ACTION_TYPE)[keyof typeof ACTION_TYPE];
 export const MESSAGE_TYPE = {
   /** Proxied fetch request handled by the background worker; see helpers/backgroundFetch.ts. */
   BACKGROUND_FETCH: 'BACKGROUND_FETCH',
+  /** Asks whether an open page controls the toolbar badge; see utils/priceDropBadge.ts. */
+  BADGE_OWNER: 'BADGE_OWNER',
 } as const;
 
 export type MessageType = (typeof MESSAGE_TYPE)[keyof typeof MESSAGE_TYPE];

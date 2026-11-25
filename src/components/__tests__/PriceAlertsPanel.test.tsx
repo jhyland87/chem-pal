@@ -2,15 +2,19 @@ import { PRODUCT_REFRESH_STATUS } from '@/constants/common';
 import { i18n } from '@/helpers/i18n';
 import type { PriceAlert } from '@/helpers/priceAlerts';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
+  markDropsSeen: vi.fn(),
   removePriceAlerts: vi.fn(),
   hasNotificationPermission: vi.fn(),
   requestNotificationPermission: vi.fn(),
 }));
 
-vi.mock('@/helpers/priceAlerts', () => ({ removePriceAlerts: mocks.removePriceAlerts }));
+vi.mock('@/helpers/priceAlerts', () => ({
+  markDropsSeen: mocks.markDropsSeen,
+  removePriceAlerts: mocks.removePriceAlerts,
+}));
 vi.mock('@/helpers/permissions', () => ({
   hasNotificationPermission: mocks.hasNotificationPermission,
   requestNotificationPermission: mocks.requestNotificationPermission,
@@ -44,13 +48,14 @@ const deleteAll = () => screen.getByRole('button', { name: i18n('price_alerts_de
 describe('PriceAlertsPanel', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.markDropsSeen.mockResolvedValue(undefined);
     mocks.removePriceAlerts.mockResolvedValue(undefined);
     mocks.hasNotificationPermission.mockResolvedValue(true);
     mocks.requestNotificationPermission.mockResolvedValue(true);
   });
 
   it('shows the empty state without any controls', () => {
-    render(<PriceAlertsPanel alerts={[]} />);
+    render(<PriceAlertsPanel isOpen alerts={[]} />);
     expect(screen.getByText(i18n('price_alerts_empty'))).toBeInTheDocument();
     expect(screen.queryByRole('checkbox')).toBeNull();
   });
@@ -60,7 +65,7 @@ describe('PriceAlertsPanel', () => {
       lastCheckedAt: Date.UTC(2026, 0, 2, 12),
       lastPrices: { a: { title: 'Product a', price: 19.5, currencyCode: 'USD' } },
     });
-    render(<PriceAlertsPanel alerts={[alert]} />);
+    render(<PriceAlertsPanel isOpen alerts={[alert]} />);
 
     expect(screen.getByRole('link', { name: 'Product a' })).toHaveAttribute(
       'href',
@@ -71,7 +76,7 @@ describe('PriceAlertsPanel', () => {
   });
 
   it('shows "not checked yet" for an alert that has no check', () => {
-    render(<PriceAlertsPanel alerts={[makeAlert('a')]} />);
+    render(<PriceAlertsPanel isOpen alerts={[makeAlert('a')]} />);
     expect(screen.getByText(i18n('price_alerts_not_checked'))).toBeInTheDocument();
   });
 
@@ -82,7 +87,7 @@ describe('PriceAlertsPanel', () => {
         'a::small': { title: 'small', price: 12 },
       },
     });
-    render(<PriceAlertsPanel alerts={[alert]} />);
+    render(<PriceAlertsPanel isOpen alerts={[alert]} />);
     expect(screen.getByText(/Carolina Chemical — .*12\.00/)).toBeInTheDocument();
   });
 
@@ -90,24 +95,24 @@ describe('PriceAlertsPanel', () => {
     const alert = makeAlert('a', {
       lastDrop: { title: 'a', from: 20, to: 15, at: Date.UTC(2026, 0, 2) },
     });
-    render(<PriceAlertsPanel alerts={[alert]} />);
+    render(<PriceAlertsPanel isOpen alerts={[alert]} />);
     expect(screen.getByText(/Dropped from .*20\.00 to .*15\.00/)).toBeInTheDocument();
   });
 
   it('shows the unavailable line', () => {
     const alert = makeAlert('a', { lastStatus: PRODUCT_REFRESH_STATUS.UNAVAILABLE });
-    render(<PriceAlertsPanel alerts={[alert]} />);
+    render(<PriceAlertsPanel isOpen alerts={[alert]} />);
     expect(screen.getByText(i18n('price_alerts_unavailable'))).toBeInTheDocument();
   });
 
   it('shows the failed-check line with the failure count', () => {
     const alert = makeAlert('a', { lastStatus: PRODUCT_REFRESH_STATUS.FAILED, failures: 3 });
-    render(<PriceAlertsPanel alerts={[alert]} />);
+    render(<PriceAlertsPanel isOpen alerts={[alert]} />);
     expect(screen.getByText(i18n('price_alerts_check_failed', ['3']))).toBeInTheDocument();
   });
 
   it('deletes one alert from its row', async () => {
-    render(<PriceAlertsPanel alerts={[makeAlert('a'), makeAlert('b')]} />);
+    render(<PriceAlertsPanel isOpen alerts={[makeAlert('a'), makeAlert('b')]} />);
     fireEvent.click(
       screen.getByRole('button', { name: i18n('settings_remove_item', ['Product b']) }),
     );
@@ -115,7 +120,7 @@ describe('PriceAlertsPanel', () => {
   });
 
   it('deletes only the selected alerts', async () => {
-    render(<PriceAlertsPanel alerts={[makeAlert('a'), makeAlert('b'), makeAlert('c')]} />);
+    render(<PriceAlertsPanel isOpen alerts={[makeAlert('a'), makeAlert('b'), makeAlert('c')]} />);
     expect(deleteSelected(0)).toBeDisabled();
 
     fireEvent.click(selectBox('Product a'));
@@ -126,7 +131,7 @@ describe('PriceAlertsPanel', () => {
   });
 
   it('selects all, shows the partial state, and clears', () => {
-    render(<PriceAlertsPanel alerts={[makeAlert('a'), makeAlert('b')]} />);
+    render(<PriceAlertsPanel isOpen alerts={[makeAlert('a'), makeAlert('b')]} />);
     const all = () => selectAllBox() as HTMLInputElement;
 
     fireEvent.click(selectBox('Product a'));
@@ -145,18 +150,18 @@ describe('PriceAlertsPanel', () => {
 
   it('ignores selected alerts that were removed elsewhere', async () => {
     const alerts = [makeAlert('a'), makeAlert('b')];
-    const { rerender } = render(<PriceAlertsPanel alerts={alerts} />);
+    const { rerender } = render(<PriceAlertsPanel isOpen alerts={alerts} />);
     fireEvent.click(selectBox('Product a'));
     fireEvent.click(selectBox('Product b'));
 
-    rerender(<PriceAlertsPanel alerts={[alerts[1]]} />);
+    rerender(<PriceAlertsPanel isOpen alerts={[alerts[1]]} />);
     fireEvent.click(deleteSelected(1));
 
     await waitFor(() => expect(mocks.removePriceAlerts).toHaveBeenCalledWith(['b']));
   });
 
   it('deletes all alerts after confirming', async () => {
-    render(<PriceAlertsPanel alerts={[makeAlert('a'), makeAlert('b')]} />);
+    render(<PriceAlertsPanel isOpen alerts={[makeAlert('a'), makeAlert('b')]} />);
     fireEvent.click(deleteAll());
 
     const dialog = await screen.findByRole('dialog');
@@ -169,7 +174,7 @@ describe('PriceAlertsPanel', () => {
   });
 
   it('keeps the alerts when the confirmation is cancelled', async () => {
-    render(<PriceAlertsPanel alerts={[makeAlert('a')]} />);
+    render(<PriceAlertsPanel isOpen alerts={[makeAlert('a')]} />);
     fireEvent.click(deleteAll());
 
     const dialog = await screen.findByRole('dialog');
@@ -180,14 +185,14 @@ describe('PriceAlertsPanel', () => {
   });
 
   it('hides the notifications row when permission is granted', async () => {
-    render(<PriceAlertsPanel alerts={[makeAlert('a')]} />);
+    render(<PriceAlertsPanel isOpen alerts={[makeAlert('a')]} />);
     await waitFor(() => expect(mocks.hasNotificationPermission).toHaveBeenCalled());
     expect(screen.queryByText(i18n('price_alerts_notifications_off'))).toBeNull();
   });
 
   it('offers to allow notifications and hides the row once granted', async () => {
     mocks.hasNotificationPermission.mockResolvedValue(false);
-    render(<PriceAlertsPanel alerts={[makeAlert('a')]} />);
+    render(<PriceAlertsPanel isOpen alerts={[makeAlert('a')]} />);
 
     expect(await screen.findByText(i18n('price_alerts_notifications_off'))).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: i18n('price_alerts_allow_notifications') }));
@@ -201,7 +206,7 @@ describe('PriceAlertsPanel', () => {
   it('keeps the notifications row when permission is declined', async () => {
     mocks.hasNotificationPermission.mockResolvedValue(false);
     mocks.requestNotificationPermission.mockResolvedValue(false);
-    render(<PriceAlertsPanel alerts={[makeAlert('a')]} />);
+    render(<PriceAlertsPanel isOpen alerts={[makeAlert('a')]} />);
 
     fireEvent.click(
       await screen.findByRole('button', { name: i18n('price_alerts_allow_notifications') }),
@@ -209,5 +214,42 @@ describe('PriceAlertsPanel', () => {
 
     await waitFor(() => expect(mocks.requestNotificationPermission).toHaveBeenCalled());
     expect(screen.getByText(i18n('price_alerts_notifications_off'))).toBeInTheDocument();
+  });
+
+  describe('seen drops', () => {
+    const alerts = [makeAlert('a', { hasUnseenDrop: true })];
+    const setVisibility = (state: DocumentVisibilityState) =>
+      vi.spyOn(document, 'visibilityState', 'get').mockReturnValue(state);
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('marks the listed drops as seen', () => {
+      render(<PriceAlertsPanel isOpen alerts={alerts} />);
+      expect(mocks.markDropsSeen).toHaveBeenCalledWith(alerts);
+    });
+
+    it('leaves them unseen while the list is collapsed', () => {
+      const { rerender } = render(<PriceAlertsPanel isOpen={false} alerts={alerts} />);
+      expect(mocks.markDropsSeen).not.toHaveBeenCalled();
+
+      rerender(<PriceAlertsPanel isOpen alerts={alerts} />);
+      expect(mocks.markDropsSeen).toHaveBeenCalledWith(alerts);
+    });
+
+    it('waits for a hidden page to be shown', () => {
+      setVisibility('hidden');
+      const { unmount } = render(<PriceAlertsPanel isOpen alerts={alerts} />);
+      expect(mocks.markDropsSeen).not.toHaveBeenCalled();
+
+      setVisibility('visible');
+      document.dispatchEvent(new Event('visibilitychange'));
+      expect(mocks.markDropsSeen).toHaveBeenCalledTimes(1);
+
+      unmount();
+      document.dispatchEvent(new Event('visibilitychange'));
+      expect(mocks.markDropsSeen).toHaveBeenCalledTimes(1);
+    });
   });
 });

@@ -51,8 +51,8 @@ Not published anywhere (kept out of `pages/`, so TypeDoc doesn't render it).
 
 **notifications (optional)**
 > Requested only when the user enables their first price reduction alert. It shows a browser
-> notification when a watched product's price drops. If the user declines, drops still appear in
-> ChemPal's Settings.
+> notification when a watched product's price drops. If the user declines, drops still appear on
+> the toolbar icon and in ChemPal's Settings.
 
 **bookmarks**
 > Lets the user save a chemical product listing as a browser bookmark from ChemPal. It creates a

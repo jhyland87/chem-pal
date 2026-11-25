@@ -13,6 +13,7 @@ const priceAlertSchema = v.looseObject({
   title: v.string(),
   createdAt: v.number(),
   failures: v.number(),
+  hasUnseenDrop: v.optional(v.boolean()),
   lastPrices: v.record(v.string(), priceSnapshotSchema),
   ref: v.looseObject({
     cacheKey: v.string(),

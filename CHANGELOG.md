@@ -17,7 +17,8 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 - Price reduction alerts: right-click a product in the results and choose **Enable price reduction
   alerts**. ChemPal checks the product in the background and shows a notification when its price
-  drops. Manage your alerts in **Settings → Price Alerts**.
+  drops. The toolbar icon also flashes, then shows how many products dropped (for example **↓2**)
+  until you look at them. Manage your alerts in **Settings → Price Alerts**.
 - **Settings → Advanced** now has a check interval and a minimum price drop for price alerts.
 
 ### Changed

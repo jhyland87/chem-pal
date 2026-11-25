@@ -1104,7 +1104,7 @@ export default function SettingsPanel() {
           </Typography>
         </AccordionSummary>
         <AccordionDetails className={styles['settings-panel__accordion-details']}>
-          <PriceAlertsPanel alerts={priceAlerts} />
+          <PriceAlertsPanel alerts={priceAlerts} isOpen={expanded === 'priceAlerts'} />
         </AccordionDetails>
       </Accordion>
       {/* Per-supplier enable/disable. Each switch on = supplier enabled; toggling
